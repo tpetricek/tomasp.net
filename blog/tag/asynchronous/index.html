@@ -827,6 +827,570 @@ methods defined by the computation builder.</p>
       </div>
     </div>    
   
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Parallel Extras (I.): Image pipeline using agents" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/parallel-extra-image-pipeline.aspx/">F# Parallel Extras (I.): Image pipeline using agents</a></h1>
+      <div itemprop="description">
+<p>In a <a href="http://tomasp.net/blog/fsharp-parallel-samples.aspx">recent blog post series</a>,
+  I wrote about parallel programming samples that accompany the 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a>
+  book by patterns &amp; practices group at Microsoft. The F# translation of the samples that I
+  wrote about mostly followed the style used in the book, so it used patterns that 
+  are typical for C#. However, some of the samples can be written in F# in a more interesting way...</p>
+<p>In this article, we'll take a look at agent-based implementation of the Image pipeline 
+  example (from chapter 7). A <em>pipeline</em> is a useful pattern if you need to process large
+  number of inputs in parallel and the processing consists of multiple phases or steps. In the
+  original implementation, the pipeline was implemented using <code>BlockingCollection&lt;T&gt;</code>
+  and <code>Task&lt;T&gt;</code> types from .NET 4.0.</p>
+<p>In this article, I'll show a 
+  version that uses F# agents and asynchronous workflows. We'll use a <code>BlockingQueueAgent&lt;T&gt;</code> 
+  type, which is <a href="http://tomasp.net/blog/parallel-extra-blockingagent.aspx">discussed in another 
+  article</a>. It represents a queue with limited capacity that asynchronously blocks the process that is adding 
+  values if there is no space in the buffer and blocks the process that reads values when there are no 
+  values. This type can be elegantly used to implement the pipeline pattern. In this article, we'll 
+  demonstrate it by writing a four-phase pipeline that processes images. As you'll see, 
+  the agent-based version of the code is very much easier to write and has similar performance as 
+  the original version.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Wednesday, 27 October 2010, 11:11 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/parallel-extra-image-pipeline.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Parallel Programming in F# (IV.): Financial dashboard example" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx/">Parallel Programming in F# (IV.): Financial dashboard example</a></h1>
+      <div itemprop="description">
+<p>In the fourth part of the Parallel Programming in F# series, we'll take a look at the Adatum Financial 
+  Dashboard sample. The sample is a part of <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel 
+  Programming with Microsoft .NET</a>, which is a guide that introduces common parallel programming patterns
+  on .NET 4.0. The C# version of the sample is in details discussed in the guide, but the F# translation
+  contains several additional interesting aspects that I'll introduce in this article.</p>
+
+<p>The sample simulates a financial modelling application that performs processing of market
+  data in several steps that can be partly executed in parallel. In this article we'll compare two
+  implementations. The first one (similar to the C# version) uses the <code>Task&lt;'T&gt;</code> type 
+  from .NET 4.0 and chains steps using the <code>ContinueWith</code> method. The second version is 
+  F# specific and it implements step as a sequential computation wrapped in asynchronous 
+  workflows. Partial results are reported to the user interface using events.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 6 September 2010, 10:30 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-parallel-adash.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Parallel Programming in F# (I.): Introducing the samples" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-parallel-samples.aspx/">Parallel Programming in F# (I.): Introducing the samples</a></h1>
+      <div itemprop="description">
+<img src="http://tomasp.net/articles/fsharp-parallel-samples/book.png" style="float:right;margin:20px;"/>
+<p><a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> is a 
+  guide written by the patterns &amp; practices group at Microsoft. It introduces .NET programmers to
+  patterns for including parallelism in their applications (using support for parallel programming in
+  .NET 4.0). It introduces techniques such as parallel loops, parallel tasks, data aggregation and so on.
+  The book includes numerous samples in C# and Visual Basic that can be easily copied and adapted 
+  to match your needs.</p>
+
+<p>As part of a contracting work for the F# team, I developed an F# version of the samples, which is 
+  now available on the <a href="http://parallelpatterns.codeplex.com/" type="external">book web site</a>.
+  You can get it by downloading <a href="http://parallelpatterns.codeplex.com/releases/view/50473">F# code samples</a> (ZIP) from the 1.0 release, or you can download the <a href="http://parallelpatterns.codeplex.com/SourceControl/list/changesets" 
+  type="external">latest version of the source code</a> directly. The F# version of the
+  code is mostly a direct translation of the C# versions, but there are a few interesting places that
+  are worth discussing. In particular, some of the samples use the <code>PSeq</code> module from F#
+  PowerPack and I also added a version of one example that uses F# asynchronous workflows.</p>
+
+<p>In this article series, I'll look at several interesting examples from the F# version of the source code.
+  We'll look how to use PLINQ and Tasks (which are available in .NET 4.0) from F# (Part II.) including some advanced topics such 
+  as the Map-Reduce algorithm (Part III.). We'll also look at a larger example built using tasks and an alternative 
+  implementation using asynchronous workflows (Part IV.) Here are links to the individual articles:</p>
+
+<ul>
+  <li><strong>Parallel Programming in F# (I.): Introducing the samples</strong></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-plinq.aspx">Parallel Programming in F# (II.): Using PLINQ and Tasks</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-aggregate.aspx">Parallel Programming in F# (III.): Aggregating data</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx">Parallel Programming in F# (IV.): Financial dashboard example</a></li>
+</ul>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 6 September 2010, 10:00 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-parallel-samples.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Webcast (IV.) - Developing standard .NET libraries" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-webcast-objects.aspx/">F# Webcast (IV.) - Developing standard .NET libraries</a></h1>
+      <div itemprop="description">
+<p>In the previous parts of this webcast series we've developed an F# script that downloads RSS feeds
+  asynchronously and in parallel and searches them for the specified keywords. We followed the usual F#
+  development style, so after introducing <a href="fsharp-webcast-functional.aspx">the basic functional 
+  concepts</a>, we wrote the code in <a href="fsharp-webcast-dotnet.aspx">the simples possible style</a> 
+  and demonstrated how to use <code>System.Xml</code> and <code>System.Net</code> namespaces. Then we 
+  <a href="fsharp-webcast-async.aspx">refactored the existing code</a>, to run asynchronously and process
+  the results potentially in parallel, which was very easy thanks to F# <em>asynchronous workflows</em>.</p>
+
+<p>In this part of the series, we'll make the next evolutionary step of our sample application. We'll turn
+  the code that originally used F# tuples and lists into code that uses standard .NET objects and we'll
+  also see how to declare a class in F#. This simple modification will turn the script into an F# library
+  that is almost indistinguishable from a library developed in C#. We'll also look how you can use the library
+  from C# web application to show the interop between C# and F# in practice. We'll start
+  with the code from the <a href="fsharp-webcast-async.aspx">previous part</a>, so if you missed that, you
+  may want to check it out or download the source code.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 15 June 2009, 8:09 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/webcast/">webcast</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-webcast-objects.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Webcast (III.) - Using Asynchronous Workflows" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-webcast-async.aspx/">F# Webcast (III.) - Using Asynchronous Workflows</a></h1>
+      <div itemprop="description">
+<p>In this webcast, we'll look at improving the code for downloading and
+  processing RSS feeds that I presented in <a href="fsharp-webcast-dotnet.aspx">the second part</a> 
+  (if you didn't see earlier parts, <a href="fsharp-webcast-dotnet.aspx">the first one</a> was an introduction to 
+  basic functional ideas). The previous part demonstrated how to use .NET libraries
+  and we implemented a simple <code>downloadUrl</code> function for obtaining content
+  of from the web and we've also seen how to load the data into an XML document object
+  and how to filter items. In this part, we'll modify the code to run asynchronously and 
+  potentially in parallel. To use some of the functionality, you'll need to get 
+  <code>FSharp.PowerPack.dll</code>, which is available with the VS 2008 installation or
+  as a separated download for VS 2010 [<a href="#fswc_asy">4</a>].
+</p>
+
+<p>Now that we have the first version of the code, we can start <em>refactoring</em> it.
+  I'm using the term in a slightly vague meaning - we're of course going to change the
+  behavior of the code. We'll wrap it into F# <em>asynchronous workflow</em> to run
+  without blocking threads and we'll also run multiple downloads in parallel. However,
+  this can still be viewed as refactoring in some sense, because we're not changing
+  the <em>core</em> behavior of the code. As you can see from the webcast, these kinds of
+  refactorings are also very nicely supported by F# syntax...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Friday, 5 June 2009, 3:39 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/webcast/">webcast</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-webcast-async.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Webcast (II.) - Using .NET libraries" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-webcast-dotnet.aspx/">F# Webcast (II.) - Using .NET libraries</a></h1>
+      <div itemprop="description">
+<p>About a week ago I posted <a href="fsharp-webcast-functional.aspx">the first part</a> of my F# webcast series.
+  It focused on explainining the basic ideas behind functional programming such as immutability, recursion
+  and passing functions as arguments to other functions (or methods in C#). In the first part, we've seen some
+  C# code to demonstrate the ideas and also a bit of F#, mainly to show the basic language features.
+</p>
+
+<p>The second part is going to be exclusively about F#. It'll demonstrate how we can start writing
+  a demo application that grabs data from RSS feeds and processes them. You'll learn how to access
+  .NET libraries from F# (in particular, we'll use <code>System.Net</code> and <code>System.Xml</code>).
+  We'll develop the code iteratively, which means that we'll start by simply enumerating the RSS elements using <code>for</code> loop and printing the results and then we'll refactor the code to use <em>tuples</em> and <em>sequence expressions</em> to turn it into processing code that generates a sequence of feed items. Finally we'll also demonstrate how to use some of the functions from the previous part such as <code>List.filter</code> in practice.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 1 June 2009, 2:57 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/webcast/">webcast</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-webcast-dotnet.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Webcast (I.) - Introducing functional concepts" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-webcast-functional.aspx/">F# Webcast (I.) - Introducing functional concepts</a></h1>
+      <div itemprop="description">
+<p>Now that <a href="http://www.microsoft.com/visualstudio/en-us/products/2010/default.mspx" type="external">Visual Studio 2010 Beta 1</a> is out, it is finally a good time to take a look at 
+  one of the (in my opinion) most interesting new features in the new release - <a href="http://blogs.msdn.com/dsyme/archive/2009/05/20/visual-studio-2010-beta1-with-f-is-now-available-plus-matching-f-ctp-update-for-vs2008.aspx" type="external">the F# language</a>. F# existed for
+  quite a long time now as Microsoft Research project, but is now becoming a real Microsoft product.
+  Interestingly, F# is still available as a <a href="http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=7bb32f32-9fac-4f34-ad56-b0bda130cf00" type="external">plugin for Visual Studio 2008</a>, so if you want to try it
+  you don't have to install the whole new beta of 2010.</p>
+
+<p>There are already many resources for learning F# including my <a href="http://tomasp.net/blog/functional-overview.aspx">functional programming overview</a>,
+  which is a Manning Greenpaper for the book <a href="http://www.functional-programming.net" type="external">Functional Programming for the Real World</a> that I'm writing with Jon Skeet
+  and my <a href="http://tomasp.net/blog/fsharp-i-introduction.aspx">four-part F# introduction</a>. There are also some useful links on the 
+  official <a href="http://www.fsharp.net">F# web site</a> including some talk recordings. However, I haven't yet seen any good F# webcast focusing 
+  mainly on showing F# source code, starting from simple functional concepts to the real-world features like asynchronous workflows and object-oriented 
+  programming in F#, so I decided to create one.</p>
+<p style="text-indent:0px;"><strong>So, here it is...</strong></p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 25 May 2009, 1:39 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/webcast/">webcast</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-webcast-functional.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Internship project: Reactive pattern matching" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/internship-match-bang.aspx/">Internship project: Reactive pattern matching</a></h1>
+      <div itemprop="description">
+<a href="http://cid-6ddff5260c96e30a.skydrive.live.com/albums.aspx">
+<img src="http://tomasp.net/articles/internship-match-bang/image.jpg" alt="Cambridge, 2009" class="ldecor" 
+  style="border:0px;float:left; margin:20px" />
+</a>
+
+<p>I already <a href="http://tomasp.net/blog/book-source-available.aspx">mentioned</a> that I was doing my second internship
+  with <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a> at Microsoft Research in Cambridge.
+  This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since 
+  I left, but as you can guess I didn't have time to write anything about the internship until now... There isn't
+  much to say though, because the internship was simply fantastic. Cambridge is a beautiful place (here are
+  some <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2008%20Autumn%20-%20Cambridge" type="external">autumn</a> and <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2009%20Winter%20-%20Cambridge" type="external">winter</a> photos),
+  the Microsoft Research lab in Cambridge is full of smart people, so it is a perferct working environment
+  (except that you realize that you're not as clever as you think :-)). Also, it is just a few meters away from the
+  <a href="http://www.cl.cam.ac.uk" type="external">Computer Laboratory</a> of the Cambridge University, so there are always many 
+  interesting talks and seminars. So, big thanks to Don Syme, James Margetson and everyone else who I had a chance 
+  to work with during the internship.</p>
+  
+<p>One of the reasons why I didn't have much time to write about the internship earlier is that I
+  was invited to the <a href="http://www.langnetsymposium.com/" type="external">Lang.NET Symposium</a> shortly
+  after the end of the internship. I had a chance to talk about my project there as well and there is
+  even a video recording from the talk (the link is below), so you can watch it to find out more about my recent F# work.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 17 May 2009, 11:00 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/joinads/">joinads</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/internship-match-bang.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Source code for Real World Functional Programming available!" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/book-source-available.aspx/">Source code for Real World Functional Programming available!</a></h1>
+      <div itemprop="description">
+<a href="http://cid-8c3f26b4befe2dfa.skydrive.live.com/self.aspx/2009%20-%20Winter%20-%20Cambridge/P1060023.jpg" target="_blank"><img src="http://tomasp.net/articles/book-source-available/cambridge.jpg" class="ldecor" /></a>
+<p>As you can see, there has been quite a bit of silence on this blog for a while. 
+  There are two reasons for that - the first is that I'm still working on the book 
+  <a type="external" href="http://www.manning.com/petricek">Real World Functional
+  Programming</a>, so all my writing activities are fully dedicated to the book. The second
+  reason is that I'm having a great time doing an internship in the <a href="http://research.microsoft.com/en-us/groups/ppt">Programming Principles and Tools</a> group
+  at Microsoft Research in Cambridge with the F# team and namely the F# language 
+  designer <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a>. 
+  The photo on the left side is the entrance gate to the Trinity College of the Cambridge
+  University taken during the few days when there was a snow. I recently started using
+  Live Gallery, so you can find more photos from Cambridge in my <a href="http://cid-8c3f26b4befe2dfa.skydrive.live.com/browse.aspx/2009%20-%20Winter%20-%20Cambridge" type="external">online gallery</a>. Anyway,
+  I just wanted to post a quick update with some information (and downloads!) related
+  to the book...
+</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 12 February 2009, 2:10 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/book-source-available.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Reactive programming (I.) - First class events in F#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/reactive-i-fsevents.aspx/">Reactive programming (I.) - First class events in F#</a></h1>
+      <div itemprop="description">
+<p>I believe that the LINQ project and changes in C# 3.0 and VB 9 are interesting because they 
+  allow rewriting of many ideas from functional programming. An ability to express queries easily
+  is one of these ideas, but it is definitely not the only one. There are many other interesting ideas.
+  The C# 3.0 language isn't primary a functional language, so it isn't easy to discover the idea
+  if you use only C#, but it is possible to implement it if you know the idea already.</p>
+<p>I already wrote a few interesting C# examples that were inspired by some functional idea.
+  I'm a big fan of the F# language, so it is not a surprise that I started with an F# version
+  of the problem and then looked at the way to do the same thing in C#. In particular, this is 
+  how my article about building dynamic queries in C# came to the existence - the F# version used
+  <a href="http://tomasp.net/blog/dynamic-flinq.aspx">FLINQ and Quotations</a> and then I demonstrated how to do the same in <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">C# 
+  using expression trees</a>. Another example is my article about asynchronous 
+  programming in C# <a href="http://tomasp.net/blog/csharp-async.aspx">using iterators</a>, which shows how to implement something 
+  like F# <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx">asynchronous workflows using iterators</a> in C# 2.0.</p>
+
+<h3>Functional Reactive Programming</h3>  
+<p>Today, I'm going to look at another very interesting idea from functional programming. It is 
+  called <em>Functional Reactive Programming</em> and it comes from the Haskell community. You can find 
+  a list of related <a href="http://www.haskell.org/frp/" type="external">Haskell projects here</a>.
+  However, similar things (though they are not purely functional and simplified) are available 
+  in the F# language as well. Don Syme introduced them in his blog post called 
+  <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a>. In this article, I'm going to briefly introduce the implementation
+  available in F# and I'll extend it a little bit to allow some more interesting things. In the 
+  second article from this series, I'll show how to implement the same thing in C# 3.0 (and in VB 9 too!)</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 16 November 2008, 5:14 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/reactive-i-fsevents.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous Programming in C# using Iterators" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/csharp-async.aspx/">Asynchronous Programming in C# using Iterators</a></h1>
+      <div itemprop="description">
+<p>In this article we will look how to write programs that perform asynchronous operations without 
+  the typical inversion of control. To briefly introduce what I mean by 'asynchronous' and 
+  'inversion of control' - asynchronous refers to programs that perform some long running operations 
+  that don't necessary block a calling thread, for example accessing the network, calling web services 
+  or performing any other I/O operation in general. The inversion of control refers to the code structure 
+  that you have to use when writing a code that explicitly passes a C# delegate as a callback to the
+  asynchronous method (typically called <code>Begin<em>Something</em></code> in .NET). The asynchronous method
+  calls the delegate when the operation completes, which reverses the way you write the code - instead of
+  encoding the control flow using typical language constructs (e.g. <code>while</code> loop) you have to 
+  use global variables and write your own control mechanism.</p>
+<p>The funny thing about this article is that it could have been written at least 3 years ago when
+  a beta version of Visual Studio 2005 and C# 2.0 became first available, but it is using iterators in 
+  a slightly bizarre way, so it is not easy to realize that this is possible. Actually, I will use some C# 3.0
+  methods in the article as well, but only extension methods and mainly just to keep the code nicer. As with 
+  my earlier article about building LINQ queries at runtime, I realized that it can be done in C# when I was playing with 
+  the F# solution (called F# Asynchronous Workflows), where this approach is very natural, so I will shortly
+  mention the F# implementation as well.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 15 November 2007, 3:08 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/csharp-async.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="F# Overview (IV.) - Language Oriented Programming" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsharp-iv-lang.aspx/">F# Overview (IV.) - Language Oriented Programming</a></h1>
+      <div itemprop="description">
+<p>In the fourth article of the F# overview series, I will shortly describe how I understad the language oriented paradigm and how the F# language can be used for developing libraries using this paradigm. We will look how discriminated unions relate to this paradigm and at three specific features that support this paradigm, namely <em>active patterns</em>, <em>computation expressions</em> and <em>quotations</em>.</p>
+
+<p>Defining precisely what the term <em>language oriented programming</em> means in context of the F# language would be difficult,
+  so I will instead explain a few examples that will demonstrate how I understand it. In general, the goal of language oriented
+  programming is to develop a <em>language</em> that would be suitable for some (more specific) class of tasks and use this language 
+  for solving these tasks. Of course, developing a real programming language is extremely complex problem, so there are several ways
+  for making it easier. As the most elementary example, you can look at XML files (with certain schema) as language that 
+  are processed by your program and solve some specific problem (for example configuring the application). As a side note,
+  I should mention that I'm not particularly happy with the term ‘language’ in this context, because the term can be used
+  for describing a wide range of techniques from very trivial constructs to a complex object-oriented class libraries, 
+  but I have not seen any better term for the class of techniques that I’m going to talk about.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 3 November 2007, 12:00 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsharp-iv-lang.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+  
+  <h1>All blog posts by tag</h1>
+  
+  <a 
+    href="/blog/tag/fsharp/">f# (111)</a>, <a 
+    href="/blog/tag/functional/">functional (63)</a>, <a 
+    href="/blog/tag/csharp/">c# (37)</a>, <a 
+    href="/blog/tag/research/">research (34)</a>, <a 
+    href="/blog/tag/asynchronous/">asynchronous (27)</a>, <a 
+    href="/blog/tag/parallel/">parallel (23)</a>, <a 
+    href="/blog/tag/universe/">universe (20)</a>, <a 
+    href="/blog/tag/functional-programming/">functional programming (19)</a>, <a 
+    href="/blog/tag/meta-programming/">meta-programming (18)</a>, <a 
+    href="/blog/tag/links/">links (15)</a>, <a 
+    href="/blog/tag/presentations/">presentations (14)</a>, <a 
+    href="/blog/tag/joinads/">joinads (12)</a>, <a 
+    href="/blog/tag/academic/">academic (12)</a>, <a 
+    href="/blog/tag/writing/">writing (11)</a>, <a 
+    href="/blog/tag/web/">web (10)</a>, <a 
+    href="/blog/tag/math-and-numerics/">math and numerics (9)</a>, <a 
+    href="/blog/tag/random-thoughts/">random thoughts (9)</a>, <a 
+    href="/blog/tag/talks/">talks (8)</a>, <a 
+    href="/blog/tag/phalanger/">phalanger (8)</a>, <a 
+    href="/blog/tag/data-science/">data science (7)</a>, <a 
+    href="/blog/tag/haskell/">haskell (7)</a>, <a 
+    href="/blog/tag/mono/">mono (7)</a>, <a 
+    href="/blog/tag/webcast/">webcast (7)</a>, <a 
+    href="/blog/tag/fslab/">fslab (5)</a>, <a 
+    href="/blog/tag/philosophy/">philosophy (5)</a>, <a 
+    href="/blog/tag/open-source/">open source (5)</a>, <a 
+    href="/blog/tag/programming-languages/">programming languages (4)</a>, <a 
+    href="/blog/tag/fun/">fun (4)</a>, <a 
+    href="/blog/tag/accelerator/">accelerator (4)</a>, <a 
+    href="/blog/tag/type-providers/">type providers (3)</a>, <a 
+    href="/blog/tag/linq/">linq (3)</a>, <a 
+    href="/blog/tag/fsharp-data/">f# data (3)</a>, <a 
+    href="/blog/tag/dotnet/">.net (3)</a>, <a 
+    href="/blog/tag/coeffects/">coeffects (2)</a>, <a 
+    href="/blog/tag/data-journalism/">data journalism (2)</a>, <a 
+    href="/blog/tag/deedle/">deedle (2)</a>, <a 
+    href="/blog/tag/monads/">monads (2)</a>, <a 
+    href="/blog/tag/art/">art (2)</a>, <a 
+    href="/blog/tag/fractals/">fractals (2)</a>, <a 
+    href="/blog/tag/funscript/">funscript (2)</a>, <a 
+    href="/blog/tag/new-york/">new york (2)</a>, <a 
+    href="/blog/tag/manning/">manning (2)</a>, <a 
+    href="/blog/tag/books/">books (2)</a>, <a 
+    href="/blog/tag/visualization/">visualization (1)</a>, <a 
+    href="/blog/tag/machine-learning/">machine learning (1)</a>, <a 
+    href="/blog/tag/comonads/">comonads (1)</a>, <a 
+    href="/blog/tag/fake/">fake (1)</a>, <a 
+    href="/blog/tag/fsharp-formatting/">f# formatting (1)</a>, <a 
+    href="/blog/tag/training/">training (1)</a>, <a 
+    href="/blog/tag/deep-dives/">deep dives (1)</a>, <a 
+    href="/blog/tag/async/">async (1)</a>, <a 
+    href="/blog/tag/events/">events (1)</a>, <a 
+    href="/blog/tag/trainings/">trainings (1)</a>, <a 
+    href="/blog/tag/london/">london (1)</a>, <a 
+    href="/blog/tag/literate/">literate (1)</a>
+  
   </div></div>
   </div>
 <article>

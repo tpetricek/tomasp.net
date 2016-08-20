@@ -803,6 +803,406 @@ order monad.</p>
       </div>
     </div>    
   
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Using custom grouping operators in LINQ" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/custom-linq-grouping.aspx/">Using custom grouping operators in LINQ</a></h1>
+      <div itemprop="description">
+<p>You can use LINQ to write queries that perform grouping of data using <code>group by</code>
+  or ordering of data using <code>orderby</code> clause. LINQ provides the default
+  (and the most common) implementation of both of the operations, but sometimes you 
+  may need a slightly different behavior when grouping or ordering data (this article
+  is motivated by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  which needs to do exactly that for grouping).</p>
+  
+<p>Let's look at a simple example, which shows when we may need a different behavior when 
+  grouping data. For example, we may have the following list of stock trades
+  containing a name of a stock and the price of the trade (stored for example as a list
+  of <code>TradeInfo</code> classes with properties <code>Name</code> and <code>Price</code>):</p>  
+<pre lang="csharp">
+{ { Name = "MSFT", Price = 80.00 },
+  { Name = "MSFT", Price = 70.00 },
+  { Name = "GOOG", Price = 100.00 },
+  { Name = "GOOG", Price = 200.00 },
+  { Name = "GOOG", Price = 300.00 },
+  { Name = "MSFT", Price = 30.00 },
+  { Name = "MSFT", Price = 20.00 } }</pre>  
+<p>Now, we may want to group adjacent trades into a single summary record which will contain
+  the name of the stock (which is same for all trades in each group), the number of trades 
+  in the group and an average price in the group. The desired results are:</p>
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+<p>The operation that we want to do is very similar to <code>group by</code> in LINQ, but 
+  it doesn't do quite the same thing! If we used <code>group by</code>, we would get only 
+  two groups as the result. However, as I wrote earlier, we want to group only 
+  <em>adjacent trades</em>. You could write your own extension method to do this,
+  but then you need to leave the elegant LINQ query syntax. In this article, I'll show
+  you how to get the desired results using a simple LINQ query with a <code>group by</code>
+  clause...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 7 February 2010, 8:13 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/academic/">academic</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/custom-linq-grouping.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Functional Programming: Available Chapter Excerpts &amp; Discount" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/functional-excerpts-and-discount.aspx/">Functional Programming: Available Chapter Excerpts &amp; Discount</a></h1>
+      <div itemprop="description">
+<p>The work on my book <a href="http://www.functional-programming.net" target="external">Functional Programming for the Real World</a>
+  is slowly getting to the end. I'm currently creating index for the last couple of chapters 
+  and doing final updates based on the feedback from reviews and also from the
+  <a href="http://www.manning-sandbox.com/forum.jspa?forumID=460&amp;start=0" type="external">forum at manning.com</a>
+  (this means that if you have some suggestions, it's the best time to post them - I haven't yet replied
+  to all of them, but I'll certainly do that before the manuscript will go to the production).</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 26 July 2009, 3:41 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/parallel/">parallel</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/functional-excerpts-and-discount.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Internship project: Reactive pattern matching" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/internship-match-bang.aspx/">Internship project: Reactive pattern matching</a></h1>
+      <div itemprop="description">
+<a href="http://cid-6ddff5260c96e30a.skydrive.live.com/albums.aspx">
+<img src="http://tomasp.net/articles/internship-match-bang/image.jpg" alt="Cambridge, 2009" class="ldecor" 
+  style="border:0px;float:left; margin:20px" />
+</a>
+
+<p>I already <a href="http://tomasp.net/blog/book-source-available.aspx">mentioned</a> that I was doing my second internship
+  with <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a> at Microsoft Research in Cambridge.
+  This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since 
+  I left, but as you can guess I didn't have time to write anything about the internship until now... There isn't
+  much to say though, because the internship was simply fantastic. Cambridge is a beautiful place (here are
+  some <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2008%20Autumn%20-%20Cambridge" type="external">autumn</a> and <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2009%20Winter%20-%20Cambridge" type="external">winter</a> photos),
+  the Microsoft Research lab in Cambridge is full of smart people, so it is a perferct working environment
+  (except that you realize that you're not as clever as you think :-)). Also, it is just a few meters away from the
+  <a href="http://www.cl.cam.ac.uk" type="external">Computer Laboratory</a> of the Cambridge University, so there are always many 
+  interesting talks and seminars. So, big thanks to Don Syme, James Margetson and everyone else who I had a chance 
+  to work with during the internship.</p>
+  
+<p>One of the reasons why I didn't have much time to write about the internship earlier is that I
+  was invited to the <a href="http://www.langnetsymposium.com/" type="external">Lang.NET Symposium</a> shortly
+  after the end of the internship. I had a chance to talk about my project there as well and there is
+  even a video recording from the talk (the link is below), so you can watch it to find out more about my recent F# work.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 17 May 2009, 11:00 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/joinads/">joinads</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/internship-match-bang.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Functional Programming in .NET using C# and F# (Manning Greenpaper)" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/functional-overview.aspx/">Functional Programming in .NET using C# and F# (Manning Greenpaper)</a></h1>
+      <div itemprop="description">
+<p>
+  Functional programming languages have been around for a while and were always astonishing for their 
+  ability to express the ideas in a succinct, declarative way allowing the developer to focus on the 
+  essence of problem rather than on technical details of the solution. Recently, functional paradigm is 
+  gaining new prominence as an efficient way to handle development of multi-processor, parallel and 
+  asynchronous applications.</p>
+
+<p>
+  Functional ideas are arising in C# as well as in other main-stream languages and functional languages 
+  are becoming an alternative for real-world projects.  Also, Microsoft recently introduced a new 
+  language called F#, which has a strong background in traditional functional languages, but as a .NET 
+  language also benefits from the rich .NET and Visual Studio ecosystem.</p>
+
+<div class="rdecor">
+ <img src="http://www.tomasp.net/img/cover_main.gif" alt="Book cover" /><br /><small>Available via MEAP | 500 pages<br />Softbound print: March 2009 (est.)</small></div>
+
+
+<p>
+  This article is partially an excerpt from my book <strong><a href="http://www.manning.com/petricek">Real-world Functional Programming in .NET</a></strong> [<a href="#fpgpref">1</a>]. 
+  Thanks to my editors at <a href="http://www.manning.com" type="external">Manning</a> I have the permission
+  to publish it on my blog. We’ll look at several aspects of functional programming and how the same 
+  concepts, which are essential for the functional paradigm, look in the F# and in C# 3.0 with LINQ. We 
+  will shortly look at the basic programming language features like lambda functions and type inference 
+  that are now available in both F# and C#. Functional programming isn’t only about language features, 
+  but also about using different programming style, so we’ll look at some high level concepts as well. 
+  These include using immutable data structures for developing code that can be executed in parallel 
+  and writing code in a more declarative style.</p>
+
+<p>
+  Thanks to the combination of C# 3.0 and F#, this article shows the ideas in a way that should be 
+  familiar to you in C#, but also shows a further step that you can take with a primarilly functional
+  language F#. If you're a .NET developer and you want to understand what functional programming is
+  and how it can help you to become better and more productive then continue reading. If you'll find 
+  this article interesting, then don't forget to check out the <a href="http://www.manning.com/petricek">book</a>,
+  which explains everything in larger detail and discusses many other interesting ideas.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 11 December 2008, 1:48 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/writing/">writing</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/functional-overview.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Announcing: Real-world Functional Programming in .NET" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/functional-programming-book.aspx/">Announcing: Real-world Functional Programming in .NET</a></h1>
+      <div itemprop="description">
+<p>If you’ve been reading my blog or seen some my articles, you know that I’m a big fan of the F# language and functional programming style. I’m also often trying to present a bit different view of C# and LINQ – for me it is interesting mainly because it brings many functional features to a main-stream language and allows using of many of the functional patterns in a real-world. Elegant way for working with data, which is the most commonly used feature of C# 3.0, is just one example of this functional approach. Talking about real-world applications of functional programming, there is also fantastic news about F#. It was announced last year that F# will become fully supported Visual Studio language and the first CTP version of F# was released this week!</p>
+
+<p>I always thought that the topics mentioned in the previous paragraph are really interesting and that functional programming will continue to become more and more important. That’s why I’m really excited by the news that I’d like to announce today – I’m writing a book about functional programming in F# and C#....</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Tuesday, 2 September 2008, 8:03 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/writing/">writing</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/functional-programming-book.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Infinite Cheese Fractal using WPF 3D and F#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/infinite-cheese.aspx/">Infinite Cheese Fractal using WPF 3D and F#</a></h1>
+      <div itemprop="description">
+<p>I always liked fractals, because they look like objects from another world, but on the other side
+  if you look at some things in our world you can see many similarities with fractals (but not quite as ideal
+  with the infinite level of precision). One of my favorite fractals is 3D version of Sierpinski carpet [<a href="#wpffractref">1</a>],
+  which itself is based on very famous Cantor set. Quite long time ago I thought that it would be nice to 
+  implement animation of flying through this fractal, but I was never good in 3D graphics and it looked like a lot of work,
+  so I never get to doing it. Luckily, now with F#, which makes it very easy to write the code to generate the fractal and
+  with WPF 3D, which can be easily used to animate the fractal, I finally had everything I needed to do it, so here it is!
+</p>
+
+<div style="text-align:center;">
+<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+</div>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 24 November 2007, 11:22 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/infinite-cheese.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous Programming in C# using Iterators" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/csharp-async.aspx/">Asynchronous Programming in C# using Iterators</a></h1>
+      <div itemprop="description">
+<p>In this article we will look how to write programs that perform asynchronous operations without 
+  the typical inversion of control. To briefly introduce what I mean by 'asynchronous' and 
+  'inversion of control' - asynchronous refers to programs that perform some long running operations 
+  that don't necessary block a calling thread, for example accessing the network, calling web services 
+  or performing any other I/O operation in general. The inversion of control refers to the code structure 
+  that you have to use when writing a code that explicitly passes a C# delegate as a callback to the
+  asynchronous method (typically called <code>Begin<em>Something</em></code> in .NET). The asynchronous method
+  calls the delegate when the operation completes, which reverses the way you write the code - instead of
+  encoding the control flow using typical language constructs (e.g. <code>while</code> loop) you have to 
+  use global variables and write your own control mechanism.</p>
+<p>The funny thing about this article is that it could have been written at least 3 years ago when
+  a beta version of Visual Studio 2005 and C# 2.0 became first available, but it is using iterators in 
+  a slightly bizarre way, so it is not easy to realize that this is possible. Actually, I will use some C# 3.0
+  methods in the article as well, but only extension methods and mainly just to keep the code nicer. As with 
+  my earlier article about building LINQ queries at runtime, I realized that it can be done in C# when I was playing with 
+  the F# solution (called F# Asynchronous Workflows), where this approach is very natural, so I will shortly
+  mention the F# implementation as well.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 15 November 2007, 3:08 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/csharp-async.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Keep your multi-core CPU busy with F#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/fsparallelops.aspx/">Keep your multi-core CPU busy with F#</a></h1>
+      <div itemprop="description">
+<p>The growth of computer CPU speed is slowly being replaced by the growth of number of CPUs 
+  (or cores) in the computer at least for the close future. This causes a revolution in the way software is 
+  written, because traditional and most widely used way of writing concurrent applications using
+  threads is difficult and brings several serious issues. Some predictions say that within a few
+  years, almost every computer will have about 16 cores, so there is a huge need for programming
+  paradigms or idioms that help developers write concurrent software easily (see also <a href="http://www.gotw.ca/publications/concurrency-ddj.htm">The Free Lunch Is Over</a> 
+  [<a href="http://www.gotw.ca/publications/concurrency-ddj.htm" target="_blank">^</a>] written by Herb Sutter).</p>
+
+<p>Functional programming languages (especially pure functional languages) are interesting from 
+  this point of view, because the program doesn't have side-effects which makes it very easy to 
+  parallelize it (programs in pure functional languages can't have any side-effects by design, in other functional
+  languages like F# the side-effects can be eliminated by following functional programming style). </p>
+
+<p>This article describes the code that makes it possible to parallelize some common F# constructs like the <code>List.map</code> and <code>List.filter</code>...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 24 March 2007, 11:13 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/fsparallelops.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+  
+  <h1>All blog posts by tag</h1>
+  
+  <a 
+    href="/blog/tag/fsharp/">f# (111)</a>, <a 
+    href="/blog/tag/functional/">functional (63)</a>, <a 
+    href="/blog/tag/csharp/">c# (37)</a>, <a 
+    href="/blog/tag/research/">research (34)</a>, <a 
+    href="/blog/tag/asynchronous/">asynchronous (27)</a>, <a 
+    href="/blog/tag/parallel/">parallel (23)</a>, <a 
+    href="/blog/tag/universe/">universe (20)</a>, <a 
+    href="/blog/tag/functional-programming/">functional programming (19)</a>, <a 
+    href="/blog/tag/meta-programming/">meta-programming (18)</a>, <a 
+    href="/blog/tag/links/">links (15)</a>, <a 
+    href="/blog/tag/presentations/">presentations (14)</a>, <a 
+    href="/blog/tag/joinads/">joinads (12)</a>, <a 
+    href="/blog/tag/academic/">academic (12)</a>, <a 
+    href="/blog/tag/writing/">writing (11)</a>, <a 
+    href="/blog/tag/web/">web (10)</a>, <a 
+    href="/blog/tag/math-and-numerics/">math and numerics (9)</a>, <a 
+    href="/blog/tag/random-thoughts/">random thoughts (9)</a>, <a 
+    href="/blog/tag/talks/">talks (8)</a>, <a 
+    href="/blog/tag/phalanger/">phalanger (8)</a>, <a 
+    href="/blog/tag/data-science/">data science (7)</a>, <a 
+    href="/blog/tag/haskell/">haskell (7)</a>, <a 
+    href="/blog/tag/mono/">mono (7)</a>, <a 
+    href="/blog/tag/webcast/">webcast (7)</a>, <a 
+    href="/blog/tag/fslab/">fslab (5)</a>, <a 
+    href="/blog/tag/philosophy/">philosophy (5)</a>, <a 
+    href="/blog/tag/open-source/">open source (5)</a>, <a 
+    href="/blog/tag/programming-languages/">programming languages (4)</a>, <a 
+    href="/blog/tag/fun/">fun (4)</a>, <a 
+    href="/blog/tag/accelerator/">accelerator (4)</a>, <a 
+    href="/blog/tag/type-providers/">type providers (3)</a>, <a 
+    href="/blog/tag/linq/">linq (3)</a>, <a 
+    href="/blog/tag/fsharp-data/">f# data (3)</a>, <a 
+    href="/blog/tag/dotnet/">.net (3)</a>, <a 
+    href="/blog/tag/coeffects/">coeffects (2)</a>, <a 
+    href="/blog/tag/data-journalism/">data journalism (2)</a>, <a 
+    href="/blog/tag/deedle/">deedle (2)</a>, <a 
+    href="/blog/tag/monads/">monads (2)</a>, <a 
+    href="/blog/tag/art/">art (2)</a>, <a 
+    href="/blog/tag/fractals/">fractals (2)</a>, <a 
+    href="/blog/tag/funscript/">funscript (2)</a>, <a 
+    href="/blog/tag/new-york/">new york (2)</a>, <a 
+    href="/blog/tag/manning/">manning (2)</a>, <a 
+    href="/blog/tag/books/">books (2)</a>, <a 
+    href="/blog/tag/visualization/">visualization (1)</a>, <a 
+    href="/blog/tag/machine-learning/">machine learning (1)</a>, <a 
+    href="/blog/tag/comonads/">comonads (1)</a>, <a 
+    href="/blog/tag/fake/">fake (1)</a>, <a 
+    href="/blog/tag/fsharp-formatting/">f# formatting (1)</a>, <a 
+    href="/blog/tag/training/">training (1)</a>, <a 
+    href="/blog/tag/deep-dives/">deep dives (1)</a>, <a 
+    href="/blog/tag/async/">async (1)</a>, <a 
+    href="/blog/tag/events/">events (1)</a>, <a 
+    href="/blog/tag/trainings/">trainings (1)</a>, <a 
+    href="/blog/tag/london/">london (1)</a>, <a 
+    href="/blog/tag/literate/">literate (1)</a>
+  
   </div></div>
   </div>
 <article>

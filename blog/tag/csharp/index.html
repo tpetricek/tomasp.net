@@ -790,6 +790,1002 @@ about covariance and contravariance.</p>
       </div>
     </div>    
   
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Beyond the Monad fashion (I.): Writing idioms in LINQ" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/idioms-in-linq.aspx/">Beyond the Monad fashion (I.): Writing idioms in LINQ</a></h1>
+      <div itemprop="description">
+<p>Thanks to LINQ and Erik Meier, monads have become a fashionable topic in the C# developer community.
+  Indeed, no serious developer conference on .NET can get away without having a talk on monads. The attractive
+  thing about LINQ and monads is that the <code>SelectMany</code> operator roughly corresponds to the <em>bind</em>
+  function that defines a monad. In practice, LINQ is used for working with collections of data (<code>IEnumerable&lt;T&gt;</code>),
+  but you can also define <em>bind</em> (i.e. <code>SelectMany</code>) for some other data types and use the LINQ syntax
+  for working with other types. You won't be really using the full LINQ syntax. You'll probably use just nested
+  <code>from</code> clauses (for <em>binding</em>) and <code>select</code> at the end to return the result.</p>
+
+<p>However, monads are not the only notion of computation that we can work with. More interestingly, they are also 
+  not the only notion of computation that you can encode using LINQ! In this article, I'll briefly introduce 
+  <em>idioms</em> (also called <em>applicative functors</em>), which is another useful abstract type of computations.
+  Idioms can be used for a few things that cannot be done using monads.</p>
+
+<p>A provocative summary of this article is: <span style="font-variant:small-caps">"Everyone who tells you that LINQ is a monad is wrong!"</span></p>
+
+<p>The truth is
+that LINQ syntax can be used for encoding <em>queries</em> (obviously), <em>monads</em> (as you were told), but also for <em>idioms</em> as you'll learn today (and quite possibly for other types of computations). In this article, we look at a basic example, but I'll describe a more complex real-world scenario in the next blog post.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 10 March 2011, 1:26 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/research/">research</a>, <a
+              href="/blog/tag/functional/">functional</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/idioms-in-linq.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous C# and F# (III.): How does it work?" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/async-compilation-internals.aspx/">Asynchronous C# and F# (III.): How does it work?</a></h1>
+      <div itemprop="description">
+<p>Some time ago, I started writing a series about the differences between the asynchronous model in F# 
+  (in Visual Studio 2010) and the asynchronous language extensions for C# proposed at PDC 2010.
+  In the <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">first article</a>, I showed
+  how both of the language features look and I highlighted a couple of differences. In the
+  <a href="http://tomasp.net/blog/async-csharp-differences.aspx">second article</a>, I discussed
+  the support for cancellation (available only in F#) and how the two models differ 
+  <em>semantically</em> (i.e. what are differences in the behaviour). However, I didn't talk about more
+  techincal differences and, in particular, how is the asynchronous code compiled. We'll look 
+  at this topic today...</p>
+
+<p>Although the C# asynchronous programming model is very similar to F# asynchronous workflows,
+  the compilation looks quite different. The C# compiler uses a similar technique as when compiling
+  iterators and creates a state machine, while the F# compiler uses an approach based on higher order
+  functions (combinators) that's shared with (most) other computation expressions.</p>
+
+<p>I won't discuss the syntax of F# asynchronous workflows or the C# asynchronous extensions in 
+  this article, so if you're new to one of these, here are links to other articles in this 
+  series: </p>
+<ul>
+  <li><a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">Asynchronous C# and F# (I.): Simultaneous introduction</a></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><strong>Asynchronous C# and F# (III.): How does it work?</strong></li>
+  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+
+<p>Let's start by looking at the mechanism used in the C# compiler. If you already know how
+  iterators work in C# 2.0, then you'll find it quite easy to understand. If you're not familiar
+  with iterators, then don't worry - I'll make the explanation self-contained.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 21 November 2010, 3:15 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/async-compilation-internals.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous C# and F# (II.): How do they differ?" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/async-csharp-differences.aspx/">Asynchronous C# and F# (II.): How do they differ?</a></h1>
+      <div itemprop="description">
+<p>Anders Hejlsberg announced the support for asynchronous programming in the next version of C# announced at PDC 2010.
+  The extension looks very similar to F# asynchronous workflows (which are already available in Visual Studio 2010). 
+  Despite the large similarity, there are a couple of differences between the two programming models. I already mentioned 
+  some of them briefly in <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">the first article of this series</a>.
+  In this article, we'll look at some of the technical differences between the two models.</p>
+
+<p>The most notable non-technical difference is that F# asynchronous workflows are already available in a 
+  supported version of Visual Studio and can be used on a large number of .NET runtimes (including, for example,
+  Windows Phone and Silverlight). However, there are surprisingly many technical differences as well.
+  In this article, I'll talk about the support for cancellation, which is available in F# and is not
+  (currently) available in the C# preview. We'll also look at the difference between model where tasks
+  are created as running and the delayed model.</p>
+
+<p>This article is the second part of a short series about the asynchronous programming support
+  in C# and F#. The previous article shows a simple example in both of the languages and the next
+  articles explain how does the feature work (and how you can customize its behavior) as well as 
+  how to call F# libraries from C#:</p>
+<ul>
+  <li><a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">Asynchronous C# and F# (I.): Simultaneous introduction</a></li>
+  <li><strong>Asynchronous C# and F# (II.): How do they differ?</strong></li>
+  <li><a href="http://tomasp.net/blog/async-compilation-internals.aspx">Asynchronous C# and F# (III.): How does it work?</a></li>
+  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+<p>Let's start by looking at, perhaps, the most important technical difference - the 
+  built-in support for cancellation available in F# asynchronous workflows.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 1 November 2010, 4:36 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/async-csharp-differences.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous C# and F# (I.): Simultaneous introduction" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx/">Asynchronous C# and F# (I.): Simultaneous introduction</a></h1>
+      <div itemprop="description">
+<img src="http://tomasp.net/articles/csharp-fsharp-async-intro/pdc2010.png" style="float:right;margin:5px;margin-left:20px;" />
+<p>One of the exciting new technologies that was announced at <a href="http://www.microsoftpdc.com/">PDC 2010</a>
+  is the support for <em>asynchronous programming</em> in C#. So what exactly is <em>asynchronous programming</em>?
+  Many applications today need to connect to some service or external data source including, for example, 
+  Web Services and REST APIs. This calls may take a long time to run, but we want to run them without
+  blocking the application.</p>
+
+<p>Currently, you can run the operation on a background thread or using a <code>Task</code>, but
+  coordinating multiple such operations is difficult. What if you for example need to wait until
+  any (or all) of downloads complete and run some more code then? This is not only difficult, but
+  it also scales badly, because blocking .NET threads is a bad practice (Threads are expensive and when
+  they're just waiting for other operation to complete, we're wasting valuable resources).
+  This problem has been the main motivation for including <em>asynchronous workflows</em> in F#
+  about 3 years ago. In F#, this also enabled various interesting programming styles - for example
+  <a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx" type="external">creating 
+  GUI using asynchronous workflows</a> (also discussed in Chapter 16 of <a href="http://manning.com/petricek">my book</a> and in 
+  in <a href="http://tomasp.net/blog/reactive-talk.aspx">my recent talk</a>). The C# asynchronous 
+  programming support and the <code>await</code> keyword is largely inspired by
+  F# <em>asynchronous workflows</em> (I was quite surprised that F# wasn't more visibly 
+  mentioned in the PDC talk).
+</p>
+
+<p>In this article series, I'll demonstrate both F# and C# asynchronous programming model,
+  I'll look at features that are missing in one or the other as well as a few subtle differences
+  (that may be unexpected) and finally, I'll write about writing (asynchronous) F# libraries 
+  that are easy to use from C#. The plan for the series is following:</p>
+<ul>
+  <li><strong>Asynchronous C# and F# (I.): Simultaneous introduction</strong></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><a href="http://tomasp.net/blog/async-compilation-internals.aspx">Asynchronous C# and F# (III.): How does it work?</a></li>  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+<p>Let's start with a brief overview of asynchronous programming features in C# and F#...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Friday, 29 October 2010, 4:34 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Using custom grouping operators in LINQ" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/custom-linq-grouping.aspx/">Using custom grouping operators in LINQ</a></h1>
+      <div itemprop="description">
+<p>You can use LINQ to write queries that perform grouping of data using <code>group by</code>
+  or ordering of data using <code>orderby</code> clause. LINQ provides the default
+  (and the most common) implementation of both of the operations, but sometimes you 
+  may need a slightly different behavior when grouping or ordering data (this article
+  is motivated by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  which needs to do exactly that for grouping).</p>
+  
+<p>Let's look at a simple example, which shows when we may need a different behavior when 
+  grouping data. For example, we may have the following list of stock trades
+  containing a name of a stock and the price of the trade (stored for example as a list
+  of <code>TradeInfo</code> classes with properties <code>Name</code> and <code>Price</code>):</p>  
+<pre lang="csharp">
+{ { Name = "MSFT", Price = 80.00 },
+  { Name = "MSFT", Price = 70.00 },
+  { Name = "GOOG", Price = 100.00 },
+  { Name = "GOOG", Price = 200.00 },
+  { Name = "GOOG", Price = 300.00 },
+  { Name = "MSFT", Price = 30.00 },
+  { Name = "MSFT", Price = 20.00 } }</pre>  
+<p>Now, we may want to group adjacent trades into a single summary record which will contain
+  the name of the stock (which is same for all trades in each group), the number of trades 
+  in the group and an average price in the group. The desired results are:</p>
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+<p>The operation that we want to do is very similar to <code>group by</code> in LINQ, but 
+  it doesn't do quite the same thing! If we used <code>group by</code>, we would get only 
+  two groups as the result. However, as I wrote earlier, we want to group only 
+  <em>adjacent trades</em>. You could write your own extension method to do this,
+  but then you need to leave the elegant LINQ query syntax. In this article, I'll show
+  you how to get the desired results using a simple LINQ query with a <code>group by</code>
+  clause...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 7 February 2010, 8:13 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/academic/">academic</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/custom-linq-grouping.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Source code for Real World Functional Programming available!" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/book-source-available.aspx/">Source code for Real World Functional Programming available!</a></h1>
+      <div itemprop="description">
+<a href="http://cid-8c3f26b4befe2dfa.skydrive.live.com/self.aspx/2009%20-%20Winter%20-%20Cambridge/P1060023.jpg" target="_blank"><img src="http://tomasp.net/articles/book-source-available/cambridge.jpg" class="ldecor" /></a>
+<p>As you can see, there has been quite a bit of silence on this blog for a while. 
+  There are two reasons for that - the first is that I'm still working on the book 
+  <a type="external" href="http://www.manning.com/petricek">Real World Functional
+  Programming</a>, so all my writing activities are fully dedicated to the book. The second
+  reason is that I'm having a great time doing an internship in the <a href="http://research.microsoft.com/en-us/groups/ppt">Programming Principles and Tools</a> group
+  at Microsoft Research in Cambridge with the F# team and namely the F# language 
+  designer <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a>. 
+  The photo on the left side is the entrance gate to the Trinity College of the Cambridge
+  University taken during the few days when there was a snow. I recently started using
+  Live Gallery, so you can find more photos from Cambridge in my <a href="http://cid-8c3f26b4befe2dfa.skydrive.live.com/browse.aspx/2009%20-%20Winter%20-%20Cambridge" type="external">online gallery</a>. Anyway,
+  I just wanted to post a quick update with some information (and downloads!) related
+  to the book...
+</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 12 February 2009, 2:10 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/book-source-available.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Functional Programming in .NET using C# and F# (Manning Greenpaper)" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/functional-overview.aspx/">Functional Programming in .NET using C# and F# (Manning Greenpaper)</a></h1>
+      <div itemprop="description">
+<p>
+  Functional programming languages have been around for a while and were always astonishing for their 
+  ability to express the ideas in a succinct, declarative way allowing the developer to focus on the 
+  essence of problem rather than on technical details of the solution. Recently, functional paradigm is 
+  gaining new prominence as an efficient way to handle development of multi-processor, parallel and 
+  asynchronous applications.</p>
+
+<p>
+  Functional ideas are arising in C# as well as in other main-stream languages and functional languages 
+  are becoming an alternative for real-world projects.  Also, Microsoft recently introduced a new 
+  language called F#, which has a strong background in traditional functional languages, but as a .NET 
+  language also benefits from the rich .NET and Visual Studio ecosystem.</p>
+
+<div class="rdecor">
+ <img src="http://www.tomasp.net/img/cover_main.gif" alt="Book cover" /><br /><small>Available via MEAP | 500 pages<br />Softbound print: March 2009 (est.)</small></div>
+
+
+<p>
+  This article is partially an excerpt from my book <strong><a href="http://www.manning.com/petricek">Real-world Functional Programming in .NET</a></strong> [<a href="#fpgpref">1</a>]. 
+  Thanks to my editors at <a href="http://www.manning.com" type="external">Manning</a> I have the permission
+  to publish it on my blog. We’ll look at several aspects of functional programming and how the same 
+  concepts, which are essential for the functional paradigm, look in the F# and in C# 3.0 with LINQ. We 
+  will shortly look at the basic programming language features like lambda functions and type inference 
+  that are now available in both F# and C#. Functional programming isn’t only about language features, 
+  but also about using different programming style, so we’ll look at some high level concepts as well. 
+  These include using immutable data structures for developing code that can be executed in parallel 
+  and writing code in a more declarative style.</p>
+
+<p>
+  Thanks to the combination of C# 3.0 and F#, this article shows the ideas in a way that should be 
+  familiar to you in C#, but also shows a further step that you can take with a primarilly functional
+  language F#. If you're a .NET developer and you want to understand what functional programming is
+  and how it can help you to become better and more productive then continue reading. If you'll find 
+  this article interesting, then don't forget to check out the <a href="http://www.manning.com/petricek">book</a>,
+  which explains everything in larger detail and discusses many other interesting ideas.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 11 December 2008, 1:48 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/writing/">writing</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/functional-overview.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Reactive Programming (IV.) - Developing a game in Reactive LINQ" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx/">Reactive Programming (IV.) - Developing a game in Reactive LINQ</a></h1>
+      <div itemprop="description">
+<p>In this part of the article series about <strong>Reactive LINQ</strong>we're going to 
+  implement a slightly more complicated application using the library that I introduced
+  in the previous three articles. We're going to use basic event stream queries from the <a href="reactive-ii-csevents.aspx">second article</a> 
+  as well as advanced operators introduced in the <a href="reactive-iii-linqoperators.aspx">third part</a>.
+  This time, I'll also show the F# version of all the examples, so we're going to build on the ideas from
+  the <a href="reactive-i-fsevents.aspx">first part</a>.</p>
+
+<p>I originally wanted to write the demo only in Visual Basic, because I think that
+  it is really amazig to show an idea that came from functional programming in a language
+  that no one (maybe until recently) connects with functional programming. Then I realized that
+  I really want to show the F# version too, because F# was an inspiration for the whole
+  <strong>Reactive LINQ</strong> idea and it is interesting alone as well. But finally,
+  I thought that don't showing the C# version may look offensive to many readers (especially 
+  since I'm still C# MVP...). So, I ended up writing the game in all three languages, but 
+  the code is surprisingly similar in all of them!</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 24 November 2008, 3:00 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/functional/">functional</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Reactive Programming (III.) - Useful Reactive LINQ Operators" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/reactive-iii-linqoperators.aspx/">Reactive Programming (III.) - Useful Reactive LINQ Operators</a></h1>
+      <div itemprop="description">
+<p>In the <a href="reactive-ii-csevents.aspx">previous article</a>, I introduced <strong>Reactive LINQ</strong>.
+  I explained the different point of view that we can use when working with .NET events. The idea is that
+  .NET events can be viewed as streams of values. The value is information about the event (such as position
+  of a mouse click or a mouse movement). These streams can be processed using LINQ queries - we can for example
+  filter all values that are not interesting for us using <code>where</code> LINQ clause. For example if we want to handle
+  clicks only in some specified area.</p>
+<p>In the previous article, I talked about basic LINQ query operators such as <code>select</code> and <code>where</code>
+  and some useful methods that <strong>Reactive LINQ</strong> provides (for example for merging event streams).
+  Today, we'll take a look at two more advanced kinds of operations that we can use for working with event streams. 
+  In particular, we'll talk about aggregation operators (that you certainly know from LINQ) and about switching. 
+  Switching is a concept from functional reactive programming and it allows us to change dynamically how the 
+  application behaves. However, I'll explain this in a more detail soon.</p>
+<p>In this article, I'm going to use mostly C# (and some Visual Basic). The functionality that I'm describing
+  in this part isn't part of the standard F# <code>Event</code> module that I discussed in 
+  <a href="reactive-i-fsevents.aspx">the first part</a>. I implemented most of them in F# too, but I'm not going
+  to write the samples in both of the versions in this part. If you've seen the first two articles, you'll be 
+  definitely able to use the F# versions as well, because they follow exactly the same ideas as the C#/LINQ versions.
+  I'm going to talk about a larger demo application in the last section and I'll show an F# version as well,
+  so you'll see some F# examples in the next part. This part serves more as a reference of the available
+  operators, so you may read only some parts of it, then jump to the last one (to see an exciting example!) 
+  and then come back here.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Friday, 21 November 2008, 7:59 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/reactive-iii-linqoperators.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Reactive programming (II.) - Introducing Reactive LINQ" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/reactive-ii-csevents.aspx/">Reactive programming (II.) - Introducing Reactive LINQ</a></h1>
+      <div itemprop="description">
+<p>In this article I'm going to introduce my project <strong>Reactive LINQ</strong>. This is largely inspired
+  by the ideas that come from functional reactive programming in the Haskell language and from 
+  functionality that's available for working in events in F#. I introduced these ideas in my previous article
+  in this mini-series, so if you're interested in learning more about these interesting technologies, you 
+  should definitely read the previous article about <a href="reactive-i-fsevents.aspx">First class events in F#</a>.</p>
+<p>In this article, we're going to look how to apply the same ideas to the C# language and how 
+  to use LINQ queries for processing events. This article is <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">just</a>&#160;<a href="http://tomasp.net/blog/csharp-async.aspx">another</a> my article that shows how to implement some 
+  idea from functional programmin in C#. I believe this will once again show that the new features
+  in the C# 3.0 aren't just about querying databases, but are more widely useful even in situations 
+  that are not directly related to data-processing. </p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Wednesday, 19 November 2008, 7:57 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/reactive-ii-csevents.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Reactive programming (I.) - First class events in F#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/reactive-i-fsevents.aspx/">Reactive programming (I.) - First class events in F#</a></h1>
+      <div itemprop="description">
+<p>I believe that the LINQ project and changes in C# 3.0 and VB 9 are interesting because they 
+  allow rewriting of many ideas from functional programming. An ability to express queries easily
+  is one of these ideas, but it is definitely not the only one. There are many other interesting ideas.
+  The C# 3.0 language isn't primary a functional language, so it isn't easy to discover the idea
+  if you use only C#, but it is possible to implement it if you know the idea already.</p>
+<p>I already wrote a few interesting C# examples that were inspired by some functional idea.
+  I'm a big fan of the F# language, so it is not a surprise that I started with an F# version
+  of the problem and then looked at the way to do the same thing in C#. In particular, this is 
+  how my article about building dynamic queries in C# came to the existence - the F# version used
+  <a href="http://tomasp.net/blog/dynamic-flinq.aspx">FLINQ and Quotations</a> and then I demonstrated how to do the same in <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">C# 
+  using expression trees</a>. Another example is my article about asynchronous 
+  programming in C# <a href="http://tomasp.net/blog/csharp-async.aspx">using iterators</a>, which shows how to implement something 
+  like F# <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx">asynchronous workflows using iterators</a> in C# 2.0.</p>
+
+<h3>Functional Reactive Programming</h3>  
+<p>Today, I'm going to look at another very interesting idea from functional programming. It is 
+  called <em>Functional Reactive Programming</em> and it comes from the Haskell community. You can find 
+  a list of related <a href="http://www.haskell.org/frp/" type="external">Haskell projects here</a>.
+  However, similar things (though they are not purely functional and simplified) are available 
+  in the F# language as well. Don Syme introduced them in his blog post called 
+  <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a>. In this article, I'm going to briefly introduce the implementation
+  available in F# and I'll extend it a little bit to allow some more interesting things. In the 
+  second article from this series, I'll show how to implement the same thing in C# 3.0 (and in VB 9 too!)</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 16 November 2008, 5:14 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/reactive-i-fsevents.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Calculating with infinite sequences on MSDN" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/sequences-on-msdn.aspx/">Calculating with infinite sequences on MSDN</a></h1>
+      <div itemprop="description">
+<p>About a year ago, I wrote <a href="http://tomasp.net/blog/lazy-computation-on-msdn.aspx">an article</a> about using lazy computations in C# 3.0. It was published by the C# Community PM <a href="http://blogs.msdn.com/charlie/" type="external">Charlie Calvert</a> at the C# Developer Center. The article was a first of two articles where I wanted to demonstrate that C# 3.0 can be used for implementing useful constructs known from functional languages. I realized that I never posted the link to the second article to my blog, so you can find the annotation and link below.</p>
+
+<p>However, I remembered about these two articles because I was just working on chapters 11 and 12 of the <a href="http://tomasp.net/blog/functional-net-update.aspx">Real-world Functional Programming in .NET</a> book that I’m writing. Lazy values, which were the topic of my first article, are discussed in the second part of chapter 11 and IEnumerable and F# sequences are the topic for the first part of chapter 12. Because I already wrote two articles on this topic, I had to think really hard to find better (and still simple enough) examples where these concepts are useful in practice. I also finally have enough space to show how these two concepts relate and talk about some interesting background – for example in Haskell, lazy sequences are in fact just ordinary lists that are lazy thanks to the Haskell nature. </p>
+<p>A year ago, I definitely wouldn’t believe that today, I’ll be writing about the same topics, but this time as part of a book that has partly the same goal as these two articles – to show that functional programming ideas are really useful in the real-world and can enrich your programming toolbox (no matter whether you’re using C# or F# language). Anyway, here is the link to the second article – as usual when I look at something that I worked on a long time ago, I think I should rewrite it to make it better :-), but it still gives you an idea what is the book that I’m working on about...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 13 November 2008, 2:36 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/writing/">writing</a>, <a
+              href="/blog/tag/links/">links</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/sequences-on-msdn.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Functional Programming in .NET book - An update" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/functional-net-update.aspx/">Functional Programming in .NET book - An update</a></h1>
+      <div itemprop="description">
+<p>Recently, I announced on my blog that I’m working on a book for <a href="http://www.manning.com" type="external">Manning</a> 
+  called <em>Real world Functional Programming in .NET</em>. The goal of the book is to explain the most interesting and
+  useful ideas of functional programming to a real world C# developer. I'm writing this book, because I believe that functional programming is becoming
+  increasingly important. Here is a couple of reasons why you should have this book on your bookshelf:</p>
+<ul>
+  <li><strong>Ideas behind C# 3.0 and LINQ</strong> - these main-stream technologies are inspired by functional programming and the new 
+    C# 3.0 features give us definitely much more than just a new way to query databases. The book explains
+    the ideas behind these features and shows how to use them more efficiently.</li>
+    
+  <li><strong>Learning the F# language</strong> - <a href="http://blogs.msdn.com/somasegar/archive/2007/10/17/f-a-functional-programming-language.aspx" type="external">F# is becoming a first-class citizen</a>
+    in the Visual Studio family of languages, which alone would be a good reason for learning it! Even if you're not going
+    to use it for your next large .NET project, you'll find it useful for quick prototyping of ideas and testing how .NET libraries
+    work thanks to the great interactive tools.
+  </li>
+
+  <li><strong>Real world examples</strong> - the book includes a large set of real-world examples that show how to develop 
+    real applications in a functional way - both in F# and C#. Among other things, the examples show how to utilize multi-core 
+    CPUs, how to better obtain and process data and how to implement animations and GUI applications in a functional way.</li>
+</ul>  
+
+<p>The book is available via the MEAP (Manning Early Access Program) and if you want to get a better idea what is the book about, 
+  you can read the <a href="http://www.manning.com/petricek/" type="external">first chapter for free</a>. Anyway, it is more than a month since I  <a href="http://tomasp.net/blog/functional-programming-book.aspx">posted the announcement</a>, so I decided to write a brief update....</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 20 October 2008, 10:10 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/web/">web</a>, <a
+              href="/blog/tag/writing/">writing</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/functional-net-update.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Asynchronous Programming in C# using Iterators" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/csharp-async.aspx/">Asynchronous Programming in C# using Iterators</a></h1>
+      <div itemprop="description">
+<p>In this article we will look how to write programs that perform asynchronous operations without 
+  the typical inversion of control. To briefly introduce what I mean by 'asynchronous' and 
+  'inversion of control' - asynchronous refers to programs that perform some long running operations 
+  that don't necessary block a calling thread, for example accessing the network, calling web services 
+  or performing any other I/O operation in general. The inversion of control refers to the code structure 
+  that you have to use when writing a code that explicitly passes a C# delegate as a callback to the
+  asynchronous method (typically called <code>Begin<em>Something</em></code> in .NET). The asynchronous method
+  calls the delegate when the operation completes, which reverses the way you write the code - instead of
+  encoding the control flow using typical language constructs (e.g. <code>while</code> loop) you have to 
+  use global variables and write your own control mechanism.</p>
+<p>The funny thing about this article is that it could have been written at least 3 years ago when
+  a beta version of Visual Studio 2005 and C# 2.0 became first available, but it is using iterators in 
+  a slightly bizarre way, so it is not easy to realize that this is possible. Actually, I will use some C# 3.0
+  methods in the article as well, but only extension methods and mainly just to keep the code nicer. As with 
+  my earlier article about building LINQ queries at runtime, I realized that it can be done in C# when I was playing with 
+  the F# solution (called F# Asynchronous Workflows), where this approach is very natural, so I will shortly
+  mention the F# implementation as well.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Thursday, 15 November 2007, 3:08 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/parallel/">parallel</a>, <a
+              href="/blog/tag/asynchronous/">asynchronous</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/csharp-async.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Lazy Computation in C# on MSDN" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/lazy-computation-on-msdn.aspx/">Lazy Computation in C# on MSDN</a></h1>
+      <div itemprop="description">
+<p>I think that one of the interesting things about C# 3.0 is that it gives you the ability to use many techniques known from functional languages (like Haskell or F#). Most of the articles about C# 3.0 and LINQ focus on the queries and LINQ to SQL, but I believe that using these functional techniques deserve some attention as well. This is why I'm very happy that my article about one of these techniques - representing lazy computations - is now available at the C# Developer Center. I would like to thank to <a href="http://blogs.msdn.com/charlie/default.aspx">Charlie Calvert</a> [<a href="http://blogs.msdn.com/charlie/default.aspx" target="_blank">^</a>], who is the Community Program Manager for C# and who edited and published my article there. Here is the annotation:</p>
+
+<p style="padding-left:40px;padding-right:40px;font-style:italic;">Most of the programming languages used in practice (including for example C#, VB.NET, C++, Python or Java) employ so called eager evaluation, which means that the program evaluates all expression and statements in the order in which they are written, so all the preceding statements and expressions are evaluated before executing the next piece of code. This, for example, means that all arguments to a method call are evaluated before calling the method. Sometimes it may be useful to delay an execution of some code until the result is actually needed, either because the result may not be needed at all (but we can’t tell that before executing some computation) or because we don’t want to block the program for a long time by executing all computations in advance and instead we want to execute the computations later, when we will actually need the result. </p>
+
+<p style="padding-left:40px;margin-bottom:20px;padding-right:40px;font-style:italic;">In this article we will look how these lazy computations can be written in C# (using some of the new language features from version 3.0). We will first implement a Lazy class to represent this kind of computation, then look at a few simple examples to demonstrate how the class can be used, and finally we will examine one slightly more complicated, but practically useful application.
+</p>
+
+<p style="text-indent:0px">You can read the complete article here: <a href="http://msdn2.microsoft.com/en-us/vcsharp/bb870976.aspx">Lazy Computation in C#
+</a> [<a href="http://msdn2.microsoft.com/en-us/vcsharp/bb870976.aspx" target="_blank">^</a>]</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 6 October 2007, 1:29 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/universe/">universe</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/links/">links</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/lazy-computation-on-msdn.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Building LINQ Queries at Runtime in F#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/dynamic-flinq.aspx/">Building LINQ Queries at Runtime in F#</a></h1>
+      <div itemprop="description">
+<p>In an article about building LINQ queries at runtime in C# 3.0, I described how you can build
+  a LINQ query dynamically, for example by combining a set of conditions using the 'or' operator in the
+  where clause. I mentioned that the way I implemented it is largely influenced by the F# language, 
+  which provides very natural way for manipulations with code like this. In this article I will first 
+  shortly introduce FLINQ sample, which is an F# library implementing LINQ support and than I will 
+  implement the same examples I presented in the earlier article in F#.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 18 August 2007, 2:38 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>, <a
+              href="/blog/tag/fsharp/">f#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/dynamic-flinq.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Building LINQ Queries at Runtime in C#" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/dynamic-linq-queries.aspx/">Building LINQ Queries at Runtime in C#</a></h1>
+      <div itemprop="description">
+<p>Since the first beta versions of LINQ we could hear comments that it is perfect for 
+  queries known at compile-time, however it is not possible to use it for building queries 
+  dynamically at runtime. In this article I show that this can be actually done very well for 
+  most of the common cases. The solution offered by Microsoft (mentioned in [<a href="#dynqlinks">1</a>]) is to 
+  build query from a string, however this has many limitations and it in fact goes completely 
+  against what LINQ tries to achieve, which is writing queries in a type-safe way with full 
+  compile-time checking. In this article I will first show a few support functions to make the life 
+  a bit easier and then we will use them for building two sample applications that allows user to 
+  build a query dynamically. The solution is largely motivated by my previous use of F#, where 
+  working with “expressions” is possible at more advanced level, however I’ll write about F# later 
+  and now let’s get back to C# 3.0...</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Monday, 30 July 2007, 2:10 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/dynamic-linq-queries.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="CLinq - LINQ support for the C++/CLI language" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/clinq-project.aspx/">CLinq - LINQ support for the C++/CLI language</a></h1>
+      <div itemprop="description">
+<p>I started working on this project, because I attended C++ class at our university and I had to do some application in C++. Because I hate doing useless projects I wanted to work on something interesting and so I started thinking whether it would be possible to enable LINQ support in C++/CLI...</p>
+
+<p>C++/CLI is a very flexible language and the following example proves that enabling LINQ support in C++/CLI isn't impossible. The following database query returns name of contact and company for all customers living in London:</p>
+
+<pre lang="c++">
+// create connection to database
+NorthwindData db(".. connection string ..");
+
+// declare database query
+Expr&lt;Customers^&gt; cvar = Var&lt;Customers^&gt;("c");
+CQuery&lt;String^&gt;^ q = db.QCustomers
+  -&gt;Where(clq::fun(cvar, cvar.City == "London"))
+  -&gt;Select(clq::fun(cvar, 
+      cvar.ContactName + Expr&lt;String^&gt;(", ") + cvar.CompanyName));
+
+// execute query and output results
+for each(String^ s in q-&gt;Query)
+  Console::WriteLine(s);
+</pre>  
+<p>If you are interested in more information about CLinq project you can...</p>
+<ul>
+  <li><a href="/articles/clinq-project.aspx">.. continue and read the entire article</a></li>
+  <li><a href="http://www.codeplex.com/linqextensions">Visit the CodePlex project homepage</a> [<a href="http://www.codeplex.com/linqextensions" target="_blank">^</a>]</li>
+</ul>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Friday, 2 March 2007, 5:11 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/dotnet/">.net</a>, <a
+              href="/blog/tag/academic/">academic</a>, <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/clinq-project.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Can't return anonymous type from method? Really?" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/cannot-return-anonymous-type-from-method.aspx/">Can't return anonymous type from method? Really?</a></h1>
+      <div itemprop="description">
+<p>One of the new features introduced in C# 3.0 which will be available in Visual Studio "Orcas" (currently in CTP version) 
+  is anonymous type. Anonymous type is something very similar to tuple type from Cω [<a href="#returnanonymous">1</a>] (which is based 
+  on tuple types known from many functional programming languages including F#). Anonymous types are extremely useful in 
+  LINQ queries, because it allows you to construct type with several properties without declaring the type (with all the properties).
+  Example of query with anonymous type looks like this:</p>
+<pre lang="csharp">
+var q = from c in db.Customers
+        where c.Country = "Czech Republic"
+        select new { FullName=c.Name+" "+c.Surname, Address=c.Address };
+</pre>  
+<p>Ok, it's probabbly not the best example, but it demonstrates the point - you want to return some information from query
+  and you don't need to declare type that contains <code>FullName</code> and <code>Address</code> properties before, because
+  you need it only for this single query (and you want to return only these two fields, so you don't transfer additional 
+  data that you don't need from database).</p><p>Now let's get to the second point... </p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Tuesday, 23 January 2007, 11:54 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/cannot-return-anonymous-type-from-method.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Concepts behind the C# 3.0 language" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/csharp3-concepts.aspx/">Concepts behind the C# 3.0 language</a></h1>
+      <div itemprop="description">
+<p>One of the lectures that I attended last year was <a href="http://www.mff.cuni.cz/toISO-8859-2.en/vnitro/is/sis/predmety/kod.php?kod=PRG003">Programming Methodology and Philosophy of Programming Languages</a>. The lecture was mostly about history of programming languages and how several features evolved, disappeared and than after many years appeared again in another programming language.</p>
+
+<p>As I final work I decided to write an article that describes ideas that influenced the design of the C# 3.0 language. Some of these features are known from functional languages (for example from LISP or Haskell), some other were developed at Microsoft Research and appeared in the F# language or Cω. I also wanted to show in what ways are these features limited in the C# 3.0. I think that thanks to these limitation, the C# 3.0 is still a simple (or at least not difficult) to understand which is very important for mainstream language, but I find it interesting to know what is possible in other (less limited) languages.</p>
+
+<ul><li>You can also <a href="http://tomasp.net/articles/csharp3-concepts/csharp3-concepts.pdf">download the article in PDF</a> (404kB)</li>
+<li>The article is also available at <a href="http://www.codeproject.com/useritems/csharp3-concepts.asp">CodeProject.com</a></li></ul>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Sunday, 15 October 2006, 3:19 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>, <a
+              href="/blog/tag/academic/">academic</a>, <a
+              href="/blog/tag/functional/">functional</a>, <a
+              href="/blog/tag/meta-programming/">meta-programming</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/csharp3-concepts.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="LINQ extensions - Simplified keyword search" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/linq-expand-update.aspx/">LINQ extensions - Simplified keyword search</a></h1>
+      <div itemprop="description">
+<p>Recently, I came across interesting question at LINQ Forums (Dynamic conditions: How to achieve multiple "OR" conditions with LINQ? [<a href="#updlq">1</a>]).
+  The question is whether LINQ (and especially LINQ to SQL) provides any simple way to return only records that contain one or more of 
+  specified keywords in the name. The question looks simple, but it is simple only if you know the number of keywords that you want to 
+  look for. In this case you can write following LINQ query:</p>
+<pre>
+  <span class="c">// Products that contain "kwd1" or "kwd2" in the name </span><br />
+  <span class="k">var</span> q = <span class="k">from</span> p <span class="k">in</span> db.Products
+    <span class="k">where</span> p.ProductName.Contains("kwd1") || p.ProductName.Contains("kwd2")
+    <span class="k">select</span> p;
+</pre>
+<p>The problem with previous code is that you can't use it if the list of keywords is dynamically entered by user
+  (and so its length may vary). Of course, if you want to run query on in-memory data, you can get very nice results by
+  writing extension method called <code>ContainsAny</code> that performs test for keyword array, but if you 
+  want to be able to translate query to SQL, the situation is a bit complicated.</p>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Friday, 28 July 2006, 3:57 AM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/linq-expand-update.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="Calling functions in LINQ queries" />
+    <meta itemprop="image" content="" />
+    <h1 itemprop="mainEntityOfPage name"><a href="http://tomasp.net/blog/linq-expand.aspx/">Calling functions in LINQ queries</a></h1>
+      <div itemprop="description">
+<p>The <a href="http://msdn.microsoft.com/data/ref/linq/">LINQ Project</a> [<a href="http://msdn.microsoft.com/data/ref/linq/" target="_blank">^</a>] is 
+  an extension to .NET Framework and most important .NET languages (C# and VB.Net) that extends these languages with query operators and some 
+  language features that make it possible to integrate queries in the languages. Thanks to LINQ you can write queries that read data from database
+  (or any other data source). For example, imagine that you want to write set of queries for eshop and you need to perform a price calculation
+  in more queries. The problem with LINQ queries is that you can't simply call a function written in C# that calculates price. The following example
+  is NOT WORKING for this reason:</p>
+<pre>
+<span class="c">// function used in filter</span><br />
+<span class="k">static</span> <span class="k">decimal</span> CalcPrice(Nwind.Product p)
+{
+  <span class="k">return</span> p.UnitPrice * 1.19m;
+}</pre>
+<pre>
+<span class="c">// query that uses MyFunc</span><br />
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products
+  <span class="k">where</span> CalcPrice(p) &gt; 30m
+  <span class="k">select</span> p
+</pre>
+<p>I think that this is a big limitation, because when you want to keep some more complex logic in the data access layer you should be able to reuse 
+  parts of queries that are similar across more queries. The good thing is that with latest release, LINQ became extensible so it is possible
+  to write a extensions that allow this scenario...</p>
+<ul>
+<li>You can also <a href="http://tomasp.net/articles/linq-expand/linq-expand.pdf">download the article in PDF</a> (80kB)</li>
+</ul>
+</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">Saturday, 10 June 2006, 2:26 PM</span>
+        
+          <br />      
+          <strong>Tags</strong>: 
+            <a
+              href="/blog/tag/csharp/">c#</a>
+        
+        <br />
+        <a itemprop="sameAs" href="http://tomasp.net/blog/linq-expand.aspx/">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  
+  
+  <h1>All blog posts by tag</h1>
+  
+  <a 
+    href="/blog/tag/fsharp/">f# (111)</a>, <a 
+    href="/blog/tag/functional/">functional (63)</a>, <a 
+    href="/blog/tag/csharp/">c# (37)</a>, <a 
+    href="/blog/tag/research/">research (34)</a>, <a 
+    href="/blog/tag/asynchronous/">asynchronous (27)</a>, <a 
+    href="/blog/tag/parallel/">parallel (23)</a>, <a 
+    href="/blog/tag/universe/">universe (20)</a>, <a 
+    href="/blog/tag/functional-programming/">functional programming (19)</a>, <a 
+    href="/blog/tag/meta-programming/">meta-programming (18)</a>, <a 
+    href="/blog/tag/links/">links (15)</a>, <a 
+    href="/blog/tag/presentations/">presentations (14)</a>, <a 
+    href="/blog/tag/joinads/">joinads (12)</a>, <a 
+    href="/blog/tag/academic/">academic (12)</a>, <a 
+    href="/blog/tag/writing/">writing (11)</a>, <a 
+    href="/blog/tag/web/">web (10)</a>, <a 
+    href="/blog/tag/math-and-numerics/">math and numerics (9)</a>, <a 
+    href="/blog/tag/random-thoughts/">random thoughts (9)</a>, <a 
+    href="/blog/tag/talks/">talks (8)</a>, <a 
+    href="/blog/tag/phalanger/">phalanger (8)</a>, <a 
+    href="/blog/tag/data-science/">data science (7)</a>, <a 
+    href="/blog/tag/haskell/">haskell (7)</a>, <a 
+    href="/blog/tag/mono/">mono (7)</a>, <a 
+    href="/blog/tag/webcast/">webcast (7)</a>, <a 
+    href="/blog/tag/fslab/">fslab (5)</a>, <a 
+    href="/blog/tag/philosophy/">philosophy (5)</a>, <a 
+    href="/blog/tag/open-source/">open source (5)</a>, <a 
+    href="/blog/tag/programming-languages/">programming languages (4)</a>, <a 
+    href="/blog/tag/fun/">fun (4)</a>, <a 
+    href="/blog/tag/accelerator/">accelerator (4)</a>, <a 
+    href="/blog/tag/type-providers/">type providers (3)</a>, <a 
+    href="/blog/tag/linq/">linq (3)</a>, <a 
+    href="/blog/tag/fsharp-data/">f# data (3)</a>, <a 
+    href="/blog/tag/dotnet/">.net (3)</a>, <a 
+    href="/blog/tag/coeffects/">coeffects (2)</a>, <a 
+    href="/blog/tag/data-journalism/">data journalism (2)</a>, <a 
+    href="/blog/tag/deedle/">deedle (2)</a>, <a 
+    href="/blog/tag/monads/">monads (2)</a>, <a 
+    href="/blog/tag/art/">art (2)</a>, <a 
+    href="/blog/tag/fractals/">fractals (2)</a>, <a 
+    href="/blog/tag/funscript/">funscript (2)</a>, <a 
+    href="/blog/tag/new-york/">new york (2)</a>, <a 
+    href="/blog/tag/manning/">manning (2)</a>, <a 
+    href="/blog/tag/books/">books (2)</a>, <a 
+    href="/blog/tag/visualization/">visualization (1)</a>, <a 
+    href="/blog/tag/machine-learning/">machine learning (1)</a>, <a 
+    href="/blog/tag/comonads/">comonads (1)</a>, <a 
+    href="/blog/tag/fake/">fake (1)</a>, <a 
+    href="/blog/tag/fsharp-formatting/">f# formatting (1)</a>, <a 
+    href="/blog/tag/training/">training (1)</a>, <a 
+    href="/blog/tag/deep-dives/">deep dives (1)</a>, <a 
+    href="/blog/tag/async/">async (1)</a>, <a 
+    href="/blog/tag/events/">events (1)</a>, <a 
+    href="/blog/tag/trainings/">trainings (1)</a>, <a 
+    href="/blog/tag/london/">london (1)</a>, <a 
+    href="/blog/tag/literate/">literate (1)</a>
+  
   </div></div>
   </div>
 <article>
