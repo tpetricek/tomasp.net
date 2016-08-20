@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>TryJoinads (IV.) - Concurrency using join calculus - Tomas Petricek</title>
+
+  <meta name="description" content=" This article shows another application of the match! language extension for F#. This time, we look how to encode join calculus, which is an elegant abstraction for declarative concurrent programming." />
+  <meta name="keywords" content="f#, research, joinads, asynchronous, parallel, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="TryJoinads (IV.) - Concurrency using join calculus" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/joinads-join-calculus.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article shows another application of the match! language extension for F#. This time, we look how to encode join calculus, which is an elegant abstraction for declarative concurrent programming." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="TryJoinads (IV.) - Concurrency using join calculus" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article shows another application of the match! language extension for F#. This time, we look how to encode join calculus, which is an elegant abstraction for declarative concurrent programming." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "TryJoinads (IV.) - Concurrency using join calculus",
+    "headline": "TryJoinads (IV.) - Concurrency using join calculus",
+  	"description": " This article shows another application of the match! language extension for F#. This time, we look how to encode join calculus, which is an elegant abstraction for declarative concurrent programming.",
+  	"url": "http://tomasp.net/blog/joinads-join-calculus.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-02-22T17:38:40.0000000",
+  	"datePublished": "2012-02-22T17:38:40.0000000",
+    "dateModified": "2012-02-22T17:38:40.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/joinads-join-calculus.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["f#", "research", "joinads", "asynchronous", "parallel",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>TryJoinads (IV.) - Concurrency using join calculus</h1>
+<p>Join calculus provides a declarative way of expressing asynchronous synchronization
+patterns. It has been use as a basis for programming languages (JoCaml and COmega), but also
+as a basis for libraries (embedded in C# and Scala). Using joinads, it is possible to 
+embed join calculus in F# with a nice syntax using the <code>match!</code> construct. Formally,
+join calculus does not form a <em>monad</em>, but it can be viewed as a version of <em>joinad</em>
+as described in the <a href="../pubs.html">first paper on joinads</a>.</p>
+
+<p>The programming model is based on <em>channels</em> and <em>join patterns</em>. A channel can be viewed
+as a thread-safe mailbox into which we can put values without blocking the caller. In some
+sense, this is quite similar to <a href="agents.html">F# agents</a>. A join pattern is then a rule
+saying that a certain combination of values in channels should trigger a specific reaction
+(and remove values from the channels). The ability to match on multiple channels distinguishes
+join calculus from F# agents.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/joins.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Thread-safe buffer</h2>
+
+<p>As a first example, we implement a thread-safe (unbounded) blocking buffer. The buffer 
+uses two channels - the <code>put</code> channel is used for adding values to the buffer and
+has a type <code>Channel&lt;string&gt;</code>; the <code>get</code> channel is used for retrieving values from the
+buffer. When the buffer is empty, the call cannot complete, so the operation is available as 
+an asynchronous workflow. Channels that are used to obtain some result from a join pattern
+are represented using the <code>ReplyChannel&lt;'T&gt;</code> type where <code>'T</code> is the type of the returned
+value.</p>
+
+<p>After constructing the channels, we construct a join pattern using the <code>join { ... }</code>
+computation builder by pattern matching on channels using <code>match!</code>:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">Extensions</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">Joinads</span>
+
+<span class="c">// Construct channels implementing the buffer</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">put</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">string</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">get</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft8', 8)" onmouseover="showTip(event, 'ft8', 8)" class="i">ReplyChannel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 9)" onmouseover="showTip(event, 'ft6', 9)" class="i">string</span><span class="o">&gt;</span>()
+
+<span class="c">// Encode a join pattern over the channels</span>
+<span onmouseout="hideTip(event, 'ft9', 10)" onmouseover="showTip(event, 'ft9', 10)" class="i">join</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft7', 11)" onmouseover="showTip(event, 'ft7', 11)" class="i">get</span>, <span onmouseout="hideTip(event, 'ft4', 12)" onmouseover="showTip(event, 'ft4', 12)" class="i">put</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft10', 13)" onmouseover="showTip(event, 'ft10', 13)" class="i">repl</span>, <span onmouseout="hideTip(event, 'ft11', 14)" onmouseover="showTip(event, 'ft11', 14)" class="i">v</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft11', 15)" onmouseover="showTip(event, 'ft11', 15)" class="i">v</span>) }</pre>
+
+
+<p>The pattern matching consists of a single clause that matches on both of the channels. When
+both values become available, the join pattern is triggered. In response, it calls 
+<code>Reply</code> method of the value received from the <code>get</code> buffer. This sends a string value back
+to the caller of the <code>get</code> channel. Unlike for example <code>async { ... }</code>, the <code>join { ... }</code> 
+computation does not return any value - it constructs a join pattern that operates over
+the existing channels. We look at a more complex sample soon, but let's first
+demonstrate how the channels are used:</p>
+
+<pre class="fssnip">
+<span class="c">// Store some values in &#39;put&#39; channel</span>
+<span onmouseout="hideTip(event, 'ft4', 16)" onmouseover="showTip(event, 'ft4', 16)" class="i">put</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 17)" onmouseover="showTip(event, 'ft12', 17)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hello</span><span class="s"> </span><span class="s">world</span><span class="s">.</span><span class="s">&quot;</span>)
+<span onmouseout="hideTip(event, 'ft4', 18)" onmouseover="showTip(event, 'ft4', 18)" class="i">put</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 19)" onmouseover="showTip(event, 'ft12', 19)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hi</span><span class="s"> </span><span class="s">there</span><span class="s">!</span><span class="s">&quot;</span>)
+
+<span class="c">// Obtain value via the &#39;get&#39; channel</span>
+<span onmouseout="hideTip(event, 'ft7', 20)" onmouseover="showTip(event, 'ft7', 20)" class="i">get</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft13', 21)" onmouseover="showTip(event, 'ft13', 21)" class="i">AsyncCall</span>() <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 22)" onmouseover="showTip(event, 'ft14', 22)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft15', 23)" onmouseover="showTip(event, 'ft15', 23)" class="i">RunSynchronously</span></pre>
+
+
+<p>The above example shows how channels behave - values stored in channels are cached and when
+there is a matching pair (after calling both <code>put</code> and <code>get</code>), the join pattern fires.
+Note that calling <code>AsyncCall</code> using <code>RunSynchronously</code> blocks the F# Interactive if there
+is no matching value in the <code>put</code> channel.</p>
+
+<h2>Buffer with two input channels</h2>
+
+<p>To make the example slightly more interesting, we now change it to use two input channels.
+In the extended version, we can store two types of values in the buffer. The <code>putString</code>
+channel makes it possible to store strings and the <code>putInt</code> channel can be used to store
+integers. Values can be retrieved only as strings (numbers get converted to strings) using
+a single <code>getString</code> channel.</p>
+
+<p>This makes the join pattern more interesting, because it must now handle two cases. One
+pattern handles the case when there is a string in <code>putString</code> and a request to read value
+in <code>getString</code> and another pattern handles a case when there are values in <code>putInt</code> and 
+<code>getString</code>:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft16', 24)" onmouseover="showTip(event, 'ft16', 24)" class="i">putString</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 25)" onmouseover="showTip(event, 'ft5', 25)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 26)" onmouseover="showTip(event, 'ft6', 26)" class="i">string</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft17', 27)" onmouseover="showTip(event, 'ft17', 27)" class="i">putInt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 28)" onmouseover="showTip(event, 'ft5', 28)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft18', 29)" onmouseover="showTip(event, 'ft18', 29)" class="i">int</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft19', 30)" onmouseover="showTip(event, 'ft19', 30)" class="i">getString</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft8', 31)" onmouseover="showTip(event, 'ft8', 31)" class="i">ReplyChannel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 32)" onmouseover="showTip(event, 'ft6', 32)" class="i">string</span><span class="o">&gt;</span>()
+
+<span onmouseout="hideTip(event, 'ft9', 33)" onmouseover="showTip(event, 'ft9', 33)" class="i">join</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft19', 34)" onmouseover="showTip(event, 'ft19', 34)" class="i">getString</span>, <span onmouseout="hideTip(event, 'ft16', 35)" onmouseover="showTip(event, 'ft16', 35)" class="i">putString</span>, <span onmouseout="hideTip(event, 'ft17', 36)" onmouseover="showTip(event, 'ft17', 36)" class="i">putInt</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft10', 37)" onmouseover="showTip(event, 'ft10', 37)" class="i">repl</span>, <span onmouseout="hideTip(event, 'ft11', 38)" onmouseover="showTip(event, 'ft11', 38)" class="i">v</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft11', 39)" onmouseover="showTip(event, 'ft11', 39)" class="i">v</span>)
+  | <span onmouseout="hideTip(event, 'ft10', 40)" onmouseover="showTip(event, 'ft10', 40)" class="i">repl</span>, <span class="o">?</span>, <span onmouseout="hideTip(event, 'ft20', 41)" onmouseover="showTip(event, 'ft20', 41)" class="i">v</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'ft6', 42)" onmouseover="showTip(event, 'ft6', 42)" class="i">string</span> <span onmouseout="hideTip(event, 'ft20', 43)" onmouseover="showTip(event, 'ft20', 43)" class="i">v</span>)) }</pre>
+
+
+<p>The first clause of the <code>match!</code> construct handles the case when there is a value in 
+<code>getString</code> and <code>putString</code>. The third channel is matched against the <code>?</code> pattern, which
+means that a value from that channel is not required. When the pattern matches, the
+values from <code>getString</code> and <code>putString</code> channels are removed and they are processed
+(by sending a string back to the caller of <code>getString</code> channel). The second pattern is
+similar, but it matches on <code>getString</code> and <code>putInt</code>.</p>
+
+<p>The following example shows how to call the buffer implemented above:</p>
+
+<pre class="fssnip">
+<span class="c">// Put values to &#39;putString&#39; and &#39;putInt&#39; channels</span>
+<span onmouseout="hideTip(event, 'ft21', 44)" onmouseover="showTip(event, 'ft21', 44)" class="i">async</span> {
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'ft22', 45)" onmouseover="showTip(event, 'ft22', 45)" class="i">i</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">5</span> <span class="k">do</span> 
+    <span onmouseout="hideTip(event, 'ft16', 46)" onmouseover="showTip(event, 'ft16', 46)" class="i">putString</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 47)" onmouseover="showTip(event, 'ft12', 47)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hello</span><span class="s">!</span><span class="s">&quot;</span>)
+    <span onmouseout="hideTip(event, 'ft17', 48)" onmouseover="showTip(event, 'ft17', 48)" class="i">putInt</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 49)" onmouseover="showTip(event, 'ft12', 49)" class="i">Call</span>(<span onmouseout="hideTip(event, 'ft22', 50)" onmouseover="showTip(event, 'ft22', 50)" class="i">i</span>)
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'ft14', 51)" onmouseover="showTip(event, 'ft14', 51)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft23', 52)" onmouseover="showTip(event, 'ft23', 52)" class="i">Sleep</span>(<span class="n">100</span>) } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 53)" onmouseover="showTip(event, 'ft14', 53)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft24', 54)" onmouseover="showTip(event, 'ft24', 54)" class="i">Start</span>
+
+<span class="c">// Call &#39;getString&#39; asynchronously to read replies</span>
+<span onmouseout="hideTip(event, 'ft21', 55)" onmouseover="showTip(event, 'ft21', 55)" class="i">async</span> { 
+  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft25', 56)" onmouseover="showTip(event, 'ft25', 56)" class="i">repl</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft19', 57)" onmouseover="showTip(event, 'ft19', 57)" class="i">getString</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft13', 58)" onmouseover="showTip(event, 'ft13', 58)" class="i">AsyncCall</span>()
+    <span onmouseout="hideTip(event, 'ft26', 59)" onmouseover="showTip(event, 'ft26', 59)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">got</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span class="i">repl</span> } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 60)" onmouseover="showTip(event, 'ft14', 60)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft24', 61)" onmouseover="showTip(event, 'ft24', 61)" class="i">Start</span></pre>
+
+
+<p>The code creates and starts tw oasynchronous workflows - one that puts 5 values to 
+each of the put channels and another that keeps reading values from the <code>getString</code> 
+channel. When you run the code, you should see that the two join patterns are 
+triggered in an interleaving order, as the values are added to the put channels.</p>
+
+<h2>Dining Philosophers</h2>
+
+<p>Nick Palladinos recently used the <code>join</code> computation builder to implement the famous
+<a href="http://en.wikipedia.org/wiki/Dining_philosophers_problem">dining philosophers problem</a>,
+which demonstrates competition for resources. The solution is available 
+<a href="http://fssnip.net/aL">on F# snippets</a>.</p>
+
+<p>The problem is defined as follows: There are five philosophers sitting around the table
+with a fork between each of them. In order to eat, a philosopher needs to take hold of
+two forks (one on the left and one on the right of him). When holding both forks, the
+philosopher can eat for some time and then puts both forks back on the table and thinks
+for some time.</p>
+
+<p>Using joinads, the problem can be solved by creating a join pattern for every philosopher.
+The pattern matches when the philosopher acquires forks on both sides (represented as channels).</p>
+
+<ul>
+<li>See the <a href="http://fssnip.net/aL">join calculus based dining philosophers</a> on F# snippets.</li>
+<li>Load <a href="http://tryjoinads.org/index.html?examples/philosophers.html">join calculus sample on TryJoinads</a>.</li>
+</ul>
+
+<h2>Summary</h2>
+
+<p>In this article, we looked at two basic examples that used join calculus, embedded
+in F# using the <code>match!</code> construct. The second example showed a sample consisting
+of multiple join patterns. This is when join calculus becomes quite powerful, because
+we can declaratively specify what combination of values should trigger a certain 
+reaction.</p>
+
+<p>Join calculus provides a powerful abstraction for implementing concurrency primitives
+- it can be used to write various buffers, reader-writer locks, count-down events etc.
+However, the join calculus has been designed as an abstraction for distributed 
+programming and so it may find use in other areas as well.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace FSharp</div>
+<div class="tip" id="ft2">namespace FSharp.Extensions</div>
+<div class="tip" id="ft3">namespace FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft4">val put : Channel&lt;string&gt;<br /><br />Full name: TryJoinads.put<br />&#160;&#160;type: Channel&lt;string&gt;<br /></div>
+<div class="tip" id="ft5">Multiple items<br />module Channel<br /><br />from FSharp.Extensions.Joinads<br /><br />--------------------<br />type Channel&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface IChannel&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; Channel&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Call : message:&#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member Put : message:&#39;T -&gt; unit<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.Channel&lt;_&gt;<br />&#160;&#160;type: Channel&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft6">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft7">val get : ReplyChannel&lt;string&gt;<br /><br />Full name: TryJoinads.get<br />&#160;&#160;type: ReplyChannel&lt;string&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;string&gt;&gt;<br /></div>
+<div class="tip" id="ft8">Multiple items<br />type ReplyChannel&lt;&#39;TArg,&#39;TRes&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit Channel&lt;&#39;TArg * IReplyChannel&lt;&#39;TRes&gt;&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; ReplyChannel&lt;&#39;TArg,&#39;TRes&gt;<br />&#160;&#160;&#160;&#160;member AsyncCall : arg:&#39;TArg -&gt; Async&lt;&#39;TRes&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.ReplyChannel&lt;_,_&gt;<br />&#160;&#160;type: ReplyChannel&lt;&#39;TArg,&#39;TRes&gt;<br />&#160;&#160;inherits: Channel&lt;&#39;TArg * IReplyChannel&lt;&#39;TRes&gt;&gt;<br /><br /><br />--------------------<br />type ReplyChannel&lt;&#39;TRes&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit Channel&lt;IReplyChannel&lt;&#39;TRes&gt;&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; ReplyChannel&lt;&#39;TRes&gt;<br />&#160;&#160;&#160;&#160;member AsyncCall : unit -&gt; Async&lt;&#39;TRes&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.ReplyChannel&lt;_&gt;<br />&#160;&#160;type: ReplyChannel&lt;&#39;TRes&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;&#39;TRes&gt;&gt;<br /></div>
+<div class="tip" id="ft9">val join : JoinBuilder<br /><br />Full name: FSharp.Extensions.Joinads.Builders.join</div>
+<div class="tip" id="ft10">val repl : IReplyChannel&lt;string&gt;</div>
+<div class="tip" id="ft11">val v : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft12">member Channel.Call : message:&#39;T -&gt; unit</div>
+<div class="tip" id="ft13">member ReplyChannel.AsyncCall : unit -&gt; Async&lt;&#39;TRes&gt;</div>
+<div class="tip" id="ft14">Multiple items<br />module Async<br /><br />from FSharp.Extensions.Joinads.AsyncTopLevel<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;<br /><br />--------------------<br />type Async =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member ParallelImmediate : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T []&gt;<br />&#160;&#160;&#160;&#160;static member StartChildImmediate : work:Async&lt;&#39;a0&gt; -&gt; Async&lt;Async&lt;&#39;a0&gt;&gt;<br />&#160;&#160;&#160;&#160;static member WhenAny : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.Async</div>
+<div class="tip" id="ft15">static member Async.RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:System.Threading.CancellationToken -&gt; &#39;T</div>
+<div class="tip" id="ft16">val putString : Channel&lt;string&gt;<br /><br />Full name: TryJoinads.putString<br />&#160;&#160;type: Channel&lt;string&gt;<br /></div>
+<div class="tip" id="ft17">val putInt : Channel&lt;int&gt;<br /><br />Full name: TryJoinads.putInt<br />&#160;&#160;type: Channel&lt;int&gt;<br /></div>
+<div class="tip" id="ft18">Multiple items<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft19">val getString : ReplyChannel&lt;string&gt;<br /><br />Full name: TryJoinads.getString<br />&#160;&#160;type: ReplyChannel&lt;string&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;string&gt;&gt;<br /></div>
+<div class="tip" id="ft20">val v : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft21">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="ft22">val i : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft23">static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="ft24">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:System.Threading.CancellationToken -&gt; unit</div>
+<div class="tip" id="ft25">val repl : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft26">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-join-calculus.aspx%2f&amp;text=TryJoinads+(IV.)+-+Concurrency+using+join+calculusvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-join-calculus.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-join-calculus.aspx%2f&title=TryJoinads+(IV.)+-+Concurrency+using+join+calculus">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=TryJoinads%20(IV.)%20-%20Concurrency%20using%20join%20calculus&body=%20This%20article%20shows%20another%20application%20of%20the%20match!%20language%20extension%20for%20F%23.%20This%20time%2c%20we%20look%20how%20to%20encode%20join%20calculus%2c%20which%20is%20an%20elegant%20abstraction%20for%20declarative%20concurrent%20programming.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fjoinads-join-calculus.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 22 February 2012, 5:38 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/joinads/">joinads</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/parallel/">parallel</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

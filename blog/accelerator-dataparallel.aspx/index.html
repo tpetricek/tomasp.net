@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Accelerator and F# (III.): Data-parallel programs using F# quotations - Tomas Petricek</title>
+
+  <meta name="description" content=" We already discussed how to write programs that run on GPU using MSR Accelerator. In this article, we'll write an image rotation using data-parallel F# functions and then use a library that translates it to Accelerator automatically." />
+  <meta name="keywords" content="academic, functional, meta-programming, accelerator, f#, math and numerics, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Accelerator and F# (III.): Data-parallel programs using F# quotations" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/accelerator-dataparallel.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" We already discussed how to write programs that run on GPU using MSR Accelerator. In this article, we'll write an image rotation using data-parallel F# functions and then use a library that translates it to Accelerator automatically." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Accelerator and F# (III.): Data-parallel programs using F# quotations" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" We already discussed how to write programs that run on GPU using MSR Accelerator. In this article, we'll write an image rotation using data-parallel F# functions and then use a library that translates it to Accelerator automatically." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Accelerator and F# (III.): Data-parallel programs using F# quotations",
+    "headline": "Accelerator and F# (III.): Data-parallel programs using F# quotations",
+  	"description": " We already discussed how to write programs that run on GPU using MSR Accelerator. In this article, we'll write an image rotation using data-parallel F# functions and then use a library that translates it to Accelerator automatically.",
+  	"url": "http://tomasp.net/blog/accelerator-dataparallel.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2010-01-04T12:50:13.0000000",
+  	"datePublished": "2010-01-04T12:50:13.0000000",
+    "dateModified": "2010-01-04T12:50:13.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/accelerator-dataparallel.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["academic", "functional", "meta-programming", "accelerator", "f#", "math and numerics",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Accelerator and F# (III.): Data-parallel programs using F# quotations</h1>
+<img src="/articles/accelerator-dataparallel/rotated.png" alt="Rotated Prague photo" style="float:right; margin:10px" />
+
+<p>If you've been following this article series, you already know 
+  that Accelerator is a MSR library [<a href="#accelfsh3links">1</a>, <a href="#accelfsh3links">2</a>] 
+  that allows you to run code in parallel on either multi-core CPU or using 
+  shaders on GPU (see <a href="/blog/accelerator-intro.aspx">introduction</a>).
+  We also discussed a direct way to use Accelerator from F# (by calling Accelerator methods
+  directly) and <a href="/blog/accelerator-life-game.aspx">implemented Conway's Game of Life</a>.
+  In this article, we'll look at more sophisticated way of using Accelerator from F#.
+  We'll introduce F# quotations and look at translating 'normal' F# code to use
+  Accelerator.</p>
+  
+<p>In general, F# quotations allow us to treat F# code as data structure and manipulate 
+  with it. This is very similar to C# expression trees, but the F# implementation is 
+  more powerful. We can also mark a standard method or a function with a special attribute
+  that tells the compiler to store quotation of the body. Then we can access the
+  quotation and traverse it or modify it. In this article we'll use a function that
+  takes an F# quotation (containing a limited set of functions) and executes it using
+  MSR Accelerator. Implementing this functionality is a bit complicated, so we won't
+  discuss the implementation now. We'll leave this for some future article of this series.
+  In future, we'll also look at other interesting possibilities that we have when 
+  writing code using quotations. Here is a list of articles in this series and of the
+  articles that I'm planning to add:</p>
+<ul>
+  <li><a href="/blog/accelerator-intro.aspx">Accelerator and F# (I.): Introduction and calculating PI</a></li>
+  <li><a href="/blog/accelerator-life-game.aspx">Accelerator and F# (II.): The Game of Life on GPU</a></li>
+  <li><strong>Accelerator and F# (III.): Data-parallel programs using F# quotations</strong></li>
+  <li><a href="http://tomasp.net/blog/accelerator-quotations.aspx">Accelerator and F# (IV.): Composing computations with quotations</a></li></ul>  
+
+<h2>Processing code with quotations</h2>
+<p>Let's start by looking at F# quotations briefly. When you use expression trees in C#, 
+  the compiler decides whether a lambda expression should be compiled as a delegate or
+  as an expression tree depending on the target type. F# uses a different approach -
+  when we want to compile code as quotations, we mark it explicitly. The following example
+  demonstrates a quoted lambda function that implements blurring of F# <code>Matrix</code>
+  values (only in the X coordinate to make the code simpler):</p>
+<pre lang="fsharp">
+&gt; &lt;@@ fun input -&gt;
+    let sum = (shift input -1 0) .+
+     input .+ (shift input +1 0) 
+    sum /| 3.0f
+  @@&gt;;;
+val it : Expr&lt;Matrix&lt;float32&gt; -&gt; Matrix&lt;float32&gt;&gt;  
+</pre>
+<p>You'll understand the implementation of the function in full details after 
+  reading the article. Briefly, the <code>shift</code> function moves values in the 
+  matrix by specified offset (corresponding to <code>Shift</code> in Accelerator).
+  The <code>.+</code> operator performs point-wise addition of two matrices and finally,
+  the <code>/|</code> operator is a point-wise division by a scalar value.</p>
+<p>However, we're looking at the example to understand F# quotations. As you can see,
+  the entire function is wrapped inside the <code>&lt;@@ ... @@&gt;</code> operator. 
+  This tells the compiler to compile the body as a quotation, which is a data structure
+  representing the code. This is also reflected in the type of the result. The type
+  is inferred as <code>Expr&lt;'T&gt;</code> where <code>'T</code> is the type
+  of the wrapped function that we implemented using lambda function syntax. When 
+  we get a value of this type, we cannot execute the function (because it was compiled
+  as a data structure, not as an executable code). We can use the <code>Raw</code>
+  property to get a value of non-generic type <code>Expr</code>, which can be
+  analyzed, translated to other language or processed in some other way. F# also
+  provides an operator <code>&lt;@@@@ ... @@@@&gt;</code> which gives us the 
+  untyped <em>raw</em> quotation directly.  </p>
+<p>Later in the article, we'll use quotations for translating F# code to code that's
+  executed on GPU using Accelerator. We'll take a quoted code that contains some 
+  understood functions and operators (such as <code>select</code> and <code>.+</code>)
+  and run some processing that gives us a function performing the same operation using GPU.
+  However, there is one more interesting thing when it comes to quotations. We can also
+  take a quotation of a standard F# function when it is marked with the 
+  <code>ReflectedDefinition</code> attribute:</p>  
+<pre lang="fsharp">
+&gt; [&lt;ReflectedDefinition&gt;]
+  let blur input =
+    let sum = (shift input -1) .+
+      input .+ (shift input +1) 
+    sum /| 3.0f;;
+val blur : Matrix&lt;float32&gt; -&gt; Matrix&lt;float32&gt;
+</pre>
+<p>This time, we wrote a standard function named <code>blur</code>. As you can see, 
+  the inferred type signature is also a usual function. The interesting thing about
+  the listing is the use of <code>ReflectedDefinition</code>. When the compiler sees
+  this attribute, it compiles the function into an executable code and <em>in addition</em>
+  stores the quotation of the function. This means that when we later attempt to transform
+  code <code>&lt;@@@@ blur @@@@&gt;</code> using Accelerator, we'll be able to get 
+  the body of the <code>blur</code> function and translate it.</p>
+<p>This is a very interesting feature, because we can write an ordinary function
+  that calculates with the F# <code>Matrix</code> type. We can test and debug this
+  function, because it is standard executable function. When we know that the function
+  works correctly, we can take its quotation and run it more efficiently using
+  Accelerator.</p>
+
+<h2>Data-parallel Matrix operations</h2>
+<p>I mentioned that we can write our calculations as standard F# programs using
+  some well-known functions that are understood by a library that evaluates F# 
+  quotations using Accelerator. In this section, we'll discuss these <em>well-known
+  functions</em>. These functions implement similar functionality as Accelerator, 
+  but are implemented as standard F# functions using the generic <code>Matrix</code>
+  type. This means that we can test and debug the code easily in F#. In addition
+  to these <em>data-parallel</em> operations, the translator also allows us to use
+  a type representing quadruple of floats. In the next section, we'll start with 
+  this type.</p>
+
+<h3>Introducing the float4 type</h3>
+<p>The <code>float4</code> type is implemented in the files <code>Float4.fsi</code> and
+  <code>Float4.fs</code>. The first file defines the public interface and the second
+  one is an implementation file. The implementation follows the standard F# patterns
+  for implementing a numeric type (so if you'll need to implement your own numeric type,
+  this example could be a good starting point!) It starts by declaring the <code>Float4</code>
+  type and a type alias <code>float4</code>. Then it defines a module <code>Float4</code>
+  with various useful functions for working with values of the type. Finally, it implements
+  an intrinsic type extension that adds overloaded operators and uses functions from the
+  <code>Float4</code> module in the implementation. We'll introduce the type with a single
+  example:
+</p>
+<pre lang="fsharp">
+&gt; #r "FSharp.PowerPack.dll";;
+&gt; #load "Float4.fs";;
+&gt; open System.Drawing
+  open FSharp.Math;;
+
+&gt; let clr1 = float4(1.0f, 0.5f, 1.0f, 0.0f)
+  let clr2 = Float4.ofColor Color.Magenta;;
+val clr1 : Float4 = (1,0.5,1,0)
+val clr2 : Float4 = (1,1,0,1)
+
+&gt; let sum = List.sum [clr1; clr2];;
+val sum : Float4 = (2,1.5,1,1)
+ 
+&gt; sum / Float4.ofSingle(2.0f);;
+val it : Float4 = (1,0.75,0.5,0.5)
+</pre>
+<p>We start by loading the implementation of the type. Note that you may need to specify
+  the full path to the implementation file. Then we create two <code>float4</code> values.
+  The first one is initialized using <code>float4</code> function and the second one
+  is created from a color using one of the conversion functions. Once we have two values,
+  we sum them using <code>List.sum</code>. This is possible, because we provided an 
+  implementation of <code>INumeric</code> interface, so the F# runtime knows how to 
+  add values of our type. Finally, we divide the sum by 2.0f to get an average value.
+  As you can see, <code>float4</code> is perfect for representing images and we'll use
+  it exactly for this purpose shortly.</p>
+
+<h3>Using F# Matrix type</h3>
+<p>As I already mentioned, we're going to implement calculations using the F# 
+  <code>Matrix</code> type. This type is available in the F# PowerPack in the 
+  <code>Microsoft.FSharp.Math</code> namespace. We're going to use a generic version
+  of the type (the non-generic one simply stores values of type <code>float</code>).
+  We can work with it using numerous higher-order functions provided by the F# library:</p>
+<pre lang="fsharp">
+&gt; open Microsoft.FSharp.Math
+  module Matrix = Matrix.Generic;;
+
+&gt; let m1 = Matrix.init 4 4 (fun y x -&gt; float32(x*10 + y));;
+val m1 : Matrix&lt;float32&gt; = 
+  matrix [[0.0f; 10.0f; 20.0f; 30.0f]; [1.0f; 11.0f; 21.0f; 31.0f]
+          [2.0f; 12.0f; 22.0f; 32.0f]; [3.0f; 13.0f; 23.0f; 33.0f]]
+
+&gt; let m2 = m1 |> Matrix.map (fun v -&gt; sqrt(v));;
+val m2 : Matrix&lt;float32&gt; =
+  matrix [[0.0f; 3.1f; 4.4f; 5.4f]; [1.0f; 3.3f; 4.5f; 5.5f]
+          [1.4f; 3.4f; 4.6f; 5.6f]; [1.7f; 3.6f; 4.7f; 5.7f]]
+</pre>
+<p>We started by opening the namespace with various mathematical types and 
+  modules and by creating an alias for a module, which contains functions for working
+  with generic matrices. Then we use <code>Matrix.init</code> to initialize a 
+  matrix that contains floating-point number representing X and Y coordinates.
+  The function provided as an argument is called for each element to calculate
+  the initial element value. In the next step, we use the <code>Matrix.map</code>
+  function to calculate square root of every element in the matrix.</p>
+<p>This example isn't particularly complicated or interesting. However, we can use
+  it to demonstrate different approach for encoding matrix calculations. 
+  So far, we often used operations that calculate with individual elements of the
+  matrix (the <code>v</code> value inside <code>Matrix.map</code>) or with the 
+  individual coordinates (<code>x</code> and <code>y</code> in <code>Matrix.init</code>). 
+  This is the usual approach, but it can contain very complicated processing 
+  logic with coordinates or values as inputs. This would make translating the 
+  code to GPU code difficult, because the constructs we can use on GPUs are in 
+  many ways limited. In the next section, we'll look at another way of writing
+  operations with matrices, which is more suitable for automatic translation 
+  to GPU code.</p>
+  
+<h3>Data-parallel matrix operations</h3>
+<p>In this section, we'll look at the functions from the <code>DataParallel</code>
+  module in <code>FSharp.Math</code> namespace. This is a functionality I implemented
+  (and you'll find download link at the end of the article). It mostly just re-implements
+  the operations that are available in Accelerator, but for the standard F# 
+  <code>Matrix</code> type, so that we can write standard F# code using data-parallel
+  operations.</p>
+<p>The general aspect of all the operations is that they never explicitly calculate
+  with coordinates or individual values stored in the matrix. They perform the same
+  operation on all elements of the matrix, which is the key aspect that makes
+  translation to GPU code (in our case, implemented using Accelerator) possible.
+  Let's first look how to implement the same functionality as in previous listing,
+  using operations from the <code>DataParallel</code> module:</p>  
+
+<pre lang="fsharp">
+&gt; #load @@"DataParallel.fs";;
+&gt; open FSharp.Math
+  open FSharp.Math.DataParallel;;
+
+&gt; let posX = positions 4 4 1
+  let posY = positions 4 4 0;;
+val posX : Matrix&lt;int&gt; = 
+  matrix [[0; 0; 0; 0]; [1; 1; 1; 1]
+          [2; 2; 2; 2]; [3; 3; 3; 3]]
+val posY : Matrix&lt;int&gt; = 
+  matrix [[0; 1; 2; 3]; [0; 1; 2; 3]
+          [0; 1; 2; 3]; [0; 1; 2; 3]]
+
+&gt; let m1Ints = posX *| 10 .+ posY
+  let m1 = Conversions.singleOfInt m1Ints;;
+val m1 : Matrix&lt;float32&gt; = 
+  matrix [[0.0f; 10.0f; 20.0f; 30.0f]; [1.0f; 11.0f; 21.0f; 31.0f]
+          [2.0f; 12.0f; 22.0f; 32.0f]; [3.0f; 13.0f; 23.0f; 33.0f]]
+
+&gt; let m2 = pointwiseSqrt m1;;
+val m2 : Matrix&lt;float32&gt; = 
+  matrix [[0.0f; 3.1f; 4.4f; 5.4f]; [1.0f; 3.3f; 4.5f; 5.5f]
+          [1.4f; 3.4f; 4.6f; 5.6f]; [1.7f; 3.6f; 4.7f; 5.7f]]
+</pre>
+<p>The listing starts by loading the file with the implementation (later we'll use it 
+  in a project, so you can reference the library or include the file in your project) and
+  by opening the necessary namespaces. Then we start creating the matrix with numbers
+  corresponding to coordinates.</p>
+<p>As the first step, we use the <code>positions</code> function. First two arguments
+  specify the required dimensions (4x4 in our case). The function initializes a new
+  matrix of this size filled with X or Y coordinates (represented as integers) depending
+  on the last argument. As you can see, we called it twice. In the first command, we
+  initialize values with X coordinates - note that all column vectors of the matrix 
+  all the same. In the second case, we initialize matrix with Y coordinates and all the
+  row vectors are the same. </p>
+<p>Now we have matrices to start with, so we can create more complicated matrices 
+  by performing point-wise operations with the initial ones. We start by multiplying
+  values of <code>posX</code> by a scalar value using operator <code>*|</code> (there
+  are similar operators for adding scalar <code>+|</code> and others). Then we add
+  the result with the <code>posY</code> matrix using point-wise addition <code>.+</code>
+  (again, there are similar operators such as <code>./</code> and <code>.*</code>).</p>
+<p>On the next line, we convert the type from <code>Matrix&lt;int&gt;</code> to 
+  <code>Matrix&lt;float32&gt;</code> using a function from the <code>DataParallel.Conversions</code>
+  module (you can find other conversion functions in the source code). Now we 
+  get exactly the same result as in the earlier example that used <code>Matrix.init</code>.
+  As the last step, we use the <code>pointwiseSqrt</code> function, which calculates
+  square root of each element in the matrix.</p>
+<p>As you can see, getting the first matrix was a bit more complicated, because
+  we have a limited set of matrices to start with. We used the <code>positions</code>
+  function to get matrices with coordinates as values. Other useful starting points
+  are constants. The library offers numerous constant matrices such as <code>zerof</code> 
+  (containing 0.0f) and others, or you can use the <code>matrixConstant</code> function.
+  On the other hand, calculating square root is a bit simpler, because we have a point-wise
+  function that operates over matrices. However, the most notable thing about the
+  code is that we never needed to explicitly work with individual elements or 
+  with coordinates. This raises the level of abstraction and hides the implementation
+  of operations (which makes it possible to accelerate the code using GPU).</p>  
+
+<h2>Implementing data-parallel rotation</h2>
+<p>Now that we've seen how to write some basic operations with matrices using data-parallel
+  functions, let's look at a more interesting example. In this section, we'll implement
+  a simple version of rotation of an image (the rotated photo of Prague in the introduction
+  was generated by this algorithm). We'll also explore some more functions from the
+  <code>DataParallel</code> module. In the next section, we'll look how to run the function
+  on GPU (which is also a reason why the declaration is marked with the 
+  <code>ReflectedDefinition</code> attribute).</p>
+<pre lang="fsharp">
+[&lt;ReflectedDefinition&gt;]
+let rotateImage s c w h whalf hhalf (data:Matrix&lt;float4&gt;) =
+  // Initialize arrays with X and Y coordinates of a bitmap 
+  // and convert numbers to mid-image coordinates
+  let posX = (Conversions.singleOfInt (positions w h 0)) -| whalf
+  let posY = (Conversions.singleOfInt (positions w h 1)) -| hhalf
+    
+  // Calculate rotated coordinates 
+  let rotatedX = posX *| c .- posY *| s
+  let rotatedY = posY *| c .+ posX *| s
+  
+  // Convert back to corner coordinates.
+  let posX = rotatedX +| whalf
+  let posY = rotatedY +| hhalf
+
+  // Calculate X and Y indices and get values at indices  
+  // Note: We'll implement version wiht smoothing later!
+  let indX = Conversions.intOfSingle posX
+  let indY = Conversions.intOfSingle posY
+  gather data indX indY
+</pre>
+<p>We start with the matrices created by the <code>positions</code> function,
+  but we immediately subtract a half of the width or height respectively. This
+  way we get coordinates relatively to the center of the image. The values 
+  <code>whalf</code> and <code>hhalf</code> are passed as parameters to the 
+  function, because they will be calculated in advance on the CPU. Inside the
+  <code>rotateImage</code> function, we perform only data-parallel operations
+  on matrices, so that it can be executed on Accelerator using quotations.</p>
+
+<p>Once we have the matrices with coordinates (<code>posX</code> and <code>posY</code>),
+  we rotate the coordinates. The result will be two matrices (<code>rotatedX</code> 
+  and <code>rotatedY</code>) of the same size. These matrices contain the rotated
+  coordinates. This means that if we have some <code>x</code> and <code>y</code>,
+  we can get the coordinates <code>x', y' = rotatedX.[x, y], rotatedY.[x, y]</code>.
+  If we then perform a lookup into the original image <code>data.[x', y']</code>,
+  we'll get the pixel at the specified <code>x, y</code> location after the rotation.</p>  
+  
+<p>To calculate the rotated coordinates, we use sine and cosine of the required
+  angle. These two values are also calculated in advance on the CPU and are
+  passed as parameters (<code>c</code> and <code>s</code>) to our function. We
+  calculate the coordinates using point-wise addition and subtraction and using
+  the multiplication by scalar value. After calculating the rotated values, 
+  we also convert the coordinates back to the corner coordinates, so that
+  we can perform the lookup in the source image (<code>data</code>).</p>
+  
+<p>The last block of code in the function implements the lookup. We first convert
+  the rotated coordinates to exact locations (in integers). Then we use a 
+  <code>gather</code> function, which is a data-parallel version of lookup
+  operation. It takes a source matrix (<code>data</code>) and a pair of matrices
+  with X and Y coordinates (<code>indX</code> and <code>indY</code>). For each
+  position in these two matrices, it finds the value at specified location in
+  the source matrix and returns it as an element of the result. If we wanted to
+  write this operation in F#, we'd calculate the result for each element using
+  the following equation: <code>res.[y, x] = data.[indY.[y, x], indX.[y, x]]</code>.
+</p>  
+<p>Understanding the code for the rotation isn't easy for the first time. You 
+  can also find some useful information in the documentation for Accelerator, 
+  which explains the operations like <code>gather</code> in more details. However,
+  once you understand the code, you'll be surprised by its elegance.</p>
+  
+<h3>Running rotation on CPU</h3>
+<p>Now we have the core part of the rotation algorithm. We wrote a function that
+  takes some pre-computed parameters and an input image represented as a matrix
+  of type <code>Matrix&lt;float4&gt;</code> and returns a rotated image of the
+  same matrix type. We start by calling this function from an ordinary F# code
+  running on CPU and later we'll look how to run this function using Accelerator.</p>
+<p>We'll first load the input bitmap and implement a utility higher-order function that will be useful for both
+  CPU and GPU versions. It takes an actual function that performs the rotation as 
+  the first parameter. The second parameter and the return type are the same
+  and contain the rotated image and the desired angle (<code>Matrix&lt;float4&gt; * float</code>).</p>  
+<pre lang="fsharp">
+let bmp = Bitmap.FromFile(Application.StartupPath+"\\prague.jpg") :?> Bitmap   
+let data = bmp |> Conversions.matrixOfBitmap Float4.ofColor
+
+/// Performs pre-computation of sin and cos values and then
+/// invokes the rotation function passed as the first parameter
+let rotationStep invokeRotation (_, angle) =    
+  let angle = if (angle >= 359.0) then 0.0 else (angle + 1.0)
+  let angleRad = Math.PI / 180.0 * angle
+  let (s, c) = float32(Math.Sin(angleRad)), float32(Math.Cos(angleRad))      
+  let (w, h) = (bmp.Width, bmp.Height)
+  (invokeRotation s c w h (w / 2) (h / 2), angle)
+</pre>  
+<p>We start by loading a bitmap from the application startup folder and then
+  convert it to a matrix using one of the utility functions from the 
+  <code>Conversions</code> module. This conversion uses a specified function
+  to convert individual pixels to the target type of matrix elements, so we
+  use <code>Float4.ofColor</code> to convert colors to values of type <code>float4</code>.</p>
+<p>The <code>rotationStep</code> function first calculates a new angle (incremented by 1).
+  Then it converts the angle to radians and pre-computes values that are passed
+  to the actual rotation function (sine and cosine of the angle, half of width and 
+  height of the bitmap). Once we have all the pre-computed values, we invoke
+  the specified rotation function and return the result together with the new
+  angle value as the new state. </p>
+<p>The last step that we need to do now is to call <code>rotationStep</code>
+  with the first parameter specifying the rotation function running on CPU.
+  If we specify only the first parameter, we'll get a function that calculates
+  a new state (bitmap and angle) from the previous step (bitmap and angle).
+  We'll use a form similar to the one we used when showing the Game of Life to
+  run the function iteratively and display the result after each step:
+  </p>  
+<pre lang="fsharp">
+let run = rotationStep (fun sn cs wid hgt widhalf hgthalf -&gt;
+  rotateImage sn cs wid hgt widhalf hgthalf data)
+let toBitmap = fst >> Conversions.bitmapOfMatrix Float4.toColor  
+DrawingForm.Run((data, 0.0), run, toBitmap)
+</pre>
+<p>The first parameter of the form is an initial state. The second parameter is a
+  function that calculates a new state from the previous one. Finally, the last
+  parameter is a function that converts the current state (<code>Matrix&lt;float4&gt; * float</code>)
+  to a bitmap that can be drawn on the form. We create this function using function
+  composition. We first take the first element of the tuple (a matrix) and 
+  then convert it to bitmap using the <code>bitmapOfMatrix</code> function.</p>
+
+<h2>Accelerating data-parallel F#</h2>
+<p>You're probably reading this article to learn how to run computations more
+  efficiently on GPU or multi-core CPU, but we're almost at the end of the article
+  and I didn't write a single word on this topic! Don't be disappointed. Actually,
+  all we did in the article so far was a preparation that makes running the code
+  using Accelerator surprisingly easy!</p>
+<p>We wrote the <code>rotateImage</code> just using functions from the <code>DataParallel</code>
+  module and we marked the code using <code>ReflectedDefinition</code> attribute.
+  Now we can use a translator I implemented (which is available as a source
+  code download below). The translator evaluates quoted data-parallel code using
+  Accelerator, so we only need to invoke it:</p>
+<pre lang="fsharp">
+open FSharp.Accelerator
+open FSharp.Accelerator.EvalTransformation
+
+let target = new Microsoft.ParallelArrays.DX9Target()
+let processed = Accelerate.accelerate &lt;@@@@ rotateImage @@@@&gt;
+let runAcc =    
+  rotationStep (fun sn cs wid hgt widhalf hgthalf -&gt;
+    eval&lt;Matrix&lt;float4&gt;&gt; target processed
+      [ makeValue sn; makeValue cs; makeValue wid; makeValue hgt;  
+        makeValue widhalf; makeValue hgthalf; makeValue data ])
+
+let toBitmap = fst >> Conversions.bitmapOfMatrix Float4.toColor
+DrawingForm.Run((data, 0.0), runAcc, toBitmap)
+</pre>
+<p>The code is slightly more complicated than the version running on CPU, but 
+  it is still very simple. We first initialize an Accelerator target (in this
+  example, we'll run the code on GPU using the <code>DX9Target</code>). Then we 
+  run the <code>accelerate</code> function, which is a part of the translator.
+  It returns a new function which runs the function enclosed in quotations 
+  using Accelerator. As I already mentioned, thanks to the <code>ReflectedDefinition</code>
+  attribute, the translation function can also look inside the body of 
+  <code>rotateImage</code>.</p>
+<p>Once we have the accelerated function, we can use it inside the lambda function
+  specified as a parameter of <code>rotationStep</code>. We cannot invoke the <code>processed</code> 
+  function directly, because all the parameters and the result are encoded in some way.
+  Instead, we use the generic <code>eval</code> function, which takes the desired
+  type of result as a type parameter (in our case, we specify that it should return
+  a value of type <code>Matrix&lt;float4&gt;</code>). The first parameter is the
+  Accelerator target, the second parameter is the accelerated function to run and
+  finally, the last parameter is a list of arguments to the accelerated function.
+  We also need to turn all the parameters into a special value that the <code>eval</code>
+  function expects, which is done using the <code>makeValue</code> function.</p>
+
+<h2>Summary</h2>
+<p>In this article, we've seen how to work with the F# <code>Matrix</code> type
+  using data-parallel functions that duplicate the functionality available in 
+  Accelerator, but work with standard F# data types. The implementation of all the 
+  functions from the <code>DataParallel</code> module is a part of the project that
+  translates data-parallel F# code to Accelerator using F# quotations and you can 
+  get it from the list of downloads below. We've also seen a more complicated data-parallel
+  calculation when we looked at implementation of an image rotation.</p>
+<p>When we write a function using only primitives understood by the translator and
+  when we mark the function using <code>ReflectedDefinition</code>, the translator
+  can evaluate the function more efficiently using Accelerator (either using GPU
+  or multi-core CPU). However, we can still run the code as a standard F# code, 
+  which is very useful when testing and debugging.</p>
+<p>In this article, we looked only at the simplest implementation of rotation. When 
+  we used <code>gather</code> to find the location of a rotated pixel, we always
+  used just the nearest neighbor. We can get better results by collecting several
+  nearby pixels and interpolating the color depending on the fraction (because the
+  desired location may be for example [121.3f, 35.8f]. This better version is implemented
+  in the downloadable source code using the <code>interpolatef4</code> function, which
+  performs a linear interpolation between <code>float4</code> values.</p>
+<p>Finally, in this article we used the <code>EvalTransformation</code> module to 
+  translate the code from quotations to Accelerator. We didn't discuss the translation
+  architecture in details (we'll do that in the next article!). However, this module
+  processes quotations and evaluates the code using Accelerator at the same time.
+  This makes the source code easier to understand (the downloadable source code includes
+  only this module, so it should be fairly readable). However, a more efficient approach
+  is to process quotations and build a function that can be executed later. When we'd
+  want to rotate the image, we'd just invoke the function and we wouldn't have to 
+  analyze the code again. We'll look at this more efficient approach in the next
+  article.</p>
+
+<h2>Downloads and References<a name="accelfsh3links">&#160;</a></h2>  
+<ul>
+  <li><a href="/articles/accelerator-dataparallel/accelerator-dataparallel.zip">Download the source code</a> (ZIP, 1.09MB)</li>
+</ul>
+
+<ul>
+  <li>[1] <a type="external" href="http://research.microsoft.com/pubs/70250/tr-2005-184.pdf">Accelerator: Using Data Parallelism to Program GPUs for General-Purpose Uses</a> - Microsoft Research</li>
+  <li>[2] <a type="external" href="http://research.microsoft.com/en-us/projects/Accelerator/">Accelerator Project Homepage</a> - Microsoft Research</li>
+  <li>[3] <a type="external" href="http://connect.microsoft.com/acceleratorv2">Microsoft Research Accelerator v2</a> - Microsoft Connect</li>
+  <li>[4] <a type="external" href="http://blogs.msdn.com/satnam_singh/archive/2009/12/15/gpgpu-and-x64-multicore-programming-with-accelerator-from-f.aspx">GPGPU and x64 Multicore Programming with Accelerator from F#</a> - Satnam Singh's blog at MSDN</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-dataparallel.aspx%2f&amp;text=Accelerator+and+F%23+(III.)%3a+Data-parallel+programs+using+F%23+quotationsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-dataparallel.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-dataparallel.aspx%2f&title=Accelerator+and+F%23+(III.)%3a+Data-parallel+programs+using+F%23+quotations">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Accelerator%20and%20F%23%20(III.)%3a%20Data-parallel%20programs%20using%20F%23%20quotations&body=%20We%20already%20discussed%20how%20to%20write%20programs%20that%20run%20on%20GPU%20using%20MSR%20Accelerator.%20In%20this%20article%2c%20we%27ll%20write%20an%20image%20rotation%20using%20data-parallel%20F%23%20functions%20and%20then%20use%20a%20library%20that%20translates%20it%20to%20Accelerator%20automatically.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2faccelerator-dataparallel.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 4 January 2010, 12:50 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/accelerator/">accelerator</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/math-and-numerics/">math and numerics</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

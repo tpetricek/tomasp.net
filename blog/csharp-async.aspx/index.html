@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Asynchronous Programming in C# using Iterators - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article we will look how to write programs that perform asynchronous operations like manipulation with network in C# using iterators without the typical inversion of control caused by the use of delegates." />
+  <meta name="keywords" content="c#, parallel, asynchronous, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Asynchronous Programming in C# using Iterators" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/csharp-async.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article we will look how to write programs that perform asynchronous operations like manipulation with network in C# using iterators without the typical inversion of control caused by the use of delegates." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Asynchronous Programming in C# using Iterators" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article we will look how to write programs that perform asynchronous operations like manipulation with network in C# using iterators without the typical inversion of control caused by the use of delegates." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Asynchronous Programming in C# using Iterators",
+    "headline": "Asynchronous Programming in C# using Iterators",
+  	"description": " In this article we will look how to write programs that perform asynchronous operations like manipulation with network in C# using iterators without the typical inversion of control caused by the use of delegates.",
+  	"url": "http://tomasp.net/blog/csharp-async.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-11-15T03:08:35.0000000",
+  	"datePublished": "2007-11-15T03:08:35.0000000",
+    "dateModified": "2007-11-15T03:08:35.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/csharp-async.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["c#", "parallel", "asynchronous",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Asynchronous Programming in C# using Iterators</h1>
+<p>In this article we will look how to write programs that perform asynchronous operations without 
+  the typical inversion of control. To briefly introduce what I mean by 'asynchronous' and 
+  'inversion of control' - asynchronous refers to programs that perform some long running operations 
+  that don't necessary block a calling thread, for example accessing the network, calling web services 
+  or performing any other I/O operation in general. The inversion of control refers to the code structure 
+  that you have to use when writing a code that explicitly passes a C# delegate as a callback to the
+  asynchronous method (typically called <code>Begin<em>Something</em></code> in .NET). The asynchronous method
+  calls the delegate when the operation completes, which reverses the way you write the code - instead of
+  encoding the control flow using typical language constructs (e.g. <code>while</code> loop) you have to 
+  use global variables and write your own control mechanism.</p>
+<p>The funny thing about this article is that it could have been written at least 3 years ago when
+  a beta version of Visual Studio 2005 and C# 2.0 became first available, but it is using iterators in 
+  a slightly bizarre way, so it is not easy to realize that this is possible. Actually, I will use some C# 3.0
+  methods in the article as well, but only extension methods and mainly just to keep the code nicer. As with 
+  my earlier article about building LINQ queries at runtime, I realized that it can be done in C# when I was playing with 
+  the F# solution (called F# Asynchronous Workflows), where this approach is very natural, so I will shortly
+  mention the F# implementation as well.</p>
+
+<h2>Introduction</h2>
+<p>Let's first look how we can write a code that uses asynchronous operations using the usual 
+  techniques in C#. I'll shortly demonstrate both synchronous version, which is easy to write, and 
+  asynchronous version, which is efficient, because it doesn't block the thread (and in fact it 
+  should be used in all situations, because blocking a thread is very bad practice). After 
+  looking at C# solutions we'll look (very briefly) at F# Asynchronous Workflows [<a href="#csasyncrefs">1</a>, <a href="#csasyncrefs">2</a>, <a href="#csasyncrefs">3</a>], which
+  inspired the C# solution presented later in this article. The F# Asynchronous Workflows allow writing 
+  asynchronous code in a same way as you would write the synchronous version, 
+  but are executed in a non-blocking way.</p>
+<p>Let's start with a very simple example, which uses <code>HttpWebRequest</code> to download a 
+  page from the web and prints the downloaded HTML in a console window. The only asynchronous 
+  operation that we will use in the sample code is <code>GetResponse</code>, which has an asynchronous
+  alternative <code>BeginGetResponse</code>. In the samples below I'll use <code>StreamReader</code>
+  to get the HTML of the response which should be also done asynchronously, but unfortunately there
+  is no <code>BeginReadToEnd</code> method which we could easily use (I'll address this problem later 
+  in the article). The synchronous (blocking) version of the code looks like this:</p>
+
+<pre lang="csharp">
+static void DownloadSync(string url)
+{
+  WebRequest req = HttpWebRequest.Create(url);
+  WebResponse response = req.GetResponse();
+  Stream resp = response.Result.GetResponseStream();
+  using (var sr = new StreamReader(resp))
+    Console.WriteLine(sr.ReadToEnd());
+}
+</pre>
+<p>The code first creates <code>WebRequest</code> and then uses its <code>GetResponse</code> method
+  to get the response. This call connects to the server, which can take a long time, so it is a good
+  idea to use asynchronous <code>BeginGetResponse</code> method instead. The next example demonstrates
+  how the C# code using this method looks like:</p>
+
+<pre lang="csharp">
+static void DownloadAsync(string url)
+{
+  WebRequest req = HttpWebRequest.Create(url);
+  req.BeginGetResponse((ar) => {
+    WebResponse response = req.EndGetResponse(ar);
+    Stream resp = response.GetResponseStream();
+    using (var sr = new StreamReader(resp))
+      Console.WriteLine(sr.ReadToEnd());
+  }, null);
+}</pre>
+
+<p>Here, we're calling <code>BeginGetResponse</code>, which takes a delegate as an argument - the code
+  uses C# 3.0 anonymous functions (and you could also use C# 2.0 anonymous delegates), to create the delegate
+  without declaring a new method. Of course, in this simple case, the code doesn't look dramatically worse - 
+  it has only 2 additional lines and it adds some indentation, but try nesting 4 asynchronous calls and the
+  code will become very ugly. What's even worse, sometimes you may need to use constructs like <code>while</code>
+  loop which cannot be used in this programming style and instead you have to declare a few helper methods and
+  some global fields to keep the current state.</p>
+
+<p>In F#, you can use a feature called Asynchronous Workflows to overcome these difficulties. This feature
+  is already in details described in articles by Don Syme [<a href="#csasyncrefs">1</a>] and Robert Pickering [<a href="#csasyncrefs">2</a>, <a href="#csasyncrefs">3</a>], so I will not
+  go into details here. The previous C# code written in F# would look like following:</p>
+
+<pre lang="fsharp">
+let DownloadAsyncFSharp(url:string) =
+ async 
+  { let  req = WebRequest.Create(url)
+    let! rsp = req.GetResponseAsync()
+    use  stream = rsp.GetResponseStream()
+    use  sr = new StreamReader(stream)
+    do   Console.WriteLine(sr.ReadToEnd())  }</pre>
+
+<p>The important thing about this code is that it is written in a same way as synchronous code, but
+  it executes asynchronously - it is actually a more general language feature, so the specific asynchronous 
+  behavior is controlled by the <code>async</code> value which introduces the code block wrapped in curly braces.
+  You can see that the call to <code>GetResponseAsync</code> (which is an extension method added by the F#
+  library) is done using <code>let!</code>, which is a place where the non-standard call is performed in any
+  code block in curly braces (these are called computation expressions in F#, and for those familiar with Haskell
+  are essentially the same thing as monads).</p>
+<p>When the code starts executing it runs on some thread (let's say on a thread from .NET thread pool) until it
+  gets to a <code>GetResponseAsync</code>. This method returns a value which represents the operation, which
+  should be performed (in this case the fact that <code>BeginGetResponse</code> should be called) and gives this
+  to some function associated with the <code>async</code> value. This function takes this value (in F# it has a
+  type <code>Async&lt;WebResponse&gt;</code>) and a delegate that should be called when the operation completes - 
+  note that here the F# compiler automatically splits the code into a part that is executed before the call
+  done using <code>let!</code> and a part that will be executed after as a <em>continuation</em> and this second
+  part is given as a delegate to some special function which performs the call asynchronously. The following
+  code shows graphically how the code is divided into two parts - Here, the green part is first block of code 
+  that will be called and the violet block of code is a part that is compiled into a delegate (a continuation) 
+  that is given as an argument to the special function associated with the <code>async</code> value:</p>
+<pre>
+  <img src="/articles/csharp-async/continuations.png" alt="Code splitting when let! is used" />
+</pre>
+<p>So, once this special function is called it starts the asynchronous call and gives it a delegate that represents 
+  the rest of the computation expression. The special function then returns (without waiting for the result), and 
+  the thread is returned to a thread pool. Once the asynchronous operation completes, another thread is picked from 
+  a thread pool and the rest of the computation expression is executed on this thread.</p>
+<p>The interesting thing about the execution of the code is that <code>let!</code> creates a "hole" in the function
+  where the execution can be transferred to another thread. In the graphical representation the "hole" is indeed 
+  in a place where the function is divided into green and violet parts. In the next part of the article, you'll see that
+  <code>yield return</code> introduced in C# 2.0 lets us create similar "holes" in C# methods and that these 
+  can be used to emulate F# Asynchronous Workflows in C# (with relatively little loose of elegance).</p>
+
+<h2>Asynchronous Workflows in C#</h2>
+<p>Now, let's look how the same thing can be written in C# using iterators. All the following examples are using
+  a few library functions and types that I implemented and that can be downloaded at the end of the article. We will 
+  write any asynchronous method as a method which returns <code>IEnumerable&lt;IAsync&gt;</code>, which allows us to
+  use <code>yield return</code> in the body of the method. When we need to call primitive asynchronous method 
+  (like <code>GetResponseAsync</code>, which is an extension method added by my library to a <code>WebRequest</code>
+  type) we will get a result of type <code>Async&lt;...&gt;</code>, which represents the asynchronous operation and
+  has to be returned using <code>yield return</code> to force its execution. This causes the operation to be performed 
+  asynchronously and subsequently, the rest of the method will be executed (possibly on a different thread) and the 
+  return value will become available as a property called <code>Result</code> of the <code>Async&lt;...&gt;</code> value.</p>
+<pre lang="csharp">
+static IEnumerable&lt;IAsync&gt; DownloadAsync(string url)
+{
+  WebRequest req = HttpWebRequest.Create(url);
+  Async&lt;WebResponse&gt; response = req.GetResponseAsync();
+  yield return response;
+
+  Stream resp = response.Result.GetResponseStream();
+  Async&lt;string&gt; html = resp.ReadToEndAsync().ExecuteAsync&lt;string&gt;();
+  yield return html;
+
+  Console.WriteLine(html.Result);
+}
+</pre>
+<p>In this example we declared a method with the return type mentioned above, which first creates web request
+  (using <code>HttpWebRequest.Create</code>) and then calls extension method <code>GetResponseAsync</code>, which 
+  returns a value of type <code>Async&lt;WebResponse&gt;</code>. This value doesn't yet contain a response and 
+  instead just represents a computation that can be executed asynchronously. Later, this value is returned using
+  <code>yield return</code>, which transfers the control to some code that executes the asynchronous method in
+  a special way (we will shortly see how the <code>DownloadAsync</code> method can be invoked) and this code 
+  executes the operation asynchronously, which means that the calling thread can continue with executing other
+  computations (when the method was just spawned without waiting for the result), or is returned to a thread pool.</p>
+<p>Later in the code, we use the <code>ReadToEndAsync</code> extension method which is again defined as an extension
+  method in my library - this method replaces the use of synchronous <code>StreamReader</code> with an asynchronous
+  version, which is an issue that I mentioned in the introduction. This method itself is defined as asynchronous using
+  the described technique and has a type <code>IEnumerable&lt;IAsync&gt;</code>. In this example, we want to execute
+  it asynchronously as part of a larger asynchronous computation, but our code can't continue before the <code>ReadToEndAsync</code>
+  method completes. This means that we need to call the method in a way in which it returns a value of type 
+  <code>Async&lt;...&gt;</code>, which is how we represent waiting for a result of an asynchronous operation. Luckily,
+  there is <code>ExecuteAsync</code> extension method, which can be used to do this (this is an important method
+  that I will discuss in a deeper detail later). </p>
+
+<p>Let's now look at the final part of the example - when executing asynchronous operations, we can either spawn it
+  and don't wait for the result, which is sometimes useful, but more usual situation is when we need to perform multiple
+  asynchronous operations in parallel and wait until all of them complete. This is also a situation where the asynchronicity
+  is important, because we don't want to run every operation on a single thread to get better parallelism and this approach 
+  can be also used for tasks that mix CPU-intensive and I/O intensive operations. The following example demonstrates the
+  second case - executing several downloads in parallel:</p>  
+<pre lang="csharp">
+static IEnumerable&lt;IAsync&gt; DownloadAll()
+{
+  // Create an asynchronous computation by running a 
+  // bunch of asynchronous workflows in parallel
+  Async&lt;Unit&gt; methods = Async.Parallel(
+    DownloadAsync("http://www.microsoft.com"),
+    DownloadAsync("http://www.google.com"),
+    DownloadAsync("http://www.apple.com"),
+    DownloadAsync("http://www.novell.com"));
+  yield return methods;
+  Console.WriteLine("All pages downloaded!");
+}
+
+// Run the 'DownloadAll' method and wait until it completes
+static void Asynchronous()
+{
+  DownloadAll().ExecuteAndWait();
+}
+</pre>
+<p>In the first method (<code>DownloadAll</code>) we're again implementing a new asynchronous method and the only thing that
+  the method does is that it uses <code>Async.Parallel</code> to combine several primitive asynchronous operations into
+  one asynchronous operation (represented using our well known <code>Async&lt;...&gt;</code> type). Since the methods just
+  execute and don't return any result, we're using a type called <code>Unit</code>, which is a type representing C# <code>void</code>,
+  but with adding some flexibility - the <code>void</code> type can't be used in a way we need it here, so the result of
+  the asynchronous operation is not interesting, we however still need to call <code>yield return</code> to force execution
+  of the operation. Finally, in the second method we use very simple extension method called <code>ExecuteAndWait</code>, which
+  as you would expect, executes asynchronous method that we defined (i.e. a method with return type <code>IEnumerable&lt;IAsync&gt;</code>)
+  and waits until the operation completes - even in this trivial example the operation performs several downloads in parallel, 
+  so there is still an advantage in executing the operation asynchronously.</p>
+
+<h2>How Does it Work?</h2>
+<p>Before looking at some more examples, I'll try to comment a little bit how the code in C# actually executes. 
+  First of all, why is the code using <code>IEnumerable&lt;IAsync&gt;</code> when there is no iteration over collections
+  (and also no matching <code>foreach</code> loop). The reason is that the C# 2.0 compiler compiles the code of iterator in
+  a way that allows us calling the <code>MoveNext</code> method of the generated iterator from another object and
+  the code in the iterator executes lazily just by moving to the next <code>yield return</code> during every call to the
+  <code>MoveNext</code> method (slightly more technical explanation that you can safely skip is that the code is compiled into 
+  a state machine where every <code>yield return</code> represents a state and <code>MoveNext</code> performs a state transition).</p>
+<p>Once we have an iterator written like this, the underlying library which manages invocation of these methods can start executing
+  the code in the method (by calling <code>MoveNext</code>) and the execution will stop after a value is returned from the
+  method using <code>yield return</code>. This then returns an object (usually <code>Async&lt;...&gt;</code>, but in general any
+  object implementing <code>IAsync</code> interface), which represents the asynchronous operation. This basically means that
+  the object just knows what .NET <code>Begin<em>Something</em></code> method it should execute. Once this object is returned
+  the underlying library asks the object to execute the <code>Begin<em>Something</em></code> method and tells it that when
+  the method completes it should again call <code>MoveNext</code> to proceed to another primitive asynchronous operation
+  used in our asynchronous method.</p>
+<p>In the previous example we have used the <code>ExecuteAndWait</code> method to run the asynchronous computation - 
+  when you look at the code, you can see that asynchronous methods have return type <code>IEnumerable&lt;IAsync&gt;</code>,
+  which means that this is a type that we're using for representing asynchronous computations. When you call an 
+  asynchronous method the code immediately returns this type without stepping into the user code in the method, 
+  because C# 2.0 iterators are executed lazilly, so we just get an object that represents our computation and that can 
+  be further executed by the underlying library. The type is just an interface (<code>IEnumerable&lt;IAsync&gt;</code>),
+  so we're using a new C# 3.0 feature here, called <em>extension methods</em>, which allows us to call static method
+  <code>ExecuteAndWait</code> taking this interface as a first argument using a much nicer dot-notation. This method
+  then starts executing the code asynchronously, but it blocks the calling thread until the operation completes. This 
+  makes sense only when the method is executing some operations in parallel, otherwise there wouldn't be any benefit from
+  writing the method as asynchronous, however in more real-world situations you'll typically use similar extension
+  method called <code>Execute</code>, which just spawns the computation on a thread pool thread and immediately returns,
+  so the caller thread can be used for other tasks. Finally, there is also <code>ExecuteAsync</code> extension
+  method, which is useful when calling asynchronous method from another asynchronous method and which will be discussed 
+  further.</p>
+
+<h2>Calling Async Methods</h2>
+<p>The last topic that I want to discuss in this introduction is composability of the solution that I'm discussing in this article. 
+  This is indeed one of the most important aspects of any library, because writing a single asynchronous method
+  without the ability to easily call other asynchronous method wouldn't help us write clear code very much. If you 
+  have previous experiences with writing asynchronous code then you can tell that composability is a problem with 
+  the current solutions. As I mentioned in the introduction, the problem is inversion of control which makes it very
+  hard to encode any control flow in the code.</p>
+<p>In the example earlier I shortly mentioned the <code>ReadToEndAsync</code> method, which reads all data from a 
+  stream asynchronously and uses a <code>StreamReader</code> to convert the data to string, without blocking the thread, which
+  is a default <code>StreamReader</code> behavior. The method is actually implemented in the library, but it is using only
+  the features that I already described, so you can implement and call similar methods from your code as well. As any 
+  asynchronous method in this article, the method has return type <code>IEnumerable&lt;IAsync&gt;</code> and the implementation
+  looks like following:</p>
+<pre lang="csharp">
+public static IEnumerable&lt;IAsync&gt; ReadToEndAsync(this Stream stream)
+{
+  MemoryStream ms = new MemoryStream();
+ 
+  // Read bytes from the stream asynchronously and copy
+  // them to a memory stream until the Read returns 0 bytes. 
+  int read = -1;
+  while (read != 0)
+  {
+    byte[] buffer = new byte[1024];
+    Async&lt;int&gt; count = stream.ReadAsync(buffer, 0, 1024);
+    yield return count;
+
+    ms.Write(buffer, 0, count.Result);
+    read = count.Result;
+  }
+  
+  // Seek to the beginning of the stream and read string
+  ms.Seek(0, SeekOrigin.Begin);
+  string s = new StreamReader(ms).ReadToEnd();
+
+  // Return the read string using 'Result'
+  yield return new Result&lt;string&gt;(s);
+}
+</pre>
+<p>The first interesting thing about this method is that it uses quite complex control structure - a <code>while</code>
+  loop to implement the asynchronous method. Indeed, when the code is executing asynchronously, each iteration of the loop
+  can be executed on another thread, because there is a <code>yield return</code> inside the loop, which represents
+  an asynchronous operation, which is executed in a non-blocking way and after that the rest of the method is started on 
+  a new thread pool thread. Technically speaking, we're leveraging of the tricks that the C# 2.0 compiler does to when 
+  it compiles a code that uses <code>while</code> loop to an iterator that can be invoked step-by-step using the 
+  <code>MoveNext</code> method.</p>
+<p>The second interesting aspect of this method is that it returns a string as a result - unfortunately, this is not
+  as easy as it should be. The problem here is that the return type of the method has to be <code>IEnumerable&lt;IAsync&gt;</code>,
+  meaning that the signature of the method doesn't include the return type. Also, we can't use <code>return</code> statement,
+  because the method is implemented as a C# 2.0 iterator, so instead we use <code>yield return</code> and a special class
+  called <code>Result</code>, which allows us to return a result from an asynchronous method. The underlying framework knows
+  this type, so we'll be able to call the method and access the result later.</p>
+<p>The method <code>ReadToEndAsync</code> is declared as an extension method (notice that there is a <code>this</code>
+  keyword before the first parameter), which means that it can be invoked using dot-notation on any stream. The following
+  code (taken from an asynchronous method demonstrated earlier) shows how this call can be performed:</p>
+<pre lang="csharp">
+Stream resp = response.Result.GetResponseStream();
+Async&lt;string&gt; html = resp.ReadToEndAsync().ExecuteAsync&lt;string&gt;();
+yield return html;
+Console.WriteLine(html.Result);
+</pre>
+<p>The purpose of the previous code snippet is to demonstrate how asynchronous methods (written as methods with return type
+  <code>IEnumerbale&lt;IAsync&gt;</code> can be called from another similarly declared asynchronous method. You can see that
+  in this sample we're calling <code>ReadToEndAsync</code> method declared earlier and to call it we're using extension method
+  <code>ExecuteAsync</code>, which produces a value of type <code>Async&lt;...&gt;</code>, which is a type that we've been 
+  using during the whole article to represent primitive asynchronous operation. In this case, we know that the method
+  returns a string, so we give it a <code>string</code> as a type argument, to specify the return type. Later, the primitive
+  asynchronous operation is evaluated using <code>yield return</code> and the result can be accessed using the <code>Result</code>
+  property.</p>
+  
+<h2>Summary</h2>
+<p>In this article we looked at very interesting way for implementing asynchronous operations in C# using iterators, which
+  is based on the approach used in F# Asynchronous Workflows (actually, this is based on a thing called <em>continuation monad</em> from languages like
+  Haskell, but I didn't want to make the code too scary!). The key point of this article is to demonstrate that C# iterators
+  can be used for implementing asynchronous operations without explicitly using delegates and event-driven programming style,
+  which makes it very difficult to encode the control flow of the code. I also implemented several methods that provide access
+  to basic .NET functionality in this way, so you can start playing with the library if you're writing asynchronous code.
+  As far as I'm concerned the performance of the code should be similar as a performance of the code written explicitly using
+  delegates, so the only possible problem with the code is that returning a result from a method has to be done without explicitly
+  mentioning the return type in the method signature as discussed in the article. On the other side the benefits of writing 
+  a code without inversion of control are obvious and the examples that we implemented in this article demonstrate them very well.</p>
+<p>Finally, I should mention that Jeffrey Richter's article in MSDN Magazine November 2007 issue [<a href="#csasyncrefs">4</a>] mentions 
+  some very similar concepts to the solution described in this article. He promises more details for the next issue, so 
+  I'm looking forward to reading about and learning from a similar project. My implementation is not related to Jeffreys project and
+  is instead taking many ideas from F# Asynchronous Workflows, where asynchronous code can be written more elegantly 
+  without "misusing" language features, which I to some point did in this article.</p>
+
+<h2>Downloads &amp; References<a name="csasyncrefs"></a></h2>
+<ul>
+  <li><a href="/articles/csharp-async/source.zip">Download the Library and Samples</a> (33 kB)</li>
+  <li>The source code is also available from <a href="http://www.codeplex.com/linqextensions" type="external">LinqExtensions project at CodePlex</a></li>
+</ul>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx" type="external">Introducing F# Asynchronous Workflows</a> - Don Syme's WebLog on F# and Other Research Projects</li>
+  <li>[2] <a href="http://www.strangelights.com/blog/archive/2007/09/29/1597.aspx" type="external">Concurrency in F# – Part I – The Asynchronous Workflow</a> - Robert Pickering's Strange Blog</li>
+  <li>[3] <a href="http://www.strangelights.com/blog/archive/2007/10/15/1599.aspx" type="external">Concurrency in F# - Understanding how Asynchronous Workflows Work</a> - Robert Pickering's Strange Blog</li>
+  <li>[4] <a href="http://msdn.microsoft.com/msdnmag/find/?type=Au&amp;phrase=Jeffrey%20Richter&amp;words=exact" type="external">Articles by Jeffrey Richter</a> - MSDN Magazine</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fcsharp-async.aspx%2f&amp;text=Asynchronous+Programming+in+C%23+using+Iteratorsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fcsharp-async.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fcsharp-async.aspx%2f&title=Asynchronous+Programming+in+C%23+using+Iterators">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Asynchronous%20Programming%20in%20C%23%20using%20Iterators&body=%20In%20this%20article%20we%20will%20look%20how%20to%20write%20programs%20that%20perform%20asynchronous%20operations%20like%20manipulation%20with%20network%20in%20C%23%20using%20iterators%20without%20the%20typical%20inversion%20of%20control%20caused%20by%20the%20use%20of%20delegates.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fcsharp-async.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Thursday, 15 November 2007, 3:08 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/parallel/">parallel</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

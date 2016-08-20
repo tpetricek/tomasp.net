@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Power of mathematics: Reasoning about functional types - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article, I explore the amazing relationship between functional data types and algebraic operations. We will use this relationship to reason about domain model and understand the differences between several possible representations." />
+  <meta name="keywords" content="f#, research, functional programming, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Power of mathematics: Reasoning about functional types" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/types-and-math.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article, I explore the amazing relationship between functional data types and algebraic operations. We will use this relationship to reason about domain model and understand the differences between several possible representations." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Power of mathematics: Reasoning about functional types" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article, I explore the amazing relationship between functional data types and algebraic operations. We will use this relationship to reason about domain model and understand the differences between several possible representations." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Power of mathematics: Reasoning about functional types",
+    "headline": "Power of mathematics: Reasoning about functional types",
+  	"description": " In this article, I explore the amazing relationship between functional data types and algebraic operations. We will use this relationship to reason about domain model and understand the differences between several possible representations.",
+  	"url": "http://tomasp.net/blog/types-and-math.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2013-05-14T17:54:00.0000000",
+  	"datePublished": "2013-05-14T17:54:00.0000000",
+    "dateModified": "2013-05-14T17:54:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/types-and-math.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["f#", "research", "functional programming",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">Power of mathematics</span><span class="hs"> Reasoning about functional types</span></h1>
+<img src="http://tomasp.net/articles/types-and-maths/distributivity.png" class="rdecor" />
+<p>One of the most amazing aspects of mathematics is that it applies to such a wide range
+of areas. The same mathematical rules can be applied to completely different objects
+(say, forces in physics or markets in economics) and they work exactly the same way.</p>
+<p>In this article, we'll look at one such fascinating use of mathematics - we'll use
+elementary school algebra to reason about functional data types.</p>
+<p>In functional programming, the best way to start solving a problem is to think about
+the data types that are needed to represent the data that you will be working with.
+This gives you a simple starting point and a great tool to communicate and
+develop your ideas. I call this approach <a href="http://tomasp.net/blog/type-first-development.aspx">Type-First Development and I wrote about
+it earlier</a>, so I won't repeat
+that here.</p>
+<p>The two most elementary types in functional languages are <em>tuples</em> (also called pairs
+or product types) and <em>discriminated unions</em> (also called algebraic data types, case
+classes or sum types). It turns out that these two types are closely related to
+<em>multiplication</em> and <em>addition</em> in algebra.</p>
+<h2>What do we know about types?</h2>
+<p>During a recent F# training in New York, I talked about modelling European stock
+options (a version of this example is also available <a href="http://www.tryfsharp.org/Learn/financial-computing#understanding-european-options">in Try F#</a>).
+The idea is that we want to model stock options - a stock option is either a primitive
+put or call option (meaning that we have a contract to buy or sell a commodity) and
+a combination of the two.</p>
+<p>As we talked about the problem, we tried a number of approaches and tried to find the
+most natural representation. Among others, we looked at the following two models:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Model #1: A stock option is either &#39;Put&#39; or &#39;Call&#39;</span>
+<span class="c">// or it is a combination of two other options</span>
+<span class="k">type</span> <span class="t">OptionPCC</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="p">Put</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="t">float</span> 
+  | <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="p">Call</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 4)" onmouseover="showTip(event, 'fs2', 4)" class="t">float</span>
+  | <span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="p">Combine</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">OptionPCC</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs5', 7)" onmouseover="showTip(event, 'fs5', 7)" class="t">OptionPCC</span>
+</code></pre></td>
+</tr>
+</table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Model #2: A stock option is either primitive European</span>
+<span class="c">// option (which is either put or call) or a combination</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs6', 8)" onmouseover="showTip(event, 'fs6', 8)" class="t">OptionKind</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="p">Put</span> | <span onmouseout="hideTip(event, 'fs8', 10)" onmouseover="showTip(event, 'fs8', 10)" class="p">Call</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs9', 11)" onmouseover="showTip(event, 'fs9', 11)" class="t">OptionEC</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs10', 12)" onmouseover="showTip(event, 'fs10', 12)" class="p">European</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 13)" onmouseover="showTip(event, 'fs6', 13)" class="t">OptionKind</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs2', 14)" onmouseover="showTip(event, 'fs2', 14)" class="t">float</span>
+  | <span onmouseout="hideTip(event, 'fs11', 15)" onmouseover="showTip(event, 'fs11', 15)" class="p">Combine</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs9', 16)" onmouseover="showTip(event, 'fs9', 16)" class="t">OptionEC</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="t">OptionEC</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Discussing which one is better (or easier to process) is one topic, but there is
+a more fundamental question. Do they represent the same thing, or does each of the
+types model slightly different domain? (You can probably look at the two types and
+think that they model, in fact, the same structure, but how do you know that?)
+I'll answer this question soon, but I first need to say a bit
+more about tuples and discriminated unions.</p>
+<h2>Product types and sum types</h2>
+<h3>Tuples aka product types</h3>
+<p>I mentioned that the two types are also called <em>product</em> and <em>sum</em> types, so let's look
+why. A tuple (product) is simply a type that groups together two or more values of
+(possibly) different types. In F#, we can define a type alias to give a name to a
+tuple:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs12', 18)" onmouseover="showTip(event, 'fs12', 18)" class="t">Point</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 19)" onmouseover="showTip(event, 'fs13', 19)" class="t">byte</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="t">byte</span>
+</code></pre></td>
+</tr>
+</table>
+<p>For simplicity, a point is simply a pair of bytes. Why is the type written using <code>*</code>?
+This should be easy to see with points - a byte here represents one axis from 0 to 256.
+A pair of bytes thus represents a 2D area of size 256*256. This means that the number
+of values that <code>Point</code> can have is the number of values <code>byte</code> can have squared. In
+other words, if <em>b</em> is the number of values:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig1.png" />
+</div>
+<h3>Unions aka sum types</h3>
+<p>Next, let's take a look at the second type. A <em>discriminated union</em> can be used to
+represent a choice between several options (a bit like enumeration). Let's say we
+need a type that can represent two cases - one case is that we have a <code>byte</code> value
+and the other is that the value is not set. In F# this can be done using the <code>option</code>
+type (<code>Maybe</code> in Haskell). A simplified version for bytes looks like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="t">ByteOption</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="p">Some</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs13', 23)" onmouseover="showTip(event, 'fs13', 23)" class="t">byte</span>
+  | <span onmouseout="hideTip(event, 'fs16', 24)" onmouseover="showTip(event, 'fs16', 24)" class="p">None</span> 
+</code></pre></td>
+</tr>
+</table>
+<p>How many possible values does <code>ByteOption</code> have? This is quite easy to count - for
+every value <code>b</code> of type <code>byte</code>, there is one value <code>Some(b)</code>, which gives us 256
+possible values. In addition, there is one special value <code>None</code>, so we get
+<em>256+1</em> possible values altogether. In other words:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig2.png" />
+</div>
+<p>In general, a <em>sum</em> type corresponds to the sum of the individual components. To relate
+this to the earlier geometrical analogy, you can think of a type that can represent
+256 positive byte values and 256 negative byte values (that is, 512 possible values
+altogether). This would be defined simply as:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs17', 25)" onmouseover="showTip(event, 'fs17', 25)" class="t">TwoRangeByte</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="p">Positive</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="t">byte</span>
+  | <span onmouseout="hideTip(event, 'fs19', 28)" onmouseover="showTip(event, 'fs19', 28)" class="p">Negative</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs13', 29)" onmouseover="showTip(event, 'fs13', 29)" class="t">byte</span>
+</code></pre></td>
+</tr>
+</table>
+<p>I'll extend the analogy between types and the <em>number of values</em> that a type can have
+a bit further. In F#, the <code>unit</code> type is a type that only has one possible value,
+written <code>()</code>. This means that it corresponds to <em>1</em> in mathematics. It also means that
+<code>None</code> case of <code>ByteOption</code> (that I discussed earlier) could also be written as
+<code>None of unit</code>.</p>
+<p>And a one brief side-note: A tuple consisting of <em>n</em> values of type <code>T</code> corresponds
+to the n<em>th</em> power of <code>T</code>. This encourages us to view <code>unit</code> as a tuple of zero elements,
+because <em>zeroth</em> power of any type is <em>1</em>.</p>
+<h2>Representing stock options</h2>
+<p>The correspondence between types and algebraic operations gives us a powerful way to
+reason about data types. Let's look how we can use it on our two representations of stock
+options starting with the latter version:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs6', 30)" onmouseover="showTip(event, 'fs6', 30)" class="i">OptionKind</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 31)" onmouseover="showTip(event, 'fs7', 31)" class="i">Put</span> | <span onmouseout="hideTip(event, 'fs8', 32)" onmouseover="showTip(event, 'fs8', 32)" class="i">Call</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>OptionKind</code> type is simply a choice between two alternatives (both can be seen as values
+of type <code>unit</code>, because they both have exactly one value). This means we can write them as:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig3.png" />
+</div>
+<p>The <code>OptionEC</code> type then contains <code>OptionKind</code> combined with <code>float</code> or two options:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs9', 33)" onmouseover="showTip(event, 'fs9', 33)" class="i">OptionEC</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs10', 34)" onmouseover="showTip(event, 'fs10', 34)" class="i">European</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 35)" onmouseover="showTip(event, 'fs6', 35)" class="i">OptionKind</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs2', 36)" onmouseover="showTip(event, 'fs2', 36)" class="i">float</span>
+  | <span onmouseout="hideTip(event, 'fs11', 37)" onmouseover="showTip(event, 'fs11', 37)" class="i">Combine</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs9', 38)" onmouseover="showTip(event, 'fs9', 38)" class="i">OptionEC</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs9', 39)" onmouseover="showTip(event, 'fs9', 39)" class="i">OptionEC</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This means that <code>OptionEC</code> is a choice (using the <code>+</code> operator) between two alternatives, one
+consisting of the <em>kind</em> and a floating-point value that I'll simply write as <em>f</em> and another,
+containing two options:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig4.png" />
+</div>
+<p>The first line directly corresponds to the <code>OptionEC</code> type. The second line simply expands
+the definition of <em>kind</em> shown earlier. Now, let's look at the second type:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 40)" onmouseover="showTip(event, 'fs5', 40)" class="i">OptionPCC</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs7', 41)" onmouseover="showTip(event, 'fs7', 41)" class="i">Put</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 42)" onmouseover="showTip(event, 'fs2', 42)" class="i">float</span> 
+  | <span onmouseout="hideTip(event, 'fs8', 43)" onmouseover="showTip(event, 'fs8', 43)" class="i">Call</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 44)" onmouseover="showTip(event, 'fs2', 44)" class="i">float</span>
+  | <span onmouseout="hideTip(event, 'fs11', 45)" onmouseover="showTip(event, 'fs11', 45)" class="i">Combine</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs5', 46)" onmouseover="showTip(event, 'fs5', 46)" class="i">OptionPCC</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs5', 47)" onmouseover="showTip(event, 'fs5', 47)" class="i">OptionPCC</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This is simply a choice (that is <code>+</code> operation) between two floating-point values and
+a combination consisting of product of two options. In the language of mathematics:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig5.png" />
+</div>
+<p>Now comes the important step. We have two equations that describe the two different types.
+The key thing is that fundamental algebraic laws (that hold about numbers) also hold about
+functional data types. We can use the <a href="http://en.wikipedia.org/wiki/Distributive_property">distributivity law</a>
+to show the following:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig6.png" />
+</div>
+<p>And that's all we need to show that the two representations of stock options represent, in fact,
+the same domain (and so we can freely choose which one to use, based on which we find more
+natural or easier to process - the key fact is that the choice does not matter for the program logic):</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig7.png" />
+</div>
+<h2>Representing contact details</h2>
+<p>Let's look at one more example - this time, we look at two possible representations of
+contact information. The example is inspired by <a href="http://fsharpforfunandprofit.com/posts/designing-with-types-discovering-the-domain/">the excellent F# for Fun and Profit
+article</a>.</p>
+<p>A type representing contact details may contain a phone number (for simplicity,
+represented as <code>int</code>) and an address (stored as <code>string</code>). One way to represent
+such information is to assume that both of the details are optional and use a
+record storing two <code>option</code> types:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs20', 48)" onmouseover="showTip(event, 'fs20', 48)" class="t">Contact1</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'fs21', 49)" onmouseover="showTip(event, 'fs21', 49)" class="i">Address</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs22', 50)" onmouseover="showTip(event, 'fs22', 50)" class="t">string</span> <span onmouseout="hideTip(event, 'fs23', 51)" onmouseover="showTip(event, 'fs23', 51)" class="t">option</span>
+    <span onmouseout="hideTip(event, 'fs24', 52)" onmouseover="showTip(event, 'fs24', 52)" class="i">Number</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs25', 53)" onmouseover="showTip(event, 'fs25', 53)" class="t">int</span> <span onmouseout="hideTip(event, 'fs23', 54)" onmouseover="showTip(event, 'fs23', 54)" class="t">option</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>The second representation we can use is a discriminated union that lists a number
+of options explicitly - a contact can have both address and phone number, or just
+one of these two:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs26', 55)" onmouseover="showTip(event, 'fs26', 55)" class="t">Contact2</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs27', 56)" onmouseover="showTip(event, 'fs27', 56)" class="p">AddressAndNumber</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs22', 57)" onmouseover="showTip(event, 'fs22', 57)" class="t">string</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs25', 58)" onmouseover="showTip(event, 'fs25', 58)" class="t">int</span>
+  | <span onmouseout="hideTip(event, 'fs28', 59)" onmouseover="showTip(event, 'fs28', 59)" class="p">Address</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs22', 60)" onmouseover="showTip(event, 'fs22', 60)" class="t">string</span>
+  | <span onmouseout="hideTip(event, 'fs29', 61)" onmouseover="showTip(event, 'fs29', 61)" class="p">Number</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs25', 62)" onmouseover="showTip(event, 'fs25', 62)" class="t">int</span>
+</code></pre></td>
+</tr>
+</table>
+<p>A record type is simply a tuple with named elements and so it also corresponds to
+<em>multiplication</em> (we could have used <code>(string option) * (int option)</code>, but I wanted
+to keep the sample more idiomatic). Recall our discussion about <code>option</code> types earlier -
+we said that this is just like adding one to the original type. Now, the second
+representation is simply a choice between three options, meaning that we will represent
+it using <code>+</code> over the three cases. Altogether, this means that the two types can be
+mathematically described as:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig8.png" />
+</div>
+<p>Now we can apply some more elementary school algebra on the first equation and expand
+the multiplication. This way we get the following (just like in mathematics <em>1 * 1 = 1</em> when
+we talk about types):</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/fig9.png" />
+</div>
+<p>Looking at the resulting equation, we can very clearly see that the two types are different.
+Moreover, the inequality also explains <em>how</em> they are different:</p>
+<div style="text-align:center;margin-bottom:10px;">
+<img src="http://tomasp.net/articles/types-and-maths/figa.png" />
+</div>
+<p>On the left-hand side, we have essentially a choice with four cases while on the
+right-hand side, we only have three cases. The cases are the same, so the only difference
+is additional <em>1</em> case on the left. This corresponds to the situation when none of the
+contact details are provided - this is something that we can represent only using the
+<code>Contact1</code> type (by writing <code>{ Address=None; Number=None}</code>).</p>
+<p>If we wanted to add this
+possibility to <code>Contact2</code>, we can do that quite easily - just add a case <code>NoContact</code> with
+no attributes, or use <code>Contact2 option</code> (because this also builds <em>c<sub>2</sub> + 1</em>).</p>
+<h2>Summary</h2>
+<p>I think that the main takeaway message from this article is that <strong>reasoning about
+functional types is easy</strong>. Most of the calculations that I showed in this blog post
+are easy to do in your head, without even writing any mathematics. But I wanted to make
+them explicit to show how they work in details.</p>
+<p>All of the standard algebraic laws such as <a href="http://en.wikipedia.org/wiki/Associative_property">associativity</a>,
+<a href="http://en.wikipedia.org/wiki/Distributive_property">distributivity</a> and <a href="http://en.wikipedia.org/wiki/Commutative_property">commutativity</a>
+correspond to simple operations that you can apply to your types when building a domain
+model. This gives you simple set of basic <em>refactorings</em> that work on <em>types</em> and help
+you design an easier to use model.</p>
+<p>I will stop here and limit myself to just basic laws and basic types, but one can
+go much further. The function type <code>T1 -&gt; T2</code> can be mathematically
+modelled as an exponentiation <em>T<sub>2</sub><sup>T<sub>1</sub></sup></em>. The interesting consequence
+of this is that (ignoring side-effects) <code>unit -&gt; T</code> is equivalent to just <code>T</code> (because <em>T<sup>1</sup>=T</em>)
+and that <code>T1 + T2 -&gt; T</code> is equivalent to <code>(T1 -&gt; T) * (T2 -&gt; T)</code> (using the
+<a href="http://mathworld.wolfram.com/ExponentLaws.html">exponent laws</a>).</p>
+<p>A bit more esoteric extension (that I reference mainly just for fun) is that you can
+also <em>differentiate</em> data types. There is a <a href="http://blog.lab49.com/archives/3011">fairly readable introduction</a>,
+but if you want to see the full details, check out this <a href="http://www.cs.nott.ac.uk/~txa/publ/jpartial.pdf">academic paper (PDF)</a>.</p>
+
+
+<div class="tip" id="fs1">union case OptionPCC.Put: float -&gt; OptionPCC</div>
+<div class="tip" id="fs2">Multiple items<br />val float : value:&#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float<br /><br />--------------------<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;</div>
+<div class="tip" id="fs3">union case OptionPCC.Call: float -&gt; OptionPCC</div>
+<div class="tip" id="fs4">union case OptionPCC.Combine: OptionPCC * OptionPCC -&gt; OptionPCC</div>
+<div class="tip" id="fs5">type OptionPCC =<br />&#160;&#160;| Put of float<br />&#160;&#160;| Call of float<br />&#160;&#160;| Combine of OptionPCC * OptionPCC<br /><br />Full name: Types-and-math.aspx.OptionPCC</div>
+<div class="tip" id="fs6">type OptionKind =<br />&#160;&#160;| Put<br />&#160;&#160;| Call<br /><br />Full name: Types-and-math.aspx.OptionKind</div>
+<div class="tip" id="fs7">union case OptionKind.Put: OptionKind</div>
+<div class="tip" id="fs8">union case OptionKind.Call: OptionKind</div>
+<div class="tip" id="fs9">type OptionEC =<br />&#160;&#160;| European of OptionKind * float<br />&#160;&#160;| Combine of OptionEC * OptionEC<br /><br />Full name: Types-and-math.aspx.OptionEC</div>
+<div class="tip" id="fs10">union case OptionEC.European: OptionKind * float -&gt; OptionEC</div>
+<div class="tip" id="fs11">union case OptionEC.Combine: OptionEC * OptionEC -&gt; OptionEC</div>
+<div class="tip" id="fs12">type Point = byte * byte<br /><br />Full name: Types-and-math.aspx.Point</div>
+<div class="tip" id="fs13">Multiple items<br />val byte : value:&#39;T -&gt; byte (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.byte<br /><br />--------------------<br />type byte = System.Byte<br /><br />Full name: Microsoft.FSharp.Core.byte</div>
+<div class="tip" id="fs14">type ByteOption =<br />&#160;&#160;| Some of byte<br />&#160;&#160;| None<br /><br />Full name: Types-and-math.aspx.ByteOption</div>
+<div class="tip" id="fs15">union case ByteOption.Some: byte -&gt; ByteOption</div>
+<div class="tip" id="fs16">union case ByteOption.None: ByteOption</div>
+<div class="tip" id="fs17">type TwoRangeByte =<br />&#160;&#160;| Positive of byte<br />&#160;&#160;| Negative of byte<br /><br />Full name: Types-and-math.aspx.TwoRangeByte</div>
+<div class="tip" id="fs18">union case TwoRangeByte.Positive: byte -&gt; TwoRangeByte</div>
+<div class="tip" id="fs19">union case TwoRangeByte.Negative: byte -&gt; TwoRangeByte</div>
+<div class="tip" id="fs20">type Contact1 =<br />&#160;&#160;{Address: string option;<br />&#160;&#160;&#160;Number: int option;}<br /><br />Full name: Types-and-math.aspx.Contact1</div>
+<div class="tip" id="fs21">Contact1.Address: string option</div>
+<div class="tip" id="fs22">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs23">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs24">Contact1.Number: int option</div>
+<div class="tip" id="fs25">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs26">type Contact2 =<br />&#160;&#160;| AddressAndNumber of string * int<br />&#160;&#160;| Address of string<br />&#160;&#160;| Number of int<br /><br />Full name: Types-and-math.aspx.Contact2</div>
+<div class="tip" id="fs27">union case Contact2.AddressAndNumber: string * int -&gt; Contact2</div>
+<div class="tip" id="fs28">union case Contact2.Address: string -&gt; Contact2</div>
+<div class="tip" id="fs29">union case Contact2.Number: int -&gt; Contact2</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ftypes-and-math.aspx%2f&amp;text=Power+of+mathematics%3a+Reasoning+about+functional+typesvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ftypes-and-math.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ftypes-and-math.aspx%2f&title=Power+of+mathematics%3a+Reasoning+about+functional+types">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Power%20of%20mathematics%3a%20Reasoning%20about%20functional%20types&body=%20In%20this%20article%2c%20I%20explore%20the%20amazing%20relationship%20between%20functional%20data%20types%20and%20algebraic%20operations.%20We%20will%20use%20this%20relationship%20to%20reason%20about%20domain%20model%20and%20understand%20the%20differences%20between%20several%20possible%20representations.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ftypes-and-math.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 14 May 2013, 5:54 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Why type-first development matters - Tomas Petricek</title>
+
+  <meta name="description" content=" This article describes type-first development (TFD). A software development methodology that is quite common among functional programmers and uses types as a simple way of communicating ideas about program design." />
+  <meta name="keywords" content="functional, f#, research, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Why type-first development matters" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/type-first-development.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article describes type-first development (TFD). A software development methodology that is quite common among functional programmers and uses types as a simple way of communicating ideas about program design." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Why type-first development matters" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article describes type-first development (TFD). A software development methodology that is quite common among functional programmers and uses types as a simple way of communicating ideas about program design." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Why type-first development matters",
+    "headline": "Why type-first development matters",
+  	"description": " This article describes type-first development (TFD). A software development methodology that is quite common among functional programmers and uses types as a simple way of communicating ideas about program design.",
+  	"url": "http://tomasp.net/blog/type-first-development.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-08-16T00:21:21.0000000",
+  	"datePublished": "2012-08-16T00:21:21.0000000",
+    "dateModified": "2012-08-16T00:21:21.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/type-first-development.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "f#", "research",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Why type-first development matters</h1>
+<img src="http://tomasp.net/articles/type-first-development/tfd.png" class="rdecor" />
+
+<p>Using functional programming language changes the way you write code in a number
+of ways. Many of the changes are at a <em>small-scale</em>. For example, you learn how to express 
+computations in a shorter, more declarative way using higher-order functions.
+However, there are also many changes at a <em>large-scale</em>. The most notable one
+is that, when designing a program, you start thinking about the (data) types 
+that represent the data your code works with.</p>
+
+<p>In this article, I describe this approach. Since the acronym TDD is already taken,
+I call the approach Type-First Development (TFD), which is probably a better name anyway.
+The development is not <em>driven</em> by types. It <em>starts</em> with types, but the rest of the
+implementation can still use test-driven development for the implementation.</p>
+
+<p>This article demonstrates the approach using a case study from a real life: 
+My example is a project that I started working on with a friend who needed a 
+system to log journeys with a company car (for expense reports). Using the 
+type-first approach made it easier to understand and discuss the problem.</p>
+
+<p>In many ways, TFD is a very simple approach, so this article just gives a name
+to a practice that is quite common among functional and F# programmers (and 
+we have been <a href="http://functional-programming.net/courses/">teaching it at our F# trainings</a> for the last year).</p>
+
+<div style="clear:both;font-size:90%;border:1px solid #381400;background:#ded0b0;font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif; margin:10px 30px 30px 30px; padding:4px;">
+  <strong style="font-variant:small-caps">F# trainings offer</strong>&#160;&#160;&#160;
+  Learn more about the ideas discussed in this article in my F# and functional programming training. As a special offer for the readers of this blog, register by <a href="mailto:tomas@tomasp.net?subject=F%23 Trainings">emailing me directly</a> and get a <strong>20% discount</strong>. See <a href="http://tomasp.net/blog/events-autumn-2012.aspx">dates in October and November</a> for trainings in <strong>London</strong> and <strong>New York</strong>.</div>
+
+<h2>Preamble</h2>
+
+<p>Ideas for this article occurred to me when reading an interesting post 
+on <a href="http://www.tikalk.com/incubator/blog/type-driven-design">type driven design</a>.
+The article discusses quite different aspects of types, but it starts with an
+inspiring quote:</p>
+
+<blockquote>
+  <p>When writing code in a statically typed language sometimes types are 
+considered as orthogonal to the logic of the code. We write them to appease 
+the compiler, or get performance or IntelliSense &amp; navigation, but all of 
+these has no relation to the code itself.</p>
+
+  <p>This is wrong.</p>
+</blockquote>
+
+<p>How do I use types when writing code in F#? First of all, I use them as a
+useful notation for quickly and easily writing down ideas about program design
+and as a specification of a program. And I believe this is the case for many
+other F# programmers. In fact, this use of types is not limited to 
+<em>statically-typed languages</em>. I think it applies similarly to other functional
+langauges, although Scheme or LISP programmers would probably talk about
+<em>data structures</em> instead of <em>types</em>.</p>
+
+<h2>Case study: Journey log</h2>
+
+<p>Let's start the article with an example. As I said earlier, this is based on a real
+discussion that I had with a friend, so I will try to replay the discussion.
+I was writing the F# code as we discussed, but I did not know much about the domain.
+A friend understands the domain (and knows C# and some Haskell, but not F#, though
+I believe the F# code should be understandable to less technical people too).</p>
+
+<h3>Designing Journey log types</h3>
+
+<p>The purpose of the application is to calculate how expensive were various car 
+journeys, how much money was spent for different cars etc. However, the first
+question is, what data the application processes? 
+It needs to record date when a journey started, driver's name, total distance and, 
+most importantly, a list of refuelings. In F#, this can be written as the 
+following (record) type:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft13', 17)" onmouseover="showTip(event, 'ft13', 17)" class="i">Refueling</span> <span class="o">=</span> <span id="ftt14" onmouseout="hideTip(event, 'ft14', 18)" onmouseover="showTip(event, 'ft14', 18, document.getElementById('ftt14'))" class="omitted">(...)</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft15', 19)" onmouseover="showTip(event, 'ft15', 19)" class="i">Journey</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'ft16', 20)" onmouseover="showTip(event, 'ft16', 20)" class="i">Start</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft17', 21)" onmouseover="showTip(event, 'ft17', 21)" class="i">DateTime</span> 
+    <span onmouseout="hideTip(event, 'ft18', 22)" onmouseover="showTip(event, 'ft18', 22)" class="i">Driver</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft19', 23)" onmouseover="showTip(event, 'ft19', 23)" class="i">string</span>
+    <span onmouseout="hideTip(event, 'ft20', 24)" onmouseover="showTip(event, 'ft20', 24)" class="i">Distance</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 25)" onmouseover="showTip(event, 'ft7', 25)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 26)" onmouseover="showTip(event, 'ft3', 26)" class="i">km</span><span class="o">&gt;</span>
+    <span onmouseout="hideTip(event, 'ft21', 27)" onmouseover="showTip(event, 'ft21', 27)" class="i">Refueling</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft22', 28)" onmouseover="showTip(event, 'ft22', 28)" class="i">list</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft21', 29)" onmouseover="showTip(event, 'ft21', 29)" class="i">Refueling</span><span class="o">&gt;</span> }</pre>
+
+
+<p>At this point, we do not know what <code>Refueling</code> represents, but we could already
+define a type representing <code>Journey</code>. Note that I use a type <code>float&lt;km&gt;</code> for distance - 
+this is using F# <em>units of measure</em>, which make it possible to attach unit information
+to types (and check them at compile time), but it also serves as a useful documentation.</p>
+
+<p>The next question is, what information does the application have about refuelings?
+In other words, what is the declaration of the <code>Refueling</code> type. Here, the story is 
+more interesting:</p>
+
+<ul>
+<li>We can fill the tank (in which case we want to log the amount and the price)</li>
+<li>We can fill a canister (and we need to log the same information as in the previous point)</li>
+<li>We can use a canister (in which case we log everything except for a price)</li>
+</ul>
+
+<p>For all refuelings, we need to log the state of the total kilometer counter 
+(showing the total number of kilometers traveled so far in the car) and fuel
+(in some cars you can combine biodiesel and diesel, etc.) This leads us to the
+following F# type declarations:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft23', 30)" onmouseover="showTip(event, 'ft23', 30)" class="i">RefuelingKind</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'ft24', 31)" onmouseover="showTip(event, 'ft24', 31)" class="i">FillTank</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft6', 32)" onmouseover="showTip(event, 'ft6', 32)" class="i">PricePerUnit</span>
+  | <span onmouseout="hideTip(event, 'ft25', 33)" onmouseover="showTip(event, 'ft25', 33)" class="i">FillCanister</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft6', 34)" onmouseover="showTip(event, 'ft6', 34)" class="i">PricePerUnit</span>
+  | <span onmouseout="hideTip(event, 'ft26', 35)" onmouseover="showTip(event, 'ft26', 35)" class="i">UseCanister</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft27', 36)" onmouseover="showTip(event, 'ft27', 36)" class="i">Refueling</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'ft28', 37)" onmouseover="showTip(event, 'ft28', 37)" class="i">Counter</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 38)" onmouseover="showTip(event, 'ft7', 38)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 39)" onmouseover="showTip(event, 'ft3', 39)" class="i">km</span><span class="o">&gt;</span>
+    <span onmouseout="hideTip(event, 'ft29', 40)" onmouseover="showTip(event, 'ft29', 40)" class="i">Fuel</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft29', 41)" onmouseover="showTip(event, 'ft29', 41)" class="i">Fuel</span>
+    <span onmouseout="hideTip(event, 'ft30', 42)" onmouseover="showTip(event, 'ft30', 42)" class="i">Amount</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 43)" onmouseover="showTip(event, 'ft7', 43)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft4', 44)" onmouseover="showTip(event, 'ft4', 44)" class="i">litre</span><span class="o">&gt;</span>
+    <span onmouseout="hideTip(event, 'ft31', 45)" onmouseover="showTip(event, 'ft31', 45)" class="i">Kind</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft23', 46)" onmouseover="showTip(event, 'ft23', 46)" class="i">RefuelingKind</span> }</pre>
+
+
+<p>For the <code>Refueling</code> type is again written as a record that combines all information we want
+to keep for every refueling. The specific details are captured by <code>RefuelingKind</code>. This is
+an F# discriminated union - a type that can have <em>either</em> <code>FillTank</code> value, <code>FillCanister</code> value
+or <code>UseCanister</code> value. For the first two cases, we need to keep the price per litre. 
+The two remaining types, <code>Fuel</code> and <code>PricePerUnit</code> can be defined as follows:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft32', 47)" onmouseover="showTip(event, 'ft32', 47)" class="i">PricePerUnit</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft7', 48)" onmouseover="showTip(event, 'ft7', 48)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft5', 49)" onmouseover="showTip(event, 'ft5', 49)" class="i">GBP</span> <span class="o">/</span> <span onmouseout="hideTip(event, 'ft4', 50)" onmouseover="showTip(event, 'ft4', 50)" class="i">litre</span><span class="o">&gt;</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft33', 51)" onmouseover="showTip(event, 'ft33', 51)" class="i">Fuel</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'ft9', 52)" onmouseover="showTip(event, 'ft9', 52)" class="i">Biodiesel</span> | <span onmouseout="hideTip(event, 'ft10', 53)" onmouseover="showTip(event, 'ft10', 53)" class="i">Diesel</span> | <span onmouseout="hideTip(event, 'ft11', 54)" onmouseover="showTip(event, 'ft11', 54)" class="i">LPG</span> | <span onmouseout="hideTip(event, 'ft12', 55)" onmouseover="showTip(event, 'ft12', 55)" class="i">Gasoline</span></pre>
+
+
+<p>The <code>PricePerUnit</code> type is a type alias specifying that price is measured in GBP per litre.
+Again, we can use F# units of measure to capture this additional information (later in the
+implementation, the compiler will check that we use the number correctly and, i.e. always 
+multiply it by amount when calculating total price). The <code>Fuel</code> type is a simple 
+discriminated union that simply lists the different fuels (although we might later want
+to change it and make the system more extensible).</p>
+
+<h3>Reading data types</h3>
+
+<img src="http://tomasp.net/articles/type-first-development/uml.png" class="rdecor" />
+
+<p>What have we achieved so far? We described the <em>domain model</em> for the Journey log application
+with less than 20 lines of code. When writing the code for the first time, I typed a few 
+type declarations, explained them to my friend and he gave me feedback saying what was 
+wrong with my first design. This means that the process was quite collaborative and
+iterative.</p>
+
+<p>If we were doing that on a whiteboard, we would probably draw diagram like the one on the
+right. You can see that the F# types quite closely correspond to what you would draw as
+a UML diagram (although the detailed meaning is a bit different).</p>
+
+<p>However, there is one major benefit in writing the ideas down as <em>code</em>. The code is 
+executable. As you develop the application, you will add documentation, evolve the code
+in many ways, but the <em>core domain</em> can still stay as a reasonably short single file 
+in your project and it will always be <em>in sync</em>. New developers joining the project
+(or a person coming back to it after some time) can just read that single file and get
+a very good idea about the project.</p>
+
+<h3>Adding Journey log functionality</h3>
+
+<p>The discussion so far was focused on types that are used to represent the <em>data</em> that the
+application works with. However, type-first development is equally useful if we want to 
+focus on the <em>behaviour</em>. What kind of operations we expect from the Journey log application?</p>
+
+<p>One task that we need for producing expenses is to calculate how much was spent on 
+individual fuels in a given month (or, perhaps an arbitrary date range). Another
+important task is to calculate what the average prices per kilometer for LPG, Gasoline 
+and other fuels are. In a type-first development, we start by writing the types of
+the functions:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft34', 56)" onmouseover="showTip(event, 'ft34', 56)" class="i">JourneyLog</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft22', 57)" onmouseover="showTip(event, 'ft22', 57)" class="i">list</span><span class="o">&lt;</span><span class="i">Journey</span><span class="o">&gt;</span>
+
+<span class="c">/// Calculate amount spent on fuel in a given period</span>
+<span class="k">val</span> <span class="i">reportExpenses</span> <span class="o">:</span> <span class="i">JourneyLog</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft17', 58)" onmouseover="showTip(event, 'ft17', 58)" class="i">DateTime</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ft35', 59)" onmouseover="showTip(event, 'ft35', 59)" class="i">TimeSpan</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 60)" onmouseover="showTip(event, 'ft8', 60)" class="i">Fuel</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft7', 61)" onmouseover="showTip(event, 'ft7', 61)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft5', 62)" onmouseover="showTip(event, 'ft5', 62)" class="i">GBP</span><span class="o">&gt;</span>
+
+<span class="c">/// Calculate average price of fuel per kilometer traveled</span>
+<span class="k">val</span> <span class="i">averagePrice</span> <span class="o">:</span> <span class="i">JourneyLog</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 63)" onmouseover="showTip(event, 'ft8', 63)" class="i">Fuel</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft7', 64)" onmouseover="showTip(event, 'ft7', 64)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft5', 65)" onmouseover="showTip(event, 'ft5', 65)" class="i">GBP</span> <span class="o">/</span> <span class="i">kilometer</span><span class="o">&gt;</span></pre>
+
+
+<p>The code first defines <code>JourneyLog</code> type, which represents a list of journeys. The operations
+that work with journey log always take <code>JourneyLog</code> as their first argument.</p>
+
+<p>The function <code>reportExpenses</code> takes <code>DateTime * TimeSpan</code>, which represents a date range and
+the kind of <code>Fuel</code> we are interested in. The result is a price in pounds, represented 
+as <code>float&lt;GBP&gt;</code>. Units of measure are again very useful - they clearly inform us that the
+result is price (as opposed to, i.e. fuel consumption, which would be <code>float&lt;litre/kilometer&gt;</code>).
+The function <code>averagePrice</code> takes journey log, fuel and calculates a price per kilometer 
+(as specified by the type <code>float&lt;GBP / kilometer&gt;</code>).</p>
+
+<h3>Reading function types</h3>
+
+<img src="http://tomasp.net/articles/type-first-development/flow.png" class="rdecor" />
+
+<p>By looking at the type signature, you can get a reasonably good idea about what the 
+operation might do (this is even more the case for higher-order functions as discussed 
+in the <a href="http://www.tikalk.com/incubator/blog/type-driven-design">type driven design</a>
+article).</p>
+
+<p>One important aspect of function types is that they tell you what results you can 
+get from what inputs (and how). The diagram on the right demonstrates this in a 
+bit more complicated scenario. Aside from <code>JourneyLog</code>, we also have a type <code>ExpenseList</code>
+that represents a list of expense reports.</p>
+
+<p>If you have, somewhere in the program, a value of type <code>JourneyLog</code> and want to print
+(obtain) the <code>Invoice</code>, the types tell you what you can do. First, you need to turn
+<code>JourneyLog</code> into <code>ExpenseList</code> (using the function <code>calculateExpenses</code>) and then you
+can obtain <code>Invoice</code> using <code>printInvoice</code>.</p>
+
+<p>This is a fairly simple example, but it demonstrates an important fact. If you use
+types to represent different data structures that your code uses, the types of 
+functions tell you how you can process such data structures. When reading code, you
+can often use function types to understand what is happening. For example, in the 
+diagram, we can only go from <code>JourneyLog</code> to <code>ExpenseList</code>, so the function probably
+only uses some of the information from journey log. However, it is worth storing the
+result in a separate data type (<code>ExpenseList</code>), so the expense list is probably used
+in a number of ways in the application.</p>
+
+<h2>Type-First Development</h2>
+
+<p>The example above demonstrated what I call type-first development (TFD). As discussed
+earlier, I believe this is a method that many users of F# and similar languages 
+(perhaps more Haskell than Scala) use in practice. Let me now describe a few key
+points about this approach.</p>
+
+<h3>1. TFD emphasizes and simplifies communication</h3>
+
+<p>When you use TFD, you get a very simple specification or documentation for your software
+system very early during the development process (without even starting Microsoft Word).
+You get a short piece of code that you can discuss with your colleagues, send around
+by email (which is a lot more difficult with diagrams).</p>
+
+<p>I'm not saying that you'll be able to show type declarations to your senior management or
+to the end users of your system, but you usually <em>can</em> show them to any technical person.
+They might not be able to read the code themselves, but you can walk through the code
+and explain it.</p>
+
+<p>In summary, this means that TFD supports communication and collaboration
+(perhaps in a developer-friendly way). The importance of communication is clear and
+is emphasized by other techniques like <a href="http://en.wikipedia.org/wiki/Behavior-driven_development">BDD</a>.</p>
+
+<h3>2. TFD enables quick prototyping</h3>
+
+<p>The code that you need to write to get a complete list of definitions that model your
+problem domain is very short (at least, in languages like F#). This means that you 
+do not have to worry about doing it wrong. You can start by writing down some types 
+and if you see they do not correspond to your domain, simply throw the first version away.</p>
+
+<p>When you have <em>data types</em> describing your domain and <em>function types</em> describing the 
+behaviour, you can start implementing some of the functions, but it is similarly easy
+to write an incomplete, mock implementation just to have something you can test.</p>
+
+<h3>3. TFD works well with testing</h3>
+
+<p>This leads us to the next point. Type-first development (TFD) works very well with 
+test-driven development (TDD). In some way, when writing types, we are writing only 
+code that is necessary to write our first tests. Once we write the type of a function 
+such as <code>averagePrice</code>, you can start writing tests for the function and based on these
+tests, you can then fill-in the implementation of the function.</p>
+
+<p>In fact, you can read <em>types</em> as very basic <em>tests</em>. The type of the <code>averagePrice</code>
+function is a test checking that when you call the function with correct <code>JourneyLog</code> and
+<code>Fuel</code>, it gives you some number representing price in GBP per kilometers. This is
+very general test, but it gives us useful guarantees and we can continue by adding
+other tests, verifying the behaviour for concrete journey logs.</p>
+
+<h3>4. TFD supports extensibility</h3>
+
+<p>Focusing on the types used to represent data makes it easier to add new functionality
+later on during the development. Once we have the <code>JourneyLog</code> type, we can add new functions
+that process it and calculate new statistics or reports from the data.</p>
+
+<p>Writing such new processing functionality is quite easy, because new code is going
+to be very localized. We do not need to modify any existing objects. We just write a
+new function to process the data (possibly using some other functions that we already
+have).</p>
+
+<h2>Summary</h2>
+
+<p>In this article, I described a development style that often comes with functional
+programming languages such as F#. It was partly inspired by a related article on 
+<a href="http://www.tikalk.com/incubator/blog/type-driven-design">type driven design</a>,
+but I discussed the topic from a different perspective - instead of looking at types
+technically, I tried to highlight what they mean in practice, for the <em>development style</em>.</p>
+
+<p>The key idea of the type-first development (TFD) is that we start designing and 
+prototyping applications by writing the types they work with. In F#, this is done
+by writing type declarations (using records and discriminated unions), but the same
+methodology can work in other languages - even in dynamically typed ones.</p>
+
+<p>As demonstrated by a simple case study, focusing on the types first gives you a very
+powerful way to communicate and prototype ideas about design. Using types is very 
+developer-friendly approach, but I believe that it is accessible to any somewhat 
+technical person. Moreover, the methodology works well with test-driven development
+style and it helps writing extensible code.</p>
+
+<p>Of course, no one size fits all. There are clearly scenarios where TFD is not the 
+right way. As mentioned, it is very developer centric and so if you need to work with
+non-technical analysts or customers on a complex projects, approaches like 
+<a href="http://en.wikipedia.org/wiki/Behavior-driven_development">behaviour-driven development (BDD)</a>
+may be more relevant.</p>
+
+<h3>References</h3>
+<ul>
+  <li><a href="http://www.lucacardelli.name/Papers/TypefulProg.pdf">Luca Cardelli: Typeful Programming</a> (PDF) - describes the idea of typeful programming, which is similar to what is discussed in this article. It emphasizes types and describes various sophisticated uses.</li>
+  <li><a href="http://www.tikalk.com/incubator/blog/type-driven-design">Ittay Dror: Type Driven Design</a> - an article that inspired this one. It describes the use of types from a more advanced perspective, mainly for understanding behaviour of programs.</li>
+</ul>
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace System</div>
+<div class="tip" id="ft2">type MeasureAttribute =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit Attribute<br />&#160;&#160;&#160;&#160;new : unit -&gt; MeasureAttribute<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Core.MeasureAttribute<br /><br />&#160;&#160;type: MeasureAttribute<br />&#160;&#160;implements: Runtime.InteropServices._Attribute<br />&#160;&#160;inherits: Attribute<br /></div>
+<div class="tip" id="ft3">[&lt;Measure&gt;]<br />type km<br /><br />Full name: Blog.km</div>
+<div class="tip" id="ft4">[&lt;Measure&gt;]<br />type litre<br /><br />Full name: Blog.litre</div>
+<div class="tip" id="ft5">[&lt;Measure&gt;]<br />type GBP<br /><br />Full name: Blog.GBP</div>
+<div class="tip" id="ft6">type PricePerUnit = float&lt;GBP/litre&gt;<br /><br />Full name: Blog.PricePerUnit<br /><br />&#160;&#160;type: PricePerUnit<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;PricePerUnit&gt;<br />&#160;&#160;implements: IEquatable&lt;PricePerUnit&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft7">Multiple items<br />val float : &#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br /><br />&#160;&#160;type: float&lt;&#39;Measure&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: IEquatable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: ValueType<br /><br /><br />--------------------<br />type float = Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft8">type Fuel =<br />&#160;&#160;| Biodiesel<br />&#160;&#160;| Diesel<br />&#160;&#160;| LPG<br />&#160;&#160;| Gasoline<br /><br />Full name: Blog.Fuel<br /><br />&#160;&#160;type: Fuel<br />&#160;&#160;implements: IEquatable&lt;Fuel&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Fuel&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft9">union case Fuel.Biodiesel: Fuel</div>
+<div class="tip" id="ft10">union case Fuel.Diesel: Fuel</div>
+<div class="tip" id="ft11">union case Fuel.LPG: Fuel</div>
+<div class="tip" id="ft12">union case Fuel.Gasoline: Fuel</div>
+<div class="tip" id="ft13">Multiple items<br />union case Refueling.Refueling: Refueling<br /><br />--------------------<br />type Refueling = | Refueling<br /><br />Full name: Blog.Snippet1.Refueling<br /><br />&#160;&#160;type: Refueling<br />&#160;&#160;implements: IEquatable&lt;Refueling&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Refueling&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft14">Refueling</div>
+<div class="tip" id="ft15">type Journey =<br />&#160;&#160;{Start: DateTime;<br />&#160;&#160;&#160;Driver: string;<br />&#160;&#160;&#160;Distance: float&lt;km&gt;;<br />&#160;&#160;&#160;Refueling: Refueling list;}<br /><br />Full name: Blog.Snippet1.Journey<br /><br />&#160;&#160;type: Journey<br />&#160;&#160;implements: IEquatable&lt;Journey&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Journey&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft16">Journey.Start: DateTime</div>
+<div class="tip" id="ft17">type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : int64 -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int64 * System.DateTimeKind -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * System.Globalization.Calendar -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * System.DateTimeKind -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * System.Globalization.Calendar -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * int -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * int * System.DateTimeKind -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * int * System.Globalization.Calendar -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int * int * int * System.Globalization.Calendar * System.DateTimeKind -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member Add : System.TimeSpan -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddDays : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddHours : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : int -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : int64 -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member AddYears : int -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member CompareTo : obj -&gt; int<br />&#160;&#160;&#160;&#160;member CompareTo : System.DateTime -&gt; int<br />&#160;&#160;&#160;&#160;member Date : System.DateTime<br />&#160;&#160;&#160;&#160;member Day : int<br />&#160;&#160;&#160;&#160;member DayOfWeek : System.DayOfWeek<br />&#160;&#160;&#160;&#160;member DayOfYear : int<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;member GetDateTimeFormats : unit -&gt; string []<br />&#160;&#160;&#160;&#160;member GetDateTimeFormats : System.IFormatProvider -&gt; string []<br />&#160;&#160;&#160;&#160;member GetDateTimeFormats : char -&gt; string []<br />&#160;&#160;&#160;&#160;member GetDateTimeFormats : char * System.IFormatProvider -&gt; string []<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; System.TypeCode<br />&#160;&#160;&#160;&#160;member Hour : int<br />&#160;&#160;&#160;&#160;member IsDaylightSavingTime : unit -&gt; bool<br />&#160;&#160;&#160;&#160;member Kind : System.DateTimeKind<br />&#160;&#160;&#160;&#160;member Millisecond : int<br />&#160;&#160;&#160;&#160;member Minute : int<br />&#160;&#160;&#160;&#160;member Month : int<br />&#160;&#160;&#160;&#160;member Second : int<br />&#160;&#160;&#160;&#160;member Subtract : System.DateTime -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member Subtract : System.TimeSpan -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member Ticks : int64<br />&#160;&#160;&#160;&#160;member TimeOfDay : System.TimeSpan<br />&#160;&#160;&#160;&#160;member ToBinary : unit -&gt; int64<br />&#160;&#160;&#160;&#160;member ToFileTime : unit -&gt; int64<br />&#160;&#160;&#160;&#160;member ToFileTimeUtc : unit -&gt; int64<br />&#160;&#160;&#160;&#160;member ToLocalTime : unit -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member ToLongDateString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToLongTimeString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToOADate : unit -&gt; float<br />&#160;&#160;&#160;&#160;member ToShortDateString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToShortTimeString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string * System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;member ToUniversalTime : unit -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;member Year : int<br />&#160;&#160;&#160;&#160;static val MinValue : System.DateTime<br />&#160;&#160;&#160;&#160;static val MaxValue : System.DateTime<br />&#160;&#160;&#160;&#160;static member Compare : System.DateTime * System.DateTime -&gt; int<br />&#160;&#160;&#160;&#160;static member DaysInMonth : int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Equals : System.DateTime * System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;static member FromBinary : int64 -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member FromFileTime : int64 -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member FromFileTimeUtc : int64 -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member FromOADate : float -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member IsLeapYear : int -&gt; bool<br />&#160;&#160;&#160;&#160;static member Now : System.DateTime<br />&#160;&#160;&#160;&#160;static member Parse : string -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member Parse : string * System.IFormatProvider -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member Parse : string * System.IFormatProvider * System.Globalization.DateTimeStyles -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string * System.IFormatProvider -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string * System.IFormatProvider * System.Globalization.DateTimeStyles -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string [] * System.IFormatProvider * System.Globalization.DateTimeStyles -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member SpecifyKind : System.DateTime * System.DateTimeKind -&gt; System.DateTime<br />&#160;&#160;&#160;&#160;static member Today : System.DateTime<br />&#160;&#160;&#160;&#160;static member TryParse : string * System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParse : string * System.IFormatProvider * System.Globalization.DateTimeStyles * System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string * System.IFormatProvider * System.Globalization.DateTimeStyles * System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string [] * System.IFormatProvider * System.Globalization.DateTimeStyles * System.DateTime -&gt; bool<br />&#160;&#160;&#160;&#160;static member UtcNow : System.DateTime<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />&#160;&#160;type: DateTime<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;implements: IComparable&lt;DateTime&gt;<br />&#160;&#160;implements: IEquatable&lt;DateTime&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft18">Journey.Driver: string</div>
+<div class="tip" id="ft19">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="ft20">Journey.Distance: float&lt;km&gt;</div>
+<div class="tip" id="ft21">Multiple items<br />Journey.Refueling: Refueling list<br /><br />--------------------<br />type Refueling = | Refueling<br /><br />Full name: Blog.Snippet1.Refueling<br /><br />&#160;&#160;type: Refueling<br />&#160;&#160;implements: IEquatable&lt;Refueling&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Refueling&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft22">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;<br /><br />&#160;&#160;type: &#39;T list<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;List&lt;&#39;T&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br /></div>
+<div class="tip" id="ft23">type RefuelingKind =<br />&#160;&#160;| FillTank of PricePerUnit<br />&#160;&#160;| FillCanister of PricePerUnit<br />&#160;&#160;| UseCanister<br /><br />Full name: Blog.RefuelingKind<br /><br />&#160;&#160;type: RefuelingKind<br />&#160;&#160;implements: IEquatable&lt;RefuelingKind&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;RefuelingKind&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft24">union case RefuelingKind.FillTank: PricePerUnit -&gt; RefuelingKind</div>
+<div class="tip" id="ft25">union case RefuelingKind.FillCanister: PricePerUnit -&gt; RefuelingKind</div>
+<div class="tip" id="ft26">union case RefuelingKind.UseCanister: RefuelingKind</div>
+<div class="tip" id="ft27">type Refueling =<br />&#160;&#160;{Counter: float&lt;km&gt;;<br />&#160;&#160;&#160;Fuel: Fuel;<br />&#160;&#160;&#160;Amount: float&lt;litre&gt;;<br />&#160;&#160;&#160;Kind: RefuelingKind;}<br /><br />Full name: Blog.Refueling<br /><br />&#160;&#160;type: Refueling<br />&#160;&#160;implements: IEquatable&lt;Refueling&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Refueling&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft28">Refueling.Counter: float&lt;km&gt;</div>
+<div class="tip" id="ft29">Multiple items<br />Refueling.Fuel: Fuel<br /><br />--------------------<br />type Fuel =<br />&#160;&#160;| Biodiesel<br />&#160;&#160;| Diesel<br />&#160;&#160;| LPG<br />&#160;&#160;| Gasoline<br /><br />Full name: Blog.Fuel<br /><br />&#160;&#160;type: Fuel<br />&#160;&#160;implements: IEquatable&lt;Fuel&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Fuel&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft30">Refueling.Amount: float&lt;litre&gt;</div>
+<div class="tip" id="ft31">Refueling.Kind: RefuelingKind</div>
+<div class="tip" id="ft32">type PricePerUnit = float&lt;GBP/litre&gt;<br /><br />Full name: Blog.Snippet2.PricePerUnit<br /><br />&#160;&#160;type: PricePerUnit<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;PricePerUnit&gt;<br />&#160;&#160;implements: IEquatable&lt;PricePerUnit&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft33">type Fuel =<br />&#160;&#160;| Biodiesel<br />&#160;&#160;| Diesel<br />&#160;&#160;| LPG<br />&#160;&#160;| Gasoline<br /><br />Full name: Blog.Snippet2.Fuel<br /><br />&#160;&#160;type: Fuel<br />&#160;&#160;implements: IEquatable&lt;Fuel&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Fuel&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft34">type JourneyLog = obj<br /><br />Full name: Blog.JourneyLog</div>
+<div class="tip" id="ft35">type TimeSpan =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : int64 -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;new : int * int * int -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;new : int * int * int * int -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;new : int * int * int * int * int -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member Add : System.TimeSpan -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member CompareTo : obj -&gt; int<br />&#160;&#160;&#160;&#160;member CompareTo : System.TimeSpan -&gt; int<br />&#160;&#160;&#160;&#160;member Days : int<br />&#160;&#160;&#160;&#160;member Duration : unit -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Hours : int<br />&#160;&#160;&#160;&#160;member Milliseconds : int<br />&#160;&#160;&#160;&#160;member Minutes : int<br />&#160;&#160;&#160;&#160;member Negate : unit -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member Seconds : int<br />&#160;&#160;&#160;&#160;member Subtract : System.TimeSpan -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;member Ticks : int64<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string * System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;member TotalDays : float<br />&#160;&#160;&#160;&#160;member TotalHours : float<br />&#160;&#160;&#160;&#160;member TotalMilliseconds : float<br />&#160;&#160;&#160;&#160;member TotalMinutes : float<br />&#160;&#160;&#160;&#160;member TotalSeconds : float<br />&#160;&#160;&#160;&#160;static val TicksPerMillisecond : int64<br />&#160;&#160;&#160;&#160;static val TicksPerSecond : int64<br />&#160;&#160;&#160;&#160;static val TicksPerMinute : int64<br />&#160;&#160;&#160;&#160;static val TicksPerHour : int64<br />&#160;&#160;&#160;&#160;static val TicksPerDay : int64<br />&#160;&#160;&#160;&#160;static val Zero : System.TimeSpan<br />&#160;&#160;&#160;&#160;static val MaxValue : System.TimeSpan<br />&#160;&#160;&#160;&#160;static val MinValue : System.TimeSpan<br />&#160;&#160;&#160;&#160;static member Compare : System.TimeSpan * System.TimeSpan -&gt; int<br />&#160;&#160;&#160;&#160;static member Equals : System.TimeSpan * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member FromDays : float -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member FromHours : float -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member FromMilliseconds : float -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member FromMinutes : float -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member FromSeconds : float -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member FromTicks : int64 -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member Parse : string -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member Parse : string * System.IFormatProvider -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string * System.IFormatProvider -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string [] * System.IFormatProvider -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string * System.IFormatProvider * System.Globalization.TimeSpanStyles -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member ParseExact : string * string [] * System.IFormatProvider * System.Globalization.TimeSpanStyles -&gt; System.TimeSpan<br />&#160;&#160;&#160;&#160;static member TryParse : string * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParse : string * System.IFormatProvider * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string * System.IFormatProvider * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string [] * System.IFormatProvider * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string * System.IFormatProvider * System.Globalization.TimeSpanStyles * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParseExact : string * string [] * System.IFormatProvider * System.Globalization.TimeSpanStyles * System.TimeSpan -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.TimeSpan<br /><br />&#160;&#160;type: TimeSpan<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IComparable&lt;TimeSpan&gt;<br />&#160;&#160;implements: IEquatable&lt;TimeSpan&gt;<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;inherits: ValueType<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ftype-first-development.aspx%2f&amp;text=Why+type-first+development+mattersvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ftype-first-development.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ftype-first-development.aspx%2f&title=Why+type-first+development+matters">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Why%20type-first%20development%20matters&body=%20This%20article%20describes%20type-first%20development%20(TFD).%20A%20software%20development%20methodology%20that%20is%20quite%20common%20among%20functional%20programmers%20and%20uses%20types%20as%20a%20simple%20way%20of%20communicating%20ideas%20about%20program%20design.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ftype-first-development.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Thursday, 16 August 2012, 12:21 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/research/">research</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

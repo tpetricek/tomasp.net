@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Internship project: Reactive pattern matching - Tomas Petricek</title>
+
+  <meta name="description" content=" I already mentioned that I was doing my second internship with Don Syme at MSR Cambridge. This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since I left, but as you can guess I didn't have time to write anything about the internship until now..." />
+  <meta name="keywords" content="random thoughts, universe, parallel, asynchronous, joinads, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Internship project: Reactive pattern matching" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/internship-match-bang.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" I already mentioned that I was doing my second internship with Don Syme at MSR Cambridge. This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since I left, but as you can guess I didn't have time to write anything about the internship until now..." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Internship project: Reactive pattern matching" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" I already mentioned that I was doing my second internship with Don Syme at MSR Cambridge. This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since I left, but as you can guess I didn't have time to write anything about the internship until now..." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Internship project: Reactive pattern matching",
+    "headline": "Internship project: Reactive pattern matching",
+  	"description": " I already mentioned that I was doing my second internship with Don Syme at MSR Cambridge. This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since I left, but as you can guess I didn't have time to write anything about the internship until now...",
+  	"url": "http://tomasp.net/blog/internship-match-bang.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2009-05-17T23:00:28.0000000",
+  	"datePublished": "2009-05-17T23:00:28.0000000",
+    "dateModified": "2009-05-17T23:00:28.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/internship-match-bang.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["random thoughts", "universe", "parallel", "asynchronous", "joinads",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Internship project: Reactive pattern matching</h1>
+<a href="http://cid-6ddff5260c96e30a.skydrive.live.com/albums.aspx">
+<img src="http://tomasp.net/articles/internship-match-bang/image.jpg" alt="Cambridge, 2009" class="ldecor" 
+  style="border:0px;float:left; margin:20px" />
+</a>
+
+<p>I already <a href="http://tomasp.net/blog/book-source-available.aspx">mentioned</a> that I was doing my second internship
+  with <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a> at Microsoft Research in Cambridge.
+  This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since 
+  I left, but as you can guess I didn't have time to write anything about the internship until now... There isn't
+  much to say though, because the internship was simply fantastic. Cambridge is a beautiful place (here are
+  some <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2008%20Autumn%20-%20Cambridge" type="external">autumn</a> and <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2009%20Winter%20-%20Cambridge" type="external">winter</a> photos),
+  the Microsoft Research lab in Cambridge is full of smart people, so it is a perferct working environment
+  (except that you realize that you're not as clever as you think :-)). Also, it is just a few meters away from the
+  <a href="http://www.cl.cam.ac.uk" type="external">Computer Laboratory</a> of the Cambridge University, so there are always many 
+  interesting talks and seminars. So, big thanks to Don Syme, James Margetson and everyone else who I had a chance 
+  to work with during the internship.</p>
+  
+<p>One of the reasons why I didn't have much time to write about the internship earlier is that I
+  was invited to the <a href="http://www.langnetsymposium.com/" type="external">Lang.NET Symposium</a> shortly
+  after the end of the internship. I had a chance to talk about my project there as well and there is
+  even a video recording from the talk (the link is below), so you can watch it to find out more about my recent F# work.</p>
+  
+<p>I was working on a couple of things during the internship. During the first couple of months, I was helping
+  the F# team on Visual Studio language service for F#. This includes IntelliSense, syntax highlighting 
+  and things like that. All the improvements that I and others on the team worked on should be available in Visual 
+  Studio 2010 from the beta 1 version, so I believe the IntelliSense will work noticeably better than it 
+  does in the CTP. The Language Service for F# is quite interesting project in many ways, because the F# compiler
+  needs to do a lot of work in background (most importantly type inference). This means that getting the 
+  right information for the IntelliSense popup window needs to use several different approaches to make sure
+  that you'll see useful items even when the compiler hasn't completed background checking or when the source
+  code just changed.</p>
+
+<h2>Reactive Pattern Matching</h2>
+<p>The other thing that I was working larg part of the time is <em>Reactive Pattern Matching</em>. The goal 
+  of the project was to make it easier to write F# applications that react to external events from the user
+  interface or for example from background working threads. The project focuses on applications (or parts of
+  applications) that are highly reactive and it is based on the F# asynchronous workflows. Here are a couple
+  of points about reactive applications and about the way we tried to make writing them easier in F#:</p>
+<ul>
+  <li><strong>Single threaded</strong> - The application (or for example GUI component) runs as a 
+    single threaded component, but the code is written by creating multiple agents that express parts
+    of the behavior. This makes it easier to reason about how the external events are handled.
+    This of course doesn't mean that the whole application is single-threaded. You can have various background
+    threads doing all sorts of computations. Only the synchronization point (e.g. the GUI) is single-threaded.</li>    
+    
+  <li><strong>Quick reactions</strong> - The agents that we write spend most of the time waiting for
+    some events, which means that the application can consist of a large number of agents. This means
+    that agents are used to structure the source code based on what kind of "workflows" the application performs.</li>    
+  
+  <li><strong>Minimal direct langauge support</strong> - The project uses mostly the existing F# language
+    with a single extension to allow pattern matching in computation expressions (using the <code>match!</code>
+    construct), which is a more generally useful language feature. Aside from this single extension,
+    most of the work is to find the right programming model, which is just a question of implementing
+    the right library and computation expression builders.</li>
+</ul>  
+  
+<p>The project is inspired by <a href="http://www.haskell.org/frp/" type="external">Functional Reactive Programming</a>
+  and it takes some ideas from my <a href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx">Reactive LINQ</a> and
+  also from some examples I wrote for <a href="http://www.functional-programming.net/" type="external">chapter 16 of my book</a>. 
+  However, it is still quite far from being complete and I'm planning to continue working on it, so you'll 
+  definitely hear more about this.</p>
+
+<h2>My talk at Lang.NET Symposium</h2>
+<p>As I mentioned, shortly after returning from Cambridge to Prague, I was on the plane again, but this time 
+  to Redmond for the Lang.NET Symposium. This year, there were quite a few interesting talks. Ted Leung wrote
+  <a href="http://www.sauria.com/blog/2009/04/16/langnet-2009/" type="external">has a nice summary</a> for some
+  of them. I quite liked the fact that the talks ranged from more theoretical and research oriented topics.
+  For example, the talk <a href="http://www.langnetsymposium.com/2009/talks/29-PhilipWadler-Links.html" type="external">Links: Web programming without tiers</a>
+  by Philip Wadlers was quite interesting for me, because the Links project is closely related to my F# WebTools. 
+  On the other hand there were talks about Microsoft projects that are becoming mainstream including
+  <a href="http://www.langnetsymposium.com/2009/talks/34-ManuelFahndrich-CodeContracts.html" type="external">Code Contracts</a>
+  and Luke Hoban's talk <a href="http://www.langnetsymposium.com/2009/talks/25-LukeHoban-FSharpProductization.html" type="external">Productization of F#</a>,
+  which both talk about things that are going to be available in Visual Studio 2010.</p>
+
+<p>There was also a very interesting talk from Erik Meijer about the <a href="http://www.langnetsymposium.com/2009/talks/23-ErikMeijer-LiveLabsReactiveFramework.html" type="external">Live Labs Reactive Framework</a>.
+  The talk was a lot of fun, but more importantly, it was about project that's closely related to what I was working on - in particular 
+  it is related to my <a href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx">Reactive LINQ</a> project and Reactive Pattern Matching for F#. 
+  I also had a chance to chat with <a href="http://blogs.msdn.com/wesdyer/" type="external">Wes Dyer</a>, who is working on this project.
+  </p>  
+  
+<div style="float:left;margin:15px; width:265px; text-align:center">
+<a href="http://www.langnetsymposium.com/2009/talks/22-TomasPatricek-Reactive.html">
+<img src="http://tomasp.net/articles/internship-match-bang/talk.png" alt="Talk Recording" style="border:0px" /></a><br /><small>Click on the image to go to the video.</small>
+</div>
+
+<p><a href="http://www.langnetsymposium.com/2009/talks/22-TomasPatricek-Reactive.html" type="external">My talk</a> at Lang.NET was 
+  about the <em>Reactive Pattern Matching</em> project that I started working on during the internship with Don Syme. The
+  talk provides some background on asynchronous programming in F# using <em>asynchronous workflows</em> and then focuses on the project I was working on.
+  About half of the talk uses only language features that are already available in F#, namely <em>asynchronous workflows</em>,
+  but uses them differently - to write single threaded reactive code that uses asynchronous workflows to wait for events in general rather than just for waiting of a completion of asynchronous I/O operation. </p>
+
+<p>In the second part, the talk looks at reactive programming
+  using the <code>match!</code> construct, which can be used for pattern matching over events. This lets you
+  succinctly write code that for says things like "Wait for the first occurrence MouseDown event or for the MouseMove event 
+  when the X location is more than 100".</p>
+<p> Finally, the talk also mentions how the <code>match!</code> primitive
+  can be used for encoding other interesting programming models. This part didn't limit to single-threaded reactive programming, but talked about concurrency models such as working with futures (from the Task Parallel Library) or Joins known from the
+  <a href="http://research.microsoft.com/en-us/um/cambridge/projects/comega/" type="external">Cω language</a>.</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/internship-match-bang/lang.net.pptx">Slides from my Lang.NET talk</a> (PPTX)</li>
+  <li><a href="http://tomasp.net/articles/internship-match-bang/lang.net.pdf">Slides from my Lang.NET talk</a> (PDF)</li>
+  <li><a href="http://download.microsoft.com/download/7/6/A/76A69AE5-72B5-4005-BBD9-7EA5F4795014/22-TomasPatricek-Reactive.wmv">Download the video</a> (WMV format, 291MB)</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2finternship-match-bang.aspx%2f&amp;text=Internship+project%3a+Reactive+pattern+matchingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2finternship-match-bang.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2finternship-match-bang.aspx%2f&title=Internship+project%3a+Reactive+pattern+matching">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Internship%20project%3a%20Reactive%20pattern%20matching&body=%20I%20already%20mentioned%20that%20I%20was%20doing%20my%20second%20internship%20with%20Don%20Syme%20at%20MSR%20Cambridge.%20This%20time%2c%20I%20was%20in%20Cambridge%20for%206%20months%20from%20October%20until%20April%2c%20so%20it%20has%20been%20more%20than%20a%20month%20since%20I%20left%2c%20but%20as%20you%20can%20guess%20I%20didn%27t%20have%20time%20to%20write%20anything%20about%20the%20internship%20until%20now...%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2finternship-match-bang.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Sunday, 17 May 2009, 11:00 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/random-thoughts/">random thoughts</a>, <a
+          href="/blog/tag/universe/">universe</a>, <a
+          href="/blog/tag/parallel/">parallel</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/joinads/">joinads</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

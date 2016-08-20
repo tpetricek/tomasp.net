@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>New features and improvements in Deedle v1.0 - Tomas Petricek</title>
+
+  <meta name="description" content=" As Howard Mansell already announced we have officially released the '1.0' version of Deedle. In this blog post, I'll have a quick look at a couple of new features in Deedle. Howard's announcement has a more detailed list, but I just want to give a couple of examples and briefly comment on performance improvements we did." />
+  <meta name="keywords" content="f#, deedle, data science, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="New features and improvements in Deedle v1.0" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2014/deedle-v1/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2014/deedle-v1/mpg-per-cyl.png" />
+  <meta property="og:description" content=" As Howard Mansell already announced we have officially released the '1.0' version of Deedle. In this blog post, I'll have a quick look at a couple of new features in Deedle. Howard's announcement has a more detailed list, but I just want to give a couple of examples and briefly comment on performance improvements we did." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="New features and improvements in Deedle v1.0" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2014/deedle-v1/mpg-per-cyl.png" />
+  <meta name="twitter:description" content=" As Howard Mansell already announced we have officially released the '1.0' version of Deedle. In this blog post, I'll have a quick look at a couple of new features in Deedle. Howard's announcement has a more detailed list, but I just want to give a couple of examples and briefly comment on performance improvements we did." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "New features and improvements in Deedle v1.0",
+    "headline": "New features and improvements in Deedle v1.0",
+  	"description": " As Howard Mansell already announced we have officially released the '1.0' version of Deedle. In this blog post, I'll have a quick look at a couple of new features in Deedle. Howard's announcement has a more detailed list, but I just want to give a couple of examples and briefly comment on performance improvements we did.",
+  	"url": "http://tomasp.net/blog/2014/deedle-v1/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2014-05-27T15:41:01.7294268+01:00",
+  	"datePublished": "2014-05-27T15:41:01.7294268+01:00",
+    "dateModified": "2014-05-27T15:41:01.7294268+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2014/deedle-v1/",
+  	"image": "http://tomasp.net/blog/2014/deedle-v1/mpg-per-cyl.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2014/deedle-v1/mpg-per-cyl.png",
+  	"keywords": ["f#", "deedle", "data science",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>New features and improvements in Deedle v1.0</h1>
+<p>As Howard Mansell already <a href="http://techblog.bluemountaincapital.com/2014/05/21/deedle-v1-0-release/">announced on the BlueMountain Tech blog</a>,
+we have officially released the "1.0" version of Deedle. In case you have not
+heard of Deedle yet, it is a .NET library for interactive data analysis and
+exploration. Deedle works great with both C# and F#. It provides two main data
+structures: <em>series</em> for working with data and time series and <em>frame</em> for working
+with collections of series (think CSV files, data tables etc.)</p>
+<p>The great thing about Deedle is that it has been becoming a foundational library
+that makes it possible to integrate a wide range of diverse data-science components.
+For example, the <a href="http://bluemountaincapital.github.io/FSharpRProvider/">R type provider</a>
+works well with Deedle and so does <a href="http://fsharp.github.io/FSharp.Charting/">F# Charting</a>.
+We've been also working on integrating all of these into a single package called
+<a href="https://github.com/tpetricek/FsLab">FsLab</a>, but more about that next time!</p>
+<p>In this blog post, I'll have a quick look at a couple of new features in Deedle
+(and corresponding R type provider release). Howard's announcement has a
+<a href="http://techblog.bluemountaincapital.com/2014/05/21/deedle-v1-0-release/">more detailed list</a>,
+but I just want to give a couple of examples and briefly comment on performance
+improvemens we did.</p>
+<h2>What's new in Deedle?</h2>
+<p>Perhaps the most visible difference in the new version is that many of the functions
+are renamed. We thought that before v1.0, we had a unique chance to get the naming
+right, so we did a lot of renamings to make sure that everything is consistent. For
+example, some functions used <em>series</em> and some <em>column</em>, some used <em>sort</em> and others
+<em>order</em> and so on. This should now be cleaned up. Similarly, we fixed a number of
+mismatches between <code>Series</code> and <code>Frame</code> modules.</p>
+<h3>Additions to Deedle API</h3>
+<p>Aside from renaming, we also added a couple of useful functions. For example, the
+<a href="http://bluemountaincapital.github.io/Deedle/">homepage sample</a> compares survival
+ration for different passenger classes. This can now be done even more easily using
+<code>PivotTable</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#load</span> <span class="s">&quot;Deedle.1.0.0/Deedle.fsx&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs14', 18)" onmouseover="showTip(event, 'fs14', 18)" class="i">Deedle</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 19)" onmouseover="showTip(event, 'fs15', 19)" class="i">titanic</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs16', 20)" onmouseover="showTip(event, 'fs16', 20)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 21)" onmouseover="showTip(event, 'fs17', 21)" class="f">ReadCsv</span>(<span class="s">&quot;../data/titanic.csv&quot;</span>)
+
+<span class="c">// Pivot operation using &quot;Sex&quot; as row </span>
+<span class="c">// and &quot;Survived&quot; as a new column</span>
+<span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">titanic</span> 
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs18', 24)" onmouseover="showTip(event, 'fs18', 24)" class="f">pivotTable</span> 
+    (<span class="k">fun</span> _ <span onmouseout="hideTip(event, 'fs19', 25)" onmouseover="showTip(event, 'fs19', 25)" class="i">row</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs19', 26)" onmouseover="showTip(event, 'fs19', 26)" class="i">row</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 27)" onmouseover="showTip(event, 'fs20', 27)" class="f">GetAs</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs21', 28)" onmouseover="showTip(event, 'fs21', 28)" class="t">string</span><span class="o">&gt;</span>(<span class="s">&quot;Sex&quot;</span>))
+    (<span class="k">fun</span> _ <span onmouseout="hideTip(event, 'fs19', 29)" onmouseover="showTip(event, 'fs19', 29)" class="i">row</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs19', 30)" onmouseover="showTip(event, 'fs19', 30)" class="i">row</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 31)" onmouseover="showTip(event, 'fs20', 31)" class="f">GetAs</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs22', 32)" onmouseover="showTip(event, 'fs22', 32)" class="t">bool</span><span class="o">&gt;</span>(<span class="s">&quot;Survived&quot;</span>))
+    <span onmouseout="hideTip(event, 'fs16', 33)" onmouseover="showTip(event, 'fs16', 33)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 34)" onmouseover="showTip(event, 'fs23', 34)" class="f">countRows</span>
+
+<span class="c">// The same operation using method notation</span>
+<span onmouseout="hideTip(event, 'fs15', 35)" onmouseover="showTip(event, 'fs15', 35)" class="i">titanic</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs24', 36)" onmouseover="showTip(event, 'fs24', 36)" class="f">PivotTable</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs21', 37)" onmouseover="showTip(event, 'fs21', 37)" class="t">string</span>, <span onmouseout="hideTip(event, 'fs22', 38)" onmouseover="showTip(event, 'fs22', 38)" class="t">bool</span>, _<span class="o">&gt;</span>
+  (<span class="s">&quot;Sex&quot;</span>, <span class="s">&quot;Survived&quot;</span>, <span onmouseout="hideTip(event, 'fs16', 39)" onmouseover="showTip(event, 'fs16', 39)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 40)" onmouseover="showTip(event, 'fs23', 40)" class="f">countRows</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The operation groups the rows according to the two keys and then performs aggregation
+using the specified function (here <code>Frame.countRows</code>). This is a common operation and
+so we wanted to make it as simple as possible. We also continue to expose operations
+both as F# functions in modules and as C#-friendly methods.</p>
+<p>Another example where we did lot of improvements is statistics:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs25', 41)" onmouseover="showTip(event, 'fs25', 41)" class="i">msft</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs16', 42)" onmouseover="showTip(event, 'fs16', 42)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 43)" onmouseover="showTip(event, 'fs17', 43)" class="f">ReadCsv</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs26', 44)" onmouseover="showTip(event, 'fs26', 44)" class="t">DateTime</span><span class="o">&gt;</span>(<span class="s">&quot;../data/msft.csv&quot;</span>, <span class="s">&quot;Date&quot;</span>)
+<span onmouseout="hideTip(event, 'fs25', 45)" onmouseover="showTip(event, 'fs25', 45)" class="i">msft</span><span class="o">?</span><span class="i">Open</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 46)" onmouseover="showTip(event, 'fs27', 46)" class="t">Stats</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 47)" onmouseover="showTip(event, 'fs28', 47)" class="f">movingVariance</span> <span class="n">100</span>
+<span onmouseout="hideTip(event, 'fs25', 48)" onmouseover="showTip(event, 'fs25', 48)" class="i">msft</span><span class="o">?</span><span class="i">Open</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 49)" onmouseover="showTip(event, 'fs27', 49)" class="t">Stats</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs29', 50)" onmouseover="showTip(event, 'fs29', 50)" class="f">expandingMean</span>
+<span onmouseout="hideTip(event, 'fs25', 51)" onmouseover="showTip(event, 'fs25', 51)" class="i">msft</span><span class="o">?</span><span class="i">Open</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 52)" onmouseover="showTip(event, 'fs27', 52)" class="t">Stats</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs30', 53)" onmouseover="showTip(event, 'fs30', 53)" class="f">kurt</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The first improvement is that you can now specify key column when loading data from a CSV
+file (again, this is very common). The same feature is available when loading data from
+a sequence of .NET objects using <code>Frame.ofRows</code>.</p>
+<p>The next new thing is the <code>Stats</code> module. This is the new place for all functions related
+to statistics and numerical computations. We found that adding more functions to <code>Series</code>
+and <code>Frame</code> modules was a bit confusing, so we moved all statistical functions in one place.
+This is even more important now that we added more functions (kurtosis, skewness, variance)
+and we added more ways to calculate them (moving and expanding windows). For  more information
+see the <a href="http://bluemountaincapital.github.io/Deedle/stats.html">frame and series statistics</a> page.</p>
+<h3>Improved documentation</h3>
+<p>Finally, one of the strong points of Deedle is that it has an excellent documentation. This
+is now even more the case, because we polished the documentation automatically generated from
+Markdown comments in the source code. In particular, for the three core modules:</p>
+<ul>
+<li>
+<a href="http://bluemountaincapital.github.io/Deedle/reference/deedle-seriesmodule.html"><strong>Series</strong> module</a>
+provides functions for working with individual data series and time-series values. This includes
+operations such as sampling, transformations, data access and more.
+</li>
+<li>
+<a href="http://bluemountaincapital.github.io/Deedle/reference/deedle-framemodule.html"><strong>Frame</strong> module</a>
+`provides functions that are similar to those in the <code>Series</code> module, but operate
+on entire data frames. You can transform, align and join frames, perform various re-indexing
+operations etc.
+</li>
+<li>
+<a href="http://bluemountaincapital.github.io/Deedle/reference/deedle-stats.html"><strong>Stats</strong> module</a>
+implements standard statistical functions (mean, variance, kurtosis, skewness, etc.) over
+series, moving windows, expanding windows and a lot more. The module contains functions
+for both series and frames.
+</li>
+</ul>
+<h2>What's new in the R provider?</h2>
+<p>Together with a new release of Deedle, we also updated the R type provider. There
+are a couple of improvements that make it work a lot better:</p>
+<ul>
+<li>
+The installation from NuGet does no longer rely on PowerShell installation 
+script, so it can work on Mono and when using the "Restore Packages" feature.
+</li>
+<li>
+The type provider communicates with R via a separate process, so it is more 
+stable and it will also let us call 64bit version of R.
+</li>
+</ul>
+<p>These are technical, but very important improvements. However, we also added one
+nice new feature that makes it even easier to mix R and F#!</p>
+<h3>RData type provider</h3>
+<p>In R, you can save workspaces (environments) into <code>*.rdata</code> files. This is useful
+if you want to archive results of some interactive analysis done in the R environment.
+But, wouldn't it be nice if you could do some data analysis in R and then save the
+data to a file and load it easily from F# in a type-safe way?</p>
+<p>This is exactly what you get with the <code>RData</code> type provider! Let's say that I have
+<code>cars.rdata</code> file containing the <code>mtcars</code> data set (saved under the name <code>cars</code>)
+together with a list <code>mpg</code> and a value <code>mpgMean</code>. I can write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#load</span> <span class="s">&quot;RProvider.1.0.9/RProvider.fsx&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs31', 54)" onmouseover="showTip(event, 'fs31', 54)" class="i">RProvider</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 55)" onmouseover="showTip(event, 'fs32', 55)" class="i">file</span> <span class="o">=</span> <span class="k">new</span> <span class="i">RData</span><span class="o">&lt;</span><span class="s">&quot;../data/cars.rdata&quot;</span><span class="o">&gt;</span>()
+
+<span class="c">// Calculate mean in R and in F#</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 56)" onmouseover="showTip(event, 'fs33', 56)" class="i">mean1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 57)" onmouseover="showTip(event, 'fs32', 57)" class="i">file</span><span class="o">.</span><span class="i">mpg</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs34', 58)" onmouseover="showTip(event, 'fs34', 58)" class="t">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 59)" onmouseover="showTip(event, 'fs35', 59)" class="f">average</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs36', 60)" onmouseover="showTip(event, 'fs36', 60)" class="i">mean2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 61)" onmouseover="showTip(event, 'fs32', 61)" class="i">file</span><span class="o">.</span><span class="i">mpgMean</span><span class="o">.</span>[<span class="n">0</span>]
+
+<span class="c">// Average mpg based on cylinder count</span>
+<span onmouseout="hideTip(event, 'fs32', 62)" onmouseover="showTip(event, 'fs32', 62)" class="i">file</span><span class="o">.</span><span class="i">cars</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs16', 63)" onmouseover="showTip(event, 'fs16', 63)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 64)" onmouseover="showTip(event, 'fs37', 64)" class="f">groupRowsByInt</span> <span class="s">&quot;cyl&quot;</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs16', 65)" onmouseover="showTip(event, 'fs16', 65)" class="t">Frame</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs38', 66)" onmouseover="showTip(event, 'fs38', 66)" class="f">getCol</span> <span class="s">&quot;mpg&quot;</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 67)" onmouseover="showTip(event, 'fs27', 67)" class="t">Stats</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs39', 68)" onmouseover="showTip(event, 'fs39', 68)" class="f">levelMean</span> <span onmouseout="hideTip(event, 'fs40', 69)" onmouseover="showTip(event, 'fs40', 69)" class="f">fst</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs41', 70)" onmouseover="showTip(event, 'fs41', 70)" class="t">Series</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs42', 71)" onmouseover="showTip(event, 'fs42', 71)" class="f">observations</span>
+</code></pre></td>
+</tr>
+</table>
+<p>If you look at the types, you'll see that <code>file.mpg</code> is of type <code>float[]</code> and
+<code>file.cars</code> is of type <code>Frame&lt;string, string&gt;</code>. The R type provider uses the installed
+plugins (like the Deedle plugin) to find the most appropriate F# type for exposing
+the data and so the R data frame <code>cars</code> is automatically exposed as Deedle frame.</p>
+<p>This lets us quickly group the values by "cyl" (number of cylinders) and then
+calculate average miles per gallon "mpg" for each of the groups. Using F# Charting,
+the result looks like this:</p>
+<div style="text-align:center;margin-right:50px;">
+<img src="mpg-per-cyl.png" style="width:450px" />
+</div>
+<h2>Deedle performance improvements</h2>
+<p>In this release of Deedle, we spent some time on improving the performance. The first
+version was designed with performance in mind and the internals make it possible to
+implement operations efficiently (e.g. in F#, it is quite easy to write code so that
+the data is stored in continuous memory blocks). However, there were a number of places
+where some Deedle function just used the "simplest stupid way to get things done".</p>
+<p>This was nice, because it let us quickly build a sophisticated and easy to use API,
+but there were cases where things were just too slow. So, improving performance is an
+ongoing effort and if you find a use case where Deedle is slow, please
+<a href="https://github.com/BlueMountainCapital/Deedle/issues">submit an issue</a>!</p>
+<h3>Measuring performance</h3>
+<p>To make sure we can monitor the performance, I created a fairly simple tool that lets
+us measure performance automatically. This is currently available in
+<a href="https://github.com/tpetricek/Deedle/tree/tpetricek.PerfTests/tests">my branch</a>.
+The tool is started <a href="https://github.com/tpetricek/Deedle/blob/tpetricek.PerfTests/tests/PerformanceTools/performance.fsx">via a FAKE script</a>
+and it measures the performance of all tests in <a href="https://github.com/tpetricek/Deedle/blob/tpetricek.PerfTests/tests/Deedle.PerfTests/Performance.fs">a specified file</a>.
+The tests also serve as unit tests. For example:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[&lt;<span onmouseout="hideTip(event, 'fs9', 78)" onmouseover="showTip(event, 'fs9', 78)" class="t">Test</span>;<span onmouseout="hideTip(event, 'fs11', 79)" onmouseover="showTip(event, 'fs11', 79)" class="t">PerfTest</span>(<span class="i">Iterations</span><span class="o">=</span><span class="n">10</span>)&gt;]
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs47', 80)" onmouseover="showTip(event, 'fs47', 80)" class="f">``Merge 3 unordered 300k long series (repeating Merge)``</span> () <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs43', 81)" onmouseover="showTip(event, 'fs43', 81)" class="i">r1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs48', 82)" onmouseover="showTip(event, 'fs48', 82)" class="f">Merge</span>(<span onmouseout="hideTip(event, 'fs45', 83)" onmouseover="showTip(event, 'fs45', 83)" class="i">r2</span>)<span class="o">.</span><span class="f">Merge</span>(<span onmouseout="hideTip(event, 'fs46', 84)" onmouseover="showTip(event, 'fs46', 84)" class="i">r3</span>)<span class="o">.</span><span class="i">KeyCount</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs6', 85)" onmouseover="showTip(event, 'fs6', 85)" class="f">shouldEqual</span> <span class="n">900000</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>PerfTest</code> attribute specifies that the function is a performance test and it
+also lets us specify number of iterations (so that we run quick tests repeatedly, but
+slow tests only a few times).</p>
+<h3>Absolute performance</h3>
+<p>I did two simple analyses of the performance. The first chart compares the new version
+of Deedle with the previous version available on NuGet:</p>
+<p style="padding-left:15px">
+<strong style="color:#1f77b4">&#8226; v0.9.12 (November 2013)</strong><br />
+<strong style="color:#68C433">&#8226; v1.0.0 (May 2014)</strong>
+</p>
+<p>The numbers represent the total number of milliseconds needed to run the test. Note
+that the X axis is limited to 10 seconds, but some of the tests actually take longer
+using the old version. Also, some tests only have value when using the new version -
+this is because they are using function that is new in v1.0.</p>
+<iframe src="output-abs.html" style="width:640px;height:630px;border-style:none;">
+</iframe>
+<p>A couple of points worth mentioning:</p>
+<ul>
+<li>
+<p>Some of the notable improvements are when merging series - this also applies to
+joining of frames (e.g. when applying numerical operations). We also added
+overload of <code>Merge</code> on frames that can merge multiple series at once, which is
+significantly faster (and lets you merge e.g. 1000 frames, which was previously
+too slow).</p>
+</li>
+<li>
+<p>There is a number of improvements in <code>Resample</code> operations. Again, this is just
+an example of a more general speedup (that also affects windowing and chunking
+functions).</p>
+</li>
+</ul>
+<h3>Relative performance</h3>
+<p>In the previous chart, it is a bit difficult to see what is the greatest performance
+improvement. In the following chart, the tests are scaled so that the performance
+using original version (0.9.12) is used as 100% and the performance using the new
+version is shown as a percentage (so cutting 10sec down to 5sec shows as 50%)</p>
+<iframe src="output-rel.html" style="width:640px;height:560px;border-style:none;">
+</iframe>
+<p>Again, you can see a number of interesting things:</p>
+<ul>
+<li>
+<p>The biggest speedup is on "Accessing float series via object series". This is
+the case when you access a column on a frame using <code>df.Columns</code> (which returns
+a series of <code>ObjectSeries&lt;'K&gt;</code> values). Because we do not know the type of
+individual columns, we return them as series containing <code>obj</code> values. In the
+new version, this does not actually box the values and so converting the series
+back to <code>Series&lt;'K, float&gt;</code> is essentially no-op.</p>
+</li>
+<li>
+<p>We also did some work on improving grouping (and related) operations, so, for
+example the <a href="http://bluemountaincapital.github.io/Deedle/">homepage sample</a> is now
+about twice as fast. There is still (a lot of) room for improvement, but as you
+can see, we're working hard on this!</p>
+</li>
+<li>
+<p>The joining and merging operations are about 6x faster, but for <code>Merge</code> this is
+even more significant when you're merging multiple frames.</p>
+</li>
+</ul>
+<p>The tests that I included here are by no means comprehensive. They simply represent
+a couple of test cases that I was working on. However, with the performance measurements
+in place, we should be able to use this more and more often! So, if you have an
+interesting use case, submit a pull request <a href="https://github.com/tpetricek/Deedle/blob/tpetricek.PerfTests/tests/Deedle.PerfTests/Performance.fs">adding a performance test</a>!</p>
+<h2>Summary</h2>
+<p>The "1.0" release of Deedle is an important milestone. Although Deedle has been
+around since November (and it has been used internally by BlueMountain), the
+"1.0" release means that the library is becoming more stable and ready for others
+to adopt.</p>
+<p>Of course, there is always room for improvement. There are operations that could
+be faster (please report them!), there are functions that should be added
+(please suggest them!) and there are likely a few remaining bugs. I marked some
+issues as <a href="https://github.com/BlueMountainCapital/Deedle/issues?labels=up-for-grabs&amp;page=1&amp;state=open">up-for-grabs</a>
+in case you wanted to contribute directly.</p>
+<p>Another important thing about Deedle is that it is a foundational component
+around which we can build an awesome .NET data science stack. If you're interested,
+register at <a href="http://fslab.org/">www.fslab.org</a> and follow this blog for more
+information.</p>
+<p>There are many people who contributed to Deedle (and R provider), but the projects
+wouldn't exist without <a href="https://github.com/hmansell">Howard Mansell</a> and
+<a href="https://github.com/adamklein">Adam Klein</a> at BlueMountain. A lot of the R provider
+work has been done by <a href="https://github.com/dcharbon">David Charboneau</a>.  <strong>Thanks!</strong></p>
+
+
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">type Environment =<br />&#160;&#160;static member CommandLine : string<br />&#160;&#160;static member CurrentDirectory : string with get, set<br />&#160;&#160;static member Exit : exitCode:int -&gt; unit<br />&#160;&#160;static member ExitCode : int with get, set<br />&#160;&#160;static member ExpandEnvironmentVariables : name:string -&gt; string<br />&#160;&#160;static member FailFast : message:string -&gt; unit + 1 overload<br />&#160;&#160;static member GetCommandLineArgs : unit -&gt; string[]<br />&#160;&#160;static member GetEnvironmentVariable : variable:string -&gt; string + 1 overload<br />&#160;&#160;static member GetEnvironmentVariables : unit -&gt; IDictionary + 1 overload<br />&#160;&#160;static member GetFolderPath : folder:SpecialFolder -&gt; string + 1 overload<br />&#160;&#160;...<br />&#160;&#160;nested type SpecialFolder<br />&#160;&#160;nested type SpecialFolderOption<br /><br />Full name: System.Environment</div>
+<div class="tip" id="fs3">property System.Environment.CurrentDirectory: string</div>
+<div class="tip" id="fs4">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs5">namespace FSharp.Charting</div>
+<div class="tip" id="fs6">val shouldEqual : a:&#39;a -&gt; b:&#39;b -&gt; unit<br /><br />Full name: Deedle-v1.shouldEqual</div>
+<div class="tip" id="fs7">val a : &#39;a</div>
+<div class="tip" id="fs8">val b : &#39;b</div>
+<div class="tip" id="fs9">Multiple items<br />type TestAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; TestAttribute<br /><br />Full name: Deedle-v1.TestAttribute<br /><br />--------------------<br />new : unit -&gt; TestAttribute</div>
+<div class="tip" id="fs10">Multiple items<br />type Attribute =<br />&#160;&#160;member Equals : obj:obj -&gt; bool<br />&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;member IsDefaultAttribute : unit -&gt; bool<br />&#160;&#160;member Match : obj:obj -&gt; bool<br />&#160;&#160;member TypeId : obj<br />&#160;&#160;static member GetCustomAttribute : element:MemberInfo * attributeType:Type -&gt; Attribute + 7 overloads<br />&#160;&#160;static member GetCustomAttributes : element:MemberInfo -&gt; Attribute[] + 15 overloads<br />&#160;&#160;static member IsDefined : element:MemberInfo * attributeType:Type -&gt; bool + 7 overloads<br /><br />Full name: System.Attribute<br /><br />--------------------<br />Attribute() : unit</div>
+<div class="tip" id="fs11">Multiple items<br />type PerfTestAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : Iterations:int -&gt; PerfTestAttribute<br /><br />Full name: Deedle-v1.PerfTestAttribute<br /><br />--------------------<br />new : Iterations:int -&gt; PerfTestAttribute</div>
+<div class="tip" id="fs12">val Iterations : int</div>
+<div class="tip" id="fs13">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs14">namespace Deedle</div>
+<div class="tip" id="fs15">val titanic : Frame&lt;int,string&gt;<br /><br />Full name: Deedle-v1.titanic</div>
+<div class="tip" id="fs16">Multiple items<br />module Frame<br /><br />from Deedle<br /><br />--------------------<br />type Frame =<br />&#160;&#160;static member ReadReader : reader:IDataReader -&gt; Frame&lt;int,string&gt;<br />&#160;&#160;static member CustomExpanders : Dictionary&lt;Type,Func&lt;obj,seq&lt;string * Type * obj&gt;&gt;&gt;<br />&#160;&#160;static member NonExpandableInterfaces : List&lt;Type&gt;<br />&#160;&#160;static member NonExpandableTypes : HashSet&lt;Type&gt;<br /><br />Full name: Deedle.Frame<br /><br />--------------------<br />type Frame&lt;&#39;TRowKey,&#39;TColumnKey (requires equality and equality)&gt; =<br />&#160;&#160;interface IDynamicMetaObjectProvider<br />&#160;&#160;interface INotifyCollectionChanged<br />&#160;&#160;interface IFsiFormattable<br />&#160;&#160;interface IFrame<br />&#160;&#160;new : names:seq&lt;&#39;TColumnKey&gt; * columns:seq&lt;ISeries&lt;&#39;TRowKey&gt;&gt; -&gt; Frame&lt;&#39;TRowKey,&#39;TColumnKey&gt;<br />&#160;&#160;private new : rowIndex:IIndex&lt;&#39;TRowKey&gt; * columnIndex:IIndex&lt;&#39;TColumnKey&gt; * data:IVector&lt;IVector&gt; -&gt; Frame&lt;&#39;TRowKey,&#39;TColumnKey&gt;<br />&#160;&#160;member AddColumn : column:&#39;TColumnKey * series:ISeries&lt;&#39;TRowKey&gt; -&gt; unit<br />&#160;&#160;member AddColumn : column:&#39;TColumnKey * series:seq&lt;&#39;V&gt; -&gt; unit<br />&#160;&#160;member AddColumn : column:&#39;TColumnKey * series:ISeries&lt;&#39;TRowKey&gt; * lookup:Lookup -&gt; unit<br />&#160;&#160;member AddColumn : column:&#39;TColumnKey * series:seq&lt;&#39;V&gt; * lookup:Lookup -&gt; unit<br />&#160;&#160;...<br /><br />Full name: Deedle.Frame&lt;_,_&gt;<br /><br />--------------------<br />new : names:seq&lt;&#39;TColumnKey&gt; * columns:seq&lt;ISeries&lt;&#39;TRowKey&gt;&gt; -&gt; Frame&lt;&#39;TRowKey,&#39;TColumnKey&gt;</div>
+<div class="tip" id="fs17">static member Frame.ReadCsv : path:string * ?hasHeaders:bool * ?inferTypes:bool * ?inferRows:int * ?schema:string * ?separators:string * ?culture:string * ?maxRows:int -&gt; Frame&lt;int,string&gt;<br />static member Frame.ReadCsv : stream:IO.Stream * ?hasHeaders:bool * ?inferTypes:bool * ?inferRows:int * ?schema:string * ?separators:string * ?culture:string * ?maxRows:int -&gt; Frame&lt;int,string&gt;<br />static member Frame.ReadCsv : path:string * indexCol:string * ?hasHeaders:bool * ?inferTypes:bool * ?inferRows:int * ?schema:string * ?separators:string * ?culture:string * ?maxRows:int -&gt; Frame&lt;&#39;R,string&gt; (requires equality)</div>
+<div class="tip" id="fs18">val pivotTable : rowGrp:(&#39;R -&gt; ObjectSeries&lt;&#39;C&gt; -&gt; &#39;RNew) -&gt; colGrp:(&#39;R -&gt; ObjectSeries&lt;&#39;C&gt; -&gt; &#39;CNew) -&gt; op:(Frame&lt;&#39;R,&#39;C&gt; -&gt; &#39;T) -&gt; frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; Frame&lt;&#39;RNew,&#39;CNew&gt; (requires equality and equality and equality and equality)<br /><br />Full name: Deedle.Frame.pivotTable</div>
+<div class="tip" id="fs19">val row : ObjectSeries&lt;string&gt;</div>
+<div class="tip" id="fs20">member ObjectSeries.GetAs : column:&#39;K -&gt; &#39;R<br />member ObjectSeries.GetAs : column:&#39;K * fallback:&#39;R -&gt; &#39;R</div>
+<div class="tip" id="fs21">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs22">type bool = Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs23">val countRows : frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; int (requires equality and equality)<br /><br />Full name: Deedle.Frame.countRows</div>
+<div class="tip" id="fs24">static member FrameExtensions.PivotTable : frame:Frame&lt;&#39;R,&#39;C&gt; * r:&#39;C * c:&#39;C * op:Func&lt;Frame&lt;&#39;R,&#39;C&gt;,&#39;T&gt; -&gt; Frame&lt;&#39;R,&#39;C&gt; (requires equality and equality)<br />member Frame.PivotTable : r:&#39;TColumnKey * c:&#39;TColumnKey * op:(Frame&lt;&#39;TRowKey,&#39;TColumnKey&gt; -&gt; &#39;T) -&gt; Frame&lt;&#39;R,&#39;C&gt; (requires equality and equality and equality and equality)</div>
+<div class="tip" id="fs25">val msft : Frame&lt;DateTime,string&gt;<br /><br />Full name: Deedle-v1.msft</div>
+<div class="tip" id="fs26">Multiple items<br />type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : ticks:int64 -&gt; DateTime + 10 overloads<br />&#160;&#160;&#160;&#160;member Add : value:TimeSpan -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddDays : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddHours : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : months:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : value:int64 -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddYears : value:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />--------------------<br />DateTime()<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs27">type Stats =<br />&#160;&#160;static member count : frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; Series&lt;&#39;C,int&gt; (requires equality and equality)<br />&#160;&#160;static member count : series:Series&lt;&#39;K,&#39;V&gt; -&gt; int (requires equality)<br />&#160;&#160;static member expandingCount : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingKurt : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingMax : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingMean : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingMin : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingSkew : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingStdDev : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;static member expandingSum : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)<br />&#160;&#160;...<br /><br />Full name: Deedle.Stats</div>
+<div class="tip" id="fs28">static member Stats.movingVariance : size:int -&gt; series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)</div>
+<div class="tip" id="fs29">static member Stats.expandingMean : series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;K,float&gt; (requires equality)</div>
+<div class="tip" id="fs30">static member Stats.kurt : frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; Series&lt;&#39;C,float&gt; (requires equality and equality)<br />static member Stats.kurt : series:Series&lt;&#39;K,float&gt; -&gt; float (requires equality)</div>
+<div class="tip" id="fs31">namespace RProvider</div>
+<div class="tip" id="fs32">val file : obj<br /><br />Full name: Deedle-v1.file</div>
+<div class="tip" id="fs33">val mean1 : obj<br /><br />Full name: Deedle-v1.mean1</div>
+<div class="tip" id="fs34">type Array =<br />&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;member CopyTo : array:Array * index:int -&gt; unit + 1 overload<br />&#160;&#160;member GetEnumerator : unit -&gt; IEnumerator<br />&#160;&#160;member GetLength : dimension:int -&gt; int<br />&#160;&#160;member GetLongLength : dimension:int -&gt; int64<br />&#160;&#160;member GetLowerBound : dimension:int -&gt; int<br />&#160;&#160;member GetUpperBound : dimension:int -&gt; int<br />&#160;&#160;member GetValue : [&lt;ParamArray&gt;] indices:int[] -&gt; obj + 7 overloads<br />&#160;&#160;member Initialize : unit -&gt; unit<br />&#160;&#160;member IsFixedSize : bool<br />&#160;&#160;...<br /><br />Full name: System.Array</div>
+<div class="tip" id="fs35">val average : array:&#39;T [] -&gt; &#39;T (requires member ( + ) and member DivideByInt and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.Array.average</div>
+<div class="tip" id="fs36">val mean2 : obj<br /><br />Full name: Deedle-v1.mean2</div>
+<div class="tip" id="fs37">val groupRowsByInt : column:&#39;C -&gt; frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; Frame&lt;(int * &#39;R),&#39;C&gt; (requires equality and equality)<br /><br />Full name: Deedle.Frame.groupRowsByInt</div>
+<div class="tip" id="fs38">val getCol : column:&#39;C -&gt; frame:Frame&lt;&#39;R,&#39;C&gt; -&gt; Series&lt;&#39;R,&#39;V&gt; (requires equality and equality)<br /><br />Full name: Deedle.Frame.getCol</div>
+<div class="tip" id="fs39">static member Stats.levelMean : level:(&#39;K -&gt; &#39;L) -&gt; series:Series&lt;&#39;K,float&gt; -&gt; Series&lt;&#39;L,float&gt; (requires equality and equality)</div>
+<div class="tip" id="fs40">val fst : tuple:(&#39;T1 * &#39;T2) -&gt; &#39;T1<br /><br />Full name: Microsoft.FSharp.Core.Operators.fst</div>
+<div class="tip" id="fs41">Multiple items<br />module Series<br /><br />from Deedle<br /><br />--------------------<br />type Series =<br />&#160;&#160;static member ofNullables : values:seq&lt;Nullable&lt;&#39;a0&gt;&gt; -&gt; Series&lt;int,&#39;a0&gt; (requires default constructor and value type and &#39;a0 :&gt; ValueType)<br />&#160;&#160;static member ofObservations : observations:seq&lt;&#39;a0 * &#39;a1&gt; -&gt; Series&lt;&#39;a0,&#39;a1&gt; (requires equality)<br />&#160;&#160;static member ofOptionalObservations : observations:seq&lt;&#39;K * &#39;a1 option&gt; -&gt; Series&lt;&#39;K,&#39;a1&gt; (requires equality)<br />&#160;&#160;static member ofValues : values:seq&lt;&#39;a0&gt; -&gt; Series&lt;int,&#39;a0&gt;<br /><br />Full name: Deedle.FSharpSeriesExtensions.Series<br /><br />--------------------<br />type Series&lt;&#39;K,&#39;V (requires equality)&gt; =<br />&#160;&#160;interface IFsiFormattable<br />&#160;&#160;interface ISeries&lt;&#39;K&gt;<br />&#160;&#160;new : pairs:seq&lt;KeyValuePair&lt;&#39;K,&#39;V&gt;&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />&#160;&#160;new : keys:seq&lt;&#39;K&gt; * values:seq&lt;&#39;V&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />&#160;&#160;new : index:IIndex&lt;&#39;K&gt; * vector:IVector&lt;&#39;V&gt; * vectorBuilder:IVectorBuilder * indexBuilder:IIndexBuilder -&gt; Series&lt;&#39;K,&#39;V&gt;<br />&#160;&#160;member After : lowerExclusive:&#39;K -&gt; Series&lt;&#39;K,&#39;V&gt;<br />&#160;&#160;member Aggregate : aggregation:Aggregation&lt;&#39;K&gt; * observationSelector:Func&lt;DataSegment&lt;Series&lt;&#39;K,&#39;V&gt;&gt;,KeyValuePair&lt;&#39;TNewKey,OptionalValue&lt;&#39;R&gt;&gt;&gt; -&gt; Series&lt;&#39;TNewKey,&#39;R&gt; (requires equality)<br />&#160;&#160;member Aggregate : aggregation:Aggregation&lt;&#39;K&gt; * keySelector:Func&lt;DataSegment&lt;Series&lt;&#39;K,&#39;V&gt;&gt;,&#39;TNewKey&gt; * valueSelector:Func&lt;DataSegment&lt;Series&lt;&#39;K,&#39;V&gt;&gt;,OptionalValue&lt;&#39;R&gt;&gt; -&gt; Series&lt;&#39;TNewKey,&#39;R&gt; (requires equality)<br />&#160;&#160;member AsyncMaterialize : unit -&gt; Async&lt;Series&lt;&#39;K,&#39;V&gt;&gt;<br />&#160;&#160;member Before : upperExclusive:&#39;K -&gt; Series&lt;&#39;K,&#39;V&gt;<br />&#160;&#160;...<br /><br />Full name: Deedle.Series&lt;_,_&gt;<br /><br />--------------------<br />new : pairs:seq&lt;Collections.Generic.KeyValuePair&lt;&#39;K,&#39;V&gt;&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />new : keys:seq&lt;&#39;K&gt; * values:seq&lt;&#39;V&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />new : index:Indices.IIndex&lt;&#39;K&gt; * vector:IVector&lt;&#39;V&gt; * vectorBuilder:Vectors.IVectorBuilder * indexBuilder:Indices.IIndexBuilder -&gt; Series&lt;&#39;K,&#39;V&gt;</div>
+<div class="tip" id="fs42">val observations : series:Series&lt;&#39;K,&#39;T&gt; -&gt; seq&lt;&#39;K * &#39;T&gt; (requires equality)<br /><br />Full name: Deedle.Series.observations</div>
+<div class="tip" id="fs43">val r1 : Series&lt;int,float&gt;<br /><br />Full name: Deedle-v1.r1</div>
+<div class="tip" id="fs44">val series : observations:seq&lt;&#39;a * &#39;b&gt; -&gt; Series&lt;&#39;a,&#39;b&gt; (requires equality)<br /><br />Full name: Deedle.FSharpSeriesExtensions.series</div>
+<div class="tip" id="fs45">val r2 : Series&lt;int,float&gt;<br /><br />Full name: Deedle-v1.r2</div>
+<div class="tip" id="fs46">val r3 : Series&lt;int,float&gt;<br /><br />Full name: Deedle-v1.r3</div>
+<div class="tip" id="fs47">val ( Merge 3 unordered 300k long series (repeating Merge) ) : unit -&gt; unit<br /><br />Full name: Deedle-v1.( Merge 3 unordered 300k long series (repeating Merge) )</div>
+<div class="tip" id="fs48">member Series.Merge : [&lt;ParamArray&gt;] otherSeries:Series&lt;&#39;K,&#39;V&gt; [] -&gt; Series&lt;&#39;K,&#39;V&gt;<br />member Series.Merge : otherSeries:seq&lt;Series&lt;&#39;K,&#39;V&gt;&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />member Series.Merge : otherSeries:Series&lt;&#39;K,&#39;V&gt; -&gt; Series&lt;&#39;K,&#39;V&gt;<br />member Series.Merge : another:Series&lt;&#39;K,&#39;V&gt; * behavior:UnionBehavior -&gt; Series&lt;&#39;K,&#39;V&gt;</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fdeedle-v1%2f&amp;text=New+features+and+improvements+in+Deedle+v1.0via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fdeedle-v1%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fdeedle-v1%2f&title=New+features+and+improvements+in+Deedle+v1.0">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=New%20features%20and%20improvements%20in%20Deedle%20v1.0&body=%20As%20Howard%20Mansell%20already%20announced%20we%20have%20officially%20released%20the%20%271.0%27%20version%20of%20Deedle.%20In%20this%20blog%20post%2c%20I%27ll%20have%20a%20quick%20look%20at%20a%20couple%20of%20new%20features%20in%20Deedle.%20Howard%27s%20announcement%20has%20a%20more%20detailed%20list%2c%20but%20I%20just%20want%20to%20give%20a%20couple%20of%20examples%20and%20briefly%20comment%20on%20performance%20improvements%20we%20did.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2014%2fdeedle-v1%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 27 May 2014, 3:41 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/deedle/">deedle</a>, <a
+          href="/blog/tag/data-science/">data science</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

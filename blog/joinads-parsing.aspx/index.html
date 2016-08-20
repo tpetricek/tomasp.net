@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>TryJoinads (VI.) - Parsing with joinads - Tomas Petricek</title>
+
+  <meta name="description" content=" This article shows how to use joinads (and the match! extension) for writing parsers. Using joinads one can easily express choice and write a parser that recognizes an intersection of languages." />
+  <meta name="keywords" content="f#, joinads, research, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="TryJoinads (VI.) - Parsing with joinads" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/joinads-parsing.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article shows how to use joinads (and the match! extension) for writing parsers. Using joinads one can easily express choice and write a parser that recognizes an intersection of languages." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="TryJoinads (VI.) - Parsing with joinads" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article shows how to use joinads (and the match! extension) for writing parsers. Using joinads one can easily express choice and write a parser that recognizes an intersection of languages." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "TryJoinads (VI.) - Parsing with joinads",
+    "headline": "TryJoinads (VI.) - Parsing with joinads",
+  	"description": " This article shows how to use joinads (and the match! extension) for writing parsers. Using joinads one can easily express choice and write a parser that recognizes an intersection of languages.",
+  	"url": "http://tomasp.net/blog/joinads-parsing.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-03-21T16:27:06.0000000",
+  	"datePublished": "2012-03-21T16:27:06.0000000",
+    "dateModified": "2012-03-21T16:27:06.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/joinads-parsing.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["f#", "joinads", "research",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>TryJoinads (VI.) - Parsing with joinads</h1>
+<p>In functional programming, parser combinators are a powerful way of writing parsers. 
+A parser is a function that, given some input, returns possible parsed values and 
+the rest of the input. Parsers can be written using combinators for composition, for
+example run two parsers in sequence or perform one parser any number of times.</p>
+
+<p>Parsers can also implement the monad structure. In some cases, this makes the parser
+less efficient, but it is an elegant way of composing parsers and we can also benefit
+from the syntactic support for monads. In this article, we implement a simple parser
+combinators for F# and we look what additional expressive power we can get from the
+<em>joinad</em> structure and <code>match!</code> construct. This article is largely based on a
+previous article <em>"Fun with Parallel Monad Comprehensions"</em>, which can be found on the
+<a href="../pubs.html">publications</a> page.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?implement/parsers.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Implmenting simple parsers</h2>
+
+<p>In the F# implementation, we define parser as a single-case discriminated union that
+contains a parsing function. When given a list of characters, the function returns
+a sequence with possible parsings of the input. The parsing consists of an obtained
+value <code>'T</code>, together with <code>int</code> and a list of unconsumed characters:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span class="i">Parser</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">Parser</span> <span class="k">of</span> (<span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">list</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">char</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">seq</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">int</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ft2', 6)" onmouseover="showTip(event, 'ft2', 6)" class="i">list</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 7)" onmouseover="showTip(event, 'ft3', 7)" class="i">char</span><span class="o">&gt;</span><span class="o">&gt;</span>)</pre>
+
+
+<p>The <code>int</code> value in the result represents the number of characters consumed by the parser. 
+It is not usually included in the definition, but we'll use it in the definition of joinad
+operations. As a next step, we define a simple parser and a function to run the parser:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft6', 8)" onmouseover="showTip(event, 'ft6', 8)" class="i">System</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 9)" onmouseover="showTip(event, 'ft7', 9)" class="i">item</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 10)" onmouseover="showTip(event, 'ft1', 10)" class="i">Parser</span> (<span class="k">function</span>
+  | [] <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 11)" onmouseover="showTip(event, 'ft8', 11)" class="i">seq</span> []
+  | <span onmouseout="hideTip(event, 'ft9', 12)" onmouseover="showTip(event, 'ft9', 12)" class="i">x</span><span class="o">::</span><span onmouseout="hideTip(event, 'ft10', 13)" onmouseover="showTip(event, 'ft10', 13)" class="i">xs</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 14)" onmouseover="showTip(event, 'ft8', 14)" class="i">seq</span> [(<span onmouseout="hideTip(event, 'ft9', 15)" onmouseover="showTip(event, 'ft9', 15)" class="i">x</span>, <span class="n">1</span>, <span onmouseout="hideTip(event, 'ft10', 16)" onmouseover="showTip(event, 'ft10', 16)" class="i">xs</span>)])
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft11', 17)" onmouseover="showTip(event, 'ft11', 17)" class="i">run</span> (<span onmouseout="hideTip(event, 'ft1', 18)" onmouseover="showTip(event, 'ft1', 18)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft12', 19)" onmouseover="showTip(event, 'ft12', 19)" class="i">p</span>) <span onmouseout="hideTip(event, 'ft13', 20)" onmouseover="showTip(event, 'ft13', 20)" class="i">input</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'ft8', 21)" onmouseover="showTip(event, 'ft8', 21)" class="i">seq</span> { <span class="k">for</span> (<span onmouseout="hideTip(event, 'ft14', 22)" onmouseover="showTip(event, 'ft14', 22)" class="i">result</span>, _, <span onmouseout="hideTip(event, 'ft15', 23)" onmouseover="showTip(event, 'ft15', 23)" class="i">tail</span>) <span class="k">in</span> <span onmouseout="hideTip(event, 'ft12', 24)" onmouseover="showTip(event, 'ft12', 24)" class="i">p</span> (<span onmouseout="hideTip(event, 'ft16', 25)" onmouseover="showTip(event, 'ft16', 25)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft17', 26)" onmouseover="showTip(event, 'ft17', 26)" class="i">ofSeq</span> <span onmouseout="hideTip(event, 'ft13', 27)" onmouseover="showTip(event, 'ft13', 27)" class="i">input</span>) <span class="k">do</span>
+          <span class="k">if</span> <span onmouseout="hideTip(event, 'ft15', 28)" onmouseover="showTip(event, 'ft15', 28)" class="i">tail</span> <span class="o">=</span> [] <span class="k">then</span> <span class="k">yield</span> <span onmouseout="hideTip(event, 'ft14', 29)" onmouseover="showTip(event, 'ft14', 29)" class="i">result</span> }</pre>
+
+
+<p>The <code>item</code> parser returns the first character from the input. When it succeeds, it consumes 
+a single character, so it returns 1 as the second element of the tuple. The <code>run</code> function 
+converts the <code>input</code> to a list (i.e. from a <code>string</code>) and then runs the parser. The condition
+<code>tail = []</code> specifies that only results that were parsed without any remaining characters should
+be returned.</p>
+
+<h2>Providing the monad structure</h2>
+
+<p>Parsers are <em>monads</em> and so we can implement an F# computaion expression builder for
+constructing them. In additional, parsers can also be combined and have a <em>zero</em> value 
+(parser that fails). In F#, this means we can also define <code>Zero</code> and <code>Combine</code> methods:</p>
+
+<pre class="fssnip">
+<span class="c">/// Parser that always succeeds without consuming any input</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft18', 30)" onmouseover="showTip(event, 'ft18', 30)" class="i">unit</span> <span onmouseout="hideTip(event, 'ft19', 31)" onmouseover="showTip(event, 'ft19', 31)" class="i">v</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 32)" onmouseover="showTip(event, 'ft1', 32)" class="i">Parser</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft20', 33)" onmouseover="showTip(event, 'ft20', 33)" class="i">input</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 34)" onmouseover="showTip(event, 'ft8', 34)" class="i">seq</span> [(<span onmouseout="hideTip(event, 'ft19', 35)" onmouseover="showTip(event, 'ft19', 35)" class="i">v</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'ft20', 36)" onmouseover="showTip(event, 'ft20', 36)" class="i">input</span>)])
+
+<span class="c">/// Apply the first parser and then continue using &#39;f&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft21', 37)" onmouseover="showTip(event, 'ft21', 37)" class="i">bind</span> <span onmouseout="hideTip(event, 'ft22', 38)" onmouseover="showTip(event, 'ft22', 38)" class="i">f</span> (<span onmouseout="hideTip(event, 'ft1', 39)" onmouseover="showTip(event, 'ft1', 39)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft23', 40)" onmouseover="showTip(event, 'ft23', 40)" class="i">p1</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 41)" onmouseover="showTip(event, 'ft1', 41)" class="i">Parser</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft20', 42)" onmouseover="showTip(event, 'ft20', 42)" class="i">input</span> <span class="k">-&gt;</span>
+  <span onmouseout="hideTip(event, 'ft8', 43)" onmouseover="showTip(event, 'ft8', 43)" class="i">seq</span> { <span class="k">for</span> (<span onmouseout="hideTip(event, 'ft24', 44)" onmouseover="showTip(event, 'ft24', 44)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft25', 45)" onmouseover="showTip(event, 'ft25', 45)" class="i">n1</span>, <span onmouseout="hideTip(event, 'ft26', 46)" onmouseover="showTip(event, 'ft26', 46)" class="i">input&#39;</span>) <span class="k">in</span> <span onmouseout="hideTip(event, 'ft23', 47)" onmouseover="showTip(event, 'ft23', 47)" class="i">p1</span> <span onmouseout="hideTip(event, 'ft20', 48)" onmouseover="showTip(event, 'ft20', 48)" class="i">input</span> <span class="k">do</span>
+          <span class="k">let</span> (<span onmouseout="hideTip(event, 'ft1', 49)" onmouseover="showTip(event, 'ft1', 49)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft27', 50)" onmouseover="showTip(event, 'ft27', 50)" class="i">p2</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft22', 51)" onmouseover="showTip(event, 'ft22', 51)" class="i">f</span> <span onmouseout="hideTip(event, 'ft24', 52)" onmouseover="showTip(event, 'ft24', 52)" class="i">a</span>
+          <span class="k">for</span> (<span onmouseout="hideTip(event, 'ft28', 53)" onmouseover="showTip(event, 'ft28', 53)" class="i">result</span>, <span onmouseout="hideTip(event, 'ft29', 54)" onmouseover="showTip(event, 'ft29', 54)" class="i">n2</span>, <span onmouseout="hideTip(event, 'ft15', 55)" onmouseover="showTip(event, 'ft15', 55)" class="i">tail</span>) <span class="k">in</span> <span onmouseout="hideTip(event, 'ft27', 56)" onmouseover="showTip(event, 'ft27', 56)" class="i">p2</span> <span onmouseout="hideTip(event, 'ft26', 57)" onmouseover="showTip(event, 'ft26', 57)" class="i">input&#39;</span> <span class="k">do</span>
+            <span class="k">yield</span> <span onmouseout="hideTip(event, 'ft28', 58)" onmouseover="showTip(event, 'ft28', 58)" class="i">result</span>, <span onmouseout="hideTip(event, 'ft25', 59)" onmouseover="showTip(event, 'ft25', 59)" class="i">n1</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft29', 60)" onmouseover="showTip(event, 'ft29', 60)" class="i">n2</span>, <span onmouseout="hideTip(event, 'ft15', 61)" onmouseover="showTip(event, 'ft15', 61)" class="i">tail</span> })
+
+<span class="c">/// Parser that alwyas fails without consuming any input</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft30', 62)" onmouseover="showTip(event, 'ft30', 62)" class="i">zero</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 63)" onmouseover="showTip(event, 'ft1', 63)" class="i">Parser</span> (<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft8', 64)" onmouseover="showTip(event, 'ft8', 64)" class="i">seq</span> [])
+
+<span class="c">/// Combine the results of two parsers</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft31', 65)" onmouseover="showTip(event, 'ft31', 65)" class="i">plus</span> (<span onmouseout="hideTip(event, 'ft1', 66)" onmouseover="showTip(event, 'ft1', 66)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft23', 67)" onmouseover="showTip(event, 'ft23', 67)" class="i">p1</span>) (<span onmouseout="hideTip(event, 'ft1', 68)" onmouseover="showTip(event, 'ft1', 68)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft32', 69)" onmouseover="showTip(event, 'ft32', 69)" class="i">p2</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 70)" onmouseover="showTip(event, 'ft1', 70)" class="i">Parser</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft20', 71)" onmouseover="showTip(event, 'ft20', 71)" class="i">input</span> <span class="k">-&gt;</span>
+  <span onmouseout="hideTip(event, 'ft33', 72)" onmouseover="showTip(event, 'ft33', 72)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft34', 73)" onmouseover="showTip(event, 'ft34', 73)" class="i">concat</span> [ <span onmouseout="hideTip(event, 'ft23', 74)" onmouseover="showTip(event, 'ft23', 74)" class="i">p1</span> <span onmouseout="hideTip(event, 'ft20', 75)" onmouseover="showTip(event, 'ft20', 75)" class="i">input</span>; <span onmouseout="hideTip(event, 'ft32', 76)" onmouseover="showTip(event, 'ft32', 76)" class="i">p2</span> <span onmouseout="hideTip(event, 'ft20', 77)" onmouseover="showTip(event, 'ft20', 77)" class="i">input</span> ])
+
+<span class="c">/// Computation expression builder for creating parsers</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft35', 78)" onmouseover="showTip(event, 'ft35', 78)" class="i">ParseBuilder</span>() <span class="o">=</span> <span id="ftt36" onmouseout="hideTip(event, 'ft36', 79)" onmouseover="showTip(event, 'ft36', 79, document.getElementById('ftt36'))" class="omitted">(...)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft37', 80)" onmouseover="showTip(event, 'ft37', 80)" class="i">parse</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft35', 81)" onmouseover="showTip(event, 'ft35', 81)" class="i">ParseBuilder</span>()</pre>
+
+
+<p>The <code>unit</code> operation returns a single result containing the specified value that doesn't 
+consume any input. The implementation of <code>bind</code> uses sequence comprehensions to run the 
+parsers in sequence. It returs the result of the second parser and consumes the sum of 
+characters consumed by the first and the second parser. The <code>zero</code> operation creates a 
+parser that always fails, and <code>plus</code> represents a nondeterministic choice between two parsers.</p>
+
+<p>The computation builder also defines <code>ReturnFrom</code> member (to allow the <code>return!</code> syntax).
+It provides <code>Delay</code> and <code>Run</code> members - these will be used later by the <em>joinad</em> definitions,
+but they change how <code>Combine</code> behaves. In particular, one way to define <code>Delay</code> is to simply
+return the function (of type <code>unit -&gt; Parser&lt;'T&gt;</code>) that it gets as an argument. As a result,
+the second argument of <code>Combine</code> will also be a function and so it needs to be evaluated
+before calling <code>plus</code>. The <code>Run</code> member is used on a value obtained from <code>Delay</code>, so it simply
+runs the function.</p>
+
+<p>Using the <code>parser</code> computation builder, we can write a couple of basic parser combinators:</p>
+
+<pre class="fssnip">
+<span class="c">/// Apply function &#39;f&#39; to the parsed value</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft38', 82)" onmouseover="showTip(event, 'ft38', 82)" class="i">map</span> <span onmouseout="hideTip(event, 'ft39', 83)" onmouseover="showTip(event, 'ft39', 83)" class="i">f</span> <span onmouseout="hideTip(event, 'ft40', 84)" onmouseover="showTip(event, 'ft40', 84)" class="i">p</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 85)" onmouseover="showTip(event, 'ft37', 85)" class="i">parse</span> {
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft19', 86)" onmouseover="showTip(event, 'ft19', 86)" class="i">v</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft40', 87)" onmouseover="showTip(event, 'ft40', 87)" class="i">p</span>
+  <span class="k">return</span> <span onmouseout="hideTip(event, 'ft39', 88)" onmouseover="showTip(event, 'ft39', 88)" class="i">f</span> <span onmouseout="hideTip(event, 'ft19', 89)" onmouseover="showTip(event, 'ft19', 89)" class="i">v</span> }
+
+<span class="c">/// Succeeds only when a character matches given predicate</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft41', 90)" onmouseover="showTip(event, 'ft41', 90)" class="i">sat</span> <span onmouseout="hideTip(event, 'ft42', 91)" onmouseover="showTip(event, 'ft42', 91)" class="i">pred</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 92)" onmouseover="showTip(event, 'ft37', 92)" class="i">parse</span> {
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft43', 93)" onmouseover="showTip(event, 'ft43', 93)" class="i">ch</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft7', 94)" onmouseover="showTip(event, 'ft7', 94)" class="i">item</span>
+  <span class="k">if</span> <span onmouseout="hideTip(event, 'ft42', 95)" onmouseover="showTip(event, 'ft42', 95)" class="i">pred</span> <span class="i">ch</span> <span class="k">then</span> <span class="k">return</span> <span class="i">ch</span> }
+
+<span class="c">/// Parse a specific character</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft44', 96)" onmouseover="showTip(event, 'ft44', 96)" class="i">char</span> <span onmouseout="hideTip(event, 'ft43', 97)" onmouseover="showTip(event, 'ft43', 97)" class="i">ch</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft41', 98)" onmouseover="showTip(event, 'ft41', 98)" class="i">sat</span> ((<span class="o">=</span>) <span onmouseout="hideTip(event, 'ft43', 99)" onmouseover="showTip(event, 'ft43', 99)" class="i">ch</span>)
+<span class="c">/// Parse a character other than the specified one</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft45', 100)" onmouseover="showTip(event, 'ft45', 100)" class="i">notChar</span> <span onmouseout="hideTip(event, 'ft43', 101)" onmouseover="showTip(event, 'ft43', 101)" class="i">ch</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft41', 102)" onmouseover="showTip(event, 'ft41', 102)" class="i">sat</span> ((<span class="o">&lt;&gt;</span>) <span onmouseout="hideTip(event, 'ft43', 103)" onmouseover="showTip(event, 'ft43', 103)" class="i">ch</span>)
+
+<span class="c">/// Parse one or more repetitions of parser &#39;p&#39;</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft46', 104)" onmouseover="showTip(event, 'ft46', 104)" class="i">some</span> <span onmouseout="hideTip(event, 'ft40', 105)" onmouseover="showTip(event, 'ft40', 105)" class="i">p</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 106)" onmouseover="showTip(event, 'ft37', 106)" class="i">parse</span> {
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft47', 107)" onmouseover="showTip(event, 'ft47', 107)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft40', 108)" onmouseover="showTip(event, 'ft40', 108)" class="i">p</span>
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft48', 109)" onmouseover="showTip(event, 'ft48', 109)" class="i">xs</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft49', 110)" onmouseover="showTip(event, 'ft49', 110)" class="i">many</span> <span onmouseout="hideTip(event, 'ft40', 111)" onmouseover="showTip(event, 'ft40', 111)" class="i">p</span>
+  <span class="k">return</span> <span onmouseout="hideTip(event, 'ft47', 112)" onmouseover="showTip(event, 'ft47', 112)" class="i">x</span><span class="o">::</span><span class="i">xs</span> }
+
+<span class="c">/// Parse zero or more repetitions of parser &#39;p&#39;</span>
+<span class="k">and</span> <span onmouseout="hideTip(event, 'ft49', 113)" onmouseover="showTip(event, 'ft49', 113)" class="i">many</span> <span onmouseout="hideTip(event, 'ft40', 114)" onmouseover="showTip(event, 'ft40', 114)" class="i">p</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 115)" onmouseover="showTip(event, 'ft37', 115)" class="i">parse</span> {
+  <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft46', 116)" onmouseover="showTip(event, 'ft46', 116)" class="i">some</span> <span onmouseout="hideTip(event, 'ft40', 117)" onmouseover="showTip(event, 'ft40', 117)" class="i">p</span>
+  <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft18', 118)" onmouseover="showTip(event, 'ft18', 118)" class="i">unit</span> [] }</pre>
+
+
+<p>The definition of <code>map</code> uses only <code>Bind</code> and <code>Return</code>. The definition of <code>sat</code> also
+uses <code>Zero</code> (it is inserted automatically in place of the <code>else</code> branch). The <code>some</code>
+combinator calls two parsers in sequence and then returns, so it also does not need
+any primitives beyond <code>Bind</code> and <code>Return</code>. Finally, the <code>many</code> combinator uses 
+<code>Combine</code> to represent choice between the two parsers.</p>
+
+<h3>Parsing brackets</h3>
+
+<p>As our initial example, we use the previous parser combinators and the <code>parse</code> 
+computation builder to write a parser that recognizes bracketed text. For example,
+given a text "(((hello)))" we would like to get just the string "hello". The following
+listing shows an initial attempt:</p>
+
+<pre class="fssnip">
+<span class="c">/// Parse any number of &#39;op&#39; chars, followed by the</span>
+<span class="c">/// body and then the same number of &#39;cl&#39; chars.</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft50', 119)" onmouseover="showTip(event, 'ft50', 119)" class="i">brackets</span> <span onmouseout="hideTip(event, 'ft51', 120)" onmouseover="showTip(event, 'ft51', 120)" class="i">op</span> <span onmouseout="hideTip(event, 'ft52', 121)" onmouseover="showTip(event, 'ft52', 121)" class="i">cl</span> <span onmouseout="hideTip(event, 'ft53', 122)" onmouseover="showTip(event, 'ft53', 122)" class="i">body</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 123)" onmouseover="showTip(event, 'ft37', 123)" class="i">parse</span> {
+  <span class="k">let!</span> _ <span class="o">=</span> <span onmouseout="hideTip(event, 'ft44', 124)" onmouseover="showTip(event, 'ft44', 124)" class="i">char</span> <span onmouseout="hideTip(event, 'ft51', 125)" onmouseover="showTip(event, 'ft51', 125)" class="i">op</span>
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft54', 126)" onmouseover="showTip(event, 'ft54', 126)" class="i">inner</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'ft37', 127)" onmouseover="showTip(event, 'ft37', 127)" class="i">parse</span> { <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft50', 128)" onmouseover="showTip(event, 'ft50', 128)" class="i">brackets</span> <span onmouseout="hideTip(event, 'ft51', 129)" onmouseover="showTip(event, 'ft51', 129)" class="i">op</span> <span onmouseout="hideTip(event, 'ft52', 130)" onmouseover="showTip(event, 'ft52', 130)" class="i">cl</span> <span onmouseout="hideTip(event, 'ft53', 131)" onmouseover="showTip(event, 'ft53', 131)" class="i">body</span>
+            <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft53', 132)" onmouseover="showTip(event, 'ft53', 132)" class="i">body</span> }
+  <span class="k">let!</span> _ <span class="o">=</span> <span onmouseout="hideTip(event, 'ft44', 133)" onmouseover="showTip(event, 'ft44', 133)" class="i">char</span> <span onmouseout="hideTip(event, 'ft52', 134)" onmouseover="showTip(event, 'ft52', 134)" class="i">cl</span>
+  <span class="k">return</span> <span onmouseout="hideTip(event, 'ft54', 135)" onmouseover="showTip(event, 'ft54', 135)" class="i">inner</span> }
+
+<span class="c">/// Returns the body of a bracketed string</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft55', 136)" onmouseover="showTip(event, 'ft55', 136)" class="i">skipBrackets</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft50', 137)" onmouseover="showTip(event, 'ft50', 137)" class="i">brackets</span> <span class="s">&#39;(&#39;</span> <span class="s">&#39;)&#39;</span> (<span onmouseout="hideTip(event, 'ft49', 138)" onmouseover="showTip(event, 'ft49', 138)" class="i">many</span> <span onmouseout="hideTip(event, 'ft7', 139)" onmouseover="showTip(event, 'ft7', 139)" class="i">item</span>)
+
+<span class="c">/// Helper function that converts char list to string</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft56', 140)" onmouseover="showTip(event, 'ft56', 140)" class="i">charsToString</span> <span onmouseout="hideTip(event, 'ft57', 141)" onmouseover="showTip(event, 'ft57', 141)" class="i">l</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft6', 142)" onmouseover="showTip(event, 'ft6', 142)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft58', 143)" onmouseover="showTip(event, 'ft58', 143)" class="i">String</span>(<span onmouseout="hideTip(event, 'ft59', 144)" onmouseover="showTip(event, 'ft59', 144)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft60', 145)" onmouseover="showTip(event, 'ft60', 145)" class="i">ofSeq</span> <span onmouseout="hideTip(event, 'ft57', 146)" onmouseover="showTip(event, 'ft57', 146)" class="i">l</span>)
+
+<span class="c">// Run this line to see the results</span>
+<span onmouseout="hideTip(event, 'ft11', 147)" onmouseover="showTip(event, 'ft11', 147)" class="i">run</span> (<span onmouseout="hideTip(event, 'ft38', 148)" onmouseover="showTip(event, 'ft38', 148)" class="i">map</span> <span onmouseout="hideTip(event, 'ft56', 149)" onmouseover="showTip(event, 'ft56', 149)" class="i">charsToString</span> <span onmouseout="hideTip(event, 'ft55', 150)" onmouseover="showTip(event, 'ft55', 150)" class="i">skipBrackets</span>) <span class="s">&quot;</span><span class="s">(</span><span class="s">(</span><span class="s">(</span><span class="s">hello</span><span class="s">)</span><span class="s">)</span><span class="s">)</span><span class="s">&quot;</span></pre>
+
+
+<p>If you run the last line of the listing, you get a list containing "hello", but also 
+"(hello)" and "((hello))". This is because the <code>many item</code> parser can also consume 
+brackets. To correct that, we need to write a parser that accepts any character except 
+opening and closing brace. As we will see shortly, this can be elegantly solved using 
+<em>joinads</em> and the <code>merge</code> operation. The next section adds the required structure
+and finishes the example.</p>
+
+<h2>Adding the joinad structure</h2>
+
+<p>In order to support the <code>match!</code> syntax, we need to add operation <code>Merge</code> of type
+<code>M&lt;'T1&gt; * M&lt;'T2&gt; -&gt; M&lt;'T1 * T2&gt;</code> and an operation <code>Choose</code> of type <code>M&lt;'T&gt; * M&lt;'T&gt; -&gt; M&lt;'T&gt;</code>.
+The first operation is sometimes also called <em>parallel composition</em>, so what could
+that mean for parsers? One possible implementation is to run two parsers specified
+as arguments at the <em>same</em> input and return both of their results. The snippet below
+shows the source code.</p>
+
+<p>The second operation represents a <em>choice</em> between two parsers. In order to obey
+laws about joinad operations (to keep the familiar behaviour of pattern matching),
+the operation cannot be implemented using <code>plus</code>. When called with <code>p</code> and <code>map f p</code>
+as arguments, it should behave as the parser specified as the first argument. This
+can be done by returning the result of a first parser that does not fail (i.e. 
+returns a non-empty sequence):</p>
+
+<pre class="fssnip">
+<span class="c">/// Apply both parsers on the same input &#39;in parallel&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft61', 151)" onmouseover="showTip(event, 'ft61', 151)" class="i">merge</span> (<span onmouseout="hideTip(event, 'ft1', 152)" onmouseover="showTip(event, 'ft1', 152)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft23', 153)" onmouseover="showTip(event, 'ft23', 153)" class="i">p1</span>) (<span onmouseout="hideTip(event, 'ft1', 154)" onmouseover="showTip(event, 'ft1', 154)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft27', 155)" onmouseover="showTip(event, 'ft27', 155)" class="i">p2</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 156)" onmouseover="showTip(event, 'ft1', 156)" class="i">Parser</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft20', 157)" onmouseover="showTip(event, 'ft20', 157)" class="i">input</span> <span class="k">-&gt;</span>
+  <span onmouseout="hideTip(event, 'ft8', 158)" onmouseover="showTip(event, 'ft8', 158)" class="i">seq</span> { <span class="k">for</span> (<span onmouseout="hideTip(event, 'ft24', 159)" onmouseover="showTip(event, 'ft24', 159)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft25', 160)" onmouseover="showTip(event, 'ft25', 160)" class="i">n1</span>, <span onmouseout="hideTip(event, 'ft62', 161)" onmouseover="showTip(event, 'ft62', 161)" class="i">tail1</span>) <span class="k">in</span> <span onmouseout="hideTip(event, 'ft23', 162)" onmouseover="showTip(event, 'ft23', 162)" class="i">p1</span> <span onmouseout="hideTip(event, 'ft20', 163)" onmouseover="showTip(event, 'ft20', 163)" class="i">input</span> <span class="k">do</span>
+          <span class="k">for</span> (<span onmouseout="hideTip(event, 'ft63', 164)" onmouseover="showTip(event, 'ft63', 164)" class="i">b</span>, <span onmouseout="hideTip(event, 'ft29', 165)" onmouseover="showTip(event, 'ft29', 165)" class="i">n2</span>, <span onmouseout="hideTip(event, 'ft64', 166)" onmouseover="showTip(event, 'ft64', 166)" class="i">tail2</span>) <span class="k">in</span> <span onmouseout="hideTip(event, 'ft27', 167)" onmouseover="showTip(event, 'ft27', 167)" class="i">p2</span> <span onmouseout="hideTip(event, 'ft20', 168)" onmouseover="showTip(event, 'ft20', 168)" class="i">input</span> <span class="k">do</span>
+            <span class="k">if</span> <span onmouseout="hideTip(event, 'ft25', 169)" onmouseover="showTip(event, 'ft25', 169)" class="i">n1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft29', 170)" onmouseover="showTip(event, 'ft29', 170)" class="i">n2</span> <span class="k">then</span> <span class="k">yield</span> (<span onmouseout="hideTip(event, 'ft24', 171)" onmouseover="showTip(event, 'ft24', 171)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft63', 172)" onmouseover="showTip(event, 'ft63', 172)" class="i">b</span>), <span onmouseout="hideTip(event, 'ft25', 173)" onmouseover="showTip(event, 'ft25', 173)" class="i">n1</span>, <span onmouseout="hideTip(event, 'ft62', 174)" onmouseover="showTip(event, 'ft62', 174)" class="i">tail1</span> })
+
+<span class="c">/// Run both parsers and return the results of the first</span>
+<span class="c">/// one that does not return empty sequence.</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft65', 175)" onmouseover="showTip(event, 'ft65', 175)" class="i">choose</span> (<span onmouseout="hideTip(event, 'ft1', 176)" onmouseover="showTip(event, 'ft1', 176)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft23', 177)" onmouseover="showTip(event, 'ft23', 177)" class="i">p1</span>) (<span onmouseout="hideTip(event, 'ft1', 178)" onmouseover="showTip(event, 'ft1', 178)" class="i">Parser</span> <span onmouseout="hideTip(event, 'ft32', 179)" onmouseover="showTip(event, 'ft32', 179)" class="i">p2</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 180)" onmouseover="showTip(event, 'ft1', 180)" class="i">Parser</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft20', 181)" onmouseover="showTip(event, 'ft20', 181)" class="i">input</span> <span class="k">-&gt;</span>
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'ft23', 182)" onmouseover="showTip(event, 'ft23', 182)" class="i">p1</span> <span onmouseout="hideTip(event, 'ft20', 183)" onmouseover="showTip(event, 'ft20', 183)" class="i">input</span>, <span onmouseout="hideTip(event, 'ft32', 184)" onmouseover="showTip(event, 'ft32', 184)" class="i">p2</span> <span onmouseout="hideTip(event, 'ft20', 185)" onmouseover="showTip(event, 'ft20', 185)" class="i">input</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft66', 186)" onmouseover="showTip(event, 'ft66', 186)" class="i">res</span>, _  <span class="k">when</span> <span onmouseout="hideTip(event, 'ft67', 187)" onmouseover="showTip(event, 'ft67', 187)" class="i">not</span> (<span onmouseout="hideTip(event, 'ft33', 188)" onmouseover="showTip(event, 'ft33', 188)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft68', 189)" onmouseover="showTip(event, 'ft68', 189)" class="i">isEmpty</span> <span onmouseout="hideTip(event, 'ft66', 190)" onmouseover="showTip(event, 'ft66', 190)" class="i">res</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft66', 191)" onmouseover="showTip(event, 'ft66', 191)" class="i">res</span>
+  | _, <span onmouseout="hideTip(event, 'ft66', 192)" onmouseover="showTip(event, 'ft66', 192)" class="i">res</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft66', 193)" onmouseover="showTip(event, 'ft66', 193)" class="i">res</span> )
+
+<span class="c">/// Add operations to the F# computation builder</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft35', 194)" onmouseover="showTip(event, 'ft35', 194)" class="i">ParseBuilder</span> <span class="k">with</span> <span id="ftt69" onmouseout="hideTip(event, 'ft69', 195)" onmouseover="showTip(event, 'ft69', 195, document.getElementById('ftt69'))" class="omitted">...</span></pre>
+
+
+<p>The parser created by <code>merge</code> independently parses the input string using both of the parsers. 
+It uses sequence comprehensions to find all combinations of results such that the number of 
+characters consumed by the two parsers was the same. For each matching combination, the parser 
+returns a tuple with the two parsing results. Requiring that the two parsers consume the same 
+number of characters is not an arbitrary decision. It means that the remaining unconsumed 
+strings <code>tail1</code> and <code>tail2</code> are the same and so we can return either of them.</p>
+
+<h3>Parsing brackets, again</h3>
+
+<p>Let's get back to the example with parsing brackets. The following snippet uses <code>match!</code> to 
+create a parser that consumes <em>all</em> brackets. The trick is to write a parser <code>body</code> that 
+represent any character which is not opening or closing bracket:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft70', 196)" onmouseover="showTip(event, 'ft70', 196)" class="i">skipAllBrackets</span> <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft71', 197)" onmouseover="showTip(event, 'ft71', 197)" class="i">body</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 198)" onmouseover="showTip(event, 'ft37', 198)" class="i">parse</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft45', 199)" onmouseover="showTip(event, 'ft45', 199)" class="i">notChar</span> <span class="s">&#39;(&#39;</span>, <span onmouseout="hideTip(event, 'ft45', 200)" onmouseover="showTip(event, 'ft45', 200)" class="i">notChar</span> <span class="s">&#39;)&#39;</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft72', 201)" onmouseover="showTip(event, 'ft72', 201)" class="i">c</span>, _ <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft72', 202)" onmouseover="showTip(event, 'ft72', 202)" class="i">c</span> }
+  <span onmouseout="hideTip(event, 'ft50', 203)" onmouseover="showTip(event, 'ft50', 203)" class="i">brackets</span> <span class="s">&#39;(&#39;</span> <span class="s">&#39;)&#39;</span> (<span onmouseout="hideTip(event, 'ft49', 204)" onmouseover="showTip(event, 'ft49', 204)" class="i">many</span> <span onmouseout="hideTip(event, 'ft71', 205)" onmouseover="showTip(event, 'ft71', 205)" class="i">body</span>)
+
+<span onmouseout="hideTip(event, 'ft11', 206)" onmouseover="showTip(event, 'ft11', 206)" class="i">run</span> (<span onmouseout="hideTip(event, 'ft38', 207)" onmouseover="showTip(event, 'ft38', 207)" class="i">map</span> <span onmouseout="hideTip(event, 'ft56', 208)" onmouseover="showTip(event, 'ft56', 208)" class="i">charsToString</span> <span onmouseout="hideTip(event, 'ft70', 209)" onmouseover="showTip(event, 'ft70', 209)" class="i">skipAllBrackets</span>) <span class="s">&quot;</span><span class="s">(</span><span class="s">(</span><span class="s">(</span><span class="s">hello</span><span class="s">)</span><span class="s">)</span><span class="s">)</span><span class="s">&quot;</span></pre>
+
+
+<p>When you run the last line of the sample, you can see that only "hello" is returned as the
+result. The parser <code>body</code> is constructed using the <code>match!</code> notation. It takes two <code>notChar</code>
+parsers as the arguments and runs them both on the same input. They boty read a single character
+and succeed when the character is not the specified symbol. This means that <code>body</code> succeds 
+only if the character is not '(' and ')'. Both parsers return the same character, so we return 
+the first one as the result and ignore the second (the <code>_</code> pattern means that the parser 
+must succeed, but we then ignore the value).</p>
+
+<h2>Validating phone numbers</h2>
+
+<p>Another example where the <code>match!</code> syntax for parsers is useful is validation of inputs. 
+For example, a valid Cambridge phone number consists of 10 symbols, contains only digits, 
+and starts with 1223. Using a couple of additional helper functions, we can directly
+encode these three rules using <code>match!</code>:</p>
+
+<pre class="fssnip">
+<span class="c">/// Run the parser &#39;p&#39; specified number of times</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft73', 210)" onmouseover="showTip(event, 'ft73', 210)" class="i">replicate</span> <span onmouseout="hideTip(event, 'ft74', 211)" onmouseover="showTip(event, 'ft74', 211)" class="i">n</span> <span onmouseout="hideTip(event, 'ft40', 212)" onmouseover="showTip(event, 'ft40', 212)" class="i">p</span> <span class="o">=</span> <span id="ftt75" onmouseout="hideTip(event, 'ft75', 213)" onmouseover="showTip(event, 'ft75', 213, document.getElementById('ftt75'))" class="omitted">(...)</span>
+<span class="c">/// Parse string &#39;str&#39; and then accept any further text</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft76', 214)" onmouseover="showTip(event, 'ft76', 214)" class="i">startsWith</span> <span onmouseout="hideTip(event, 'ft77', 215)" onmouseover="showTip(event, 'ft77', 215)" class="i">str</span> <span class="o">=</span> <span id="ftt78" onmouseout="hideTip(event, 'ft78', 216)" onmouseover="showTip(event, 'ft78', 216, document.getElementById('ftt78'))" class="omitted">(...)</span>
+
+<span class="c">/// Returns the input if it is valid Cambridge phone number</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft79', 217)" onmouseover="showTip(event, 'ft79', 217)" class="i">cambridgePhone</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 218)" onmouseover="showTip(event, 'ft37', 218)" class="i">parse</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft49', 219)" onmouseover="showTip(event, 'ft49', 219)" class="i">many</span> (<span onmouseout="hideTip(event, 'ft41', 220)" onmouseover="showTip(event, 'ft41', 220)" class="i">sat</span> <span onmouseout="hideTip(event, 'ft80', 221)" onmouseover="showTip(event, 'ft80', 221)" class="i">Char</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft81', 222)" onmouseover="showTip(event, 'ft81', 222)" class="i">IsDigit</span>), <span onmouseout="hideTip(event, 'ft73', 223)" onmouseover="showTip(event, 'ft73', 223)" class="i">replicate</span> <span class="n">10</span> <span onmouseout="hideTip(event, 'ft7', 224)" onmouseover="showTip(event, 'ft7', 224)" class="i">item</span>, <span onmouseout="hideTip(event, 'ft76', 225)" onmouseover="showTip(event, 'ft76', 225)" class="i">startsWith</span> <span class="s">&quot;</span><span class="s">1223</span><span class="s">&quot;</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft82', 226)" onmouseover="showTip(event, 'ft82', 226)" class="i">n</span>, _, _ <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft82', 227)" onmouseover="showTip(event, 'ft82', 227)" class="i">n</span> }
+
+<span class="c">// Run this line to test a number</span>
+<span onmouseout="hideTip(event, 'ft11', 228)" onmouseover="showTip(event, 'ft11', 228)" class="i">run</span> <span onmouseout="hideTip(event, 'ft79', 229)" onmouseover="showTip(event, 'ft79', 229)" class="i">cambridgePhone</span> <span class="s">&quot;</span><span class="s">1223999999</span><span class="s">&quot;</span>
+<span onmouseout="hideTip(event, 'ft11', 230)" onmouseover="showTip(event, 'ft11', 230)" class="i">run</span> <span onmouseout="hideTip(event, 'ft79', 231)" onmouseover="showTip(event, 'ft79', 231)" class="i">cambridgePhone</span> <span class="s">&quot;</span><span class="s">1865999999</span><span class="s">&quot;</span></pre>
+
+
+<p>Each condition on the number is encoded as a single parser. The first one ensures
+that all characters of the input are digits. The second parser checks that the input
+consits of 10 symbols and the last parser ensures that the input starts with the prefix
+"1223". The single clause of the <code>match!</code> construct is translated to applications of
+the <code>Merge</code> operation, which runs all three parsers on the same input and returns
+the parsed values only when all three succeed - meaning that the input satisifies 
+all three conditions.</p>
+
+<p>If you run the parser on the two sample inputs, the first line should succeed 
+(the number is valid Cambridge phone number), but the second one fails. The 
+prefix "1865" is used in the Oxford area!</p>
+
+<p>To support Oxford in our sample, we can utilize the <code>Choose</code> operation. The operation
+is used when <code>match!</code> consists of multiple clauses. When we add additional clauses,
+the result of the first parser that succeeds is returned. The following snippet
+shows an example:</p>
+
+<pre class="fssnip">
+<span class="c">/// Recognize phone number based on the prefix</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft83', 232)" onmouseover="showTip(event, 'ft83', 232)" class="i">phone</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 233)" onmouseover="showTip(event, 'ft37', 233)" class="i">parse</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft49', 234)" onmouseover="showTip(event, 'ft49', 234)" class="i">many</span> (<span onmouseout="hideTip(event, 'ft41', 235)" onmouseover="showTip(event, 'ft41', 235)" class="i">sat</span> <span onmouseout="hideTip(event, 'ft80', 236)" onmouseover="showTip(event, 'ft80', 236)" class="i">Char</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft81', 237)" onmouseover="showTip(event, 'ft81', 237)" class="i">IsDigit</span>), <span onmouseout="hideTip(event, 'ft73', 238)" onmouseover="showTip(event, 'ft73', 238)" class="i">replicate</span> <span class="n">10</span> <span onmouseout="hideTip(event, 'ft7', 239)" onmouseover="showTip(event, 'ft7', 239)" class="i">item</span>, 
+         <span onmouseout="hideTip(event, 'ft76', 240)" onmouseover="showTip(event, 'ft76', 240)" class="i">startsWith</span> <span class="s">&quot;</span><span class="s">1223</span><span class="s">&quot;</span>, <span onmouseout="hideTip(event, 'ft76', 241)" onmouseover="showTip(event, 'ft76', 241)" class="i">startsWith</span> <span class="s">&quot;</span><span class="s">1865</span><span class="s">&quot;</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft82', 242)" onmouseover="showTip(event, 'ft82', 242)" class="i">n</span>, _, _, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="s">&quot;</span><span class="s">Cambridge</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft84', 243)" onmouseover="showTip(event, 'ft84', 243)" class="i">string</span> <span onmouseout="hideTip(event, 'ft82', 244)" onmouseover="showTip(event, 'ft82', 244)" class="i">n</span>
+  | <span onmouseout="hideTip(event, 'ft82', 245)" onmouseover="showTip(event, 'ft82', 245)" class="i">n</span>, _, <span class="o">?</span>, _ <span class="k">-&gt;</span> <span class="k">return</span> <span class="s">&quot;</span><span class="s">Oxford</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft84', 246)" onmouseover="showTip(event, 'ft84', 246)" class="i">string</span> <span onmouseout="hideTip(event, 'ft82', 247)" onmouseover="showTip(event, 'ft82', 247)" class="i">n</span> 
+  | <span onmouseout="hideTip(event, 'ft82', 248)" onmouseover="showTip(event, 'ft82', 248)" class="i">n</span>, _, <span class="o">?</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="s">&quot;</span><span class="s">Other</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft84', 249)" onmouseover="showTip(event, 'ft84', 249)" class="i">string</span> <span onmouseout="hideTip(event, 'ft82', 250)" onmouseover="showTip(event, 'ft82', 250)" class="i">n</span> }
+
+<span class="c">// Run the parser on sample inputs</span>
+<span onmouseout="hideTip(event, 'ft11', 251)" onmouseover="showTip(event, 'ft11', 251)" class="i">run</span> <span onmouseout="hideTip(event, 'ft83', 252)" onmouseover="showTip(event, 'ft83', 252)" class="i">phone</span> <span class="s">&quot;</span><span class="s">1223999999</span><span class="s">&quot;</span>
+<span onmouseout="hideTip(event, 'ft11', 253)" onmouseover="showTip(event, 'ft11', 253)" class="i">run</span> <span onmouseout="hideTip(event, 'ft83', 254)" onmouseover="showTip(event, 'ft83', 254)" class="i">phone</span> <span class="s">&quot;</span><span class="s">1865999999</span><span class="s">&quot;</span>
+<span onmouseout="hideTip(event, 'ft11', 255)" onmouseover="showTip(event, 'ft11', 255)" class="i">run</span> <span onmouseout="hideTip(event, 'ft83', 256)" onmouseover="showTip(event, 'ft83', 256)" class="i">phone</span> <span class="s">&quot;</span><span class="s">1111999999</span><span class="s">&quot;</span></pre>
+
+
+<p>The <code>match!</code> construct now takes four arguments. The first two are parsers that 
+ensure that the input consists of just digits and has 10 characters, respectively.
+The next two parsers check for prefixes "1223" and "1865". The last two parsers will
+never both match on the same input, so a clause that would try to obtain a value from
+both of them would never succeed. However, we can write other useful clauses.</p>
+
+<p>All of the three clauses in the above sample require the first two parsers to succeed.
+If the third parser also succeeds, the first clause matches and the number is identified
+as a Cambridge number. The second line is similar and recognizes Oxford numbers.
+Finally, the last line ignores both of the <code>startsWith</code> parsers.</p>
+
+<p>One expected property of pattern matching is that only a single clause will be 
+executed. Joinad definitions that obey the laws also have this property. For parsers,
+the <code>choose</code> operation gives the required behaviour - when a number is identified
+as Cambridge or Oxford number, the parser does not return Other as a possible result,
+even though the parser would also succed. This is because <code>choose</code> returns only results
+of a single parser (unlike <code>plus</code> which combines all successful results).</p>
+
+<h2>Summary</h2>
+
+<p>This article shows that joinads and the <code>match!</code> construct have uses outside of the 
+concurrent and programming domains. In particular, it is possible to implement 
+<em>joinad</em> operations for parsers. The <code>Merge</code> operation creates a parser that runs
+two parsers on the same input and the <code>Choose</code> operation creates a parser that 
+returns results of exactly one of the specified parsers (meaning a choice without
+backtracking). The <code>Merge</code> operation is particularly interesting, because it gives a
+way to write <em>intersection</em> of languages recognized by two parsers.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">Multiple items<br />union case Parser.Parser: (char list -&gt; seq&lt;&#39;T * int * char list&gt;) -&gt; Parser&lt;&#39;T&gt;<br /><br />--------------------<br />type Parser&lt;&#39;T&gt; = | Parser of (char list -&gt; seq&lt;&#39;T * int * char list&gt;)<br /><br />Full name: Blog.Parser&lt;_&gt;</div>
+<div class="tip" id="ft2">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;<br />&#160;&#160;type: &#39;T list<br /></div>
+<div class="tip" id="ft3">Multiple items<br />val char : &#39;T -&gt; char (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.char<br /><br />--------------------<br />type char = System.Char<br /><br />Full name: Microsoft.FSharp.Core.char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft4">Multiple items<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq<br /><br />--------------------<br />type seq&lt;&#39;T&gt; = System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="ft5">Multiple items<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft6">namespace System</div>
+<div class="tip" id="ft7">val item : Parser&lt;char&gt;<br /><br />Full name: Blog.item</div>
+<div class="tip" id="ft8">Multiple items<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq<br /><br />--------------------<br />type seq&lt;&#39;T&gt; = Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="ft9">val x : char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft10">val xs : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft11">val run : Parser&lt;&#39;a&gt; -&gt; seq&lt;char&gt; -&gt; seq&lt;&#39;a&gt;<br /><br />Full name: Blog.run</div>
+<div class="tip" id="ft12">val p : (char list -&gt; seq&lt;&#39;a * int * char list&gt;)</div>
+<div class="tip" id="ft13">val input : seq&lt;char&gt;<br />&#160;&#160;type: seq&lt;char&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="ft14">val result : &#39;a</div>
+<div class="tip" id="ft15">val tail : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft16">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of &#39;T * &#39;T list<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;interface Collections.IEnumerable<br />&#160;&#160;&#160;&#160;interface Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Head : &#39;T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;static member Empty : &#39;T list<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;<br />&#160;&#160;type: List&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft17">val ofSeq : seq&lt;&#39;T&gt; -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.ofSeq</div>
+<div class="tip" id="ft18">Multiple items<br />val unit : &#39;a -&gt; Parser&lt;&#39;a&gt;<br /><br />Full name: Blog.unit<br /><em><br /><br />&#160;Parser that always succeeds without consuming any input</em><br /><br />--------------------<br />type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br />&#160;&#160;type: unit<br /></div>
+<div class="tip" id="ft19">val v : &#39;a</div>
+<div class="tip" id="ft20">val input : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft21">val bind : (&#39;a -&gt; Parser&lt;&#39;b&gt;) -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;b&gt;<br /><br />Full name: Blog.bind<br /><em><br /><br />&#160;Apply the first parser and then continue using &#39;f&#39;</em></div>
+<div class="tip" id="ft22">val f : (&#39;a -&gt; Parser&lt;&#39;b&gt;)</div>
+<div class="tip" id="ft23">val p1 : (char list -&gt; seq&lt;&#39;a * int * char list&gt;)</div>
+<div class="tip" id="ft24">val a : &#39;a</div>
+<div class="tip" id="ft25">val n1 : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft26">val input&#39; : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft27">val p2 : (char list -&gt; seq&lt;&#39;b * int * char list&gt;)</div>
+<div class="tip" id="ft28">val result : &#39;b</div>
+<div class="tip" id="ft29">val n2 : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft30">val zero : Parser&lt;&#39;a&gt;<br /><br />Full name: Blog.zero<br /><em><br /><br />&#160;Parser that alwyas fails without consuming any input</em></div>
+<div class="tip" id="ft31">val plus : Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt;<br /><br />Full name: Blog.plus<br /><em><br /><br />&#160;Combine the results of two parsers</em></div>
+<div class="tip" id="ft32">val p2 : (char list -&gt; seq&lt;&#39;a * int * char list&gt;)</div>
+<div class="tip" id="ft33">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="ft34">val concat : seq&lt;#seq&lt;&#39;T&gt;&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.concat</div>
+<div class="tip" id="ft35">type ParseBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; ParseBuilder<br />&#160;&#160;&#160;&#160;member Bind : v:Parser&lt;&#39;g&gt; * f:(&#39;g -&gt; Parser&lt;&#39;h&gt;) -&gt; Parser&lt;&#39;h&gt;<br />&#160;&#160;&#160;&#160;member Choose : a:Parser&lt;&#39;a&gt; * b:Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt;<br />&#160;&#160;&#160;&#160;member Combine : a:Parser&lt;&#39;d&gt; * f:(unit -&gt; Parser&lt;&#39;d&gt;) -&gt; Parser&lt;&#39;d&gt;<br />&#160;&#160;&#160;&#160;member Delay : f:&#39;b -&gt; &#39;b<br />&#160;&#160;&#160;&#160;member Merge : a:Parser&lt;&#39;a&gt; * b:Parser&lt;&#39;b&gt; -&gt; Parser&lt;&#39;a * &#39;b&gt;<br />&#160;&#160;&#160;&#160;member Return : v:&#39;f -&gt; Parser&lt;&#39;f&gt;<br />&#160;&#160;&#160;&#160;member ReturnFrom : v:&#39;e -&gt; &#39;e<br />&#160;&#160;&#160;&#160;member Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br />&#160;&#160;&#160;&#160;member Zero : unit -&gt; Parser&lt;&#39;c&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.ParseBuilder<br /><em><br /><br />&#160;Computation expression builder for creating parsers</em></div>
+<div class="tip" id="ft36">member x.Bind(v, f) = bind f v<br />&#160;&#160;member x.Return(v) = unit v<br />&#160;&#160;member x.ReturnFrom(v) = v<br /><br />&#160;&#160;member x.Combine(a, f) = plus a (f())<br />&#160;&#160;member x.Zero() = zero<br /><br />&#160;&#160;member x.Delay(f) = f<br />&#160;&#160;member x.Run(f) = f()</div>
+<div class="tip" id="ft37">val parse : ParseBuilder<br /><br />Full name: Blog.parse</div>
+<div class="tip" id="ft38">val map : (&#39;a -&gt; &#39;b) -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;b&gt;<br /><br />Full name: Blog.map<br /><em><br /><br />&#160;Apply function &#39;f&#39; to the parsed value</em></div>
+<div class="tip" id="ft39">val f : (&#39;a -&gt; &#39;b)</div>
+<div class="tip" id="ft40">val p : Parser&lt;&#39;a&gt;</div>
+<div class="tip" id="ft41">val sat : (char -&gt; bool) -&gt; Parser&lt;char&gt;<br /><br />Full name: Blog.sat<br /><em><br /><br />&#160;Succeeds only when a character matches given predicate</em></div>
+<div class="tip" id="ft42">val pred : (char -&gt; bool)</div>
+<div class="tip" id="ft43">val ch : char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft44">Multiple items<br />val char : char -&gt; Parser&lt;char&gt;<br /><br />Full name: Blog.char<br /><em><br /><br />&#160;Parse a specific character</em><br /><br />--------------------<br />type char = Char<br /><br />Full name: Microsoft.FSharp.Core.char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft45">val notChar : char -&gt; Parser&lt;char&gt;<br /><br />Full name: Blog.notChar<br /><em><br /><br />&#160;Parse a character other than the specified one</em></div>
+<div class="tip" id="ft46">val some : Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a list&gt;<br /><br />Full name: Blog.some<br /><em><br /><br />&#160;Parse one or more repetitions of parser &#39;p&#39;</em></div>
+<div class="tip" id="ft47">val x : &#39;a</div>
+<div class="tip" id="ft48">val xs : &#39;a list<br />&#160;&#160;type: &#39;a list<br /></div>
+<div class="tip" id="ft49">val many : Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a list&gt;<br /><br />Full name: Blog.many<br /><em><br /><br />&#160;Parse zero or more repetitions of parser &#39;p&#39;</em></div>
+<div class="tip" id="ft50">val brackets : char -&gt; char -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt;<br /><br />Full name: Blog.brackets<br /><em><br /><br />&#160;Parse any number of &#39;op&#39; chars, followed by the<br />&#160;body and then the same number of &#39;cl&#39; chars.</em></div>
+<div class="tip" id="ft51">val op : char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft52">val cl : char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft53">val body : Parser&lt;&#39;a&gt;</div>
+<div class="tip" id="ft54">val inner : &#39;a</div>
+<div class="tip" id="ft55">val skipBrackets : Parser&lt;char list&gt;<br /><br />Full name: Blog.skipBrackets<br /><em><br /><br />&#160;Returns the body of a bracketed string</em></div>
+<div class="tip" id="ft56">val charsToString : seq&lt;char&gt; -&gt; String<br /><br />Full name: Blog.charsToString<br /><em><br /><br />&#160;Helper function that converts char list to string</em></div>
+<div class="tip" id="ft57">val l : seq&lt;char&gt;<br />&#160;&#160;type: seq&lt;char&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="ft58">type String =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : char -&gt; string<br />&#160;&#160;&#160;&#160;new : System.SByte -&gt; string<br />&#160;&#160;&#160;&#160;new : char [] * int * int -&gt; string<br />&#160;&#160;&#160;&#160;new : char [] -&gt; string<br />&#160;&#160;&#160;&#160;new : char * int -&gt; string<br />&#160;&#160;&#160;&#160;member Chars : int -&gt; char<br />&#160;&#160;&#160;&#160;member CompareTo : obj -&gt; int<br />&#160;&#160;&#160;&#160;member CompareTo : string -&gt; int<br />&#160;&#160;&#160;&#160;member Contains : string -&gt; bool<br />&#160;&#160;&#160;&#160;member CopyTo : int * char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member EndsWith : string -&gt; bool<br />&#160;&#160;&#160;&#160;member EndsWith : string * System.StringComparison -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : string -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : string * System.StringComparison -&gt; bool<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; System.TypeCode<br />&#160;&#160;&#160;&#160;member IndexOf : char -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : char * int -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string * int -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : char * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string * int * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOf : string * int * int * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOfAny : char [] -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOfAny : char [] * int -&gt; int<br />&#160;&#160;&#160;&#160;member IndexOfAny : char [] * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member Insert : int * string -&gt; string<br />&#160;&#160;&#160;&#160;member LastIndexOf : char -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : char * int -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string * int -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : char * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string * int * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOf : string * int * int * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOfAny : char [] -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOfAny : char [] * int -&gt; int<br />&#160;&#160;&#160;&#160;member LastIndexOfAny : char [] * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member PadLeft : int -&gt; string<br />&#160;&#160;&#160;&#160;member PadLeft : int * char -&gt; string<br />&#160;&#160;&#160;&#160;member PadRight : int -&gt; string<br />&#160;&#160;&#160;&#160;member PadRight : int * char -&gt; string<br />&#160;&#160;&#160;&#160;member Remove : int -&gt; string<br />&#160;&#160;&#160;&#160;member Remove : int * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : char * char -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * string -&gt; string<br />&#160;&#160;&#160;&#160;member Split : char [] -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : char [] * System.StringSplitOptions -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : string [] * System.StringSplitOptions -&gt; string []<br />&#160;&#160;&#160;&#160;member StartsWith : string -&gt; bool<br />&#160;&#160;&#160;&#160;member StartsWith : string * System.StringComparison -&gt; bool<br />&#160;&#160;&#160;&#160;member Substring : int -&gt; string<br />&#160;&#160;&#160;&#160;member Substring : int * int -&gt; string<br />&#160;&#160;&#160;&#160;member ToCharArray : unit -&gt; char []<br />&#160;&#160;&#160;&#160;member ToLower : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToLower : System.Globalization.CultureInfo -&gt; string<br />&#160;&#160;&#160;&#160;member ToLowerInvariant : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;member ToUpper : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToUpper : System.Globalization.CultureInfo -&gt; string<br />&#160;&#160;&#160;&#160;member ToUpperInvariant : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Trim : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Trim : char [] -&gt; string<br />&#160;&#160;&#160;&#160;member TrimEnd : char [] -&gt; string<br />&#160;&#160;&#160;&#160;member TrimStart : char [] -&gt; string<br />&#160;&#160;&#160;&#160;static val Empty : string<br />&#160;&#160;&#160;&#160;static member Compare : string * string -&gt; int<br />&#160;&#160;&#160;&#160;static member Compare : string * string * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;static member Compare : string * string * System.Globalization.CultureInfo * System.Globalization.CompareOptions -&gt; int<br />&#160;&#160;&#160;&#160;static member Compare : string * int * string * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Compare : string * int * string * int * int * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;static member Compare : string * int * string * int * int * System.Globalization.CultureInfo * System.Globalization.CompareOptions -&gt; int<br />&#160;&#160;&#160;&#160;static member CompareOrdinal : string * string -&gt; int<br />&#160;&#160;&#160;&#160;static member CompareOrdinal : string * int * string * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Concat : obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : obj [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat&lt;&#39;T&gt; : System.Collections.Generic.IEnumerable&lt;&#39;T&gt; -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : System.Collections.Generic.IEnumerable&lt;string&gt; -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : string [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : obj * obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : string * string -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : obj * obj * obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : string * string * string -&gt; string<br />&#160;&#160;&#160;&#160;static member Concat : string * string * string * string -&gt; string<br />&#160;&#160;&#160;&#160;static member Copy : string -&gt; string<br />&#160;&#160;&#160;&#160;static member Equals : string * string -&gt; bool<br />&#160;&#160;&#160;&#160;static member Equals : string * string * System.StringComparison -&gt; bool<br />&#160;&#160;&#160;&#160;static member Format : string * obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Format : string * obj [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Format : string * obj * obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Format : System.IFormatProvider * string * obj [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Format : string * obj * obj * obj -&gt; string<br />&#160;&#160;&#160;&#160;static member Intern : string -&gt; string<br />&#160;&#160;&#160;&#160;static member IsInterned : string -&gt; string<br />&#160;&#160;&#160;&#160;static member IsNullOrEmpty : string -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsNullOrWhiteSpace : string -&gt; bool<br />&#160;&#160;&#160;&#160;static member Join : string * string [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Join : string * obj [] -&gt; string<br />&#160;&#160;&#160;&#160;static member Join&lt;&#39;T&gt; : string * System.Collections.Generic.IEnumerable&lt;&#39;T&gt; -&gt; string<br />&#160;&#160;&#160;&#160;static member Join : string * System.Collections.Generic.IEnumerable&lt;string&gt; -&gt; string<br />&#160;&#160;&#160;&#160;static member Join : string * string [] * int * int -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.String<br />&#160;&#160;type: String<br /></div>
+<div class="tip" id="ft59">type Array =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;&#160;&#160;member CopyTo : System.Array * int -&gt; unit<br />&#160;&#160;&#160;&#160;member GetEnumerator : unit -&gt; System.Collections.IEnumerator<br />&#160;&#160;&#160;&#160;member GetLength : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetLowerBound : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetUpperBound : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetValue : int [] -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int -&gt; obj<br />&#160;&#160;&#160;&#160;member Initialize : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member IsFixedSize : bool<br />&#160;&#160;&#160;&#160;member IsReadOnly : bool<br />&#160;&#160;&#160;&#160;member IsSynchronized : bool<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Rank : int<br />&#160;&#160;&#160;&#160;member SetValue : obj * int -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int [] -&gt; unit<br />&#160;&#160;&#160;&#160;member SyncRoot : obj<br />&#160;&#160;&#160;&#160;static member AsReadOnly&lt;&#39;T&gt; : &#39;T [] -&gt; System.Collections.ObjectModel.ReadOnlyCollection&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * obj -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;&#39;T&gt; : &#39;T [] * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;&#39;T&gt; : &#39;T [] * &#39;T * System.Collections.Generic.IComparer&lt;&#39;T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;&#39;T&gt; : &#39;T [] * int * int * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * int * int * obj * System.Collections.IComparer -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;&#39;T&gt; : &#39;T [] * int * int * &#39;T * System.Collections.Generic.IComparer&lt;&#39;T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member Clear : System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member ConstrainedCopy : System.Array * int * System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * System.Array * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * int * System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int [] -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member ForEach&lt;&#39;T&gt; : &#39;T [] * System.Action&lt;&#39;T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T * int -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf : System.Array * obj * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf : System.Array * obj * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;&#39;T&gt; : &#39;T [] * &#39;T * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Resize&lt;&#39;T&gt; : &#39;T [] * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Reverse : System.Array -&gt; unit<br />&#160;&#160;&#160;&#160;static member Reverse : System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;T&gt; : &#39;T [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;TKey,&#39;TValue&gt; : &#39;TKey [] * &#39;TValue [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;T&gt; : &#39;T [] * System.Collections.Generic.IComparer&lt;&#39;T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;T&gt; : &#39;T [] * System.Comparison&lt;&#39;T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;T&gt; : &#39;T [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;TKey,&#39;TValue&gt; : &#39;TKey [] * &#39;TValue [] * System.Collections.Generic.IComparer&lt;&#39;TKey&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * int * int * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;TKey,&#39;TValue&gt; : &#39;TKey [] * &#39;TValue [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;T&gt; : &#39;T [] * int * int * System.Collections.Generic.IComparer&lt;&#39;T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array * int * int * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;&#39;TKey,&#39;TValue&gt; : &#39;TKey [] * &#39;TValue [] * int * int * System.Collections.Generic.IComparer&lt;&#39;TKey&gt; -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Array<br />&#160;&#160;type: Array<br /></div>
+<div class="tip" id="ft60">val ofSeq : seq&lt;&#39;T&gt; -&gt; &#39;T []<br /><br />Full name: Microsoft.FSharp.Collections.Array.ofSeq</div>
+<div class="tip" id="ft61">val merge : Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;b&gt; -&gt; Parser&lt;&#39;a * &#39;b&gt;<br /><br />Full name: Blog.merge<br /><em><br /><br />&#160;Apply both parsers on the same input &#39;in parallel&#39;</em></div>
+<div class="tip" id="ft62">val tail1 : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft63">val b : &#39;b</div>
+<div class="tip" id="ft64">val tail2 : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft65">val choose : Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a&gt;<br /><br />Full name: Blog.choose<br /><em><br /><br />&#160;Run both parsers and return the results of the first<br />&#160;one that does not return empty sequence.</em></div>
+<div class="tip" id="ft66">val res : seq&lt;&#39;a * int * char list&gt;<br />&#160;&#160;type: seq&lt;&#39;a * int * char list&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="ft67">val not : bool -&gt; bool<br /><br />Full name: Microsoft.FSharp.Core.Operators.not</div>
+<div class="tip" id="ft68">val isEmpty : seq&lt;&#39;T&gt; -&gt; bool<br /><br />Full name: Microsoft.FSharp.Collections.Seq.isEmpty</div>
+<div class="tip" id="ft69">member x.Merge(a, b) = merge a b<br />&#160;&#160;member x.Choose(a, b) = choose a b</div>
+<div class="tip" id="ft70">val skipAllBrackets : Parser&lt;char list&gt;<br /><br />Full name: Blog.skipAllBrackets</div>
+<div class="tip" id="ft71">val body : Parser&lt;char&gt;</div>
+<div class="tip" id="ft72">val c : char<br />&#160;&#160;type: char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft73">val replicate : int -&gt; Parser&lt;&#39;a&gt; -&gt; Parser&lt;&#39;a list&gt;<br /><br />Full name: Blog.replicate<br /><em><br /><br />&#160;Run the parser &#39;p&#39; specified number of times</em></div>
+<div class="tip" id="ft74">val n : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft75">parse { <br />&#160;&#160;let! x = p<br />&#160;&#160;if n = 1 then <br />&#160;&#160;&#160;&#160;return [x]<br />&#160;&#160;else<br />&#160;&#160;&#160;&#160;let! xs = replicate (n - 1) p<br />&#160;&#160;&#160;&#160;return x::xs }</div>
+<div class="tip" id="ft76">val startsWith : string -&gt; Parser&lt;char list&gt;<br /><br />Full name: Blog.startsWith<br /><em><br /><br />&#160;Parse string &#39;str&#39; and then accept any further text</em></div>
+<div class="tip" id="ft77">val str : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft78">parse {<br />&#160;&#160;if str = &quot;&quot; then <br />&#160;&#160;&#160;&#160;return! many item<br />&#160;&#160;else<br />&#160;&#160;&#160;&#160;let! _ = char str.[0]<br />&#160;&#160;&#160;&#160;return! startsWith (str.Substring(1)) }</div>
+<div class="tip" id="ft79">val cambridgePhone : Parser&lt;char list&gt;<br /><br />Full name: Blog.cambridgePhone<br /><em><br /><br />&#160;Returns the input if it is valid Cambridge phone number</em></div>
+<div class="tip" id="ft80">type Char =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member CompareTo : obj -&gt; int<br />&#160;&#160;&#160;&#160;member CompareTo : char -&gt; int<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : char -&gt; bool<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; System.TypeCode<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;static val MaxValue : char<br />&#160;&#160;&#160;&#160;static val MinValue : char<br />&#160;&#160;&#160;&#160;static member GetNumericValue : char -&gt; float<br />&#160;&#160;&#160;&#160;static member GetNumericValue : string * int -&gt; float<br />&#160;&#160;&#160;&#160;static member GetUnicodeCategory : char -&gt; System.Globalization.UnicodeCategory<br />&#160;&#160;&#160;&#160;static member GetUnicodeCategory : string * int -&gt; System.Globalization.UnicodeCategory<br />&#160;&#160;&#160;&#160;static member IsControl : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsControl : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsDigit : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsDigit : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLetter : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLetter : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLetterOrDigit : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLetterOrDigit : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLower : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsLower : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsNumber : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsNumber : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsPunctuation : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsPunctuation : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSeparator : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSeparator : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSurrogate : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSurrogate : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSurrogatePair : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSurrogatePair : char * char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSymbol : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsSymbol : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsUpper : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsUpper : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsWhiteSpace : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsWhiteSpace : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member ToLower : char -&gt; char<br />&#160;&#160;&#160;&#160;static member ToLower : char * System.Globalization.CultureInfo -&gt; char<br />&#160;&#160;&#160;&#160;static member ToLowerInvariant : char -&gt; char<br />&#160;&#160;&#160;&#160;static member ToString : char -&gt; string<br />&#160;&#160;&#160;&#160;static member ToUpper : char -&gt; char<br />&#160;&#160;&#160;&#160;static member ToUpper : char * System.Globalization.CultureInfo -&gt; char<br />&#160;&#160;&#160;&#160;static member ToUpperInvariant : char -&gt; char<br />&#160;&#160;&#160;&#160;static member TryParse : string * char -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Char<br />&#160;&#160;type: Char<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft81">Char.IsDigit(c: char) : bool<br />Char.IsDigit(s: string, index: int) : bool</div>
+<div class="tip" id="ft82">val n : char list<br />&#160;&#160;type: char list<br /></div>
+<div class="tip" id="ft83">val phone : Parser&lt;string&gt;<br /><br />Full name: Blog.phone<br /><em><br /><br />&#160;Recognize phone number based on the prefix</em></div>
+<div class="tip" id="ft84">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string<br />&#160;&#160;type: string<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-parsing.aspx%2f&amp;text=TryJoinads+(VI.)+-+Parsing+with+joinadsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-parsing.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-parsing.aspx%2f&title=TryJoinads+(VI.)+-+Parsing+with+joinads">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=TryJoinads%20(VI.)%20-%20Parsing%20with%20joinads&body=%20This%20article%20shows%20how%20to%20use%20joinads%20(and%20the%20match!%20extension)%20for%20writing%20parsers.%20Using%20joinads%20one%20can%20easily%20express%20choice%20and%20write%20a%20parser%20that%20recognizes%20an%20intersection%20of%20languages.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fjoinads-parsing.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 21 March 2012, 4:27 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/joinads/">joinads</a>, <a
+          href="/blog/tag/research/">research</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

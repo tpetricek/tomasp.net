@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Writing Silverlight applications in PHP - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article we will look how Phalanger can be used for developing Silverlight applications in the PHP language. We look at basic concepts like XAML as well as at a more complicated game." />
+  <meta name="keywords" content="phalanger, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Writing Silverlight applications in PHP" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/php-in-silverlight.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article we will look how Phalanger can be used for developing Silverlight applications in the PHP language. We look at basic concepts like XAML as well as at a more complicated game." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Writing Silverlight applications in PHP" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article we will look how Phalanger can be used for developing Silverlight applications in the PHP language. We look at basic concepts like XAML as well as at a more complicated game." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Writing Silverlight applications in PHP",
+    "headline": "Writing Silverlight applications in PHP",
+  	"description": " In this article we will look how Phalanger can be used for developing Silverlight applications in the PHP language. We look at basic concepts like XAML as well as at a more complicated game.",
+  	"url": "http://tomasp.net/blog/php-in-silverlight.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-12-07T17:16:14.0000000",
+  	"datePublished": "2007-12-07T17:16:14.0000000",
+    "dateModified": "2007-12-07T17:16:14.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/php-in-silverlight.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["phalanger",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Writing Silverlight applications in PHP</h1>
+<img src="/articles/php-in-silverlight/car_intro_sm.png" alt="Simple Silverlight App in PHP" style="margin:10px; float:left;"/>
+
+<p>In my <a href="http://tomasp.net/blog/phalanger-future-notes.aspx">last post</a> about Phalanger I mentioned 
+  that our important goal is to support the Silverlight (2.0) platform. Shortly Silverlight is a cross-browser 
+  platform that can be used for developing client-side components that run in the web browser and contain
+  rich media, graphics and can interactively communicate with the user. The language that can be used for
+  writing Silverlight code can be in general any .NET language, so our goal is to allow using PHP by 
+  making Phalanger compatible with Silverlight.</p>
+<p>First steps were already made and it is becoming possible to write some very interesting things in 
+  Silverlight using PHP, there is of course still a lot of work to do and we're discussing the future 
+  development with PHP development team (you can join the mailing list <a href="http://news.php.net/php.on.dlr" type="external">PHP on DLR</a> for more info).
+  In this article we will first show a very basic Silverlight example that uses PHP and later I will 
+  shortly comment more complicated example - a game (quite addicting, so be careful :-)!) where you have to 
+  fly with helicopter and avoid the walls. The source code for helicopter game is also attached, so feel free
+  to modify it or create similar games!</p>
+<p>If you can't wait to try the demos before looking at the sources, here are the links:</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">Simple car demo</a> - Click on the car and it will move!</li>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/game.html" type="external">Helicopter game demo</a> - Click left button to fly up!</li>
+</ul>
+
+<h2>Introducing PHP for Silverlight</h2>
+<p>An inevitable part of almost any Silverlight application is <em>XAML</em> file. XAML is a declarative
+  language based on XML (which is in some ways similar to SVG) and is used for describing the user interface
+  elements of the application - it is important to note that these elements are all represented by some
+  object at runtime and so the XAML actually just creates instances of these objects. XAML can be used for
+  defining basic graphical elements like shapes (<code>Ellipse</code>, <code>Rectangle</code>, ...), elements
+  that can be used for grouping other elements (<code>Canvas</code>), but also animations. Animations
+  are quite interesting, because they specify how properties of other object (specified using <code>Name</code>)
+  should change when the animation runs. For example you can create an animation in XAML that moves object
+  from position <code>[0, 0]</code> to <code>[100, 100]</code> in 100 seconds.</p>
+  
+<h3>XAML Source File</h3>  
+<p>The following XAML sample contains part of the declarative markup used to create the car that you can see 
+  in the screenshot above. The live version of the example can be found <a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">here</a>.
+  The sample application contains an HTML file with some JavaScript that initializes the Silverlight component
+  (you can download them below and analyze them yourself). When the Silverlight component is initialized the 
+  XAML file is loaded and this is where the Silverlight application starts executing.
+  Let's now look at the structure of <code>simplegui.xaml</code> file:</p>  
+  
+<pre lang="xml">
+&lt;Canvas x:Name="parentCanvas"
+    xmlns="http://schemas.microsoft.com/client/2007" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:php="clr-namespace:PHP.Silverlight;assembly=ClientBin/PhpNetCore.dll"
+    Width="800" Height="600" Background="White" &gt;
+  &lt;!-- Specifies the PHP code that drives the application --&gt;
+  &lt;php:PhalangerLoader Source="Simplegui.phpx" /&gt;
+
+  &lt;Canvas.Resources&gt;
+    &lt;!-- Animation that moves the car object --&gt;
+    &lt;Storyboard x:Name="moveCar"&gt;
+      &lt;DoubleAnimation From="0" To="810" Duration="0:0:2" 
+                       Storyboard.TargetName="carCanvas" 
+                       Storyboard.TargetProperty="(Canvas.Left)"/&gt;
+    &lt;/Storyboard&gt;
+    &lt;!-- (...) more animations --&gt;
+  &lt;/Canvas.Resources&gt;
+
+  &lt;!-- Car - composed from ellipses and rectangles --&gt;
+  &lt;Canvas x:Name="carCanvas"&gt;
+    &lt;!-- Back wheel --&gt;
+    &lt;Ellipse x:Name="wheel1" Width="47" Height="47" Stroke="#FF000000" 
+             Canvas.Left="5" Canvas.Top="228" /&gt;
+    &lt;!-- (...) other car parts --&gt;
+  &lt;/Canvas&gt;  
+&lt;/Canvas&gt;
+</pre>
+<p>There are a few important things to note. First, the whole content is contained in a <code>Canvas</code>
+  element, which is a container for other elements. The root element contains several standard <code>xmlns</code>
+  declarations and also <code>xmlns:php="..."</code>, which imports element that will be later used to 
+  load PHP code. In the XML namespace declaration we have to specify the path to the Phalanger Core assembly
+  (called <code>PhpNetCore.dll</code>). Later, the <code>php:PhalangerLoader</code> element is used to specify
+  what PHP source file is attached to the application - this will be in more details discussed shortly.</p>
+<p>Other interesting element in the file is <code>Canvas.Resources</code>. This element specifies resources of the
+  root canvas and in our example contains animation declarations. The animation is created using <code>Storyboard</code>
+  element, which we will later retrieve from the resources using the <code>Name</code> attribute and start 
+  from our PHP code. The storyboard can contain several animations that specify how some attribute of other object 
+  should change - in this example we have a single <code>DoubleAnimation</code>, which linearly animates a floating
+  point value from <code>0</code> to <code>810</code>. The property that will be changed during the animation
+  is <code>Canvas.Left</code> (the position of the shape from left relatively to the parent <code>Canvas</code> object)
+  and the animated object is an object with name <code>carCanvas</code>. Finally, the last attribute (<code>Duration</code>)
+  specifies that the animation should take 2 seconds.</p>
+<p>Explaining everything that can be done just in XAML would make quite a long article alone, so I will not go in 
+  further details in this article, though I will definitely mention a few more things in the future. Good reference
+  with examples can be found in the MSDN Documentation for Silverlight [<a href="#phpinslref">1</a>]. Also, it is 
+  possible to create XAML files in a graphical designer called <em>Expression Blend 2</em> [<a href="#phpinslref">2</a>], which is currently available 
+  as a beta version. It doesn't directly support PHP projects, but you can use it to create XAML files that can be 
+  later copied to your Phalanger-powered Silverlight applications.</p>  
+
+<h3>PHPX Source File</h3>
+<p>In this example, I use <code>phpx</code> as an extension for the client-side PHP code that will run in Silverlight.
+  As you can see the file is referenced using file name from the XAML file and this also means that the source code is 
+  downloaded from the server to the client and executed there. To make this possible the extension of client-side (Silverlight)
+  PHP code has to be an extension that the web server will serve as a plain text (as an opposite to server-side PHP code
+  which is executed by the web server). If your web hosting doesn't allow hosting of files with <code>phpx</code> extension you can 
+  use for example <code>txt</code> and it will also work. </p>
+<p>Let's now look at the PHP code file that controls the demo with a car (available <a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">here</a>).
+  The PHP file contains code that defines the interaction for our application, which is in this example very simple - when a user clicks on 
+  the car we want to start the animation:</p>
+<pre lang="php">
+&lt;?
+import namespace System:::Windows:::Input;
+// Include common Silverlight utilities
+include("slutils.phpx");
+
+// Initialize canvas wrapper for working with the XAML elements
+global $CANVAS;
+global $cv;
+$cv = new CanvasWrapper($CANVAS);
+
+// Called when user clicks on the car
+function OnClick() {
+  global $cv;
+  // Start the animation declared in XAML
+  $cv-&gt;moveCar-&gt;Begin();
+}
+
+// Called when the Silverlight component loads in browser
+function OnLoad() {
+  global $cv;
+  // Attach the event handler for 'MouseLeftButtonDown' of the 'carCanvas'
+  $cv-&gt;carCanvas-&gt;MouseLeftButtonDown-&gt;Add
+    (new MouseEventHandler("OnClick"));
+}
+?&gt;
+</pre>
+<p>On the first line, you can see the <code>import namespace</code> statement, which imports objects from the 
+  specified .NET (Silverlight) namespace. This is a non-standard extension to the PHP language which is available
+  in Phalanger to support namespaces (in the future the syntax will be same as syntax for working with namespaces in PHP 5.3).
+  The second line includes a source file with various utilities that make developing Silverlight applications in PHP
+  a lot easier - we will use only a single extension in this example, so I'll comment that shortly below.</p>
+<p>The next few lines use a global variable <code>$CANVAS</code>, which is a special variable initialized by the
+  Silverlight module in Phalanger. This variable refers to an object that represents the root canvas object created
+  in XAML and it can be used for manipulating with other named elements in the XAML file (named elements have the 
+  <code>x:Name</code> attribute). The variable <code>$cv</code> will be initialized to an object <code>CanvasWrapper</code>,
+  which comes from the <code>slutils.phpx</code> file that I mentioned earlier. This class is a wrapper written in PHP 
+  that simplifies the access to the canvas elements - it is working with the .NET representation of the canvas object,
+  which has all the needed functionality, but the wrapper exposes this functionality in a more PHP-friendly style. 
+  If you look at the <code>OnClick</code> method (which will be called by the system when user clicks on the car element)
+  you can see a code that starts the animation, by calling <code>Begin</code> method of the <code>Storyboard</code> element
+  declared in XAML. The following example demonstrates how the <code>CanvasWrapper</code> simplifies the code:</p>  
+<pre lang="php">
+// Using CanvasWrapper we can just access 
+// 'moveCar' as a member using magical '__get'
+$cv-&gt;moveCar-&gt;Begin();
+
+// Without CanvasWrapper the element has to 
+// be accessed using 'FindName' method
+$cv-&gt;FindName("moveCar")-&gt;Begin();
+</pre>
+<p>There are of course some other tricks that the <code>slutils.phpx</code> implements, but this is the only one that 
+  we needed in this example. The implementation of <code>OnClick</code> function is quite simple, so let's look at the
+  remaining <code>OnLoad</code> function now. The function is called by Phalanger when the Silverlight component is loaded,
+  so we use it here to register an <em>event handler</em> that will be called when user clicks on the car.</p>
+<p>To do this, we first access the <code>carCanvas</code> element from the XAML file and we'll use its <code>MouseLeftButtonDown</code>
+  property, which represents the event. Events are general .NET concept and can be used thanks to Phalanger, which
+  understands events and knows how to use them. To register a new <em>event handler</em> that will be called when the 
+  event occurs, we use the <code>Add</code> method and give it a corresponding event handler object as an argument. 
+  In this case we're working with mouse-related events, so we have to create <code>MouseEventHandler</code> object
+  (which comes from the <code>System:::Windows:::Input</code> namespace). When creating the event handler you can 
+  give it either a reference to a global function (as a string) or a reference to a member function, in which case
+  you would give it the following argument: <code>array($this, "FuncName")</code>.</p>
+
+<h3>Deployment</h3>
+<p>The last thing that I wanted to comment in this article is the deployment process - that is what you need
+  to upload to your web server when you want to host Silverlight applications in PHP. The Silverlight plugin is 
+  installed on the client-side, so you can host it on any server using any server-side technology (both IIS and Apache
+  are fine and you don't even need PHP on the server). The client-side Silverlight application consists of <code>xaml</code>
+  file, <code>phpx</code> file and <code>html</code> with <code>js</code> files that contain the hosted 
+  Silverlight control. The JavaScript code that initializes the control can be just copied from any other Silverlight
+  application, so you just need to modify the <code>html</code> and <code>js</code> files to load the correct <code>xaml</code>
+  file (or replace them with more complex server-side code, for example in PHP). </p>
+<p>The <code>phpx</code> file has to be published as a text file, so that the source code can be downloaded to the
+  client and compiled and executed there. You can however change the extension (for example to <code>txt</code>) if
+  your web hosting doesn't allow <code>phpx</code> extension. You should be aware of the fact that the source code
+  of the client-side part of your application is available to the users and you shouldn't put any security critical
+  information in this file. This is a by-design limitation, because even if we allowed serving the client-side functionality
+  in a compiled file it would be still possible to decompile the source code relatively easily. I will comment the
+  security more in one of the future articles, where we get to sending data from client-side (PHP running in the 
+  Silverlight) to the server-side (standard PHP application running on the server).</p>  
+<p>Finally, the Silverlight has to be installed on the client and you need to upload Phalanger core libraries that 
+  will execute the <code>phpx</code> file on the client. Currently, the two files are <code>PhpNetCore.dll</code> and
+  <code>PhpNetClassLibrary.dll</code> - the first one contains the PHP compiler and core runtime and the second one
+  implements common PHP functions. These files have to be in same directory and the <code>PhpNetCore.dll</code> have to 
+  be referenced from the <code>xaml</code> file (default and recommended location for both of them is <code>ClientBin</code>
+  subdirectory). I believe that these two files are cached by the browser when they are downloaded, but we 
+  still want to make them as small as possible, so expect that the files together will be smaller than 1MB in a near future
+  (in a far feature we'd like to leverage of some DLR capabilities, so the files should get even smaller).</p>
+
+<h2>Helicopter Game</h2>
+<p>So far, we have looked at very simple example where we used XAML to define the user interface elements and animations
+  declaratively and we've used the PHP language (thanks to the Phalanger compiler and runtime) to implement interaction
+  logic for the sample Silverlight application. I will write more about using PHP with Silverlight in the future
+  (let me know if there is some topic that you're in particular interested!), but I also wanted to publish some 
+  more complex, so you have a more sample code to look at if you want to play with PHP in Silverlight:</p>
+  
+<div style="text-align:center;">
+<a href="http://tomasp.net/articles/php-in-silverlight/game.html" target="_blank"><img src="/articles/php-in-silverlight/copter_sm.png" alt="Go to the helicopter game" style="border:0px;margin:5px;"/></a><br />
+<small><a href="http://tomasp.net/articles/php-in-silverlight/game.html" type="external">Go to the helicopter game</a></small>
+</div>
+
+<p>The helicopter game uses the concepts introduced in this article (event handlers and the <code>CanvasWrapper</code> object).
+  The rest of the code uses standard PHP programming practices, so it should look quite familiar 
+  to any PHP programmer. I believe that this article gives you a good introduction to writing client-side Silverlight 
+  applications in PHP!</p>
+
+<h2>Downloads &amp; References<a name="phpinslref"></a></h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/demos.zip">Download the samples with Phalanger Silverlight runtime</a> (636 kB)</li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://msdn2.microsoft.com/en-us/library/bb412392.aspx" type="external">XAML Syntax Overview</a> - MSDN Documentation</li>
+  <li>[2] <a href="http://www.microsoft.com/expression/products/download.aspx?key=blend2preview" type="external">Microsoft Expression Blend 2 Free Trial</a> - Microsoft Expression</li>
+  
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fphp-in-silverlight.aspx%2f&amp;text=Writing+Silverlight+applications+in+PHPvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fphp-in-silverlight.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fphp-in-silverlight.aspx%2f&title=Writing+Silverlight+applications+in+PHP">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Writing%20Silverlight%20applications%20in%20PHP&body=%20In%20this%20article%20we%20will%20look%20how%20Phalanger%20can%20be%20used%20for%20developing%20Silverlight%20applications%20in%20the%20PHP%20language.%20We%20look%20at%20basic%20concepts%20like%20XAML%20as%20well%20as%20at%20a%20more%20complicated%20game.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fphp-in-silverlight.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Friday, 7 December 2007, 5:16 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/phalanger/">phalanger</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

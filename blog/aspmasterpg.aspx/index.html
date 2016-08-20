@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Asp.Net 2 - Master pages - Tomas Petricek</title>
+
+  <meta name="description" content=" Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další." />
+  <meta name="keywords" content="" />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Asp.Net 2 - Master pages" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/aspmasterpg.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Asp.Net 2 - Master pages" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Asp.Net 2 - Master pages",
+    "headline": "Asp.Net 2 - Master pages",
+  	"description": " Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další.",
+  	"url": "http://tomasp.net/blog/aspmasterpg.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2005-01-03T00:00:00.0000000",
+  	"datePublished": "2005-01-03T00:00:00.0000000",
+    "dateModified": "2005-01-03T00:00:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/aspmasterpg.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": [ "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Asp.Net 2 - Master pages</h1>
+		<h2>K čemu jsou Master pages</h2>
+		<p>Velice často řešený problém při vývoji webových aplikací je, že
+		člověk potřebuje oddělit části, které se na celém webu opakují 
+		(například hlavička a různé navigační ovládací prvky) od zbytku, který je
+		na každý stránce jiný.</p>
+		<h3>Řešeni ve verzi Asp.Net 1.1</h3>
+		<p>Ve starších verzích Asp.Net je toto možné řešit pomocí ovládacích prvků
+		(například <code>Header</code>, <code>MainMenu</code> atd..), 
+		ze kterých se jednotlvié stránky budou skládat. I tak je ale možné skládat 
+		stránky více způsoby.</p>
+		<p>Jedna cesta je vytořit pro každou stránku jeden aspx soubor a do něj
+		vložit standardní ovládací prvky (<code>Header</code> a <code>MainMenu</code>).
+		Zbytek stránky poté obsahuje samotné ovládací prvky, nebo nějaký statický text.
+		Toto řešení je velmi jednoduché a umožňuje přesně to co jsme chtěli tj. oddělit
+		základní ovládací prvky od obsahu stránek. Problém ale může nastat když je 
+		potřeba více změnit strukturu stránky (a ne vždy se to podaří udělat pouze
+		změnou CSS stylů). Potom totiž člověk musí měnit všechny stránky, což je u 
+		větších webů docela velká práce (ikdyž bude stránka velmi dobře navržená,
+		může tato situace nastat).</p>
+		<p>Druhou možností je vytvořit si jednu stránku (<code>show.aspx</code>), která obsahuje výše zmíněné 
+		standardní ovládací prvky a na místě obsahu je vložený ovládací prvek <code>PlaceHolder</code>.
+		Při požadavku na stránku je stránce předán parametr, podle kterého se 
+		načte nějaký ovládací prvek (nebo i více prvků) jako obsah stránky. 
+	  Toto řešení je poměrně jednoduché, ale nevýhodou je, že jednotlivé stránky
+		mají nepěknou adresu (<code>show.aspx?show=about</code>).
+		Kód na načítání ovládacích prvků je velmi jednoduchý a může vypadat přibližně takto:</p>
+		<pre>
+<span class="c">// Nacita obsah stranky podle parametru v QueryString</span>
+override protected void OnInit(EventArgs e)
+{
+<span class="c">  // Podle parametru nacist jeden z ovladacich prvku..</span>
+  Control ctrl=null;
+  switch(Request.QueryString["show"])
+  {
+    case "about":
+      ctrl=LoadControl("controls/about.ascx"); break;
+    default:
+      ctrl=LoadControl("controls/default.ascx"); break;
+  }
+	
+<span class="c">  // a ovladaci prvek se vlozi na stranku   </span>
+  pageContent.Controls.Add(ctrl);
+
+<span class="c">  // Asp.Net inicializace</span>
+  InitializeComponent();
+  base.OnInit(e);
+}
+	</pre>
+		<p>Další možné řešení je vytvoření bázové stránky, která by se sama postarala o 
+		vložení základních ovládacích prvků. Od této stránky jsou potom zděděny všechny
+		další stránky ve webu. Toto řešení sice vypadá nejčistěji, ale jeho implementace
+		není úplně snadná záležitost a člověk musí řešit docela dost problémů.
+		Existuje ale docela dost frameworků, které se tímto způsobem snaží přidat do 
+		Asp.Net 1.0 něco, co by se podobalo Master pages z Asp.Net 2 (pár odkazů je na konci textu).</p>
+		
+		<h2>Master pages v Asp.Net 2</h2>
+		<p>Problém jednotného vzhledu je v nové verzi Asp.Net řešen pomocí master pages. Funguje to tak,
+		že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají
+		pouze obsah. Master stránka pomocí tagů <code>asp:ContentPlaceHolder</code> určí jedno,
+		nebo více míst, kam je možné vkládat obsah a ostatní stránky pomocí <code>
+		asp:Content</code> vloží do master stránku obsah (atribut <code>ContentPlaceHolderID</code> určuje place holder).</p>
+		<p>Jednoduchý příklad na master pages by mohl vypadat takto:</p>
+		<pre>
+<span class="c">&lt;-- Common.master --&gt;</span>
+&lt;%@@ <b>Master</b> Language="C#" %&gt;
+&lt;html&gt;&lt;head runat="server"&gt;
+  &lt;title&gt;Master pages&lt;/title&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;form id="form1" runat="server"&gt;
+
+  &lt;h1&gt;Obsah z master page&lt;/h1&gt;
+  &lt;hr /&gt;
+  &lt;a href="prvni.aspx"&gt;Prvni stranka&lt;/a&gt;
+  &lt;a href="druha.aspx"&gt;Druha stranka&lt;/a&gt;
+  &lt;hr /&gt;
+  
+  <span class="c">&lt;-- Na tomto miste se bude vkladat obsah --&gt;</span><br />
+  <b>  &lt;asp:contentplaceholder id="PageContent" runat="server"&gt;
+  &lt;/asp:contentplaceholder&gt;</b>
+  
+&lt;/form&gt;
+&lt;/body&gt;&lt;/html&gt;
+</pre>
+		<pre>
+<span class="c">&lt;-- prvni.aspx --&gt;</span>
+&lt;%@@ Page Language="C#" Title="Titulek stranky"
+    <b>MasterPageFile="~/Common.master"</b> %&gt;
+
+<span class="c">&lt;-- Zde je definovan obsah stranky --&gt;</span><br />
+<b>&lt;asp:Content ContentPlaceHolderID="PageContent" Runat="server"&gt;</b>
+  Obsah stranky prijde sem...
+<b>&lt;/asp:Content&gt;</b>
+</pre>
+		<p>Master page je tedy obyčejná Asp.Net stránka, jenom místo direktivy <code>Page</code>
+		začíná direktivou <code>Master</code>, má příponu <code>master</code> a je potomkem
+		třídy <code>MasterPage</code>. Master page se volí pomocí
+		parametru <code>MasterPageFile</code> v direktivě <code>Page</code>. Dále je zde možné 
+		zadat titulek stránky (z tohoto důvodu má master page u tagu <code>head</code>
+		uvedeno <code>runat="server"</code>). Stránky, které používají master pages
+		obsaují všechny ovládací prvky v prvcích <code>asp:Content</code> a z nich
+		jsou ovládací prvky vkládány při renderování do master stránek.</p>
+		<h3>Master page podle zařízení</h3>
+		<p>Jednou z vymožeností master pages je možnost použít jinou stránku pro jiná
+		zařízení (prohlížeče). Zařízení (prohlížeče) jsou identifikovány podle 
+		konfiguračních souborů, které naleznete v adresáři 
+		<code>C:\&#173;WINDOWS\&#173;Microsoft.NET\&#173;Framework\&#173;v2.0.xxxxx\&#173;CONFIG\&#173;Browsers</code>
+		(narozdíl od předcházejících verzí se zde nachází pro každé zařízení jeden soubor, 
+		takže je to mnohem přehlednější a snadněji spravovatelné).
+		Rozlišení master page podle zařízení se provede v direktivě <code>Page</code> takto 
+		(vím, že to tu již někdo psal, ale pro pořádek :-)):</p>
+		<pre>
+<span class="c">&lt;!-- Pro prohlizece identifikovane jako mozilla 
+     pouzije jinou master page --&gt;</span>
+&lt;%@@ Page master="default.master"
+    Mozilla:master="mozilla.master" %&gt;</pre>
+		<h3>Master page podle ...</h3>
+		<p>Master pages lze měnit nejen podle zařízení, ale i podle čehokoliv jiného (z kódu).
+		Je tedy snadno možné umožnit uživateli změnu master page podle jeho preferencí.
+		Jediné na co je třeba dát pozor je, že master page lze změnit pouze na úplném počátku
+		dotazu na stránku (ještě dříve než začne Asp.Net cokoliv načítat). Z tohoto důvodu
+		přibyla v Asp.Net 2 nová událost, která se vyvolává dříve než jakákoliv jiná a 
+		jmenuje se <code>PreInit</code>. Kód na změnu master page podle hodnoty uložené v
+		cookie by mohl vypadat takto:</p>
+<pre>
+<span class="c">// Udalost se vyvolava pred jakymkoliv nacitanim stranky</span>
+void Page_PreInit(object sender,EventArgs e)
+{
+  HttpCookie ck=Request.Cookies["masterpage"];
+  if (ck != null &amp;&amp; ck.Value == "2")
+  {
+    <span class="c">// Zmenit master page na 'Master2.master'</span>
+    MasterPageFile = "Master2.master";
+  }
+}</pre>
+		<h3>Hierarchické master pages</h3>
+		<p>Master pages umožňují vytvářet i hierarchickou strukturu (tedy, že jedna 
+		jedna master page (<code>GlobalMaster.master</code>) obsahuje nějaké hlavní rozdělení
+		stránky a další master pages jsou odvozené od ní a dělí nějak dále její prostor 
+		pro vkládání obsahu. Toto umožňuje na větších firemních webech mít jednu hlavní master
+		stránku, které by obsahovala např. hlavičku a základní odkazy a od ní odvozené
+		další stránky (pro jednotlivá oddělení ve firmě), které by obsahovaly věci společné
+		pro dané oddělení (viz obrázek).</p>
+		
+		<div style="text-align:center; padding:10px;">
+			<img src="aspmasterpg/hierarchy.gif" alt="Hierarchická struktura Master pages" />
+		</div>
+		
+		<h3>Jak je to udělané</h3>
+		<p>Master pages připomínají z řešení ve starších verzích nejvíce to, kde je jedna bázová
+			stránka do které se vkládá obsah s tím rozdílem, že stránka není použita jako bázová,
+			ale přidruží se jiným způsobem. Ve skutečnosti master pages fungují tak, že se napřed 
+			vytvoří master page (která je z odvozených stránek přístupná vlastností <code>Master</code>),
+			poté se vygenerují osbsahy z <code>asp:Content</code> a vytvořené ovládací prvky se vloží
+			do master page (to dělá interně metoda <code>AddContentTemplate</code>). Na konec se
+			vyrenderuje master stránka. Je to tedy řešení, které není možné realizovat bez zásahů 
+			do Asp.Net a není ani možné master pages tímto způsobem zpětně přidat do starších verzí Asp.Net.		
+			</p>
+		
+		<h2>Odkazy na související stránky</h2>
+		<ul>
+			<li><a href="http://www.codeproject.com/aspnet/page_templates.asp">ASP.NET Page Templates - Using Inheritance</a>
+		[<a href="http://www.codeproject.com/aspnet/page_templates.asp" target="_blank">^</a>] (Řešení problému v Asp.Net 1.1)</li>
+		<li><a href="http://msdn.microsoft.com/library/en-us/dnvs05/html/masterpages.asp">Master pages in Asp.Net 2</a>
+		[<a href="http://msdn.microsoft.com/library/en-us/dnvs05/html/masterpages.asp" target="_blank">^</a>] (Popis master pages na MSDN)</li>
+		</ul>
+	</body>
+</doc>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2faspmasterpg.aspx%2f&amp;text=Asp.Net+2+-+Master+pagesvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2faspmasterpg.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2faspmasterpg.aspx%2f&title=Asp.Net+2+-+Master+pages">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Asp.Net%202%20-%20Master%20pages&body=%20Probl%c3%a9m%20jednotn%c3%a9ho%20vzhledu%20a%20spole%c4%8dn%c3%bdch%20n%c4%9bkter%c3%bdch%20%c4%8d%c3%a1st%c3%ad%20str%c3%a1nky%20je%20v%20nov%c3%a9%20verzi%20Asp.Net%20%c5%99e%c5%a1en%20pomoc%c3%ad%20tzv.%20master%20pages.%20Funguje%20to%20tak%2c%20%c5%bee%20v%20master%20str%c3%a1nce%20je%20k%c3%b3d%2c%20kter%c3%bd%20m%c3%a1%20b%c3%bdt%20stejn%c3%bd%20na%20v%c5%a1ech%20str%c3%a1nk%c3%a1ch%20a%20ostatn%c3%ad%20str%c3%a1nky%20dod%c3%a1vaj%c3%ad%20pouze%20obsah...%20Master%20pages%20v%20Asp.Net%202%20je%20ji%c5%be%20pom%c4%9brn%c4%9b%20zn%c3%a1m%c3%a1%20a%20velmi%20o%c4%8dek%c3%a1van%c3%a1%20v%c4%9bc.%20V%20tomto%20%c4%8dl%c3%a1nku%20jsem%20se%20pokusil%20doplnit%20zn%c3%a1m%c3%a9%20fakty%20o%20n%c4%9bkter%c3%a9%20dal%c5%a1%c3%ad%20zaj%c3%admavosti%20t%c3%bdkaj%c3%adc%c3%ad%20se%20master%20pages%2c%20jako%20je%20nap%c5%99%c3%adklad%20dynamick%c3%a9%20na%c4%8d%c3%adt%c3%a1n%c3%ad%20master%20str%c3%a1nky%20a%20dal%c5%a1%c3%ad.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2faspmasterpg.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 3 January 2005, 12:00 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> </span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

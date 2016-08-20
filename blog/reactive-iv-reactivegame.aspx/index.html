@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Reactive Programming (IV.) - Developing a game in Reactive LINQ - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article, we'll implement a simple iteractve game using the Reactive LINQ project. The article shows that this way of handling events gives us amog other things a great degree of composability." />
+  <meta name="keywords" content="c#, functional, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Reactive Programming (IV.) - Developing a game in Reactive LINQ" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/reactive-iv-reactivegame.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article, we'll implement a simple iteractve game using the Reactive LINQ project. The article shows that this way of handling events gives us amog other things a great degree of composability." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Reactive Programming (IV.) - Developing a game in Reactive LINQ" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article, we'll implement a simple iteractve game using the Reactive LINQ project. The article shows that this way of handling events gives us amog other things a great degree of composability." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Reactive Programming (IV.) - Developing a game in Reactive LINQ",
+    "headline": "Reactive Programming (IV.) - Developing a game in Reactive LINQ",
+  	"description": " In this article, we'll implement a simple iteractve game using the Reactive LINQ project. The article shows that this way of handling events gives us amog other things a great degree of composability.",
+  	"url": "http://tomasp.net/blog/reactive-iv-reactivegame.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2008-11-24T03:00:00.0000000",
+  	"datePublished": "2008-11-24T03:00:00.0000000",
+    "dateModified": "2008-11-24T03:00:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/reactive-iv-reactivegame.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["c#", "functional",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Reactive Programming (IV.) - Developing a game in Reactive LINQ</h1>
+<p>In this part of the article series about <strong>Reactive LINQ</strong>we're going to 
+  implement a slightly more complicated application using the library that I introduced
+  in the previous three articles. We're going to use basic event stream queries from the <a href="/blog/reactive-ii-csevents.aspx">second article</a> 
+  as well as advanced operators introduced in the <a href="/blog/reactive-iii-linqoperators.aspx">third part</a>.
+  This time, I'll also show the F# version of all the examples, so we're going to build on the ideas from
+  the <a href="/blog/reactive-i-fsevents.aspx">first part</a>.</p>
+
+<p>I originally wanted to write the demo only in Visual Basic, because I think that
+  it is really amazig to show an idea that came from functional programming in a language
+  that noone (maybe until recently) connects with functional programming. Then I realized that
+  I really want to show the F# version too, because F# was an inspiration for the whole
+  <strong>Reactive LINQ</strong> idea and it is interesting alone as well. But finally,
+  I thought that don't showing the C# version may look offensive to many readers (especially 
+  since I'm still C# MVP...). So, I ended up writing the game in all three languages, but 
+  the code is surprisingly similar in all of them! I decided to make the blog high-tech today, so you can choose the language 
+  in which the samples will be displayed here (but don't worry, you can switch the language for every single 
+  sample below as well). The language displayed by default is still Visual Basic though!</p>
+<ul>
+  <li><a href="javascript:switchLang(0, 'cs');">Switch the source code to C#!</a></li>
+  <li><a href="javascript:switchLang(0, 'vb');">Switch the source code to Visual Basic!</a></li>
+  <li><a href="javascript:switchLang(0, 'fs');">Switch the source code to F#!
+</a></li>
+  <li>You can download all the source code below...</li>
+</ul>
+
+<div style="width:330;float:right;text-align:center;">
+<a href="/articles/reactive/smileygame.png" target="_blank"><img src="/articles/reactive/smileygame_sm.png" alt="Click on the smiley!" style="border:0px;margin:10px;margin-bottom:2px;" /><br /><small>(Click for a full-size screenshot)</small></a>
+</div>
+<h2>Implementing Reactive LINQ game</h2>
+<p>Your goal is to click on the smiley face
+  and the game counts the number of clicks. When you click on the smiley or after 600ms it moves to 
+  another random location. The game also counts the time and once the time reaches zero,
+  the game ends and displays the final score. You can see my result on the screenshot, but you 
+  should get much better score, because I was using touchpad when playing...</p>
+<h3>Structing the code</h3>
+<p>One of the interesting things about <strong>Reactive LINQ</strong> is that it gives us an 
+  excellent way to decompose the problem and implement several parts of the game almost independently
+  (indeed, this is one of the benefits of <a href="http://www.haskell.org/frp/" type="external">functional 
+  reactive programming</a>, which inspired the project). We'll start by writing code that counts the number
+  of clicks on the smiley face and displaying this as a score. As a next step, we'll implement moving
+  of the smiley and finally we'll add a few lines of code to count the time and stop the game.</p>
+
+<h2>Counting clicks</h2>
+<p>We've already seen how to count the number of clicks on a button in the previous article.
+  Counting the number of clicks on the smiley face will be very similar. We'll count the number of clicks
+  on an element that shows the smiley, but we'll also check whether the click was inside the face (circle).
+  Then we'll use aggregation to get an event stream yielding the total number of clicks so far.
+  In Visual Basic, we can use the <code>Aggregate</code> query syntax, in C# we can use LINQ query
+  only for filtering using <code>where</code> and the F# version uses only pipelining (<code>|&gt;</code>)
+  and high-order functions:
+</p>
+
+<pre class="header"><a href="javascript:switchLang(1, 'cs');">Visual C#</a><a href="javascript:switchLang(1, 'fs');">Visual F#</a><a href="javascript:switchLang(1, 'vb');">Visual Basic</a>Counting the number of clicks</pre>
+<pre lang="basic" id="code_vb_1" class="withheader">
+' Display the number of clicks
+Dim eClicked = _
+  Aggregate md In PicSmiley.AttachEvent(Of MouseEventArgs)("MouseDown") _
+  Where md.Button = MouseButtons.Left _
+  Where Math.Pow(PicSmiley.Width / 2 - md.X, 2) + _
+        Math.Pow(PicSmiley.Height / 2 - md.Y, 2) &lt; 2250 _
+  Into Sum(1)
+eClicked.Listen(Function(sum) _
+  SetText(LblScore, String.Format("Score: {0}", sum)))
+</pre>
+<pre lang="csharp" id="code_cs_1" class="withheader">
+// Display the number of clicks
+var eClicked = 
+  (from md in picSmiley.AttachEvent&lt;MouseEventArgs&gt;("MouseDown") 
+   where md.Button == MouseButtons.Left 
+   where Math.Pow(picSmiley.Width / 2 - md.X, 2) + 
+          Math.Pow(picSmiley.Height / 2 - md.Y, 2) &lt; 2250
+   select 1).Sum().Pass(sum =&gt; 
+     lblScore.Text = String.Format("Score: {0}", sum));
+</pre>
+<pre lang="fsharp" id="code_fs_1" class="withheader">
+// Utility function that creates 'constant function'
+let cns n = (fun _ -> n)
+
+// Display the number of clicks
+let eClicked = 
+  picSmiley.MouseDown
+  |> Reactive.freeable 
+  |> Reactive.filter (fun md -> md.Button = MouseButtons.Left)
+  |> Reactive.filter (fun md -> 
+        pown (float picSmiley.Width / 2. - float md.X) 2 +
+        pown (float picSmiley.Height / 2. - float md.Y) 2 &lt; 2250.0 )
+  |> Reactive.sumBy (cns 1)
+  |> Reactive.pass (sprintf "Score: %d" >> lblScore.set_Text)
+  |> Reactive.map (cns ())
+</pre>
+<p>There are a few things that deserve some explanation. First of all, we're using <code>Pass</code> 
+  extension method in the C# version. This is very similar to <code>Listen</code> with the exception
+  that it returns the original event, so we can store it for further use in a local variable <code>eClicked</code>.
+  In the Visual Basic version, we don't use anything new. There are a few things to note about the F# version,
+  but if you're not interested in F#, you can skip the following paragraph.</p>  
+<p>In the F# version, we're using functions from <code>Reactive</code> module (while in the first article
+  we've been using <code>Event</code>). This is because many of the functions that we're using aren't currently
+  available in F#, so I reimplemented them in the <code>Reactive</code> module. The <code>Reactive.freeable</code>
+  function converts an F# event into an event representation used by <code>Reactive.Xyz</code> functions, so
+  we'll use it as a first one in every sequence. In F#, we also use <code>map</code> at the end to produce
+  an event stream that will contain <code>unit</code> values, that is values that don't carry any meaning
+  - we're just interested in knowing when the event fired.</p>
+
+<h2>Moving the smiley</h2>
+<p>As a next step, we'll implement moving of the smiley. The smiley moves when the user clicks on it,
+  so we'll need to use the event <code>eClicked</code> from the previous listing. However, the smiley
+  also moves after 600ms if the user hasn't clicked on it yet. This is quite similar to one of the examples
+  from the <a href="/blog/reactive-iii-linqoperators.aspx">previous article</a> - the one where we were displaying 
+  "Click..." and "Timeout!" messages.</p>
+<p>We'll need to use one of the switching operators. We want to generate a new event stream every time 
+  an event occurs, to make sure that the timer will start counting from zero. This can be done using
+  <code>SwitchRecursive</code> operator. As an input stream, we'll give it an event that is fired some
+  time after the application starts and then it starts generating events using the provided function.
+  In our example (in C# and VB), we'll use the query syntax. The part that specifies how to generate
+  an event when switching occurs will use <code>Reactive.Merge</code> to produce an event that happens 
+  when the user clicks or after 600ms timeout. This means that every time the user clicks on the smiley,
+  the event stream will be regenerated and the user will have another 600ms to click on the image:</p>
+
+<pre class="header"><a href="javascript:switchLang(2, 'cs');">Visual C#</a><a href="javascript:switchLang(2, 'fs');">Visual F#</a><a href="javascript:switchLang(2, 'vb');">Visual Basic</a>Moving the smiley</pre>
+<pre lang="basic" id="code_vb_2" class="withheader">
+' Moves the smiley every time the user clicked on it or after specified time
+Dim rnd = New Random()
+Dim eMoveSmiley = _
+  From e In Reactive.After(1000, 0) _
+  From s In Reactive.Merge(eClicked, Reactive.After(600.0, 0)).UseSwitchRecursive() _
+  Select New Point _
+      (rnd.Next(ClientSize.Width - PicSmiley.Width), _
+       20 + rnd.Next(ClientSize.Height - PicSmiley.Height - 20))
+eMoveSmiley.Listen(AddressOf MoveSmiley)
+</pre>
+<pre lang="csharp" id="code_cs_2" class="withheader">
+// Moves the smiley every time the user clicked on it or after specified time
+var rnd = new Random();
+var eMoveSmiley = 
+ (from e in Reactive.After(1000, 0) 
+  from s in Reactive.Merge(eClicked, Reactive.After(600.0, 0)).UseSwitchRecursive() 
+  select new Point 
+      (rnd.Next(ClientSize.Width - picSmiley.Width), 
+       20 + rnd.Next(ClientSize.Height - picSmiley.Height - 20)))
+  .Pass(pos =&gt; picSmiley.Location = pos);
+</pre>
+<pre lang="fsharp" id="code_fs_2" class="withheader">
+// Moves the smiley every time the user clicked on it or after specified time
+let rnd = new Random()
+let eMoveSmiley =
+  Reactive.After(1000.0, ())
+  |> Reactive.switchRecursive (fun () ->
+      Reactive.Merge(eClicked, Reactive.After(600.0, ())))
+  |> Reactive.map (fun _ -> 
+      Point(rnd.Next(frm.ClientSize.Width - picSmiley.Width),        
+            20 + rnd.Next(frm.ClientSize.Height - picSmiley.Height - 20)) )
+  |> Reactive.pass picSmiley.set_Location            
+</pre>
+<p>In C# and VB, the <code>eClicked</code> event yields integer values. To make the types compatible,
+  our calls to <code>Reactive.After</code> also generate an integer value (the second argument specifies
+  the value that should be generated after the specified time and we set it to 0). In F#, we're using
+  a <code>unit</code> value instead, so we generate a value "<code>()</code>" (which represents no information).
+  The result of the recursive switch operator is an event, which is triggered every time the smiley 
+  should move. Then we generate a new position. In C# and VB, this is done inside the query and in F#
+  this is done using a call to <code>map</code> operator (which is just like <code>Select</code>).
+  Once we have a new location, we can set the position of the smiley control (either using <code>Pass</code>
+  or using <code>Listen</code>).</p>
+<p>Also note that we could test this code separately from the previous code snippet very well. The
+  only thing that wouldn't be available is the <code>eClicked</code> event, so we couldn't test
+  whether the smiley reacts correctly to a click. However, we could simulate this by reacting to 
+  a click to any place on the form (just to test whether the movement is correct). This ability to 
+  separate parts of the behavior is clearly one of the interesting aspects of this project.
+  In the next section, we'll implement the third part of the game, which is again to a large extent
+  separate from what we've implemented so far.</p>
+
+<h2>Counting the time and showing results</h2>
+<p>The remaining part of our game will count the time elapsed from the start of the game
+  and display this time on a label. We'll do this simply by using <code>Reactive.Repeatedly</code>,
+  which allows us to create an event that is triggered every second. Once we have an event that
+  tells us the current time, we can also handle the end of the game. When the time is less than 
+  zero, we'll display a message with the result and stop all event processing. </p>
+<pre class="header"><a href="javascript:switchLang(3, 'cs');">Visual C#</a><a href="javascript:switchLang(3, 'fs');">Visual F#</a><a href="javascript:switchLang(3, 'vb');">Visual Basic</a>Counting the time and showing results</pre>
+<pre lang="basic" id="code_vb_3" class="withheader">
+' Count-down timer, shows the time on a label
+Dim start = DateTime.Now
+Dim eCountDown = _
+  From e In Reactive.Repeatedly(1000) _
+  Let sec = 20 - e.Subtract(start).TotalSeconds _
+  Select New With _
+    {.Time = sec, .Message = _
+     String.Format("Time: {0}", CType(sec, Integer))}
+eCountDown.Listen(Function(s) SetText(LblTime, s.Message))
+
+' Stop the game when time is less than zero
+eCountDown _
+  .Where(Function(t) t.Time &lt;= 0) _
+  .Listen(Function() StopGame(eClicked, eMoveSmiley, eCountDown))
+</pre>
+<pre lang="csharp" id="code_cs_3" class="withheader">
+// Count-down timer, shows the time on a label
+var start = DateTime.Now;
+(from e in Reactive.Repeatedly(1000) 
+ let sec = 20 - e.Subtract(start).TotalSeconds 
+ select new { Time = sec, Message = 
+     String.Format("Time: {0}", (int)sec) })
+ .Pass(s =&gt; lblTime.Text = s.Message)
+ .Where(t =&gt; t.Time &lt;= 0).First()
+ .Listen(_ =&gt; {
+     eClicked.Stop();
+     eMoveSmiley.Stop();
+     MessageBox.Show("Game over!\n" + lblScore.Text);
+   });
+</pre>
+<pre lang="fsharp" id="code_fs_3" class="withheader">
+// Count-down timer, shows the time on a label
+let start = DateTime.Now
+Reactive.Repeatedly(1000.0)
+  |> Reactive.map (fun e -> 20.0 - e.Subtract(start).TotalSeconds)
+  |> Reactive.pass (int >> sprintf "Time: %d" >> lblTime.set_Text)
+  |> Reactive.filter ((>) 0.0)
+  |> Reactive.first
+  |> Reactive.listen(fun _ -> 
+        eClicked.Stop()
+        eMoveSmiley.Stop()
+        MessageBox.Show("Game over!\n" + lblScore.Text) |> ignore )
+</pre>
+<p>The event processing stream starts with a call to <code>Reactive.Repeatedly</code>, which
+  generates event that is raised every second. Then we calculate the number of seconds until
+  the game ends. In C# and Visual Basic we return an anonymous type that contains
+  the number of seconds and also a message that we want to display to the user. This could 
+  be done without anonymous type as well (we could simply build the string in the subsequent
+  <code>Listen</code> or <code>Pass</code>), but I wanted to demonstrate how to use anonymous
+  types in <strong>Reactive LINQ</strong>, because this is often useful.</p>
+<p>In the F# version, we use function composition when displaying the message. The argument
+  to the <code>Reactive.pass</code> operator is a function composed from three different
+  functions. The first one (<code>int</code>) converts a float number to an integer. The 
+  next one (<code>sprintf</code>) formats a message and the last one is <code>set_Text</code>,
+  which sets a .NET property of the label.</p>  
+<p>Once we set the label, we continue processing (in Visual Basic, this is written as a separate
+  statement). We wait until the time reported from the event stream is less then or equal to zero,
+  which means that the game has ended. In the reaction to this event, we call <code>Stop</code>
+  method on all event streams that we're processing. This releases all event handlers, so the
+  game will be stopped by that. The current implementation doesn't allow running the game multiple
+  times, but this could be done simply by wrapping all the code in a method and running it again
+  to restart the game. </p>
+
+<h2>Summary</h2>
+<p>In this article, we've seen how to implement a simple (but not completely trivial) game using <strong>Reactive LINQ</strong>.
+  Thanks to the use of LINQ and lambda functions, the code is more declarative meaning that it describes more
+  what you want to do rather than how do you want to do it. For example when we specify how the 
+  smiley should move, we don't have to create any timer and set its properties. The code just specifies
+  that we want to do something after 600ms unless something else happens first.</p>
+<p>Another interesting thing about the project is that you can develop various parts of the application 
+  independently. For example, the game we implemented here was divided into three parts (counting clicks,
+  moving the smiley and counting the time). When developing the game, all of them can be developed almost 
+  independently and then you connect them together in a places where this is needed (such as when you 
+  want to move the smiley when the user clicks on it). </p>  
+<p>Finally, let me again shortly mention that the current implementation is not very well tested and 
+  will probably need some design changes. However, I hope that the idea looks interesting and I'd be 
+  very glad to hear some feedback if you'll download the code and play with it. I'll definitely continue
+  working on this project, so I'll write some more articles about it and I'm also investigating how
+  the implementation could be improved. So, stay tuned...</p>  
+<ul>
+  <li><a href="/articles/reactive/reactive4.zip">Download the examples including the <strong>Reactive LINQ</strong> source</a> (219 kB)</li>
+</ul>
+
+
+<h3>Series links</h3>
+<ul>
+  <li><a href="/blog/reactive-i-fsevents.aspx">Reactive programming (I.) - First class events in F#</a></li>
+  <li><a href="/blog/reactive-ii-csevents.aspx">Reactive programming (II.) - Introducing Reactive LINQ</a></li>
+  <li><a href="/blog/reactive-iii-linqoperators.aspx">Reactive Programming (III.) - Useful Reactive LINQ Operators</a></li>
+  <li>Reactive Programming (IV.) - Developing reactive game in Reactive LINQ</li>
+</ul>
+
+<script type="text/javascript">
+function switchLang(n, lang) {
+  langs = new Array();
+  langs[0] = 'cs';
+  langs[1] = 'fs';
+  langs[2] = 'vb';
+  for(i=1; i!=4; i++) {
+    if (n!=0) { if (n!=i) continue; }
+    for(j=0; j!=3; j++) {
+      var clang=langs[j];
+      var el = document.getElementById('code_'+clang+'_'+i);
+      el.style.display = (clang==lang)?'':'none';
+    }
+  }
+}
+switchLang(0, 'vb');
+</script>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-iv-reactivegame.aspx%2f&amp;text=Reactive+Programming+(IV.)+-+Developing+a+game+in+Reactive+LINQvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2freactive-iv-reactivegame.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-iv-reactivegame.aspx%2f&title=Reactive+Programming+(IV.)+-+Developing+a+game+in+Reactive+LINQ">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Reactive%20Programming%20(IV.)%20-%20Developing%20a%20game%20in%20Reactive%20LINQ&body=%20In%20this%20article%2c%20we%27ll%20implement%20a%20simple%20iteractve%20game%20using%20the%20Reactive%20LINQ%20project.%20The%20article%20shows%20that%20this%20way%20of%20handling%20events%20gives%20us%20amog%20other%20things%20a%20great%20degree%20of%20composability.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2freactive-iv-reactivegame.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 24 November 2008, 3:00 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/functional/">functional</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

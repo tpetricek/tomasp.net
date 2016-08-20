@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Web Tools: "Ajax" applications made simple - Tomas Petricek</title>
+
+  <meta name="description" content=" This article introduces the F# Web Toolkit, which is an \"Ajax\" web framework that solves three major problems that many people have to face when developing modern web applications." />
+  <meta name="keywords" content="web, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Web Tools: "Ajax" applications made simple" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fswebtools-intro.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article introduces the F# Web Toolkit, which is an \"Ajax\" web framework that solves three major problems that many people have to face when developing modern web applications." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Web Tools: "Ajax" applications made simple" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article introduces the F# Web Toolkit, which is an \"Ajax\" web framework that solves three major problems that many people have to face when developing modern web applications." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Web Tools: "Ajax" applications made simple",
+    "headline": "F# Web Tools: "Ajax" applications made simple",
+  	"description": " This article introduces the F# Web Toolkit, which is an \"Ajax\" web framework that solves three major problems that many people have to face when developing modern web applications.",
+  	"url": "http://tomasp.net/blog/fswebtools-intro.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-07-13T04:32:29.0000000",
+  	"datePublished": "2007-07-13T04:32:29.0000000",
+    "dateModified": "2007-07-13T04:32:29.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fswebtools-intro.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["web", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">F# Web Tools</span><span class="hs"> "Ajax" applications made simple</span></h1>
+<p>I started thinking about working on "Ajax" framework quite a long time ago - the key thing
+  I really wanted from the beginning was using the same language for writing both client and 
+  server side code and the integration between these two sides, so you could write an event handler
+  and specify if it should be executed on the client or on the server side. About a year ago I 
+  visited Cambridge (thanks to the MVP program) and I had a chance to talk with 
+  <a href="http://blogs.msdn.com/dsyme">Don Syme</a> [<a href="http://blogs.msdn.com/dsyme" target="_blank">^</a>].
+  Don showed me a few things in F# and suggested using F# for this project, so when I was later selected
+  to do an internship at MSR, this was one of the projects that I wanted to work on.</p>
+<p>The original reason for using F# was its support for meta-programming ([<a href="#fswtintrolinks">8</a>], which
+  makes it extremely easy to translate part of the page code-behind code to JavaScript. During my internship,
+  the F# team was also working on a feature called <em>computational expressions</em>, which proved to be
+  extremely useful for the F# Web Tools as well - I bet you'll hear a lot about this from Don soon, so I'll 
+  describe only the aspects that are important for this project. Aside from these two key features that F# has,
+  I also quite enjoyed programming in F# itself - I already used it for a few things during the last year, but
+  I could finally work on a large project in F# (and discuss the solution with the real experts!) and I don't believe
+  I would be able to finish the project of similar complexity during less than three months in any other language
+  (but this is a different topic, which deserves separate blog post).
+</p> 
+<h2>What makes "Ajax" difficult?</h2>
+<p>Traditional "Ajax" application consists of the server-side code and the client-side part written in JavaScript 
+  (the more dynamicity you want, the larger JS files you have to write), which exchanges some data with the server-side
+  code using XmlHttpRequest, typically in JSON format. I think this approach has 3 main problems, which we
+  tried to solve in F# Web Tools. There are a few projects that try to solve some of them already - the most interesting 
+  projects are Volta from Microsoft [<a href="#fswtintrolinks">1</a>], Links language [<a href="#fswtintrolinks">3</a>] 
+  from the University of Edinburgh and Google Web Toolkit [<a href="#fswtintrolinks">2</a>], but none of the projects solve 
+  all three problems at once.</p> 
+<h3>1. Limited client-side environment</h3>
+<p>First of the problems with "Ajax" style applications is that significant part of the application
+  runs on the client-side (in a web browser). Currently majority of the web applications use 
+  JavaScript to execute code in the browser, so in the F# Web Tools we wanted to use JavaScript
+  as well, however in the future, when installation of Silverlight [<a href="#fswtintrolinks">4</a>] becomes more common, we would like to 
+  allow using Silverlight as an alternative.</p>
+<p>F# Web Tools allows you to write client-side code in F# 
+  (so if you don't know JavaScript, you don't have to learn it!) and also use your existing knowledge 
+  of .NET and F# classes and functions (so you can use some of the .NET and F# types when
+  writing client-side code). The code you write in F# is of course executed in JavaScript, so it 
+  runs in any browser that supports JavaScript - the current implementation is tested with IE and 
+  Firefox, but it could be easily tested with other browsers.</p>
+<h3>2. Discontinuity between server and client side</h3>
+<p>The second major problem with "Ajax" applications is that the web application has to be written 
+  as two separate parts - client-side part (when written in JavaScript) consists of several JS files
+  and the server-side part (for example in ASP.NET) is written as a set of ASPX and C# or VB files.
+  Also when using JavaScript, both sides use different formats to store the data, so bridging this
+  gap is difficult. In Silverlight [<a href="#fswtintrolinks">4</a>] (or in GWT [<a href="#fswtintrolinks">2</a>]), the gap is still there, even though both parts are 
+  written using the same technology - the client-side part is usually even a separate project.</p>
+<p>In F# Web Tools we wanted to make this discontinuity as small as possible - You can write
+  both server and client-side code in a same file (as a code-behind code). You can also call server-side
+  functions from the client-side code and you can use certain data-types (including your own) in both
+  sides and you can send them as an arguments from one side to the other. What's also important is that 
+  these calls are done without blocking the browser, but without the usual cumbersome programming 
+  style (calling a function, setting a callback and writing the rest of the code in the callback).
+</p>
+<h3>3. Components in web frameworks are only server-side</h3>
+<p>The third key problem appears once we tightly integrate client and server side code, because there
+  is one more step that has to be done - most of the web frameworks have some way for composing web
+  site from smaller pieces (in ASP.NET this is done using controls) and by defining the interaction 
+  between these pieces, however they allow defining the interaction only for the server-side, which is
+  rather problematic in "Ajax" applications, where most of the interaction between components is done
+  on the client-side. </p>
+<p>Since F# Web Tools is built using ASP.NET, we wanted to allow same compositionality as ASP.NET -
+  to achieve this, controls written using F# Web Tools can wrap both server and client side functionality.
+  Controls than expose both server and client side properties and events that can be used by the page
+  to implement server-side, respectively client-side interaction between components.
+  </p>  
+<h2>Example - "Ajax" dictionary</h2>
+<img src="/articles/fswebtools/intro_dict.png" alt="Ajax dictionary" style="float:right; margin:10px;" />
+<p>
+  I will demonstrate some of the F# Web Tools features using an "Ajax" dictionary application 
+  (see screenshot on the right side) which displays possible matching words as you type the word
+  you want to find. This is one of the typical "Ajax" tasks, so it's a good example to start with.
+  First, we need to define the code-behind file for the ASP.NET page - the page itself is quite simple,
+  it contains just two controls - textbox for entering word that you're looking for (<code>txtInput</code>)
+  and generic element for displaying results (<code>ctlOutput</code>), so let's look at the code-behind:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// F# record type, which will be used for sending lookup </span>
+<span class="c">// results from the server-side to the client-side</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="t">SearchResult</span> <span class="o">=</span> { <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">English</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">string</span>; <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">Other</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="t">string</span>; }
+
+<span class="c">// Code-behind type for the ASP.NET page</span>
+[&lt;<span class="i">MixedSide</span>&gt;]
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">Suggest</span> <span class="o">=</span> 
+  <span class="k">inherit</span> <span class="i">ClientPage</span> <span class="k">as</span> <span class="k">base</span>
+
+  <span class="c">// Controls for entering text and displaying result</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="v">txtInput</span> <span class="o">:</span> <span class="i">TextBox</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="v">ctlOutput</span> <span class="o">:</span> <span class="i">Element</span>
+
+  <span class="c">(* .. interaction of components will go here .. *)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Aside from the code-behind class, we also defined a type (<code>SearchResult</code>), which will be used
+  for returning loaded results from server to the client side - it is just a F# record containing two strings
+  (word in English and word in the language we're translating to). Now let's look at the methods that define
+  the interaction logic. The first method that we will look at is a method running on the server-side that
+  takes entered text as an argument and returns a collection of results (<code>ResizeArray&lt;SearchResult&gt;</code>)
+  - it is a static method, so it can't modify anything else on the page (I will write about non-static methods 
+  in one of the next articles):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Searches the dictionary for specified prefix</span>
+<span class="k">static</span> <span class="k">member</span> <span class="i">LoadSuggestions</span>(<span class="i">prefix</span>) <span class="o">=</span> 
+  <span class="i">server</span>
+    { <span class="k">let</span> <span class="i">db</span> <span class="o">=</span> <span class="i">DictionaryDb</span>(<span class="i">connectionString</span>)
+      <span class="k">let</span> <span class="i">res</span> <span class="o">=</span> 
+        <span class="i">SQL</span> &lt;@@ { <span class="k">for</span> <span class="i">p</span> <span class="k">in</span> 
+                 <span class="k">when</span> <span class="i">p</span><span class="o">.</span><span class="i">English</span><span class="o">.</span><span class="i">StartsWith</span>(
+                 <span class="k">-&gt;</span> {<span class="i">English</span><span class="o">=</span><span class="i">p</span><span class="o">.</span><span class="i">English</span>; <span class="i">Other</span><span class="o">=</span><span class="i">p</span><span class="o">.</span><span class="i">Other</span>} }
+                 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="i">truncate</span> <span class="n">10</span> @@&gt; 
+      <span class="k">return</span> (<span class="k">new</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="i">ResizeArray</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span class="i">res</span>)) }
+</code></pre></td>
+</tr>
+</table>
+<p>The method is all wrapped in <code>server</code> computational expression (this is one of the new F# features - it will be 
+  in details described in the Expert F# [<a href="#fswtintrolinks">6</a>] book, but I'll definitely write a few lines about it as well) - for now you can read it as (almost) ordinary
+  F# code wrapped in a block that specifies how the code should be executed. The <code>server</code> block is executed
+  as ordinary F# code, but wrapping the code in this block allows us to call it from the client side later. The <code>server</code>
+  block also changes the type of the method, so it doesn't return <code>ResizeArray&lt;SearchInfo&gt;</code>, but 
+  <code>Server&lt;ResizeArray&lt;SearchInfo&gt;&gt;</code>, where the <code>Server</code> type helps to ensure that the 
+  code will be executed only on the correct side.
+  </p>
+<p>Now, let's look at the members that define client-side interaction. The entry point on the client-side is a method
+  called <code>Client_Load</code>, which is executed when the page is loaded in the browser:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Initialization on the client side - attach event handlers    </span>
+[&lt;<span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="i">ReflectedDefinition</span>&gt;]
+<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">Client_Load</span>(<span class="i">sender</span>, <span class="i">e</span>) <span class="o">=</span>
+  <span class="i">client</span>
+    { <span class="k">do</span> <span class="i">this</span><span class="o">.</span><span class="i">txtInput</span><span class="o">.</span><span class="i">ClientKeyUp</span><span class="o">.</span><span class="i">AddClient</span>(<span class="i">this</span><span class="o">.</span><span class="i">UpdateSuggestions</span>) }
+</code></pre></td>
+</tr>
+</table>
+<p>In this case we just register an event handler that will be called whenever user types something to the 
+  <code>txtInput</code> textbox. It is important to note that this code will be executed in JavaScript - even though
+  when writing it, it is easy to forget about this! You can see the method that is used as an event handler in the next 
+  code sample (this whole method will be executed in JS as well):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// When text changes, trigger server call to update suggestions</span>
+[&lt;<span onmouseout="hideTip(event, 'fs10', 12)" onmouseover="showTip(event, 'fs10', 12)" class="i">ReflectedDefinition</span>&gt;]
+<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">UpdateSuggestions</span>(<span class="i">sender</span>, <span class="i">e</span>) <span class="o">=</span>
+  <span class="i">client</span>
+    { <span class="k">do!</span> <span class="i">asyncExecute</span>
+           (<span class="i">client_async</span> 
+             { <span class="k">let</span>  <span class="i">sprefix</span> <span class="o">=</span> <span class="i">this</span><span class="o">.</span><span class="i">txtInput</span><span class="o">.</span><span class="i">Text</span>
+               <span class="k">let!</span> <span class="i">sugs</span> <span class="o">=</span> <span class="i">serverExecute</span>(<span onmouseout="hideTip(event, 'fs5', 13)" onmouseover="showTip(event, 'fs5', 13)" class="i">Suggest</span><span class="o">.</span><span class="i">LoadSuggestions</span>(<span class="i">sprefix</span>))
+               <span class="k">do!</span>  <span class="i">this</span><span class="o">.</span><span class="i">DisplayResponse</span>(<span class="i">sugs</span>) }) }            
+</code></pre></td>
+</tr>
+</table>
+<p>If you look at the method, you can see that it contains call to the <code>asyncExecute</code> function and the 
+  argument given to the function is entire block of F# code marked using <code>client_async</code> computational expression.
+  The <code>asyncExecute</code> function executes the given block <em>asynchronously</em>, which means that it doesn't
+  block the calling function (and it doesn't block browser GUI) - you can look at it as if it created new thread (but it's actually using one trick from functional 
+  programming called <em>continuation passing style</em>, because JavaScript doesn't support threads). In the 
+  <code>client_async</code> block, we first read the value from the textbox and then call the <code>LoadSuggestions</code>
+  static method to get collection with matching words. The call to the server-side functions is done using <code>serverExecute</code>
+  function (which is a special function, because it bridges the gap between client and the server automatically). Once
+  we get the result we can call the <code>DisplayResponse</code> method to display the results. You can see that we 
+  used a <code>let!</code> and <code>do!</code> instead of <code>let</code> and <code>do</code> here - this is because
+  we're calling a methods that are written using F# computational expressions (<code>server</code> or <code>client</code> blocks).
+  In general when you're calling any ordinary code, you can use the operators without the exclamation mark, but when 
+  calling a code wrapped in a block you have to use <code>let!</code> or <code>do!</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Display newly received array with results</span>
+[&lt;<span onmouseout="hideTip(event, 'fs10', 14)" onmouseover="showTip(event, 'fs10', 14)" class="i">ReflectedDefinition</span>&gt;]
+<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">DisplayResponse</span> (<span class="i">sugs</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs9', 15)" onmouseover="showTip(event, 'fs9', 15)" class="i">ResizeArray</span><span class="o">&lt;</span><span class="i">Result</span><span class="o">&gt;</span>) <span class="o">=</span>
+  <span class="i">client</span>
+    { <span class="k">let</span> <span class="i">sb</span> <span class="o">=</span> <span class="i">StringBuilder</span>()
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 16)" onmouseover="showTip(event, 'fs11', 16)" class="i">array</span> <span class="o">=</span> <span class="i">sugs</span><span class="o">.</span><span class="i">ToArray</span>()
+      <span class="k">do</span>  <span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 18)" onmouseover="showTip(event, 'fs13', 18)" class="i">iter</span> (<span class="k">fun</span> (<span class="i">res</span>) <span class="k">-&gt;</span> 
+            <span class="i">sb</span><span class="o">.</span><span class="i">Append</span>(<span class="s">&quot;&lt;li&gt;&lt;strong&gt;&quot;</span> <span class="o">+</span> <span class="i">r</span><span class="o">.</span><span class="i">Source</span> <span class="o">+</span> 
+                      <span class="s">&quot;&lt;/strong&gt; - &quot;</span> <span class="o">+</span> <span class="i">r</span><span class="o">.</span><span class="i">Target</span> <span class="o">+</span> <span class="s">&quot;&lt;/li&gt;&quot;</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs14', 19)" onmouseover="showTip(event, 'fs14', 19)" class="i">ignore</span>)
+      <span class="k">do</span>   <span class="i">this</span><span class="o">.</span><span class="i">ctlOutput</span><span class="o">.</span><span class="i">InnerHtml</span> <span class="o">&lt;-</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> <span class="o">+</span> (<span class="i">sb</span><span class="o">.</span><span class="i">ToString</span>()) <span class="o">+</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>In this last sample code, we just generate HTML code from the data we received from the server and display them.
+  It is interesting to note, that the code is running on the client-side (it's wrapped in the <code>client</code> block),
+  but you can still use some F#/.NET types and functions in the code (we're using <code>ResizeArray</code>, 
+  <code>StringBuilder</code> classes and <code>Array.iter</code> function). This is possible because F# Web Tools
+  re-implements subset of the F#/.NET functionality for the client-side code. And that's all - I described slightly simplified
+  version of one of the F# Web Tools demos, but you can get the full source code if you check out our CodePlex project.
+  You can also look at the <a href="http://wintax.ms.mff.cuni.cz/petrt4cm/afax/dictionary/suggest.aspx">live Dictionary sample</a>
+  [<a href="http://wintax.ms.mff.cuni.cz/petrt4cm/afax/dictionary/suggest.aspx" target="_blank">^</a>].</p>
+<h2>More information</h2>
+<p>I think this example gives you a general idea what is the F# Web Tools and why it is interesting. I will definitely
+  write more about it in the future, because I didn't describe all important features in this example. If you're interested
+  in this project, you can also read the Paper we submitted to the ML Workshop or slides from the presentation I did at the 
+  end of my internship in MSR Cambridge (see below). This project is also available to the community at CodePlex, so 
+  you can look at the source code (including two more samples).</p>
+<ul>
+  <li><a href="/academic/articles/fswebtools/">F# Web Tools: Rich client/server web applications in F#</a> - Research paper (unpublished draft)</li>
+  <li><a href="/academic/articles/fswebtools/fswebtools_v1.pdf">Ajax-style Client/Server Programming with F#</a> (Slides, PDF) - Final Internship Presentation</li>
+  <li><a href="http://www.codeplex.com/fswebtools">F# Web Tools at CodePlex</a> [<a href="http://www.codeplex.com/fswebtools" target="_blank">^</a>]- Project &amp; Samples source code</li>
+</ul>    
+<h2>Related projects and links<a name="fswtintrolinks"></a></h2>
+<ul>
+  <li>[1] <a href="http://channel9.msdn.com/Showpost.aspx?postid=324060">Erik Meijer: Volta - Wrapping the Cloud with .NET - Part 1</a> [<a href="http://channel9.msdn.com/Showpost.aspx?postid=324060" target="_blank">^</a>] - Erik Meijer, Microsoft</li>
+  <li>[2] <a href="http://code.google.com/webtoolkit/">Google Web Toolkit</a> [<a href="http://code.google.com/webtoolkit/" target="_blank">^</a>] - Google</li>
+  <li>[3] <a href="http://groups.inf.ed.ac.uk/links/">Links: Linking Theory to Practice for the Web</a> [<a href="http://groups.inf.ed.ac.uk/links/" target="_blank">^</a>] - Ezra Cooper, Sam Lindley, Philip Wadler, Jeremy Yallop</li>
+  <li>[4] <a href="http://silverlight.net/">Microsoft Silverlight</a> [<a href="http://silverlight.net/" target="_blank">^</a>] - Microsoft</li>
+  <li>[5] <a href="http://www.nikhilk.net/ScriptSharpIntro.aspx">Script#</a> [<a href="http://www.nikhilk.net/ScriptSharpIntro.aspx" target="_blank">^</a>] - Nikhil Kothari</li>
+  <li>[6] Book: <a href="http://www.amazon.com/Expert-F-Antonio-Cisternino/dp/1590598504">Expert F#</a> [<a href="http://www.amazon.com/Expert-F-Antonio-Cisternino/dp/1590598504" target="_blank">^</a>] - Don Syme, Adam Granicz, Antonio Cisternino</li>
+  <li>[7] Book: <a href="http://www.amazon.com/Foundations-F-Robert-Pickering/dp/1590597575">Foundations of F#</a> [<a href="http://www.amazon.com/Foundations-F-Robert-Pickering/dp/1590597575" target="_blank">^</a>] - Robert Pickering</li>
+  <li>[8] <a href="http://research.microsoft.com/~dsyme/papers/ml03-syme.pdf">Leveraging .NET Meta-programming Components from F#</a> (PDF)</li>
+</ul>
+
+
+<div class="tip" id="fs1">type SearchResult =<br />&#160;&#160;{English: string;<br />&#160;&#160;&#160;Other: string;}<br /><br />Full name: fswebtoolsintroaspx.SearchResult</div>
+<div class="tip" id="fs2">SearchResult.English: string</div>
+<div class="tip" id="fs3">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs4">SearchResult.Other: string</div>
+<div class="tip" id="fs5">type Suggest =<br />&#160;&#160;inherit obj<br />&#160;&#160;val mutable txtInput: obj<br />&#160;&#160;val mutable ctlOutput: obj<br /><br />Full name: fswebtoolsintroaspx.Suggest</div>
+<div class="tip" id="fs6">Suggest.txtInput: obj</div>
+<div class="tip" id="fs7">Suggest.ctlOutput: obj</div>
+<div class="tip" id="fs8">val truncate : value:&#39;T -&gt; &#39;T (requires member Truncate)<br /><br />Full name: Microsoft.FSharp.Core.Operators.truncate</div>
+<div class="tip" id="fs9">type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.ResizeArray&lt;_&gt;</div>
+<div class="tip" id="fs10">Multiple items<br />type ReflectedDefinitionAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ReflectedDefinitionAttribute<br />&#160;&#160;new : includeValue:bool -&gt; ReflectedDefinitionAttribute<br />&#160;&#160;member IncludeValue : bool<br /><br />Full name: Microsoft.FSharp.Core.ReflectedDefinitionAttribute<br /><br />--------------------<br />new : unit -&gt; ReflectedDefinitionAttribute<br />new : includeValue:bool -&gt; ReflectedDefinitionAttribute</div>
+<div class="tip" id="fs11">type &#39;T array = &#39;T []<br /><br />Full name: Microsoft.FSharp.Core.array&lt;_&gt;</div>
+<div class="tip" id="fs12">module Array<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs13">val iter : action:(&#39;T -&gt; unit) -&gt; array:&#39;T [] -&gt; unit<br /><br />Full name: Microsoft.FSharp.Collections.Array.iter</div>
+<div class="tip" id="fs14">val ignore : value:&#39;T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffswebtools-intro.aspx%2f&amp;text=F%23+Web+Tools%3a+%22Ajax%22+applications+made+simplevia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffswebtools-intro.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffswebtools-intro.aspx%2f&title=F%23+Web+Tools%3a+%22Ajax%22+applications+made+simple">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Web%20Tools%3a%20%22Ajax%22%20applications%20made%20simple&body=%20This%20article%20introduces%20the%20F%23%20Web%20Toolkit%2c%20which%20is%20an%20%5c%22Ajax%5c%22%20web%20framework%20that%20solves%20three%20major%20problems%20that%20many%20people%20have%20to%20face%20when%20developing%20modern%20web%20applications.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffswebtools-intro.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Friday, 13 July 2007, 4:32 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/web/">web</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

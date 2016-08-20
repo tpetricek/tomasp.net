@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Reporting events from F# Agents - Tomas Petricek</title>
+
+  <meta name="description" content=" This article describes different options for reporting events from F# agents. The options include triggering the event directly, using thread pool and in a specified context." />
+  <meta name="keywords" content="f#, asynchronous, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Reporting events from F# Agents" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/agent-event-reporting.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article describes different options for reporting events from F# agents. The options include triggering the event directly, using thread pool and in a specified context." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Reporting events from F# Agents" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article describes different options for reporting events from F# agents. The options include triggering the event directly, using thread pool and in a specified context." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Reporting events from F# Agents",
+    "headline": "Reporting events from F# Agents",
+  	"description": " This article describes different options for reporting events from F# agents. The options include triggering the event directly, using thread pool and in a specified context.",
+  	"url": "http://tomasp.net/blog/agent-event-reporting.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-06-16T00:23:35.0000000",
+  	"datePublished": "2012-06-16T00:23:35.0000000",
+    "dateModified": "2012-06-16T00:23:35.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/agent-event-reporting.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["f#", "asynchronous",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Reporting events from F# Agents</h1>
+<p>Over the last year, I wrote quite a lot of articles about agent-based programming in F#.
+Agents (inspired by Erlang) provide a great abstraction for writing concurrent and scalable
+systems. They are a great fit for both server-side development (for example, handling 
+a large number of concurrent requests), but also for user interface (for example, keeping
+state in an application with background tasks and interactive interface).</p>
+
+<p>When writing reusable agents, we usually encapsulate agent in an F# object type. The 
+type provides methods for sending messages to the agent. However, sometimes the agent
+also needs to report some state change that can be handled by another interested agent.
+This is done using F# events. However, F# events do not specify threading behaviour, 
+so there is a number of options.</p>
+
+<p>In this article (inspired by a recent email discussion), I describe three ways of 
+reporting events from an agent. The options differ in what thread is used to report the
+event. Choosing the right option is important as it affects scalability and simplicity
+of your agent-based code.</p>
+
+<h2>Looking at batch processing agent</h2>
+
+<p>As an example, I'll use an agent that aggregates incoming messages into batches of 
+specified size. When it receives given number of messages, it reports them (as an array)
+using an event. This is a simplified version of an MSDN example that I wrote some time
+ago - the functionality of this example is quite limited, but it is powerful enough to
+demonstrate different approaches to events:</p>
+
+<pre class="fssnip">
+<span class="c">/// Type alias that gives convenient name to F# agent type</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">Agent</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">MailboxProcessor</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>
+
+<span class="c">/// Agent that implements batch processing</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">BatchProcessor</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">count</span>) <span class="o">=</span>
+  <span class="c">// Event used to report aggregated batches to the user</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">batchEvent</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">Event</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span>[]<span class="o">&gt;</span>()
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">reportBatch</span> <span onmouseout="hideTip(event, 'ft8', 8)" onmouseover="showTip(event, 'ft8', 8)" class="i">batch</span> <span class="o">=</span>
+    <span class="c">// TODO: Here we need to trigger the event</span>
+    <span onmouseout="hideTip(event, 'ft9', 9)" onmouseover="showTip(event, 'ft9', 9)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Not</span><span class="s"> </span><span class="s">implemented</span><span class="s">!</span><span class="s">&quot;</span>
+
+  <span class="c">// Start an agent that implements the batching</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft10', 10)" onmouseover="showTip(event, 'ft10', 10)" class="i">agent</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft1', 11)" onmouseover="showTip(event, 'ft1', 11)" class="i">Agent</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span><span class="o">.</span><span class="i">Start</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft11', 12)" onmouseover="showTip(event, 'ft11', 12)" class="i">inbox</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft12', 13)" onmouseover="showTip(event, 'ft12', 13)" class="i">async</span> {
+    <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+      <span class="c">// Repeatedly allocate a new queue </span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'ft13', 14)" onmouseover="showTip(event, 'ft13', 14)" class="i">queue</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft14', 15)" onmouseover="showTip(event, 'ft14', 15)" class="i">ResizeArray</span><span class="o">&lt;</span>_<span class="o">&gt;</span>()
+      <span class="c">// Add specified number of messages to the queue</span>
+      <span class="k">for</span> <span onmouseout="hideTip(event, 'ft15', 16)" onmouseover="showTip(event, 'ft15', 16)" class="i">i</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span onmouseout="hideTip(event, 'ft4', 17)" onmouseover="showTip(event, 'ft4', 17)" class="i">count</span> <span class="k">do</span>
+        <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft16', 18)" onmouseover="showTip(event, 'ft16', 18)" class="i">msg</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft11', 19)" onmouseover="showTip(event, 'ft11', 19)" class="i">inbox</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft17', 20)" onmouseover="showTip(event, 'ft17', 20)" class="i">Receive</span>()
+        <span onmouseout="hideTip(event, 'ft13', 21)" onmouseover="showTip(event, 'ft13', 21)" class="i">queue</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft18', 22)" onmouseover="showTip(event, 'ft18', 22)" class="i">Add</span>(<span class="i">msg</span>)
+      <span class="c">// Report the batch as an array</span>
+      <span onmouseout="hideTip(event, 'ft7', 23)" onmouseover="showTip(event, 'ft7', 23)" class="i">reportBatch</span> (<span onmouseout="hideTip(event, 'ft13', 24)" onmouseover="showTip(event, 'ft13', 24)" class="i">queue</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft19', 25)" onmouseover="showTip(event, 'ft19', 25)" class="i">ToArray</span>()) })
+
+  <span class="c">/// Event that is triggered when a batch is collected</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft20', 26)" onmouseover="showTip(event, 'ft20', 26)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft21', 27)" onmouseover="showTip(event, 'ft21', 27)" class="i">BatchProduced</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 28)" onmouseover="showTip(event, 'ft5', 28)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft22', 29)" onmouseover="showTip(event, 'ft22', 29)" class="i">Publish</span>
+  <span class="c">/// The method adds one object to the agent</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft20', 30)" onmouseover="showTip(event, 'ft20', 30)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft23', 31)" onmouseover="showTip(event, 'ft23', 31)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft24', 32)" onmouseover="showTip(event, 'ft24', 32)" class="i">value</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 33)" onmouseover="showTip(event, 'ft10', 33)" class="i">agent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft25', 34)" onmouseover="showTip(event, 'ft25', 34)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft24', 35)" onmouseover="showTip(event, 'ft24', 35)" class="i">value</span>)</pre>
+
+
+<p>The above code implements a simple behaviour where the agent always waits
+for a specified number of messages (without any timeouts). This can be
+easily implemented using <code>for</code> and <code>while</code> loops. We use <code>for</code> to repeatedly
+receive message, before sending a batch, and <code>while</code> to repeat the whole process
+while the agent is running.</p>
+
+<p>The above code misses the implementation of the <code>reportBatch</code> function. 
+This is the interesting part where we need to trigger the event. Let's look
+at the available options...</p>
+
+<h2>Reporting batches from the agent</h2>
+
+<p>Using the right threading model, when triggering an event, is important for a number
+of reasons. Code that throws exception or hangs can block or kill the running thread, 
+which is a problem if the thread is in the middle of some important processing.
+On the other hand, triggering event on a different thread might have an unnecessary
+overhead.</p>
+
+<p>F# events do not support any built-in mechanism for controlling where an event
+is triggered. By default, they execute handlers on the same thread on which they
+are triggered. In most of the cases, this is the right default, but it is easy 
+to implement other behaviour.</p>
+
+<h3>Using agent's thread</h3>
+
+<p>The easiest option (on the implementation side) is to use the agent's current thread.
+This is generally going to be some thread pool thread, although the threads where the 
+agent's body is running can change (for example, using the <code>Async.SwitchToContext</code> operation).
+The <code>reportBatch</code> function would look like this:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft31', 42)" onmouseover="showTip(event, 'ft31', 42)" class="i">reportBatch</span> <span onmouseout="hideTip(event, 'ft32', 43)" onmouseover="showTip(event, 'ft32', 43)" class="i">batch</span> <span class="o">=</span>
+  <span class="k">try</span>
+    <span onmouseout="hideTip(event, 'ft30', 44)" onmouseover="showTip(event, 'ft30', 44)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft33', 45)" onmouseover="showTip(event, 'ft33', 45)" class="i">Trigger</span>(<span onmouseout="hideTip(event, 'ft32', 46)" onmouseover="showTip(event, 'ft32', 46)" class="i">batch</span>)
+  <span class="k">with</span> <span onmouseout="hideTip(event, 'ft34', 47)" onmouseover="showTip(event, 'ft34', 47)" class="i">e</span> <span class="k">-&gt;</span>
+    <span onmouseout="hideTip(event, 'ft9', 48)" onmouseover="showTip(event, 'ft9', 48)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Event</span><span class="s"> </span><span class="s">handler</span><span class="s"> </span><span class="s">failed</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft35', 49)" onmouseover="showTip(event, 'ft35', 49)" class="i">e</span></pre>
+
+
+<p>I wrapped the <code>Trigger</code> call in an event handler - if the event handler throws an exception,
+it would terminate the agent. This is difficult to debug, because the agent just stops 
+responding. However, you can use <code>agent.Error</code> event to catch unhandled exceptions.
+More importantly, the handler could also block forever, in which case the agent would get
+stuck.</p>
+
+<p>On the other hand, calling <code>Trigger</code> directly is the most efficient option. In most of the 
+cases, this is what you need. A typical event handler should be simple. It may just post a
+message to another agent, which cannot block or fail, so sending a message via an additional
+thread would be a notable overhead. Assuming you have another agent <code>worker</code> with a 
+<code>Post</code> method, you can just write <code>batcher.BatchProduced.Add(worker.Post)</code>.</p>
+
+<p>Nevertheless, it might be a good idea to document the threading behaviour and double-check 
+that your event handlers do not throw and that they complete soon.
+If you need to perform some more complex processing (or run some operation on
+the user-interface thread), it is always possible to do that on the side of the handler.
+The techniques for doing that are explained in the next two sections.</p>
+
+<h3>Using thread pool</h3>
+
+<p>If you want to protect the body of your agent more, you can trigger the event in a thread pool.
+Doing that will add some overhead - if this is a problem depends on what application you're writing
+and how often the event is triggered. The easiest way to implement this behaviour is to create a
+simple asynchronous workflow and start it using <code>Async.Start</code>:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft36', 50)" onmouseover="showTip(event, 'ft36', 50)" class="i">reportBatch</span> <span onmouseout="hideTip(event, 'ft32', 51)" onmouseover="showTip(event, 'ft32', 51)" class="i">batch</span> <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'ft12', 52)" onmouseover="showTip(event, 'ft12', 52)" class="i">async</span> { <span onmouseout="hideTip(event, 'ft30', 53)" onmouseover="showTip(event, 'ft30', 53)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft33', 54)" onmouseover="showTip(event, 'ft33', 54)" class="i">Trigger</span>(<span onmouseout="hideTip(event, 'ft32', 55)" onmouseover="showTip(event, 'ft32', 55)" class="i">batch</span>) } 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft37', 56)" onmouseover="showTip(event, 'ft37', 56)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 57)" onmouseover="showTip(event, 'ft38', 57)" class="i">Start</span></pre>
+
+
+<p>On the handler side, you'll know that the handler always runs in a thread pool. However, this still
+does not mean that the handler can do <em>anything</em>. Code running on a thread pool cannot access 
+user-interface elements and blocking thread in a thread pool is bad, because the thread pool has a
+limit on maximal number of threads used (if you block all of them, the program will hang).</p>
+
+<h3>Using synchronization context</h3>
+
+<p>Finally, the third option is to give the user of the agent a way to control where the event 
+will be triggered. In .NET, this can be achieved using <code>SynchronizationContext</code> class from 
+<code>System.Threading</code> (<a href="http://msdn.microsoft.com/en-us/library/system.threading.synchronizationcontext.aspx">MSDN</a>). The class represents a context that can execute code - common examples
+include thread pool and the main user-interface thread. The latter might be useful if you 
+always want to update the UI in response to an event.</p>
+
+<p>There are various options for passing the <code>SynchronizationContext</code> to the agent. If you want
+to use a single mechanism during the whole agent lifetime, then you can pass it as an argument
+to the constructor. To make the agent more versatile, it can be an optional argument:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft39', 58)" onmouseover="showTip(event, 'ft39', 58)" class="i">BatchProcessor</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'ft4', 59)" onmouseover="showTip(event, 'ft4', 59)" class="i">count</span>, <span class="o">?</span><span onmouseout="hideTip(event, 'ft40', 60)" onmouseover="showTip(event, 'ft40', 60)" class="i">eventContext</span><span class="o">:</span><span onmouseout="hideTip(event, 'ft41', 61)" onmouseover="showTip(event, 'ft41', 61)" class="i">SynchronizationContext</span>) <span class="o">=</span>
+  <span class="c">/// Event used to report aggregated batches to the user</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft42', 62)" onmouseover="showTip(event, 'ft42', 62)" class="i">batchEvent</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft6', 63)" onmouseover="showTip(event, 'ft6', 63)" class="i">Event</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span>[]<span class="o">&gt;</span>()
+
+  <span class="c">/// Triggers event using the specified synchronization context</span>
+  <span class="c">/// (or directly, if no synchronization context is specified)</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft43', 64)" onmouseover="showTip(event, 'ft43', 64)" class="i">reportBatch</span> <span onmouseout="hideTip(event, 'ft32', 65)" onmouseover="showTip(event, 'ft32', 65)" class="i">batch</span> <span class="o">=</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft40', 66)" onmouseover="showTip(event, 'ft40', 66)" class="i">eventContext</span> <span class="k">with</span> 
+    | <span onmouseout="hideTip(event, 'ft44', 67)" onmouseover="showTip(event, 'ft44', 67)" class="i">None</span> <span class="k">-&gt;</span> 
+        <span class="c">// No synchronization context - trigger as in the first case</span>
+        <span onmouseout="hideTip(event, 'ft42', 68)" onmouseover="showTip(event, 'ft42', 68)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft33', 69)" onmouseover="showTip(event, 'ft33', 69)" class="i">Trigger</span>(<span onmouseout="hideTip(event, 'ft32', 70)" onmouseover="showTip(event, 'ft32', 70)" class="i">batch</span>)
+    | <span onmouseout="hideTip(event, 'ft45', 71)" onmouseover="showTip(event, 'ft45', 71)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft46', 72)" onmouseover="showTip(event, 'ft46', 72)" class="i">ctx</span> <span class="k">-&gt;</span>
+        <span class="c">// Use the &#39;Post&#39; method of the context to trigger the event</span>
+        <span onmouseout="hideTip(event, 'ft46', 73)" onmouseover="showTip(event, 'ft46', 73)" class="i">ctx</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft47', 74)" onmouseover="showTip(event, 'ft47', 74)" class="i">Post</span>((<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft42', 75)" onmouseover="showTip(event, 'ft42', 75)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft33', 76)" onmouseover="showTip(event, 'ft33', 76)" class="i">Trigger</span>(<span onmouseout="hideTip(event, 'ft32', 77)" onmouseover="showTip(event, 'ft32', 77)" class="i">batch</span>)), <span class="k">null</span>)
+
+  <span id="ftt48" onmouseout="hideTip(event, 'ft48', 78)" onmouseover="showTip(event, 'ft48', 78, document.getElementById('ftt48'))" class="omitted">(unchanged agent body)</span>
+
+  <span class="c">/// Event that is triggered when a batch is collected</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft20', 79)" onmouseover="showTip(event, 'ft20', 79)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft49', 80)" onmouseover="showTip(event, 'ft49', 80)" class="i">BatchProduced</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft42', 81)" onmouseover="showTip(event, 'ft42', 81)" class="i">batchEvent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft22', 82)" onmouseover="showTip(event, 'ft22', 82)" class="i">Publish</span>
+  <span class="c">/// The method adds one object to the agent</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft20', 83)" onmouseover="showTip(event, 'ft20', 83)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft50', 84)" onmouseover="showTip(event, 'ft50', 84)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft24', 85)" onmouseover="showTip(event, 'ft24', 85)" class="i">value</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 86)" onmouseover="showTip(event, 'ft10', 86)" class="i">agent</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft25', 87)" onmouseover="showTip(event, 'ft25', 87)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft24', 88)" onmouseover="showTip(event, 'ft24', 88)" class="i">value</span>)</pre>
+
+
+<p>Optional parameters in F# are written using the <code>?eventContext</code> syntax and are passed as 
+<code>option</code> values. This means that the <code>reportBatch</code> function can use pattern matching to 
+choose different triggering mechanism. When the synchronization context is <code>Some ctx</code>, we
+use the <code>Post</code> method to run a specified function on the thread selected by the synchronization
+context. The method takes a delegate and an argument that is passed to the delegate - this
+is not needed in F#, so I simply used <code>null</code> as an additional argument and the delegate
+ignores it.</p>
+
+<p>If you wanted to use the agent in C#, it is a good idea to replace optional parameters with
+overloaded constructor. The F# mechanism behaves differently than optional parameters in C#
+and so it would not be convenient to use from C#.</p>
+
+<p>How can you use the new version of the agent? If you construct the agent on a GUI thread 
+(after the application loads), it is quite easy to capture the synchronization context
+representing the main thread and create the agent:</p>
+
+<pre class="fssnip">
+<span class="c">// Agent that will trigger events on the current (GUI) thread</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft51', 89)" onmouseover="showTip(event, 'ft51', 89)" class="i">sync</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft41', 90)" onmouseover="showTip(event, 'ft41', 90)" class="i">SynchronizationContext</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft52', 91)" onmouseover="showTip(event, 'ft52', 91)" class="i">Current</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft53', 92)" onmouseover="showTip(event, 'ft53', 92)" class="i">proc</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft39', 93)" onmouseover="showTip(event, 'ft39', 93)" class="i">BatchProcessor</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span class="n">10</span>, <span onmouseout="hideTip(event, 'ft51', 94)" onmouseover="showTip(event, 'ft51', 94)" class="i">sync</span>)
+
+<span class="c">// Start some background work that will report batches to GUI thread</span>
+<span onmouseout="hideTip(event, 'ft12', 95)" onmouseover="showTip(event, 'ft12', 95)" class="i">async</span> {
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'ft15', 96)" onmouseover="showTip(event, 'ft15', 96)" class="i">i</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">1000</span> <span class="k">do</span> 
+    <span onmouseout="hideTip(event, 'ft53', 97)" onmouseover="showTip(event, 'ft53', 97)" class="i">proc</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft54', 98)" onmouseover="showTip(event, 'ft54', 98)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft15', 99)" onmouseover="showTip(event, 'ft15', 99)" class="i">i</span>) } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft37', 100)" onmouseover="showTip(event, 'ft37', 100)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 101)" onmouseover="showTip(event, 'ft38', 101)" class="i">Start</span></pre>
+
+
+<p>After creating the agent, the snippet starts a simple asynchronous workflow that generates
+some values and sends them to the agent. The workflow is started using <code>Async.Start</code> and 
+will run asynchronously on the background thread. However, all the events will be 
+reported on the thread where the agent was created - if that was the GUI thread, the
+handler can safely access user interface elements.</p>
+
+<h2>Summary</h2>
+
+<p>This article gives a brief overview of different options for reporting events from an F# agent.
+I did not spent a long time introducing agents, because this has already been done elsewhere.
+My <a href="http://www.developerfusion.com/article/139804/an-introduction-to-f-agents/">two</a> <a href="http://www.developerfusion.com/article/140677/writing-concurrent-applications-using-f-agents/">articles</a> for developerFusion provide a good introduction and
+a <a href="http://msdn.microsoft.com/en-us/library/hh273081.aspx">MSDN chapter</a> has more details.</p>
+
+<p>When reporting an event, the default option is to just call the <code>Trigger</code> method. This is the
+most efficient option and it is appropriate in most of the situations. However, if you want to
+separate agent's body from caller's code, you can trigger the event in a thread pool. Finally,
+if you want to provide finer control, you can parameterize the agent by <code>SynchronizationContext</code>.
+Then the user can, for example, automatically marshall all events to the user interface.</p>
+
+<h3>References &amp; Source code</h3>
+
+<ul>
+<li><a href="http://www.fssnip.net/cK">Reporting Events from Agents</a> - source code for this blog post (F# Snippet)</li>
+<li><a href="http://msdn.microsoft.com/en-us/library/system.threading.synchronizationcontext.aspx">The <code>SynchronizationContext</code> class</a> (MSDN)</li>
+<li><a href="http://msdn.microsoft.com/en-us/library/hh273081.aspx">Server-Side Functional Programming</a> - Describes how to write an F# agent and more (MSDN)</li>
+<li><a href="http://www.developerfusion.com/article/139804/an-introduction-to-f-agents/">An Introduction to F# Agents</a> - Brief summary introducing F# agents (developerFusion)</li>
+<li><p><a href="http://www.developerfusion.com/article/140677/writing-concurrent-applications-using-f-agents/">Writing Concurrent Applications Using F# Agents</a> - A higher-level perspective (developerFusion)</p></li>
+</ul>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">type Agent&lt;&#39;T&gt; = MailboxProcessor&lt;&#39;T&gt;<br /><br />Full name: Blog.Template.Agent&lt;_&gt;<br /><br />&#160;&#160;type: Agent&lt;&#39;T&gt;<br />&#160;&#160;implements: System.IDisposable<br /><br /><em><br /><br />&#160;Type alias that gives convenient name to F# agent type</em></div>
+<div class="tip" id="ft2">type MailboxProcessor&lt;&#39;Msg&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface System.IDisposable<br />&#160;&#160;&#160;&#160;new : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:System.Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Post : message:&#39;Msg -&gt; unit<br />&#160;&#160;&#160;&#160;member PostAndAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply&gt;<br />&#160;&#160;&#160;&#160;member PostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply<br />&#160;&#160;&#160;&#160;member PostAndTryAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply option&gt;<br />&#160;&#160;&#160;&#160;member Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Scan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member TryPostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply option<br />&#160;&#160;&#160;&#160;member TryReceive : ?timeout:int -&gt; Async&lt;&#39;Msg option&gt;<br />&#160;&#160;&#160;&#160;member TryScan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T option&gt;<br />&#160;&#160;&#160;&#160;member add_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member CurrentQueueLength : int<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int<br />&#160;&#160;&#160;&#160;member Error : IEvent&lt;System.Exception&gt;<br />&#160;&#160;&#160;&#160;member remove_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int with set<br />&#160;&#160;&#160;&#160;static member Start : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:System.Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.MailboxProcessor&lt;_&gt;<br /><br />&#160;&#160;type: MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;implements: System.IDisposable<br /></div>
+<div class="tip" id="ft3">type BatchProcessor&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : count:int -&gt; BatchProcessor&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Post : value:&#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member BatchProduced : IEvent&lt;&#39;T []&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.Template.BatchProcessor&lt;_&gt;<br /><em><br /><br />&#160;Agent that implements batch processing</em></div>
+<div class="tip" id="ft4">val count : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft5">val batchEvent : Event&lt;&#39;T []&gt;</div>
+<div class="tip" id="ft6">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; System.Delegate)&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_&gt;</div>
+<div class="tip" id="ft7">val reportBatch : (&#39;a -&gt; unit)</div>
+<div class="tip" id="ft8">val batch : &#39;a</div>
+<div class="tip" id="ft9">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="ft10">val agent : MailboxProcessor&lt;&#39;T&gt;<br /><br />&#160;&#160;type: MailboxProcessor&lt;&#39;T&gt;<br />&#160;&#160;implements: System.IDisposable<br /></div>
+<div class="tip" id="ft11">val inbox : MailboxProcessor&lt;&#39;T&gt;<br /><br />&#160;&#160;type: MailboxProcessor&lt;&#39;T&gt;<br />&#160;&#160;implements: System.IDisposable<br /></div>
+<div class="tip" id="ft12">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="ft13">val queue : ResizeArray&lt;&#39;T&gt;<br /><br />&#160;&#160;type: ResizeArray&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.Generic.IList&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.Generic.ICollection&lt;&#39;T&gt;<br />&#160;&#160;implements: seq&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IList<br />&#160;&#160;implements: System.Collections.ICollection<br />&#160;&#160;implements: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="ft14">type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.ResizeArray&lt;_&gt;<br /><br />&#160;&#160;type: ResizeArray&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.Generic.IList&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.Generic.ICollection&lt;&#39;T&gt;<br />&#160;&#160;implements: seq&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IList<br />&#160;&#160;implements: System.Collections.ICollection<br />&#160;&#160;implements: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="ft15">val i : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft16">val msg : &#39;T</div>
+<div class="tip" id="ft17">member MailboxProcessor.Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;</div>
+<div class="tip" id="ft18">System.Collections.Generic.List.Add(item: &#39;T) : unit</div>
+<div class="tip" id="ft19">System.Collections.Generic.List.ToArray() : &#39;T []</div>
+<div class="tip" id="ft20">val x : BatchProcessor&lt;&#39;T&gt;</div>
+<div class="tip" id="ft21">member BatchProcessor.BatchProduced : IEvent&lt;&#39;T []&gt;<br /><br />Full name: Blog.Template.BatchProcessor`1.BatchProduced<br /><em><br /><br />&#160;Event that is triggered when a batch is collected</em></div>
+<div class="tip" id="ft22">property Event.Publish: IEvent&lt;&#39;T []&gt;</div>
+<div class="tip" id="ft23">member BatchProcessor.Post : value:&#39;T -&gt; unit<br /><br />Full name: Blog.Template.BatchProcessor`1.Post<br /><em><br /><br />&#160;The method adds one object to the agent</em></div>
+<div class="tip" id="ft24">val value : &#39;T</div>
+<div class="tip" id="ft25">member MailboxProcessor.Post : message:&#39;Msg -&gt; unit</div>
+<div class="tip" id="ft26">namespace System</div>
+<div class="tip" id="ft27">namespace System.Threading</div>
+<div class="tip" id="ft28">type Agent&lt;&#39;T&gt; = MailboxProcessor&lt;&#39;T&gt;<br /><br />Full name: Blog.Agent&lt;_&gt;<br /><br />&#160;&#160;type: Agent&lt;&#39;T&gt;<br />&#160;&#160;implements: System.IDisposable<br /><br /><em><br /><br />&#160;Type alias that gives convenient name to F# agent type</em></div>
+<div class="tip" id="ft29">type MailboxProcessor&lt;&#39;Msg&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface System.IDisposable<br />&#160;&#160;&#160;&#160;new : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Post : message:&#39;Msg -&gt; unit<br />&#160;&#160;&#160;&#160;member PostAndAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply&gt;<br />&#160;&#160;&#160;&#160;member PostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply<br />&#160;&#160;&#160;&#160;member PostAndTryAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply option&gt;<br />&#160;&#160;&#160;&#160;member Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Scan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member TryPostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply option<br />&#160;&#160;&#160;&#160;member TryReceive : ?timeout:int -&gt; Async&lt;&#39;Msg option&gt;<br />&#160;&#160;&#160;&#160;member TryScan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T option&gt;<br />&#160;&#160;&#160;&#160;member add_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member CurrentQueueLength : int<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int<br />&#160;&#160;&#160;&#160;member Error : IEvent&lt;System.Exception&gt;<br />&#160;&#160;&#160;&#160;member remove_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int with set<br />&#160;&#160;&#160;&#160;static member Start : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.MailboxProcessor&lt;_&gt;<br /><br />&#160;&#160;type: MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;implements: System.IDisposable<br /></div>
+<div class="tip" id="ft30">val batchEvent : Event&lt;&#39;T []&gt;<br /><br />Full name: Blog.batchEvent</div>
+<div class="tip" id="ft31">val reportBatch : &#39;T [] -&gt; unit<br /><br />Full name: Blog.AgentThread.reportBatch</div>
+<div class="tip" id="ft32">val batch : &#39;T []<br /><br />&#160;&#160;type: &#39;T []<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.Collections.IList<br />&#160;&#160;implements: System.Collections.ICollection<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.Collections.Generic.IList&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.Generic.ICollection&lt;&#39;T&gt;<br />&#160;&#160;implements: seq&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;inherits: System.Array<br /></div>
+<div class="tip" id="ft33">member Event.Trigger : arg:&#39;T -&gt; unit</div>
+<div class="tip" id="ft34">Multiple items<br />val e : exn<br /><br />&#160;&#160;type: exn<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;implements: System.Runtime.InteropServices._Exception<br /><br /><br />--------------------<br />val e : exn<br /><br />&#160;&#160;type: exn<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;implements: System.Runtime.InteropServices._Exception<br /></div>
+<div class="tip" id="ft35">val e : exn<br /><br />&#160;&#160;type: exn<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;implements: System.Runtime.InteropServices._Exception<br /></div>
+<div class="tip" id="ft36">val reportBatch : &#39;T [] -&gt; unit<br /><br />Full name: Blog.ThreadPool.reportBatch</div>
+<div class="tip" id="ft37">Multiple items<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;<br /><br />--------------------<br />type Async<br />with<br />&#160;&#160;static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * System.AsyncCallback * obj -&gt; System.IAsyncResult) * (System.IAsyncResult -&gt; &#39;T) * (System.IAsyncResult -&gt; unit)<br />&#160;&#160;static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; System.Delegate)<br />&#160;&#160;static member AwaitIAsyncResult : iar:System.IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member AwaitTask : task:Tasks.Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member CancelDefaultToken : unit -&gt; unit<br />&#160;&#160;static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />&#160;&#160;static member FromBeginEnd : beginAction:(System.AsyncCallback * obj -&gt; System.IAsyncResult) * endAction:(System.IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member FromBeginEnd : arg:&#39;Arg1 * beginAction:(&#39;Arg1 * System.AsyncCallback * obj -&gt; System.IAsyncResult) * endAction:(System.IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * beginAction:(&#39;Arg1 * &#39;Arg2 * System.AsyncCallback * obj -&gt; System.IAsyncResult) * endAction:(System.IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * arg3:&#39;Arg3 * beginAction:(&#39;Arg1 * &#39;Arg2 * &#39;Arg3 * System.AsyncCallback * obj -&gt; System.IAsyncResult) * endAction:(System.IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member FromContinuations : callback:((&#39;T -&gt; unit) * (exn -&gt; unit) * (System.OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member Ignore : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;System.IDisposable&gt;<br />&#160;&#160;static member Parallel : computations:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;&#39;T []&gt;<br />&#160;&#160;static member RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T<br />&#160;&#160;static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:Tasks.TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Tasks.Task&lt;&#39;T&gt;<br />&#160;&#160;static member StartChild : computation:Async&lt;&#39;T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;<br />&#160;&#160;static member StartChildAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:Tasks.TaskCreationOptions -&gt; Async&lt;Tasks.Task&lt;&#39;T&gt;&gt;<br />&#160;&#160;static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartWithContinuations : computation:Async&lt;&#39;T&gt; * continuation:(&#39;T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(System.OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member TryCancelled : computation:Async&lt;&#39;T&gt; * compensation:(System.OperationCanceledException -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member CancellationToken : Async&lt;CancellationToken&gt;<br />&#160;&#160;static member DefaultCancellationToken : CancellationToken<br />end<br /><br />Full name: Microsoft.FSharp.Control.Async</div>
+<div class="tip" id="ft38">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit</div>
+<div class="tip" id="ft39">type BatchProcessor&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : count:int * ?eventContext:SynchronizationContext -&gt; BatchProcessor&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Post : value:&#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member BatchProduced : IEvent&lt;&#39;T []&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.BatchProcessor&lt;_&gt;</div>
+<div class="tip" id="ft40">val eventContext : SynchronizationContext option<br /><br />&#160;&#160;type: SynchronizationContext option<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Option&lt;SynchronizationContext&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft41">type SynchronizationContext =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Threading.SynchronizationContext<br />&#160;&#160;&#160;&#160;member CreateCopy : unit -&gt; System.Threading.SynchronizationContext<br />&#160;&#160;&#160;&#160;member IsWaitNotificationRequired : unit -&gt; bool<br />&#160;&#160;&#160;&#160;member OperationCompleted : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member OperationStarted : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Post : System.Threading.SendOrPostCallback * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Send : System.Threading.SendOrPostCallback * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Wait : System.IntPtr [] * bool * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Current : System.Threading.SynchronizationContext<br />&#160;&#160;&#160;&#160;static member SetSynchronizationContext : System.Threading.SynchronizationContext -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Threading.SynchronizationContext</div>
+<div class="tip" id="ft42">val batchEvent : Event&lt;&#39;T []&gt;<br /><em><br /><br />&#160;Event used to report aggregated batches to the user</em></div>
+<div class="tip" id="ft43">val reportBatch : (&#39;T [] -&gt; unit)<br /><em><br /><br />&#160;Triggers event using the specified synchronization context<br />&#160;(or directly, if no synchronization context is specified)</em></div>
+<div class="tip" id="ft44">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft45">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft46">val ctx : SynchronizationContext</div>
+<div class="tip" id="ft47">SynchronizationContext.Post(d: SendOrPostCallback, state: obj) : unit</div>
+<div class="tip" id="ft48">// Start an agent that implements the batching<br />&#160;&#160;let agent = Agent&lt;&#39;T&gt;.Start(fun inbox -&gt; async {<br />&#160;&#160;&#160;&#160;while true do<br />&#160;&#160;&#160;&#160;&#160;&#160;// Repeatedly allocate a new queue <br />&#160;&#160;&#160;&#160;&#160;&#160;let queue = new ResizeArray&lt;_&gt;()<br />&#160;&#160;&#160;&#160;&#160;&#160;// Add specified number of messages to the queue<br />&#160;&#160;&#160;&#160;&#160;&#160;for i in 1 .. count do<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;let! msg = inbox.Receive()<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;queue.Add(msg)<br />&#160;&#160;&#160;&#160;&#160;&#160;// Report the batch as an array<br />&#160;&#160;&#160;&#160;&#160;&#160;reportBatch (queue.ToArray()) })</div>
+<div class="tip" id="ft49">member BatchProcessor.BatchProduced : IEvent&lt;&#39;T []&gt;<br /><br />Full name: Blog.BatchProcessor`1.BatchProduced<br /><em><br /><br />&#160;Event that is triggered when a batch is collected</em></div>
+<div class="tip" id="ft50">member BatchProcessor.Post : value:&#39;T -&gt; unit<br /><br />Full name: Blog.BatchProcessor`1.Post<br /><em><br /><br />&#160;The method adds one object to the agent</em></div>
+<div class="tip" id="ft51">val sync : SynchronizationContext<br /><br />Full name: Blog.sync</div>
+<div class="tip" id="ft52">property SynchronizationContext.Current: SynchronizationContext</div>
+<div class="tip" id="ft53">val proc : BatchProcessor&lt;int&gt;<br /><br />Full name: Blog.proc</div>
+<div class="tip" id="ft54">member BatchProcessor.Post : value:&#39;T -&gt; unit<br /><em><br /><br />&#160;The method adds one object to the agent</em></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fagent-event-reporting.aspx%2f&amp;text=Reporting+events+from+F%23+Agentsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fagent-event-reporting.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fagent-event-reporting.aspx%2f&title=Reporting+events+from+F%23+Agents">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Reporting%20events%20from%20F%23%20Agents&body=%20This%20article%20describes%20different%20options%20for%20reporting%20events%20from%20F%23%20agents.%20The%20options%20include%20triggering%20the%20event%20directly%2c%20using%20thread%20pool%20and%20in%20a%20specified%20context.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fagent-event-reporting.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Saturday, 16 June 2012, 12:23 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

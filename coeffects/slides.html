@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Coeffects: Context-aware programming languages</title>
+
+  <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <meta name="description" content="Slides that explains theory of coeffects and lets you type-check and run sample programs.">
+  <meta name="keywords" content="coeffects, comonads, programming languages, functional programming, theory">
+  <meta name="author" content="Tomas Petricek">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@tomaspetricek" />
+  <meta name="twitter:title" content="Coeffects: Context-aware programming languages" />
+  <meta name="twitter:description" content="Presentation that explains theory of coeffects and lets you type-check and run sample programs." />
+  <meta name="twitter:image" content="http://tomasp.net/coeffects/favicon-194x194.png" />
+
+  <link rel="shortcut icon" href="http://tomasp.net/coeffects/favicon.ico" />
+  <link rel="icon" type="image/png" href="http://tomasp.net/coeffects/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="http://tomasp.net/coeffects/favicon-194x194.png" sizes="194x194">
+  <link rel="icon" type="image/png" href="http://tomasp.net/coeffects/favicon-96x96.png" sizes="96x96">
+
+  <script src="smoothie.js"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
+  </script>
+  <script src='//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+  <link rel="stylesheet" href="reveal/css/reveal.css">
+  <link rel="stylesheet" href="reveal/css/night.css">
+  <link rel="stylesheet" href="slides.css" />
+
+  <script src="interactive.js" type="text/javascript"></script>
+  <script src="tips.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    window.toolTipsStopFunc = function(t) { return t == "absolute"; }
+    window.toolTipsStopRelative = true;
+    window.toolTipsRoot = function(el) {
+      var res = el;
+      while(res.prop("tagName") != "SECTION") res = res.parent();
+      return res;
+    }
+  </script>
+  <script src="script.js" type="text/javascript"></script>
+</head>
+<body>
+<div style="display:none">
+  \[
+    \definecolor{leff}{RGB}{255,107,102}
+    \definecolor{lcoeff}{RGB}{78,206,88}
+    \definecolor{ltyp}{RGB}{127,165,255}
+    \definecolor{lkvd}{RGB}{255,202,79}
+
+    \definecolor{eff}{RGB}{177,35,43}
+    \definecolor{coeff}{RGB}{35,177,53}
+    \definecolor{typ}{RGB}{177,93,43}
+    \definecolor{expr}{RGB}{0,0,0}
+    \definecolor{kvd}{RGB}{0,45,177}
+    \definecolor{num}{RGB}{43,177,93}
+  \]
+</div>
+
+<div class="reveal">
+<div class="slides">
+<section>
+  <h1><em>Coeffects</em></h1>
+<h2>Context-aware programming languages</h2>
+<br /><br /><br /><br /><br /><br />
+<p>Tomas Petricek, University of Cambridge<br />
+<a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> | <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></p>
+
+
+</section>
+<section>
+    <section>
+<h1>What are <em>coeffects</em>?</h1>
+<br />
+<div class="fragment">
+<p>Programming language abstraction for understanding how programs access the <em>context</em> or <em>environment</em> in which they execute</p>
+</div>
+</section><section>
+<h2>Conditional cross-platform compilation</h2>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Read value from memory or disk</span>
+<span class="k">if</span> <span onmouseout="hideTip(event, 's21', 1)" onmouseover="showTip(event, 's21', 1)" class="i">cache</span><span class="o">.</span><span onmouseout="hideTip(event, 's22', 2)" onmouseover="showTip(event, 's22', 2)" class="f">Contains</span>(<span onmouseout="hideTip(event, 's23', 3)" onmouseover="showTip(event, 's23', 3)" class="i">key</span>) <span class="k">then</span>
+  <span onmouseout="hideTip(event, 's21', 4)" onmouseover="showTip(event, 's21', 4)" class="i">cache</span><span class="o">.</span><span onmouseout="hideTip(event, 's24', 5)" onmouseover="showTip(event, 's24', 5)" class="f">Get</span>(<span onmouseout="hideTip(event, 's23', 6)" onmouseover="showTip(event, 's23', 6)" class="i">key</span>)
+<span class="prep">#if</span> <span class="i">LOCAL_FILE_SYSTEM</span>
+<span class="inactive">elif</span><span class="inactive"> </span><span class="inactive">File.Exists(key)</span><span class="inactive"> </span><span class="inactive">then</span>
+<span class="inactive">  </span><span class="inactive">File.ReadAllText(key)</span>
+<span class="prep">#endif</span>
+</code></pre>
+<span></span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Calculate and cache the value</span>
+<span class="k">else</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 's25', 7)" onmouseover="showTip(event, 's25', 7)" class="i">result</span> <span class="o">=</span> <span onmouseout="hideTip(event, 's26', 8)" onmouseover="showTip(event, 's26', 8)" class="f">f</span>()
+  <span onmouseout="hideTip(event, 's21', 9)" onmouseover="showTip(event, 's21', 9)" class="i">cache</span><span class="o">.</span><span onmouseout="hideTip(event, 's27', 10)" onmouseover="showTip(event, 's27', 10)" class="f">Set</span>(<span onmouseout="hideTip(event, 's23', 11)" onmouseover="showTip(event, 's23', 11)" class="i">key</span>, <span onmouseout="hideTip(event, 's25', 12)" onmouseover="showTip(event, 's25', 12)" class="i">result</span>)
+<span class="prep">#if</span> <span class="i">LOCAL_FILE_SYSTEM</span>
+<span class="inactive">  </span><span class="inactive">File.WriteAllText(key,</span><span class="inactive"> </span><span class="inactive">result)</span>
+<span class="prep">#endif</span>
+  <span onmouseout="hideTip(event, 's25', 13)" onmouseover="showTip(event, 's25', 13)" class="i">result</span>
+</code></pre>
+</section><section>
+<h2>Neighborhood in stencil computations</h2>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 's28', 14)" onmouseover="showTip(event, 's28', 14)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 's29', 15)" onmouseover="showTip(event, 's29', 15)" class="i">input</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 16)" onmouseover="showTip(event, 's210', 16)" class="i">cursor</span><span class="o">-</span><span class="n">1</span>] <span class="o">+</span>
+  <span onmouseout="hideTip(event, 's29', 17)" onmouseover="showTip(event, 's29', 17)" class="i">input</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 18)" onmouseover="showTip(event, 's210', 18)" class="i">cursor</span>] <span class="o">+</span> <span onmouseout="hideTip(event, 's29', 19)" onmouseover="showTip(event, 's29', 19)" class="i">input</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 20)" onmouseover="showTip(event, 's210', 20)" class="i">cursor</span><span class="o">+</span><span class="n">1</span>]
+
+<span class="k">if</span> <span onmouseout="hideTip(event, 's28', 21)" onmouseover="showTip(event, 's28', 21)" class="i">sum</span> <span class="o">=</span> <span class="n">2</span> <span class="o">||</span> (<span onmouseout="hideTip(event, 's28', 22)" onmouseover="showTip(event, 's28', 22)" class="i">sum</span> <span class="o">=</span> <span class="n">1</span> <span class="o">&amp;&amp;</span>
+    <span onmouseout="hideTip(event, 's29', 23)" onmouseover="showTip(event, 's29', 23)" class="i">input</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 24)" onmouseover="showTip(event, 's210', 24)" class="i">cursor</span><span class="o">-</span><span class="n">1</span>] <span class="o">=</span> <span class="n">0</span>)
+  <span class="k">then</span> <span onmouseout="hideTip(event, 's211', 25)" onmouseover="showTip(event, 's211', 25)" class="i">output</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 26)" onmouseover="showTip(event, 's210', 26)" class="i">cursor</span>] <span class="o">&lt;-</span> <span class="n">1</span>
+  <span class="k">else</span> <span onmouseout="hideTip(event, 's211', 27)" onmouseover="showTip(event, 's211', 27)" class="i">output</span><span class="o">.</span>[<span onmouseout="hideTip(event, 's210', 28)" onmouseover="showTip(event, 's210', 28)" class="i">cursor</span>] <span class="o">&lt;-</span> <span class="n">0</span>
+</code></pre>
+<div style="border:1px solid #404040;padding:5px;margin:10px 40px 5px 40px;background-color:#282828;">
+  <table id='rule110' style="overflow:hidden;"></table>
+</div>
+<div style="text-align:right;"><button id='rule110btn' data-light="transparent" data-dark="#C69B3D"
+  data-size="4" class="btn" style="padding:5px;width:170px;margin:0px 40px 5px 0px">Run</button></div>
+</section>
+<div class="tip" id="s21">val cache : Cache<br /><br />Full name: Document.cache</div>
+<div class="tip" id="s22">member Cache.Contains : key:string -&gt; bool</div>
+<div class="tip" id="s23">val key : string<br /><br />Full name: Document.key</div>
+<div class="tip" id="s24">member Cache.Get : key:string -&gt; string</div>
+<div class="tip" id="s25">val result : string</div>
+<div class="tip" id="s26">val f : unit -&gt; string<br /><br />Full name: Document.f</div>
+<div class="tip" id="s27">member Cache.Set : key:string * value:string -&gt; unit</div>
+<div class="tip" id="s28">val sum : int<br /><br />Full name: Document.sum</div>
+<div class="tip" id="s29">val input : int []<br /><br />Full name: Document.input</div>
+<div class="tip" id="s210">val cursor : int<br /><br />Full name: Document.cursor</div>
+<div class="tip" id="s211">val output : int []<br /><br />Full name: Document.output</div>
+
+
+</section>
+<section>
+    <section>
+<h1><em>Type system</em> for coeffects</h1>
+<br />
+<div class="fragment">
+<p><em>Effects</em> – What your program<br />does to the world</p>
+<p><em>Coeffects</em> – What your program<br />requires from the world</p>
+</div>
+</section><section>
+<h2>Simple <em>type systems</em></h2>
+<br />
+<p><span class="math">\[x:{\color{ltyp} \text{int}},~ y:{\color{ltyp} \text{int}} \vdash x+y : {\color{ltyp} \text{int}}\]</span></p>
+<br />
+</section><section>
+<h2>Effect type systems</h2>
+<br />
+<p><span class="math">\[hello : {\color{ltyp} \text{string}} \vdash {\color{lkvd} \text{print}}~hello : {\color{ltyp} \text{unit}} {\scriptsize \;\&amp;\;} {\color{leff} \{ \text{io} \} }\]</span></p>
+<br />
+</section><section>
+<h2>Coeffect type systems</h2>
+<br />
+<p><span class="math">\[deadline : {\color{ltyp} \text{time}} {\scriptsize \;@\;} {\color{lcoeff} \{ \text{clock} \} }
+  \vdash {\color{lkvd} \text{now}} \geq deadline : {\color{ltyp} \text{bool}}\]</span></p>
+<br />
+</section>
+
+
+</section>
+<section>
+    <section>
+    <h1><em>Implicit parameters</em></h1>
+<br />
+<p>Implicit parameter <code>?foo</code> accesses a value<br />from the environment</p>
+
+
+    </section><section>
+
+    <h2>Implicit parameters</h2>
+    <p style="margin-bottom:60px">Support <a id="impl1-demo1">dynamic</a>, <a id="impl1-demo2">lexical</a> and <a id="impl1-demo3">mixed</a> scoping</p>
+
+    <div id="impl1" class="callout coeff-demo coeffect-playground"
+        data-coeff-mode="flat" data-coeff-kind="implicit">
+
+      <textarea style="box-sizing:border-box;width:100%;margin:0px;height:160px" id="impl1-input">?fst + ?snd</textarea>
+      <div style="text-align:left;margin-bottom:-50px">
+        <button class="btn btn-success" style="position:relative;top:10px;left:0px" id="impl1-btn"><i class="fa fa-check"></i>&nbsp;Check snippet</button>
+      </div>
+      <script>$(function() { $("#impl1-btn").trigger("click"); });</script>
+
+      <p id="impl1-error" style="margin-top:80px;text-align:left;clear:both;"></p>
+      <div id="impl1-no-error">
+        <div id="impl1-playground"></div>
+        <p id="impl1-playground-ui"></p>
+        <p id="impl1-judgement" style="font-size:30pt;margin-top:50px;" data-tex-color-prefix="l"></p>
+        <p id="impl1-judgement-temp" style="display:none"></p>
+        <p id="impl1-playground-no-ui">No implicit parameters are required.</p>
+      </div>
+
+      <script type="text/javascript">
+        function setupHandler(id, demo) {
+          $("#impl1-" + id).click(function(e) {
+            $('#impl1-input').val(demo);
+            $('#impl1-btn').trigger('click');
+            e.preventDefault();
+          });
+        }
+        var demo1 =
+          "let dyn =\n"+
+          "  (fun snd -> ?fst + snd) in\n"+
+          "let ?fst = 10 in\n"+
+          "dyn ?other";
+        var demo2 =
+          "let lex =\n"+
+          "  let ?fst = 10 in\n"+
+          "  (fun snd -> ?fst + snd) in\n"+
+          "lex ?other";
+        var demo3 =
+          "let both =\n"+
+          "  let ?fst = 100 in\n"+
+          "  (fun trd -> ?fst + ?snd + trd) in\n"+
+          "let ?fst = 200 in both 1";
+        setupHandler("demo1", demo1);
+        setupHandler("demo2", demo2);
+        setupHandler("demo3", demo3);
+      </script>
+    </div>
+
+    </section>
+</section>
+<section>
+    <section>
+    <h1><em>Dataflow</em> programming</h1>
+<br />
+<div class="fragment">
+<p>Each expression represents<br/> a <em>stream</em> of values</p>
+<p>Expression <code>prev x</code> accesses <br />previous value of the stream <code>x</code></p>
+</div>
+</section>
+<section>
+<div class="coeff-demo" data-coeff-editor="df1fl" data-coeff-mode="flat" data-coeff-kind="dataflow" id="df1fl">
+<h2><em>Flat</em> dataflow coeffects</h2>
+<p>Keep one <em>coeffect annotation</em> for the whole context</p>
+<br />
+<div class="pre-edit" id="switch1">
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="coeffects-flat-df-autoload">let flat x y = x + prev y in
+flat
+</code></pre></td></tr></table>
+<textarea id="df1fl-input" style="box-sizing:border-box;padding:15px;width:100%;margin:0px;height:120px;display:none;">let flat x y = x + prev y in
+flat</textarea>
+<div style="text-align:right">
+  <button id="df1fl-btn" style="display:none;"><i class="fa fa-check-square-o"></i>Check snippet</button>
+  <button onclick="$('#switch1 pre, #switch1 textarea, #df1fl-btn').toggle()"><i class="fa fa-pencil-square-o"></i> Edit snippet</button>
+</div>
+</div>
+<div style="margin-top:50px">
+  <p id="df1fl-judgement" style="font-size:30pt;margin-right:40px" data-tex-color-prefix="l"></p>
+  <p id="df1fl-judgement-temp" style="display:none"></p>
+</div>
+</div>
+</section>
+<section>
+<div class="coeff-demo" data-coeff-editor="df1st" data-coeff-mode="structural" data-coeff-kind="dataflow" id="df1st">
+<h2><em>Structural</em> dataflow coeffects</h2>
+<p>Keep one <em>coeffect annotation</em> for each variable</p>
+<br />
+<div class="pre-edit" id="switch1">
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="coeffects-structural-df-autoload">let struct x y = x + prev y in
+struct
+</code></pre></td></tr></table>
+<textarea id="df1st-input" style="box-sizing:border-box;padding:15px;width:100%;margin:0px;height:120px;display:none;">let flat x y = x + prev y in
+flat</textarea>
+<div style="text-align:right">
+  <button id="df1st-btn" style="display:none;"><i class="fa fa-check-square-o"></i>Check snippet</button>
+  <button onclick="$('#switch1 pre, #switch1 textarea, #df1st-btn').toggle()"><i class="fa fa-pencil-square-o"></i> Edit snippet</button>
+</div>
+</div>
+<div style="margin-top:50px">
+  <p id="df1st-judgement" style="font-size:30pt;margin-right:40px" data-tex-color-prefix="l"></p>
+  <p id="df1st-judgement-temp" style="display:none"></p>
+</div>
+</div>
+
+
+    </section>
+    <section>
+
+    <h2>Dataflow programming</h2>
+    <div class="callout coeff-demo coeffect-playground" style="padding:30px;margin:60px 0px 30px 10px;text-align:left;"
+        data-coeff-mode="structural" data-coeff-kind="dataflow" id="dfmouse">
+
+      <textarea style="box-sizing:border-box;width:100%;margin:0px;height:160px" id="dfmouse-input">fun x y -> x + y</textarea>
+      <button class="btn btn-success" style="position:relative;top:265px;" id="dfmouse-btn"><i class="fa fa-check"></i>&nbsp;Check snippet</button>
+      <script>$(function() { $("#dfmouse-btn").trigger("click"); });</script>
+
+      <p id="dfmouse-error" style="clear:both;margin-top:-30px"></p>
+      <div id="dfmouse-no-error" style="clear:both;margin-top:-50px">
+        <p id="dfmouse-livechart-no-ui">The expression is not a function
+          taking X and Y arguments, so we cannot use it for this demo.<br />Try writing for example
+          <code>fun x y -> x + y</code>.</p>
+        <div id="dfmouse-livechart-ui">
+          <div id="dfmouse-livechart" class="live-chart">
+            <div id="dfmouse-drawingspace" class="drawing-space">
+              <span><i class="fa fa-mouse-pointer"></i> Move mouse or touch <br /> here to get started!</span>
+            </div>
+            <div id="dfmouse-charts">
+              <div class="canvas-wrapper"><canvas height="100" id="chartIn"></canvas></div>
+              <div class="canvas-wrapper"><canvas height="100" id="chartOut"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="position:relative;top:-240px;left:250px">Load <a id="dfmouse-demo1">past x</a>, <a id="dfmouse-demo2">smoothing</a> or <a id="dfmouse-demo3">speed</a></p>
+    </div>
+    <script>dataflowPlayground("dfmouse", 440);</script>
+    <script type="text/javascript">
+      function setupHandler(id, demo) {
+        $("#dfmouse-" + id).click(function(e) {
+          $('#dfmouse-input').val(demo);
+          $('#dfmouse-btn').trigger('click');
+          e.preventDefault();
+        });
+      }
+      var demo1 =
+        "fun x y ->\n"+
+        "  let prev4 v = prev prev prev prev v in\n"+
+        "  prev4 (prev4 (prev4 x))";
+      var demo2 =
+        "fun x y ->\n"+
+        "  let s4 v = v + prev (v + prev (v + prev v)) in\n"+
+        "  let p4 v = prev prev prev prev v in\n"+
+        "  (s4 x + s4 (p4 x) + s4 (p4 (p4 x))) / 12";
+      var demo3 =
+        "fun x y ->\n"+
+        "  let dx = x - prev x in\n"+
+        "  let dy = y - prev y in\n"+
+        "  dx * dx + dy * dy";
+      setupHandler("demo1", demo1);
+      setupHandler("demo2", demo2);
+      setupHandler("demo3", demo3);
+    </script>
+    </section>
+    <section>
+    <h2>Type-checking the <em>smoothing</em> function</h2>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="coeffects-struct-df">let smooth x y =
+  let sum4 v = v + prev (v + prev (v + prev v)) in
+  let prev4 v = prev prev prev prev v in
+  let s1 = sum4 x + sum4 (prev4 x) in
+  let s2 = sum4 (prev4 (prev4 x)) in
+  (s1 + s2) / 12 in
+smooth
+</code></pre></td></tr></table>
+<p><span class="math">\[smooth ~:~ {\color{ltyp} \text{num}} \xrightarrow{~\color{lcoeff} 11~} {\color{ltyp} \text{num}} \xrightarrow{~\color{lcoeff} 0~} {\color{ltyp} \text{num}}\]</span></p>
+
+
+    </section>
+</section>
+<section>
+    <section>
+<h1><em>Type system</em> for coeffects</h1>
+<br />
+<div class="fragment">
+<p>Typing of lambda functions for <em>coeffects</em><br /> differs from typing for <em>effects</em></p>
+</div>
+</section><section>
+<h2><em>Ordinary</em> lambda abstraction</h2>
+<br />
+<p><span class="math">\[\dfrac
+  {\Gamma, x:{\color{ltyp} \tau_1} \vdash e : {\color{ltyp} \tau_2}}
+  {\Gamma \vdash {\color{lkvd} \text{fun}}~x \rightarrow e : {\color{ltyp} \tau_1} \rightarrow {\color{ltyp} \tau_2}}\]</span></p>
+<br />
+</section><section>
+<h2><em>Effectful</em> lambda abstraction</h2>
+<br />
+<p><span class="math">\[\dfrac
+  {\Gamma, x:{\color{ltyp} \tau_1} \vdash e : {\color{ltyp} \tau_2 } {\scriptsize \;\&amp;\;} {\color{leff} r} }
+  {\Gamma \vdash {\color{lkvd} \text{fun}}~x \rightarrow e : {\color{ltyp} \tau_1} \xrightarrow{~\color{leff} r~} {\color{ltyp} \tau_2} {\scriptsize \;\&amp;\;} {\color{leff} \emptyset}}\]</span></p>
+<br />
+</section><section>
+<h2><em>Coeffectful</em> lambda abstraction</h2>
+<br />
+<p><span class="math">\[\dfrac
+  {\Gamma, x:{\color{ltyp} \tau_1} {\scriptsize \;@\;} {\color{lcoeff} r\wedge s} \vdash e : {\color{ltyp} \tau_2 } }
+  {\Gamma {\scriptsize \;@\;} {\color{lcoeff} r} \vdash {\color{lkvd} \text{fun}}~x \rightarrow e : {\color{ltyp} \tau_1} \xrightarrow{~\color{lcoeff} s~} {\color{ltyp} \tau_2}}\]</span></p>
+<br />
+</section>
+
+
+    <section>
+      <div class="coeff-demo" id="tps">
+        <h2>Interactive <em>coeffect type checker</em></h2>
+        <div style="padding-top:5px">
+        <script>
+          var samples =
+            { 'flat-implicit': "let dyn snd = ?fst + snd in\nlet ?fst = 10 in\ndyn ?other",
+              'flat-dataflow': "fun x y ->\n  let avg2 = fun y -> (y + prev y) / 2 in\n  avg2 x + prev (avg2 y)",
+              'structural-dataflow': "fun x y ->\n  let avg2 = fun y -> (y + prev y) / 2 in\n  avg2 x + prev (avg2 y)" };
+        </script>
+        <textarea style="box-sizing:border-box;width:100%;margin:0px;height:130px" id="tps-input">
+let dyn snd = ?fst + snd in
+let ?fst = 10 in
+dyn ?other</textarea>
+        </div>
+        <select class="form-control" id="tps-langchooser" style="width:470px">
+          <option value="flat-implicit">Implicit parameters (flat)</option>
+          <option value="flat-dataflow">Dataflow language (flat)</option>
+          <option value="structural-dataflow">Dataflow language (structural)</option>
+        </select>
+        <button class="btn btn-success" style="width:235px" onclick="$('#tps-input').val(samples[$('#tps-langchooser').val()])"><i class="fa fa-plus-square"></i>&nbsp;Open sample</button>
+        <button class="btn btn-success" style="width:235px" id="tps-btn"><i class="fa fa-check"></i>Check snippet</button>
+        <script>$(function() { $("#tps-btn").trigger("click"); });</script>
+
+        <div style="margin:60px -3000px 0px -3000px;clear:both" id="tps-mathjax">
+          <p id="tps-typetree" data-current-color="#2B323A" data-navigation-color="#3D2A3F" data-tex-color-prefix="l"></p>
+          <p id="tps-typetree-temp" style="display:none"></p>
+        </div>
+        <br /><br /><br />
+      </div>
+    </section>
+</section>
+<section>
+    <section>
+<h1>Context and <em>comonads</em></h1>
+<br /><div class="fragment">
+<p>Comonads are dual to monads!</p>
+<p>Comonads represent <em>value with context</em></p>
+</div>
+</section>
+<section>
+<h2>Operations of an <em>indexed comonad</em></h2>
+<p><span class="math">\({\color{lkvd} C}^{\color{lcoeff}r} {\color{ltyp} \tau}\)</span> represents a value <span class="math">\({\color{ltyp} \tau}\)</span> with context <span class="math">\({\color{lcoeff}r}\)</span></p>
+<div class="fragment" style="margin-top:80px">
+<p><span class="math">\[\begin{array}{rcl}
+{\color{lkvd} \text{counit}} &amp;:&amp;  C^{\color{lcoeff}\sf\text{use}} {\color{ltyp} \tau} \rightarrow  {\color{ltyp} \tau} \\
+{\color{lkvd} \text{cobind}} &amp;:&amp;  (C^{\color{lcoeff}r} {\color{ltyp} \tau_1} \rightarrow {\color{ltyp} \tau_2})
+  \rightarrow  C^{\color{lcoeff}{r \circledast s}} {\color{ltyp} \tau_1} \rightarrow  C^{\color{lcoeff}{s}}{\color{ltyp} \tau_2}
+\end{array}\]</span></p>
+</div>
+</section>
+<section>
+<h2>Comonads for <em>stencil computations</em></h2>
+<div style="width:550px;margin:0px auto 0px auto;">
+  <table class="grid" id="grin" style="float:left;margin-left:15px">
+  <tr><td>0.0</td><td>1.0</td><td>1.0</td></tr>
+  <tr><td>0.0</td><td>2.0</td><td>2.0</td></tr>
+  <tr><td>2.0</td><td>3.0</td><td>4.0</td></tr>
+  </table>
+  <table class="grid" id="grout" style="margin-left:290px">
+  <tr><td>?</td><td>?</td><td>?</td></tr>
+  <tr><td>?</td><td>?</td><td>?</td></tr>
+  <tr><td>?</td><td>?</td><td>?</td></tr>
+  </table>
+  <button class="btn form-control" style="width:250px;float:right;margin-top:10px;margin-right:15px" id="btn-comonad-demo">Compute averages!</button>
+  <div style="clear:both"></div>
+</div>
+<div style="margin:20px 0px 0px 50px" class="fragment">
+<ul>
+<li><span class="math">\({\color{lcoeff} C\tau}\)</span> is a 2D grid with <em>current position</em></li>
+<li><strong>counit</strong> returns value at the <em>current position</em></li>
+<li><strong>cobind</strong> calls <span class="math">\(f\)</span> on all possible <em>positions</em></li>
+</ul>
+</div>
+</section>
+<section>
+<h2>Dataflow / non-empty list comonad</h2>
+<p>Data <em>type</em> with comonad <em>operations</em></p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 's81', 1)" onmouseover="showTip(event, 's81', 1)" class="t">DF</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">a</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 's81', 2)" onmouseover="showTip(event, 's81', 2)" class="p">DF</span> <span class="k">of</span> <span onmouseout="hideTip(event, 's82', 3)" onmouseover="showTip(event, 's82', 3)" class="t">list</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">a</span><span class="o">&gt;</span>
+</code></pre>
+<span></span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 's83', 4)" onmouseover="showTip(event, 's83', 4)" class="f">counit</span> (<span onmouseout="hideTip(event, 's81', 5)" onmouseover="showTip(event, 's81', 5)" class="p">DF</span>(<span onmouseout="hideTip(event, 's84', 6)" onmouseover="showTip(event, 's84', 6)" class="i">v</span><span class="o">::</span>_)) <span class="o">=</span> <span onmouseout="hideTip(event, 's84', 7)" onmouseover="showTip(event, 's84', 7)" class="i">v</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 's85', 8)" onmouseover="showTip(event, 's85', 8)" class="f">cobind</span> <span onmouseout="hideTip(event, 's86', 9)" onmouseover="showTip(event, 's86', 9)" class="f">f</span> <span class="o">=</span> <span class="k">function</span>
+  | <span onmouseout="hideTip(event, 's81', 10)" onmouseover="showTip(event, 's81', 10)" class="p">DF</span> [] <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 's81', 11)" onmouseover="showTip(event, 's81', 11)" class="p">DF</span> []
+  | <span onmouseout="hideTip(event, 's81', 12)" onmouseover="showTip(event, 's81', 12)" class="p">DF</span> (<span onmouseout="hideTip(event, 's87', 13)" onmouseover="showTip(event, 's87', 13)" class="i">x</span><span class="o">::</span><span onmouseout="hideTip(event, 's88', 14)" onmouseover="showTip(event, 's88', 14)" class="i">xs</span>) <span class="k">-&gt;</span>
+      <span class="k">let</span> (<span onmouseout="hideTip(event, 's81', 15)" onmouseover="showTip(event, 's81', 15)" class="p">DF</span> <span onmouseout="hideTip(event, 's89', 16)" onmouseover="showTip(event, 's89', 16)" class="i">tl</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 's85', 17)" onmouseover="showTip(event, 's85', 17)" class="f">cobind</span> <span onmouseout="hideTip(event, 's86', 18)" onmouseover="showTip(event, 's86', 18)" class="f">f</span> (<span onmouseout="hideTip(event, 's81', 19)" onmouseover="showTip(event, 's81', 19)" class="p">DF</span> <span onmouseout="hideTip(event, 's88', 20)" onmouseover="showTip(event, 's88', 20)" class="i">xs</span>)
+      <span onmouseout="hideTip(event, 's81', 21)" onmouseover="showTip(event, 's81', 21)" class="p">DF</span>(<span onmouseout="hideTip(event, 's86', 22)" onmouseover="showTip(event, 's86', 22)" class="f">f</span> (<span onmouseout="hideTip(event, 's81', 23)" onmouseover="showTip(event, 's81', 23)" class="p">DF</span> <span onmouseout="hideTip(event, 's88', 24)" onmouseover="showTip(event, 's88', 24)" class="i">xs</span>) <span class="o">::</span> <span onmouseout="hideTip(event, 's89', 25)" onmouseover="showTip(event, 's89', 25)" class="i">tl</span>)
+</code></pre>
+<div class="fragment">
+<p>Operations for <em>context</em> manipulation</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 's810', 26)" onmouseover="showTip(event, 's810', 26)" class="f">prev</span> (<span onmouseout="hideTip(event, 's81', 27)" onmouseover="showTip(event, 's81', 27)" class="p">DF</span>(_<span class="o">::</span><span onmouseout="hideTip(event, 's811', 28)" onmouseover="showTip(event, 's811', 28)" class="i">vs</span>)) <span class="o">=</span> <span onmouseout="hideTip(event, 's81', 29)" onmouseover="showTip(event, 's81', 29)" class="p">DF</span>(<span class="i">vs</span>)
+</code></pre>
+</div>
+</section>
+<section>
+<h2>Implicit parameters / product comonad</h2>
+<p>Data <em>type</em> with comonad <em>operations</em></p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 's812', 30)" onmouseover="showTip(event, 's812', 30)" class="t">IP</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">a</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 's812', 31)" onmouseover="showTip(event, 's812', 31)" class="p">IP</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">a</span> <span class="o">*</span> (<span onmouseout="hideTip(event, 's813', 32)" onmouseover="showTip(event, 's813', 32)" class="t">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 's814', 33)" onmouseover="showTip(event, 's814', 33)" class="t">obj</span>)
+</code></pre>
+<span></span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 's815', 34)" onmouseover="showTip(event, 's815', 34)" class="f">counit</span> (<span onmouseout="hideTip(event, 's812', 35)" onmouseover="showTip(event, 's812', 35)" class="p">IP</span>(<span onmouseout="hideTip(event, 's84', 36)" onmouseover="showTip(event, 's84', 36)" class="i">v</span>, _)) <span class="o">=</span> <span onmouseout="hideTip(event, 's84', 37)" onmouseover="showTip(event, 's84', 37)" class="i">v</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 's816', 38)" onmouseover="showTip(event, 's816', 38)" class="f">cobind</span> <span onmouseout="hideTip(event, 's817', 39)" onmouseover="showTip(event, 's817', 39)" class="f">f</span> (<span onmouseout="hideTip(event, 's812', 40)" onmouseover="showTip(event, 's812', 40)" class="p">IP</span>(<span onmouseout="hideTip(event, 's84', 41)" onmouseover="showTip(event, 's84', 41)" class="i">v</span>, <span onmouseout="hideTip(event, 's818', 42)" onmouseover="showTip(event, 's818', 42)" class="f">p</span>)) <span class="o">=</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 's819', 43)" onmouseover="showTip(event, 's819', 43)" class="f">p1</span>, <span onmouseout="hideTip(event, 's820', 44)" onmouseover="showTip(event, 's820', 44)" class="f">p2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 's818', 45)" onmouseover="showTip(event, 's818', 45)" class="f">p</span>, <span onmouseout="hideTip(event, 's818', 46)" onmouseover="showTip(event, 's818', 46)" class="f">p</span>
+  <span onmouseout="hideTip(event, 's812', 47)" onmouseover="showTip(event, 's812', 47)" class="p">IP</span>(<span onmouseout="hideTip(event, 's817', 48)" onmouseover="showTip(event, 's817', 48)" class="f">f</span> (<span onmouseout="hideTip(event, 's812', 49)" onmouseover="showTip(event, 's812', 49)" class="p">IP</span>(<span onmouseout="hideTip(event, 's84', 50)" onmouseover="showTip(event, 's84', 50)" class="i">v</span>, <span onmouseout="hideTip(event, 's819', 51)" onmouseover="showTip(event, 's819', 51)" class="f">p1</span>)), <span onmouseout="hideTip(event, 's820', 52)" onmouseover="showTip(event, 's820', 52)" class="f">p2</span>)
+</code></pre>
+<div class="fragment">
+<p>Operations for <em>context</em> manipulation</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 's821', 53)" onmouseover="showTip(event, 's821', 53)" class="f">lookup</span> <span onmouseout="hideTip(event, 's822', 54)" onmouseover="showTip(event, 's822', 54)" class="i">name</span> (<span onmouseout="hideTip(event, 's812', 55)" onmouseover="showTip(event, 's812', 55)" class="p">IP</span>(_, <span onmouseout="hideTip(event, 's823', 56)" onmouseover="showTip(event, 's823', 56)" class="f">f</span>)) <span class="o">=</span> <span onmouseout="hideTip(event, 's823', 57)" onmouseover="showTip(event, 's823', 57)" class="f">f</span> <span onmouseout="hideTip(event, 's822', 58)" onmouseover="showTip(event, 's822', 58)" class="i">name</span>
+</code></pre>
+</div>
+</section>
+<section>
+<h2><em>Merging and splitting</em> of context</h2>
+<p>Comonad provides only <em>sequential composition</em></p>
+<br />
+<div class="fragment">
+<p><span class="math">\[\begin{array}{rcl}
+\text{merge} &amp;:&amp;  C^{\color{lcoeff}r} {\color{ltyp} \tau_1} \times  C^{\color{lcoeff}s} {\color{ltyp} \tau_2}
+  \rightarrow  C^{\color{lcoeff}{r \wedge s}} ({\color{ltyp}\tau_1} \times {\color{ltyp}\tau_2}) \\
+\text{split} &amp;:&amp;  C^{\color{lcoeff}{r \oplus s}} ({\color{ltyp} \tau_1} \times {\color{ltyp}\tau_2})
+  \rightarrow  C^{\color{lcoeff}r} {\color{ltyp} \tau_1} \times  C^{\color{lcoeff}s} {\color{ltyp} \tau_2} \\
+\end{array}\]</span></p>
+</div>
+</section>
+<div class="tip" id="s81">Multiple items<br />union case DF.DF: &#39;a list -&gt; DF&lt;&#39;a&gt;<br /><br />--------------------<br />type DF&lt;&#39;a&gt; = | DF of &#39;a list<br /><br />Full name: Document.DF&lt;_&gt;</div>
+<div class="tip" id="s82">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="s83">val counit : DF&lt;&#39;a&gt; -&gt; &#39;a<br /><br />Full name: Document.counit</div>
+<div class="tip" id="s84">val v : &#39;a</div>
+<div class="tip" id="s85">val cobind : f:(DF&lt;&#39;a&gt; -&gt; &#39;b) -&gt; _arg1:DF&lt;&#39;a&gt; -&gt; DF&lt;&#39;b&gt;<br /><br />Full name: Document.cobind</div>
+<div class="tip" id="s86">val f : (DF&lt;&#39;a&gt; -&gt; &#39;b)</div>
+<div class="tip" id="s87">val x : &#39;a</div>
+<div class="tip" id="s88">val xs : &#39;a list</div>
+<div class="tip" id="s89">val tl : &#39;b list</div>
+<div class="tip" id="s810">val prev : DF&lt;&#39;a&gt; -&gt; DF&lt;&#39;a&gt;<br /><br />Full name: Document.prev</div>
+<div class="tip" id="s811">val vs : &#39;a list</div>
+<div class="tip" id="s812">Multiple items<br />union case IP.IP: &#39;a * (string -&gt; obj) -&gt; IP&lt;&#39;a&gt;<br /><br />--------------------<br />type IP&lt;&#39;a&gt; = | IP of &#39;a * (string -&gt; obj)<br /><br />Full name: Document.IP&lt;_&gt;</div>
+<div class="tip" id="s813">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="s814">type obj = System.Object<br /><br />Full name: Microsoft.FSharp.Core.obj</div>
+<div class="tip" id="s815">val counit : IP&lt;&#39;a&gt; -&gt; &#39;a<br /><br />Full name: Document.counit</div>
+<div class="tip" id="s816">val cobind : f:(IP&lt;&#39;a&gt; -&gt; &#39;b) -&gt; IP&lt;&#39;a&gt; -&gt; IP&lt;&#39;b&gt;<br /><br />Full name: Document.cobind</div>
+<div class="tip" id="s817">val f : (IP&lt;&#39;a&gt; -&gt; &#39;b)</div>
+<div class="tip" id="s818">val p : (string -&gt; obj)</div>
+<div class="tip" id="s819">val p1 : (string -&gt; obj)</div>
+<div class="tip" id="s820">val p2 : (string -&gt; obj)</div>
+<div class="tip" id="s821">val lookup : name:string -&gt; IP&lt;&#39;a&gt; -&gt; obj<br /><br />Full name: Document.lookup</div>
+<div class="tip" id="s822">val name : string</div>
+<div class="tip" id="s823">val f : (string -&gt; obj)</div>
+
+
+</section>
+<section>
+    <section>
+<h1><em>Comonadic</em> translation</h1>
+<br /><div class="fragment">
+<p>Give <em>semantics</em> to context-aware programs</p>
+<p>Similar to Haskell's <em>do notation</em></p>
+</div>
+</section>
+
+
+    <section>
+    <h2>Translating <em>implicit parameter</em> programs</h2>
+    <div>
+      <div class="coeff-demo" id="trsl1" data-coeff-mode="flat" data-coeff-kind="implicit">
+        <textarea  style="box-sizing:border-box;width:100%;margin:0px;height:130px" id="trsl1-input">?param</textarea>
+        <button class="btn btn-success" style="width:220px;float:right" id="trsl1-btn"><i class="fa fa-check"></i>Check snippet</button>
+        <p style="text-align:left;font-size:30pt;margin:0px;">Load <a id="trsl1-demo1">addition</a>, <a id="trsl1-demo2">functions</a> or <a id="trsl1-demo3">scoping</a> demo</p>
+        <script>$(function() { $("#trsl1-btn").trigger("click"); });</script>
+        <pre id="trsl1-transl" style="width:100%;margin:20px 0% 0px 0%"></pre>
+        <br /><br /><br /><br />
+      </div>
+    </div>
+    <script type="text/javascript">
+      function setupHandler(id, demo) {
+        $("#trsl1-" + id).click(function(e) {
+          $('#trsl1-input').val(demo);
+          $('#trsl1-btn').trigger('click');
+          e.preventDefault();
+        });
+      }
+      var demo1 = "?one + ?two";
+      var demo2 = "fun x -> x + ?param";
+      var demo3 = "let ?param = 10 in\nfun x -> ?param + ?other";
+      setupHandler("demo1", demo1);
+      setupHandler("demo2", demo2);
+      setupHandler("demo3", demo3);
+    </script>
+    </section>
+    <section>
+    <h2>Translating <em>dataflow</em> programs</h2>
+    <div>
+      <div class="coeff-demo" id="trsl2" data-coeff-mode="flat" data-coeff-kind="implicit">
+        <textarea  style="box-sizing:border-box;width:100%;margin:0px;height:130px" id="trsl2-input">fun x -> prev x</textarea>
+        <select class="form-control" id="trsl2-langchooser" style="width:650px">
+          <option value="flat-dataflow">Per-context tracking</option>
+          <option value="structural-dataflow">Per-variable tracking</option>
+        </select>
+        <button class="btn btn-success" style="width:300px" id="trsl2-btn"><i class="fa fa-check"></i>Check snippet</button>
+        <p style="text-align:left;font-size:30pt;margin:10px 0px 0px 0px;">Load <a id="trsl2-demo1">two last values</a>, <a id="trsl2-demo2">curried function</a> or <a id="trsl2-demo3">nested function</a> demo</p>
+        <script>$(function() { $("#trsl2-btn").trigger("click"); });</script>
+        <pre id="trsl2-transl" style="width:100%;margin:20px 0% 0px 0%"></pre>
+        <br /><br /><br /><br />
+      </div>
+    </div>
+    <script type="text/javascript">
+      function setupHandler(id, demo) {
+        $("#trsl2-" + id).click(function(e) {
+          $('#trsl2-input').val(demo);
+          $('#trsl2-btn').trigger('click');
+          e.preventDefault();
+        });
+      }
+      var demo1 = "fun x -> x + prev x";
+      var demo2 = "fun x y -> x + prev y";
+      var demo3 = "fun x -> (fun v -> prev v) prev x";
+      setupHandler("demo1", demo1);
+      setupHandler("demo2", demo2);
+      setupHandler("demo3", demo3);
+    </script>
+    </section>
+</section>
+<section>
+<h2>Summary</h2>
+<p><em>Context</em> or execution <em>environment</em> matters!</p>
+<p>Captured by <em>coeffects</em> with <em>comonadic</em> semantics</p>
+<p>Useful for <em>readability</em>, <em>efficiency</em> and <em>safety</em></p>
+<br /><br />
+<div style="width:48%; text-align:right;float:left;">
+<p>Drop me an email<br />
+Ping me on twitter<br />
+Interactive essay<br />
+Detailed papers</p>
+</div>
+<div style="width:50%; text-align:left;margin-left:50%;">
+<p>| <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a><br />
+| <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a> <br />
+| <a href="http://tomasp.net/coeffects">tomasp.net/coeffects</a><br />
+| <a href="http://tomasp.net/academic">tomasp.net/academic</a></p>
+</div>
+
+
+</section>
+</div>
+</div>
+
+<script src="reveal/lib/js/head.min.js"></script>
+<script src="reveal/js/reveal.js"></script>
+
+<script>
+  Reveal.initialize({
+    help: false,
+    history: true,
+    transition: "none",
+    dependencies: [ ]
+  });
+</script>
+
+
+<script>$(function() { logStarted = true; logEvent("page", "loaded", window.navigator.userAgent); });</script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-1561220-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function () {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+</body>
+</html>

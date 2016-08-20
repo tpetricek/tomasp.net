@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Composing Chrismas with F# - Tomas Petricek</title>
+
+  <meta name="description" content=" This blog post is a part of the F# Advent Calendar 2014, so it inevitably needs a Christmassy theme. However, there is also going to be a serious theme for the blog post, which is domain-specific languages. I'm going to cover two key ideas of DSLs in F# - composability and multiple layers of abstraction." />
+  <meta name="keywords" content="f#, fun, functional programming, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Composing Chrismas with F#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2014/composing-christmas/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2014/composing-christmas/glowing.gif" />
+  <meta property="og:description" content=" This blog post is a part of the F# Advent Calendar 2014, so it inevitably needs a Christmassy theme. However, there is also going to be a serious theme for the blog post, which is domain-specific languages. I'm going to cover two key ideas of DSLs in F# - composability and multiple layers of abstraction." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Composing Chrismas with F#" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2014/composing-christmas/glowing.gif" />
+  <meta name="twitter:description" content=" This blog post is a part of the F# Advent Calendar 2014, so it inevitably needs a Christmassy theme. However, there is also going to be a serious theme for the blog post, which is domain-specific languages. I'm going to cover two key ideas of DSLs in F# - composability and multiple layers of abstraction." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Composing Chrismas with F#",
+    "headline": "Composing Chrismas with F#",
+  	"description": " This blog post is a part of the F# Advent Calendar 2014, so it inevitably needs a Christmassy theme. However, there is also going to be a serious theme for the blog post, which is domain-specific languages. I'm going to cover two key ideas of DSLs in F# - composability and multiple layers of abstraction.",
+  	"url": "http://tomasp.net/blog/2014/composing-christmas/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2014-12-08T17:22:28.9828927+00:00",
+  	"datePublished": "2014-12-08T17:22:28.9828927+00:00",
+    "dateModified": "2014-12-08T17:22:28.9828927+00:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2014/composing-christmas/",
+  	"image": "http://tomasp.net/blog/2014/composing-christmas/glowing.gif",
+  	"thumbnailUrl": "http://tomasp.net/blog/2014/composing-christmas/glowing.gif",
+  	"keywords": ["f#", "fun", "functional programming",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Composing Chrismas with F#</h1>
+<p>This blog post is a part of the awesome <a href="https://sergeytihon.wordpress.com/2014/11/24/f-advent-calendar-in-english-2014/">F# Advent Calendar</a>
+(see the previous entry about <a href="http://richardminerich.com/2014/12/developing-an-algorithm-in-f-fast-rotational-alignments-with-gospers-hack/">writing algorithms in F#</a>
+from Rick Minerich), so it inevitably needs a Christmassy theme. However, there is also
+going to be a serious theme for the blog post, which is domain-specific languages.</p>
+<p>One of my favorite examples of Domain-Specific Languages is a simple OpenGL library
+that I wrote some time ago for composing 3D graphics in F#. You can see it in my
+NDC 2014 talk <a href="http://vimeo.com/97315970">Domain Specific Languages, the functional way</a>
+and I also used it for <a href="http://tomasp.net/blog/2014/puzzling-fsharp/index.html">Solving Puzzles with F#</a>
+earlier on this blog.</p>
+<p>The nice thing about the library is that it is very simple, but is rich enough to demonstrate
+all the important concepts. In fact, the library is so easy to use that <a href="https://twitter.com/ptrelford/status/538098139430137856">even 8 years old can
+do a talk about it</a>. So, if you're
+spending Christmas with your family, perhaps you can go through this article with your children!</p>
+<p>On the more serious note, I also want to show two important programming concepts:</p>
+<ul>
+<li>
+<p><strong>Composability</strong> is perhaps the most fundamental principle of functional
+programming. The idea is that we can build complex things by (correctly) composing
+smaller (correct) building blocks. This applies to computations, user interfaces
+as well as 3D objects.</p>
+</li>
+<li>
+<p><strong>Layers of abstraction</strong> is another key theme. The idea is that you can build higher-level
+APIs on top of lower-level ones. For example, you can process F# lists using recursion
+(low-level), or using functions like <code>filter</code> and <code>map</code> built on top of that (high-level).
+You'll see the same thing with 3D objects.</p>
+</li>
+</ul>
+<p>Now, let's get started and build some 3D Christmas with F#!</p>
+<h2>Getting started with 3D</h2>
+<p>The first thing you'll need is to <a href="http://tomasp.net/blog/2014/composing-christmas/fun3d.zip">download the library</a>
+and load it into F# Interactive. You could also create an application, but playing with the library
+interactively is more fun:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Reference OpenTK library &amp; functional DSL</span>
+<span class="prep">#r</span> <span class="s">&quot;OpenTK.dll&quot;</span>
+<span class="prep">#r</span> <span class="s">&quot;OpenTK.GLControl.dll&quot;</span>
+<span class="prep">#load</span> <span class="s">&quot;functional3d.fs&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">System</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">Drawing</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="i">Functional3D</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The library exposes a single module named <code>Fun</code>, so the best way to start exploring it is to type <code>Fun.</code> and
+see what your editor suggests. You can start, for example, with <code>Fun.cone</code> to create a cone. Then, select the
+expression and send it to F# Interactive to see the object.</p>
+<p>Aside from primitive objects (<code>Fun.cone</code>, <code>Fun.cube</code>, <code>Fun.sphere</code>, etc.), the library gives us a couple of
+functions that transform an object - that is, they take a 3D object, apply some transformation and return
+a new one. We can, use them to take a cone, make it more spiky and move it (so that the base is in the
+center of the coordinates):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="i">cone</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 7)" onmouseover="showTip(event, 'fs4', 7)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 8)" onmouseover="showTip(event, 'fs6', 8)" class="f">scale</span> (<span class="n">0.5</span>, <span class="n">0.5</span>, <span class="n">2.0</span>)
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 9)" onmouseover="showTip(event, 'fs4', 9)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 10)" onmouseover="showTip(event, 'fs7', 10)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">0.0</span>, <span class="o">-</span><span class="n">1.0</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Once the object appears, you can use the Q, W and A, S and Z, X keys to rotate the view.</p>
+<h2>Composing stars</h2>
+<p>The first thing we'll do in this blog post is that we'll create a (very Christmassy) star. To do that, we
+<em>extend our language</em> and add a new primitive that creates a spike. In a more techincal terms, we just
+write a function called <code>spike</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Creates a single spike, starting from the</span>
+<span class="c">/// center of the world, rotated by `r` degrees</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="f">spike</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="i">r</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs4', 13)" onmouseover="showTip(event, 'fs4', 13)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs5', 14)" onmouseover="showTip(event, 'fs5', 14)" class="i">cone</span>
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 15)" onmouseover="showTip(event, 'fs4', 15)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 16)" onmouseover="showTip(event, 'fs6', 16)" class="f">scale</span> (<span class="n">0.5</span>, <span class="n">0.5</span>, <span class="n">2.0</span>)
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 17)" onmouseover="showTip(event, 'fs4', 17)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 18)" onmouseover="showTip(event, 'fs7', 18)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">0.0</span>, <span class="o">-</span><span class="n">1.0</span>)
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 19)" onmouseover="showTip(event, 'fs4', 19)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 20)" onmouseover="showTip(event, 'fs10', 20)" class="f">rotate</span> (<span onmouseout="hideTip(event, 'fs9', 21)" onmouseover="showTip(event, 'fs9', 21)" class="i">r</span>, <span class="n">0.0</span>, <span class="n">0.0</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>spike</code> function wraps the code that we wrote in the previous snippet. It adds one more transformation,
+which rotates the spike using the specified number of degrees. Now, if we want to create a star with 4
+spikes, we can just write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">( <span onmouseout="hideTip(event, 'fs8', 22)" onmouseover="showTip(event, 'fs8', 22)" class="f">spike</span> <span class="n">0.0</span> <span class="o">$</span> <span onmouseout="hideTip(event, 'fs8', 23)" onmouseover="showTip(event, 'fs8', 23)" class="f">spike</span> <span class="n">90.0</span> <span class="o">$</span> 
+  <span onmouseout="hideTip(event, 'fs8', 24)" onmouseover="showTip(event, 'fs8', 24)" class="f">spike</span> <span class="n">180.0</span> <span class="o">$</span> <span onmouseout="hideTip(event, 'fs8', 25)" onmouseover="showTip(event, 'fs8', 25)" class="f">spike</span> <span class="n">270.0</span> )
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 26)" onmouseover="showTip(event, 'fs4', 26)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 27)" onmouseover="showTip(event, 'fs11', 27)" class="f">color</span> <span onmouseout="hideTip(event, 'fs12', 28)" onmouseover="showTip(event, 'fs12', 28)" class="t">Color</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 29)" onmouseover="showTip(event, 'fs13', 29)" class="i">Gold</span>
+</code></pre></td>
+</tr>
+</table>
+<img src="http://tomasp.net/blog/2014/composing-christmas/simplestar.png" alt="Simple 3D star" style="margin-bottom:20px; margin-left:20px; width:300px" /> 
+<p>Here, we're using the <code>$</code> operator, which comes from the functional 3D DSL to put multiple objects
+together - it simply renders multiple 3D objects in their original location (which is why we had to
+move the spikes earlier on).</p>
+<p>Now, going back to the key concepts - what we are doing here is that we are <em>composing</em> a more complex
+primitive called <code>spike</code> from a simpler primitives. Also, we are rising the <em>level of abstraction</em>, because
+we can now create stars in terms of <em>spikes</em>, rather than just cones. You can easily change the code to
+create other stars by adding more <code>spike</code> calls.</p>
+<p>So far, we also did not need almost any F# knowledge. We just used the <code>|&gt;</code> operator and function calls.
+If we want to be more clever about creating stars, we can generate one using list comprehensions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Represents a star with 12 spikes</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 30)" onmouseover="showTip(event, 'fs14', 30)" class="i">star</span> <span class="o">=</span>
+  [ <span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 31)" onmouseover="showTip(event, 'fs9', 31)" class="i">r</span> <span class="k">in</span> <span class="n">0.0</span> <span class="o">..</span> <span class="n">30.0</span> <span class="o">..</span> <span class="n">330.0</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs8', 32)" onmouseover="showTip(event, 'fs8', 32)" class="f">spike</span> <span onmouseout="hideTip(event, 'fs9', 33)" onmouseover="showTip(event, 'fs9', 33)" class="i">r</span> ]
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 34)" onmouseover="showTip(event, 'fs15', 34)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 35)" onmouseover="showTip(event, 'fs16', 35)" class="f">reduce</span> (<span class="o">$</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>This snippet generates 12 spikes and then composes all of them into a single 3D object using the
+<code>List.reduce</code> function and the <code>$</code> operator (which joins two 3D objects). The last step is to add
+some animation. The easiest way to do this is to write a function that takes the current <em>time</em>
+and returns an object. The following snippet changes the color and scaling of the star based on time:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Creates a glowing star with changing color</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs17', 36)" onmouseover="showTip(event, 'fs17', 36)" class="f">glowingStar</span> <span onmouseout="hideTip(event, 'fs18', 37)" onmouseover="showTip(event, 'fs18', 37)" class="i">time</span> <span class="o">=</span> 
+  <span class="c">// Values varying between -96 .. +96 and 0.7 .. 1.3</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 38)" onmouseover="showTip(event, 'fs19', 38)" class="i">phase</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs20', 39)" onmouseover="showTip(event, 'fs20', 39)" class="f">sin</span> (<span onmouseout="hideTip(event, 'fs18', 40)" onmouseover="showTip(event, 'fs18', 40)" class="i">time</span> <span class="o">/</span> <span class="n">20.0</span>) <span class="o">*</span> <span class="n">96.0</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 41)" onmouseover="showTip(event, 'fs21', 41)" class="i">size</span> <span class="o">=</span> <span class="n">1.0</span> <span class="o">+</span> (<span class="n">0.3</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs20', 42)" onmouseover="showTip(event, 'fs20', 42)" class="f">sin</span> (<span onmouseout="hideTip(event, 'fs18', 43)" onmouseover="showTip(event, 'fs18', 43)" class="i">time</span> <span class="o">/</span> <span class="n">20.0</span>))
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs22', 44)" onmouseover="showTip(event, 'fs22', 44)" class="i">clr</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs12', 45)" onmouseover="showTip(event, 'fs12', 45)" class="t">Color</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 46)" onmouseover="showTip(event, 'fs23', 46)" class="f">FromArgb</span>(<span class="n">255</span>, <span class="n">159</span><span class="o">+</span><span onmouseout="hideTip(event, 'fs24', 47)" onmouseover="showTip(event, 'fs24', 47)" class="f">int</span> <span onmouseout="hideTip(event, 'fs19', 48)" onmouseover="showTip(event, 'fs19', 48)" class="i">phase</span>, <span class="n">64</span>)
+  
+  <span class="c">// Change the color and scaling of a star</span>
+  <span onmouseout="hideTip(event, 'fs14', 49)" onmouseover="showTip(event, 'fs14', 49)" class="i">star</span> 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 50)" onmouseover="showTip(event, 'fs4', 50)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 51)" onmouseover="showTip(event, 'fs11', 51)" class="f">color</span> <span onmouseout="hideTip(event, 'fs22', 52)" onmouseover="showTip(event, 'fs22', 52)" class="i">clr</span> 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 53)" onmouseover="showTip(event, 'fs4', 53)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 54)" onmouseover="showTip(event, 'fs6', 54)" class="f">scale</span> (<span class="n">1.0</span>, <span onmouseout="hideTip(event, 'fs21', 55)" onmouseover="showTip(event, 'fs21', 55)" class="i">size</span>, <span onmouseout="hideTip(event, 'fs21', 56)" onmouseover="showTip(event, 'fs21', 56)" class="i">size</span>) 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 57)" onmouseover="showTip(event, 'fs4', 57)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 58)" onmouseover="showTip(event, 'fs10', 58)" class="f">rotate</span> (<span class="n">90.0</span>, <span class="n">90.0</span>, <span class="n">90.0</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The library provides a primitive <code>Fun.animate</code> that takes a time-varying function and runs it.
+That is, the argument is a function <code>float -&gt; Drawing3D</code> and the runner will call it repeatedly,
+incrementing the time at each step:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Run this line to start the animation</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs25', 59)" onmouseover="showTip(event, 'fs25', 59)" class="i">gs</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 60)" onmouseover="showTip(event, 'fs4', 60)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 61)" onmouseover="showTip(event, 'fs26', 61)" class="f">animate</span> <span onmouseout="hideTip(event, 'fs17', 62)" onmouseover="showTip(event, 'fs17', 62)" class="f">glowingStar</span>
+<span class="c">// Run this line to stop the animation</span>
+<span onmouseout="hideTip(event, 'fs25', 63)" onmouseover="showTip(event, 'fs25', 63)" class="i">gs</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 64)" onmouseover="showTip(event, 'fs27', 64)" class="f">Cancel</span>()
+</code></pre></td>
+</tr>
+</table>
+<img src="http://tomasp.net/blog/2014/composing-christmas/bigstar.gif" alt="Glowing 3D star" style="margin-left:20px; margin-bottom:20px; width:300px" /> 
+<p>Stars are a good start, but we obviously need more than that to compose Christmas...</p>
+<h2>Composing Christmas trees</h2>
+<p>What we <em>really</em> need is a Christmas tree, decorated with a glowing star! We already
+have the star ready, so let's look at trees. To make our tree nicer, we're going to
+generate it using a variation of green shades, so let's start with a helper to get
+a random shade of green color:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 65)" onmouseover="showTip(event, 'fs28', 65)" class="i">rnd</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs29', 66)" onmouseover="showTip(event, 'fs29', 66)" class="t">Random</span>()
+<span class="c">/// Returns a random shade of </span>
+<span class="c">/// green color for the tree</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 67)" onmouseover="showTip(event, 'fs30', 67)" class="f">nextGreen</span>() <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs12', 68)" onmouseover="showTip(event, 'fs12', 68)" class="t">Color</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 69)" onmouseover="showTip(event, 'fs23', 69)" class="f">FromArgb</span>
+    ( <span onmouseout="hideTip(event, 'fs28', 70)" onmouseover="showTip(event, 'fs28', 70)" class="i">rnd</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 71)" onmouseover="showTip(event, 'fs31', 71)" class="f">Next</span>(<span class="n">96</span>), 
+      <span onmouseout="hideTip(event, 'fs28', 72)" onmouseover="showTip(event, 'fs28', 72)" class="i">rnd</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 73)" onmouseover="showTip(event, 'fs31', 73)" class="f">Next</span>(<span class="n">96</span>, <span class="n">168</span>), 
+      <span onmouseout="hideTip(event, 'fs28', 74)" onmouseover="showTip(event, 'fs28', 74)" class="i">rnd</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 75)" onmouseover="showTip(event, 'fs31', 75)" class="f">Next</span>(<span class="n">64</span>) )
+</code></pre></td>
+</tr>
+</table>
+<p>To build a Christmas tree, we're going to simply add a number of cones on top of each other
+(to represent different levels of the tree). This is pretty much the same as composing
+stars from spikes. Create a list of cones, move and scale them appropriately and then put
+all of them together:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 76)" onmouseover="showTip(event, 'fs32', 76)" class="i">tree</span> <span class="o">=</span> 
+  [ <span class="k">for</span> <span onmouseout="hideTip(event, 'fs33', 77)" onmouseover="showTip(event, 'fs33', 77)" class="i">i</span> <span class="k">in</span> <span class="n">0.0</span> <span class="o">..</span> <span class="n">6.0</span> <span class="k">-&gt;</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs34', 78)" onmouseover="showTip(event, 'fs34', 78)" class="i">w</span> <span class="o">=</span> <span class="n">0.5</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs33', 79)" onmouseover="showTip(event, 'fs33', 79)" class="i">i</span> <span class="o">*</span> <span class="n">0.2</span>
+      <span onmouseout="hideTip(event, 'fs4', 80)" onmouseover="showTip(event, 'fs4', 80)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs5', 81)" onmouseover="showTip(event, 'fs5', 81)" class="i">cone</span>
+      <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 82)" onmouseover="showTip(event, 'fs4', 82)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 83)" onmouseover="showTip(event, 'fs11', 83)" class="f">color</span> (<span onmouseout="hideTip(event, 'fs30', 84)" onmouseover="showTip(event, 'fs30', 84)" class="f">nextGreen</span>())
+      <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 85)" onmouseover="showTip(event, 'fs4', 85)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 86)" onmouseover="showTip(event, 'fs6', 86)" class="f">scale</span> (<span onmouseout="hideTip(event, 'fs34', 87)" onmouseover="showTip(event, 'fs34', 87)" class="i">w</span>, <span onmouseout="hideTip(event, 'fs34', 88)" onmouseover="showTip(event, 'fs34', 88)" class="i">w</span>, <span class="n">0.4</span>) 
+      <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 89)" onmouseover="showTip(event, 'fs4', 89)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 90)" onmouseover="showTip(event, 'fs7', 90)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">0.0</span>, <span class="n">0.30</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs33', 91)" onmouseover="showTip(event, 'fs33', 91)" class="i">i</span>) ]
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 92)" onmouseover="showTip(event, 'fs15', 92)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 93)" onmouseover="showTip(event, 'fs16', 93)" class="f">reduce</span> (<span class="o">$</span>)
+</code></pre></td>
+</tr>
+</table>
+<img src="http://tomasp.net/blog/2014/composing-christmas/branches.png" alt="Green part of a tree" style="margin-left:20px; margin-bottom:20px; width:300px" /> 
+<p>The only difficult thing about the above example is getting the constants right. Feel free to
+fiddle with the numbers to create different trees! Here, we're creating 7 levels and we are
+making them wider as we go. We also make each cone 0.4 high and move them so that they overlap
+by one quarter of a cone.</p>
+<p>The other part of the tree that we need is a trunk. To build one, we're simply going to create
+a brown cylinder, make it narrow and longer and then move it to the bottom of the tree:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs35', 94)" onmouseover="showTip(event, 'fs35', 94)" class="i">trunk</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs4', 95)" onmouseover="showTip(event, 'fs4', 95)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 96)" onmouseover="showTip(event, 'fs36', 96)" class="i">cylinder</span>
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 97)" onmouseover="showTip(event, 'fs4', 97)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 98)" onmouseover="showTip(event, 'fs6', 98)" class="f">scale</span> (<span class="n">0.2</span>, <span class="n">0.2</span>, <span class="n">1.0</span>)
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 99)" onmouseover="showTip(event, 'fs4', 99)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 100)" onmouseover="showTip(event, 'fs11', 100)" class="f">color</span> <span onmouseout="hideTip(event, 'fs12', 101)" onmouseover="showTip(event, 'fs12', 101)" class="t">Color</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 102)" onmouseover="showTip(event, 'fs37', 102)" class="i">Brown</span>
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 103)" onmouseover="showTip(event, 'fs4', 103)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 104)" onmouseover="showTip(event, 'fs7', 104)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">0.0</span>, <span class="n">1.9</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Now we are pretty much done with the tree! We can write just <code>trunk $ tree</code>, or we can also
+specify rotation and move it, so that it appears in the center of the window. If the rotation
+of the view (using keyboard keys) got out of control, you can call <code>Fun.resetRotation()</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">(<span onmouseout="hideTip(event, 'fs35', 105)" onmouseover="showTip(event, 'fs35', 105)" class="i">trunk</span> <span class="o">$</span> <span onmouseout="hideTip(event, 'fs32', 106)" onmouseover="showTip(event, 'fs32', 106)" class="i">tree</span>)
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 107)" onmouseover="showTip(event, 'fs4', 107)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 108)" onmouseover="showTip(event, 'fs10', 108)" class="f">rotate</span> (<span class="n">90.0</span>, <span class="n">0.0</span>, <span class="n">0.0</span>)
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 109)" onmouseover="showTip(event, 'fs4', 109)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 110)" onmouseover="showTip(event, 'fs7', 110)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">1.0</span>, <span class="n">0.0</span>)
+</code></pre></td>
+</tr>
+</table>
+<img src="http://tomasp.net/blog/2014/composing-christmas/tree.png" alt="Completed tree with a trunk" style="margin-left:20px; margin-bottom:20px; width:300px" /> 
+<p>The beautiful thing about the Domain-Specific Languages approach that we are using here is not
+just the fact that we can build interesting things with just a few lines of code. The really nice
+thing is that we are rising the level of abstraction. Rather than talking about primitive objects,
+the code now talks about trunks, trees and stars. So, let's put the parts together...</p>
+<h2>Decorating tree</h2>
+<p>To put the glowing star on top of our tree, we need to write a function that takes the current time
+and returns a 3D object composed from tree (which does not change) and a glowing (time-dependent)
+star. We also need to make the star smaller and move it to the top:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Tree with a glowing star on top</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs38', 111)" onmouseover="showTip(event, 'fs38', 111)" class="f">treeWithStar</span> <span onmouseout="hideTip(event, 'fs18', 112)" onmouseover="showTip(event, 'fs18', 112)" class="i">time</span> <span class="o">=</span> 
+  ( (<span onmouseout="hideTip(event, 'fs35', 113)" onmouseover="showTip(event, 'fs35', 113)" class="i">trunk</span> <span class="o">$</span> <span onmouseout="hideTip(event, 'fs32', 114)" onmouseover="showTip(event, 'fs32', 114)" class="i">tree</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 115)" onmouseover="showTip(event, 'fs4', 115)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 116)" onmouseover="showTip(event, 'fs10', 116)" class="f">rotate</span> (<span class="n">90.0</span>, <span class="n">0.0</span>, <span class="n">0.0</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 117)" onmouseover="showTip(event, 'fs4', 117)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 118)" onmouseover="showTip(event, 'fs7', 118)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">1.0</span>, <span class="n">0.0</span>) ) <span class="o">$</span>
+  ( <span onmouseout="hideTip(event, 'fs17', 119)" onmouseover="showTip(event, 'fs17', 119)" class="f">glowingStar</span> <span onmouseout="hideTip(event, 'fs18', 120)" onmouseover="showTip(event, 'fs18', 120)" class="i">time</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 121)" onmouseover="showTip(event, 'fs4', 121)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 122)" onmouseover="showTip(event, 'fs6', 122)" class="f">scale</span> (<span class="n">0.2</span>, <span class="n">0.2</span>, <span class="n">0.2</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs4', 123)" onmouseover="showTip(event, 'fs4', 123)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 124)" onmouseover="showTip(event, 'fs7', 124)" class="f">translate</span> (<span class="n">0.0</span>, <span class="n">1.2</span>, <span class="n">0.0</span>) )
+
+<span class="c">// Run this line to start the animation</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs39', 125)" onmouseover="showTip(event, 'fs39', 125)" class="i">ts</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 126)" onmouseover="showTip(event, 'fs4', 126)" class="t">Fun</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 127)" onmouseover="showTip(event, 'fs26', 127)" class="f">animate</span> <span onmouseout="hideTip(event, 'fs38', 128)" onmouseover="showTip(event, 'fs38', 128)" class="f">treeWithStar</span>
+<span class="c">// Run this line to stop the animation</span>
+<span onmouseout="hideTip(event, 'fs39', 129)" onmouseover="showTip(event, 'fs39', 129)" class="i">ts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 130)" onmouseover="showTip(event, 'fs27', 130)" class="f">Cancel</span>()
+</code></pre></td>
+</tr>
+</table>
+<img src="http://tomasp.net/blog/2014/composing-christmas/glowing.gif" style="margin-left:20px; margin-bottom:20px; width:300px" /> 
+<h2>Summary</h2>
+<p>As I mentioned in the introduction, the library that I used in this blog post is easy enough
+that <a href="https://twitter.com/ptrelford/status/538098139430137856">an 8 year old</a> can use it. So,
+if you're spending some time over Christmas with kids, you can
+<a href="http://tomasp.net/blog/2014/composing-christmas/fun3d.zip">get the library</a> and have some fun!
+The source code of this blog post <a href="https://github.com/tpetricek/TomaspNet.Website/blob/master/source/blog/2014/composing-christmas.fsx">is available on GitHub</a>,
+including the text.</p>
+<p>On the more serious note, I wanted to show you two important ideas. First, how <em>composability</em>
+makes it possible to easily build more complex things from simple ones (this is where the F#
+motto "simple code to solve complex problems" comes from). The other part is <em>levels of abstraction</em> -
+at the beginning, we only had low-level abstractions such as cones and cylinders. However, as we
+solved our specific problem, we ended up defining reusable, higher-level DSL primitives such as
+tree, star and trunk. These are not single-purpose - you can reuse the code for other problems that
+fall into the same Christmassy domain!</p>
+
+
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.Drawing</div>
+<div class="tip" id="fs3">module Functional3D</div>
+<div class="tip" id="fs4">module Fun<br /><br />from Functional3D</div>
+<div class="tip" id="fs5">val cone : Drawing3D<br /><br />Full name: Functional3D.Fun.cone<br /><em><br /><br />&#160;Generate the sphere <br />&#160;Generates a 3D cylinder object of a unit size</em></div>
+<div class="tip" id="fs6">val scale : x:float * y:float * z:float -&gt; Drawing3D -&gt; Drawing3D<br /><br />Full name: Functional3D.Fun.scale<br /><em><br /><br />&#160;Scale the specified 3D object by the specified scales along the 3 axes</em></div>
+<div class="tip" id="fs7">val translate : x:float * y:float * z:float -&gt; Drawing3D -&gt; Drawing3D<br /><br />Full name: Functional3D.Fun.translate<br /><em><br /><br />&#160;Move the specified object by the provided offsets</em></div>
+<div class="tip" id="fs8">val spike : r:float -&gt; Drawing3D<br /><br />Full name: Composing-christmas.spike<br /><em><br /><br />&#160;Creates a single spike, starting from the<br />&#160;center of the world, rotated by `r` degrees</em></div>
+<div class="tip" id="fs9">val r : float</div>
+<div class="tip" id="fs10">val rotate : x:float * y:float * z:float -&gt; Drawing3D -&gt; Drawing3D<br /><br />Full name: Functional3D.Fun.rotate<br /><em><br /><br />&#160;Scale the specified 3D object by the specified scales along the 3 axes</em></div>
+<div class="tip" id="fs11">val color : clr:Color -&gt; Drawing3D -&gt; Drawing3D<br /><br />Full name: Functional3D.Fun.color<br /><em><br /><br />&#160;Set color to be used when drawing the specified 3D objects</em></div>
+<div class="tip" id="fs12">type Color =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member A : byte<br />&#160;&#160;&#160;&#160;member B : byte<br />&#160;&#160;&#160;&#160;member Equals : obj:obj -&gt; bool<br />&#160;&#160;&#160;&#160;member G : byte<br />&#160;&#160;&#160;&#160;member GetBrightness : unit -&gt; float32<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetHue : unit -&gt; float32<br />&#160;&#160;&#160;&#160;member GetSaturation : unit -&gt; float32<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member IsKnownColor : bool<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.Drawing.Color</div>
+<div class="tip" id="fs13">property Color.Gold: Color</div>
+<div class="tip" id="fs14">val star : Drawing3D<br /><br />Full name: Composing-christmas.star<br /><em><br /><br />&#160;Represents a star with 12 spikes</em></div>
+<div class="tip" id="fs15">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs16">val reduce : reduction:(&#39;T -&gt; &#39;T -&gt; &#39;T) -&gt; list:&#39;T list -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Collections.List.reduce</div>
+<div class="tip" id="fs17">val glowingStar : time:float -&gt; Drawing3D<br /><br />Full name: Composing-christmas.glowingStar<br /><em><br /><br />&#160;Creates a glowing star with changing color</em></div>
+<div class="tip" id="fs18">val time : float</div>
+<div class="tip" id="fs19">val phase : float</div>
+<div class="tip" id="fs20">val sin : value:&#39;T -&gt; &#39;T (requires member Sin)<br /><br />Full name: Microsoft.FSharp.Core.Operators.sin</div>
+<div class="tip" id="fs21">val size : float</div>
+<div class="tip" id="fs22">val clr : Color</div>
+<div class="tip" id="fs23">Color.FromArgb(argb: int) : Color<br />Color.FromArgb(alpha: int, baseColor: Color) : Color<br />Color.FromArgb(red: int, green: int, blue: int) : Color<br />Color.FromArgb(alpha: int, red: int, green: int, blue: int) : Color</div>
+<div class="tip" id="fs24">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs25">val gs : Threading.CancellationTokenSource<br /><br />Full name: Composing-christmas.gs</div>
+<div class="tip" id="fs26">val animate : f:(float -&gt; Drawing3D) -&gt; Threading.CancellationTokenSource<br /><br />Full name: Functional3D.Fun.animate</div>
+<div class="tip" id="fs27">Threading.CancellationTokenSource.Cancel() : unit<br />Threading.CancellationTokenSource.Cancel(throwOnFirstException: bool) : unit</div>
+<div class="tip" id="fs28">val rnd : Random<br /><br />Full name: Composing-christmas.rnd</div>
+<div class="tip" id="fs29">Multiple items<br />type Random =<br />&#160;&#160;new : unit -&gt; Random + 1 overload<br />&#160;&#160;member Next : unit -&gt; int + 2 overloads<br />&#160;&#160;member NextBytes : buffer:byte[] -&gt; unit<br />&#160;&#160;member NextDouble : unit -&gt; float<br /><br />Full name: System.Random<br /><br />--------------------<br />Random() : unit<br />Random(Seed: int) : unit</div>
+<div class="tip" id="fs30">val nextGreen : unit -&gt; Color<br /><br />Full name: Composing-christmas.nextGreen<br /><em><br /><br />&#160;Returns a random shade of <br />&#160;green color for the tree</em></div>
+<div class="tip" id="fs31">Random.Next() : int<br />Random.Next(maxValue: int) : int<br />Random.Next(minValue: int, maxValue: int) : int</div>
+<div class="tip" id="fs32">val tree : Drawing3D<br /><br />Full name: Composing-christmas.tree</div>
+<div class="tip" id="fs33">val i : float</div>
+<div class="tip" id="fs34">val w : float</div>
+<div class="tip" id="fs35">val trunk : Drawing3D<br /><br />Full name: Composing-christmas.trunk</div>
+<div class="tip" id="fs36">val cylinder : Drawing3D<br /><br />Full name: Functional3D.Fun.cylinder<br /><em><br /><br />&#160;Generates a 3D cylinder object of a unit size</em></div>
+<div class="tip" id="fs37">property Color.Brown: Color</div>
+<div class="tip" id="fs38">val treeWithStar : time:float -&gt; Drawing3D<br /><br />Full name: Composing-christmas.treeWithStar<br /><em><br /><br />&#160;Tree with a glowing star on top</em></div>
+<div class="tip" id="fs39">val ts : Threading.CancellationTokenSource<br /><br />Full name: Composing-christmas.ts</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fcomposing-christmas%2f&amp;text=Composing+Chrismas+with+F%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fcomposing-christmas%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2014%2fcomposing-christmas%2f&title=Composing+Chrismas+with+F%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Composing%20Chrismas%20with%20F%23&body=%20This%20blog%20post%20is%20a%20part%20of%20the%20F%23%20Advent%20Calendar%202014%2c%20so%20it%20inevitably%20needs%20a%20Christmassy%20theme.%20However%2c%20there%20is%20also%20going%20to%20be%20a%20serious%20theme%20for%20the%20blog%20post%2c%20which%20is%20domain-specific%20languages.%20I%27m%20going%20to%20cover%20two%20key%20ideas%20of%20DSLs%20in%20F%23%20-%20composability%20and%20multiple%20layers%20of%20abstraction.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2014%2fcomposing-christmas%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 8 December 2014, 5:22 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/fun/">fun</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

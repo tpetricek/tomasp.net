@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>TryJoinads (I.) - Asynchronous programming - Tomas Petricek</title>
+
+  <meta name="description" content=" This article demonstrates the new expressive power that joinads add to F# asynchronous workflows. The match! syntax can be used for parallel composition, as well as choice, in a wide range of areas." />
+  <meta name="keywords" content="f#, research, joinads, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="TryJoinads (I.) - Asynchronous programming" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/joinads-async-prog.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article demonstrates the new expressive power that joinads add to F# asynchronous workflows. The match! syntax can be used for parallel composition, as well as choice, in a wide range of areas." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="TryJoinads (I.) - Asynchronous programming" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article demonstrates the new expressive power that joinads add to F# asynchronous workflows. The match! syntax can be used for parallel composition, as well as choice, in a wide range of areas." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "TryJoinads (I.) - Asynchronous programming",
+    "headline": "TryJoinads (I.) - Asynchronous programming",
+  	"description": " This article demonstrates the new expressive power that joinads add to F# asynchronous workflows. The match! syntax can be used for parallel composition, as well as choice, in a wide range of areas.",
+  	"url": "http://tomasp.net/blog/joinads-async-prog.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-02-13T17:35:44.0000000",
+  	"datePublished": "2012-02-13T17:35:44.0000000",
+    "dateModified": "2012-02-13T17:35:44.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/joinads-async-prog.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["f#", "research", "joinads",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>TryJoinads (I.) - Asynchronous programming</h1>
+<p>Asynchronous workflows provide a way of writing code that does not block a thread
+when waiting for a completion of long-running operation such as web service call,
+another I/O operation or waiting for the completion of some background operation.
+In this article, we look at the new expressive power that <em>joinads</em> add to 
+asynchronous workflows written using the <code>async { ... }</code> block in F#.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/async.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Downloading web sites asynchronously</h2>
+
+<p>Code written using asynchronous workflows is wrapped in the <code>async { ... }</code> block 
+and the resulting computation has a type <code>Async&lt;'T&gt;</code>. The body of a workflow can
+contain <code>let!</code> to call another asynchronous computation of type <code>Async&lt;'T&gt;</code>, 
+<code>do!</code> to call asynchronous operation returning <code>unit</code> and <code>use!</code> to call an 
+asynchronous operation and ensure that the result (of type <code>IDisposable</code>) will be
+diposed of when the computation finishes. For example, the following function
+downloads a specified web site and extracts the value of the <code>&lt;title&gt;</code> element:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">System</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 2)" onmouseover="showTip(event, 'ft1', 2)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 3)" onmouseover="showTip(event, 'ft2', 3)" class="i">Net</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 4)" onmouseover="showTip(event, 'ft1', 4)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 5)" onmouseover="showTip(event, 'ft3', 5)" class="i">Text</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft4', 6)" onmouseover="showTip(event, 'ft4', 6)" class="i">RegularExpressions</span>
+
+<span class="c">/// Extracts the content of the &lt;title&gt; element</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft5', 7)" onmouseover="showTip(event, 'ft5', 7)" class="i">extractTitle</span> <span onmouseout="hideTip(event, 'ft6', 8)" onmouseover="showTip(event, 'ft6', 8)" class="i">html</span> <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 9)" onmouseover="showTip(event, 'ft7', 9)" class="i">regTitle</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft8', 10)" onmouseover="showTip(event, 'ft8', 10)" class="i">Regex</span>(<span class="s">@@&quot;</span><span class="s">\</span><span class="s">&lt;</span><span class="s">title</span><span class="s">\</span><span class="s">&gt;</span><span class="s">(</span><span class="s">[</span><span class="s">^</span><span class="s">\</span><span class="s">&lt;</span><span class="s">]</span><span class="s">+</span><span class="s">)</span><span class="s">\</span><span class="s">&lt;</span><span class="s">/</span><span class="s">title</span><span class="s">\</span><span class="s">&gt;</span><span class="s">&quot;</span>)
+  <span onmouseout="hideTip(event, 'ft7', 11)" onmouseover="showTip(event, 'ft7', 11)" class="i">regTitle</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft9', 12)" onmouseover="showTip(event, 'ft9', 12)" class="i">Match</span>(<span onmouseout="hideTip(event, 'ft6', 13)" onmouseover="showTip(event, 'ft6', 13)" class="i">html</span>)<span class="o">.</span><span class="i">Groups</span><span class="o">.</span>[<span class="n">1</span>]<span class="o">.</span><span class="i">Value</span>
+
+<span class="c">/// Asynchronously downloads a page and extracts the title</span>
+<span class="c">/// (uses a proxy to enable cross-domain downloads)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft10', 14)" onmouseover="showTip(event, 'ft10', 14)" class="i">downloadTitle</span> <span onmouseout="hideTip(event, 'ft11', 15)" onmouseover="showTip(event, 'ft11', 15)" class="i">url</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 16)" onmouseover="showTip(event, 'ft12', 16)" class="i">async</span> {
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft13', 17)" onmouseover="showTip(event, 'ft13', 17)" class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft14', 18)" onmouseover="showTip(event, 'ft14', 18)" class="i">WebClient</span>()
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft15', 19)" onmouseover="showTip(event, 'ft15', 19)" class="i">proxy</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">tomasp</span><span class="s">.</span><span class="s">net</span><span class="s">/</span><span class="s">tryjoinads</span><span class="s">/</span><span class="s">proxy</span><span class="s">.</span><span class="s">aspx</span><span class="s">?</span><span class="s">url</span><span class="s">=</span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft11', 20)" onmouseover="showTip(event, 'ft11', 20)" class="i">url</span>
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft6', 21)" onmouseover="showTip(event, 'ft6', 21)" class="i">html</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft13', 22)" onmouseover="showTip(event, 'ft13', 22)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft16', 23)" onmouseover="showTip(event, 'ft16', 23)" class="i">AsyncDownloadString</span>(<span onmouseout="hideTip(event, 'ft17', 24)" onmouseover="showTip(event, 'ft17', 24)" class="i">Uri</span>(<span onmouseout="hideTip(event, 'ft15', 25)" onmouseover="showTip(event, 'ft15', 25)" class="i">proxy</span>)) 
+  <span class="k">return</span> <span onmouseout="hideTip(event, 'ft5', 26)" onmouseover="showTip(event, 'ft5', 26)" class="i">extractTitle</span> <span class="i">html</span> }</pre>
+
+
+<p>The <code>AsyncDownloadString</code> operation takes a URL and returns an asynchronous workflow
+of type <code>Async&lt;string&gt;</code>. The <code>let!</code> operation makes it possible to sequentially 
+compose asynchronous operations and store the result as a value of type <code>string</code> in
+a variable <code>html</code>. Asynchronous workflows do not introduce any implicit parallelism
+- the work is performed step-by-step, but without blocking threads.</p>
+
+<p>To implement parallelism within asynchronous computations, we can use combinators 
+such as <code>Async.Parallel</code> and <code>Async.StartChild</code> that are provided by the F# library.
+The first combinator takes a sequence of asynchronous workflow and returns a single
+workflow, that performs all of them in parallel and returns an array with the results.
+The second combinator starts a workflow without waiting and returns a handle 
+(also an asynchronous workflow) that can be later used for waiting until the 
+operation finishes.</p>
+
+<ul>
+<li>For more information, see MSDN article <a href="http://msdn.microsoft.com/en-us/library/dd233250.aspx">Asynchronous Workflows (F#)</a>.</li>
+<li>Combinators for composing workflows can be found in <a href="http://msdn.microsoft.com/en-us/library/ee370232.aspx">Control.Async Class (F#)</a>.</li>
+</ul>
+
+<h3>Parallel composition using joinads</h3>
+
+<p>Thanks to joinads, it is possible to use the <code>match!</code> syntax within the <code>async { ... }</code> 
+block to express patterns that would be otherwise expressed using combinators. 
+In this section, we start with <em>parallel composition</em>.
+For example, let's say that we want to download the title of two different web 
+pages in parallel and then print both of them. Using joinads, this can be written
+as follows:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft18', 27)" onmouseover="showTip(event, 'ft18', 27)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft19', 28)" onmouseover="showTip(event, 'ft19', 28)" class="i">Extensions</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft20', 29)" onmouseover="showTip(event, 'ft20', 29)" class="i">Joinads</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft21', 30)" onmouseover="showTip(event, 'ft21', 30)" class="i">fsharp</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">fsharp</span><span class="s">.</span><span class="s">net</span><span class="s">&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft22', 31)" onmouseover="showTip(event, 'ft22', 31)" class="i">csharp</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">csharp</span><span class="s">.</span><span class="s">net</span><span class="s">&quot;</span>
+
+<span class="c">/// Download titles of two pages in parallel</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft23', 32)" onmouseover="showTip(event, 'ft23', 32)" class="i">titles</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 33)" onmouseover="showTip(event, 'ft12', 33)" class="i">async</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft10', 34)" onmouseover="showTip(event, 'ft10', 34)" class="i">downloadTitle</span> <span onmouseout="hideTip(event, 'ft21', 35)" onmouseover="showTip(event, 'ft21', 35)" class="i">fsharp</span>, <span onmouseout="hideTip(event, 'ft10', 36)" onmouseover="showTip(event, 'ft10', 36)" class="i">downloadTitle</span> <span onmouseout="hideTip(event, 'ft22', 37)" onmouseover="showTip(event, 'ft22', 37)" class="i">csharp</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft24', 38)" onmouseover="showTip(event, 'ft24', 38)" class="i">title1</span>, <span onmouseout="hideTip(event, 'ft25', 39)" onmouseover="showTip(event, 'ft25', 39)" class="i">title2</span> <span class="k">-&gt;</span> 
+      <span onmouseout="hideTip(event, 'ft26', 40)" onmouseover="showTip(event, 'ft26', 40)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Downloaded</span><span class="s">:</span><span class="s">\n</span><span class="s">   </span><span class="s">-</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">\n</span><span class="s">   </span><span class="s">-</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span class="i">title1</span> <span onmouseout="hideTip(event, 'ft25', 41)" onmouseover="showTip(event, 'ft25', 41)" class="i">title2</span> }
+
+<span onmouseout="hideTip(event, 'ft23', 42)" onmouseover="showTip(event, 'ft23', 42)" class="i">titles</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 43)" onmouseover="showTip(event, 'ft27', 43)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 44)" onmouseover="showTip(event, 'ft28', 44)" class="i">Start</span></pre>
+
+
+<p>The <code>match!</code> construct can be used to pattern match on computations. In case of
+asynchronous workflows, the type of computations is <code>Async&lt;'T&gt;</code>. Here, we use <code>match!</code>
+with two arguments - computations that download the title of two web pages. The
+pattern matching contains just a single clause that will match when both of the
+computations finish and produce a value. This means, that the body of the computation
+is executed once both of the workflows complete. When the <code>titles</code> workflow is
+started on the last line, the <code>match!</code> construct starts both of the downloads and
+then runs the body of the only clause.</p>
+
+<p>In general, parallel composition is used when a single clause contains multiple
+patterns that require the computation to finish (we will see other patterns in 
+the next section). The parallel composition is defined by the <code>async.Merge</code> operation
+that is defined by the computation builder. The type of the operation is:</p>
+
+<pre>async.Merge : Async&lt;&#39;T1&gt; * Async&lt;&#39;T2&gt; -&gt; Async&lt;&#39;T1 * &#39;T2&gt;</pre>
+
+<p>We might try to implement the operation using an asynchronous workflow that waits for
+the two computations in sequence, but that would not give a desired result. The 
+files would be downloaded sequentially, which is not what we wanted. Instead, the 
+operation is implemented using the <code>Async.Parallel</code> combinator.</p>
+
+<h3>Non-deterministic choice using joinads</h3>
+
+<p>Another operation that can be written using joinads is <em>(non-deterministic) choice</em>.
+For asynchronous workflows, this corresponds to waiting for the completion of the 
+first out of several operations. For example, a required resource may be available
+from the <em>primary</em> and from a <em>secondary</em> server. To speed-up the processing, we 
+may want to try downloading the resource from both of the servers and return the
+result (in this case, the <code>&lt;title&gt;</code>) from the first one that returns. This can 
+be written as follows:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft29', 45)" onmouseover="showTip(event, 'ft29', 45)" class="i">main</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">msdn</span><span class="s">.</span><span class="s">microsoft</span><span class="s">.</span><span class="s">com</span><span class="s">/</span><span class="s">en</span><span class="s">-</span><span class="s">us</span><span class="s">/</span><span class="s">vstudio</span><span class="s">/</span><span class="s">hh388569</span><span class="s">.</span><span class="s">aspx</span><span class="s">&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft30', 46)" onmouseover="showTip(event, 'ft30', 46)" class="i">backup</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">fsharp</span><span class="s">.</span><span class="s">net</span><span class="s">&quot;</span>
+
+<span class="c">/// Start two downloads and return the first available result</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft31', 47)" onmouseover="showTip(event, 'ft31', 47)" class="i">getFirst</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 48)" onmouseover="showTip(event, 'ft12', 48)" class="i">async</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft10', 49)" onmouseover="showTip(event, 'ft10', 49)" class="i">downloadTitle</span> <span onmouseout="hideTip(event, 'ft29', 50)" onmouseover="showTip(event, 'ft29', 50)" class="i">main</span>, <span onmouseout="hideTip(event, 'ft10', 51)" onmouseover="showTip(event, 'ft10', 51)" class="i">downloadTitle</span> <span onmouseout="hideTip(event, 'ft30', 52)" onmouseover="showTip(event, 'ft30', 52)" class="i">backup</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft32', 53)" onmouseover="showTip(event, 'ft32', 53)" class="i">res</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft26', 54)" onmouseover="showTip(event, 'ft26', 54)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Main</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span class="i">res</span>
+  | <span class="o">?</span>, <span onmouseout="hideTip(event, 'ft32', 55)" onmouseover="showTip(event, 'ft32', 55)" class="i">res</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft26', 56)" onmouseover="showTip(event, 'ft26', 56)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Backup</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft32', 57)" onmouseover="showTip(event, 'ft32', 57)" class="i">res</span> }
+
+<span onmouseout="hideTip(event, 'ft31', 58)" onmouseover="showTip(event, 'ft31', 58)" class="i">getFirst</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 59)" onmouseover="showTip(event, 'ft27', 59)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 60)" onmouseover="showTip(event, 'ft28', 60)" class="i">Start</span></pre>
+
+
+<p>Just like in the previous example, the <code>match!</code> construct has two arguments that represent 
+the two asynchronous downloads. However, the body now consists of two clauses. The first 
+clause uses a new syntax for patterns (added by the joinads extension) that is called 
+<em>ignore pattern</em>. When you write <code>?</code> in the clause, it means that the corresponding 
+computation is not required to produce a value.</p>
+
+<p>In case of <code>getFirst</code>, this means that the first clause can be executed when <code>downloadTitle main</code>
+finishes (and produces a value that is assigned to <code>res</code>), but the second computation is not
+required to complete. Similarly, the second clause matches when the downloading of <code>backup</code>
+completes, regardless of the first download.</p>
+
+<p>In general, (non-deterministic) choice is used when <code>match!</code> consists of multiple clauses.
+For some types of computations (like <code>Async&lt;'T&gt;</code>), the behaviour is truly non-deterministic,
+but other computations may define a deterministic choice. The definition is provided by
+the <code>async.Choose</code> operation defined by the computation builder:</p>
+
+<pre>async.Choose : Async&lt;&#39;T&gt; * Async&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;</pre>
+
+<p>For F# asynchronous workflows, the operation does not correspond to any built-in operator,
+so it has to be implemented by spawning the two computations and waiting for the first one
+that completes, either using F# agent or using mutable state. The implementation of both
+<code>Choose</code> and <code>Merge</code> can be found in <a href="https://github.com/tpetricek/FSharp.Joinads">FSharp.Joinads project</a> on GitHub.</p>
+
+<h3>Matching against multiple patterns</h3>
+
+<p>The previous two examples gave the simplest case for <em>choice</em> and <em>parallel composition</em>. In 
+the first one, only the <code>Merge</code> operation was needed and the second one required only the
+<code>Choose</code> operation. Notably, the <code>match!</code> construct can be used when only one of the operations
+is defined, but it will accept only a subset of the syntax:</p>
+
+<ul>
+<li>When <code>Choose</code> is missing, only a single clause can be used</li>
+<li>When <code>Merge</code> is missing, all clauses can only contain single non-ignore pattern (pattern other than <code>?</code>)</li>
+</ul>
+
+<p>Let's say that we wanted to download the title of one of two web pages just like in 
+the previous example. This time, the download function returns <code>Async&lt;string option&gt;</code>, 
+meaning that it returns <code>None</code> when the computation fails for some reason.
+We want to write a workflow that returns <code>Some</code> with the title when either of the
+computations succeed and <code>None</code> when both fail:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft33', 61)" onmouseover="showTip(event, 'ft33', 61)" class="i">good</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">fsharp</span><span class="s">.</span><span class="s">net</span><span class="s">&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft34', 62)" onmouseover="showTip(event, 'ft34', 62)" class="i">bad</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">f</span><span class="s">#</span><span class="s">.</span><span class="s">net</span><span class="s">&quot;</span>
+
+<span class="c">/// Wraps &#39;downloadTitle&#39; with an exception handler and returns</span>
+<span class="c">/// None if an exception occurs (or Some when download succeeds)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft35', 63)" onmouseover="showTip(event, 'ft35', 63)" class="i">tryDownloadTitle</span> <span onmouseout="hideTip(event, 'ft11', 64)" onmouseover="showTip(event, 'ft11', 64)" class="i">url</span> <span class="o">=</span> <span id="ftt36" onmouseout="hideTip(event, 'ft36', 65)" onmouseover="showTip(event, 'ft36', 65, document.getElementById('ftt36'))" class="omitted">(...)</span>
+
+<span class="c">/// Try to download first available title. If both downloads</span>
+<span class="c">/// fail, then the value &#39;None&#39; is returned.</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft37', 66)" onmouseover="showTip(event, 'ft37', 66)" class="i">tryGetFirst</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 67)" onmouseover="showTip(event, 'ft12', 67)" class="i">async</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft35', 68)" onmouseover="showTip(event, 'ft35', 68)" class="i">tryDownloadTitle</span> <span onmouseout="hideTip(event, 'ft33', 69)" onmouseover="showTip(event, 'ft33', 69)" class="i">good</span>, <span onmouseout="hideTip(event, 'ft35', 70)" onmouseover="showTip(event, 'ft35', 70)" class="i">tryDownloadTitle</span> <span onmouseout="hideTip(event, 'ft34', 71)" onmouseover="showTip(event, 'ft34', 71)" class="i">bad</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft38', 72)" onmouseover="showTip(event, 'ft38', 72)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft32', 73)" onmouseover="showTip(event, 'ft32', 73)" class="i">res</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft38', 74)" onmouseover="showTip(event, 'ft38', 74)" class="i">Some</span> (<span class="s">&quot;</span><span class="s">First</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span class="i">res</span>)
+  | <span class="o">?</span>, <span onmouseout="hideTip(event, 'ft38', 75)" onmouseover="showTip(event, 'ft38', 75)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft32', 76)" onmouseover="showTip(event, 'ft32', 76)" class="i">res</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft38', 77)" onmouseover="showTip(event, 'ft38', 77)" class="i">Some</span> (<span class="s">&quot;</span><span class="s">Second</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft32', 78)" onmouseover="showTip(event, 'ft32', 78)" class="i">res</span>)
+  | <span onmouseout="hideTip(event, 'ft39', 79)" onmouseover="showTip(event, 'ft39', 79)" class="i">None</span>, <span onmouseout="hideTip(event, 'ft39', 80)" onmouseover="showTip(event, 'ft39', 80)" class="i">None</span>  <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft39', 81)" onmouseover="showTip(event, 'ft39', 81)" class="i">None</span> }
+
+<span class="c">// Run the download synchronously and wait for the result</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft40', 82)" onmouseover="showTip(event, 'ft40', 82)" class="i">res</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft37', 83)" onmouseover="showTip(event, 'ft37', 83)" class="i">tryGetFirst</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 84)" onmouseover="showTip(event, 'ft27', 84)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft41', 85)" onmouseover="showTip(event, 'ft41', 85)" class="i">RunSynchronously</span>
+<span onmouseout="hideTip(event, 'ft26', 86)" onmouseover="showTip(event, 'ft26', 86)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Result</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft40', 87)" onmouseover="showTip(event, 'ft40', 87)" class="i">res</span></pre>
+
+
+<p>The sample looks similar to the previous one, but there are a few changes. The patterns in 
+the first two clauses only match when the value is <code>Some</code> and there is a third clause that 
+handles the remaining case - when both of the computations fail. The code is interesting 
+for two reasons:</p>
+
+<ol>
+<li>It requires both <em>choice</em> and <em>parallel composition</em>, because there are multiple clauses
+and the last clause matches on both of the computations.</li>
+<li>Both of the computations are accessed in two patterns - in the first or the second clause
+and in the last clause.</li>
+</ol>
+
+<p>The first fact simply means that the computation builder needs to provide both <code>Merge</code> and
+<code>Choose</code>. However, the second property has an interesting implication for asynchronous 
+workflows. When you write code that uses a workflow <code>work</code> multiple times, such as 
+<code>async.Choose(work, work)</code>, and run it, the computation represented by the workflow is
+started twice.</p>
+
+<p>For the above example, this is not desirable. We just want to start the two downloads and 
+then reuse the result (when it becomes available) of the same computation in the two clauses.
+To achieve this behaviour, the translation of <code>match!</code> uses one more operation that
+represents <em>aliasing</em> of computations:</p>
+
+<pre>async.Alias : Async&lt;&#39;T&gt; -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;</pre>
+
+<p>The operation returns an asynchronous workflow that, when executed, starts the workflow 
+specified as the argument. Then it returns a new (inner) workflow that does not do 
+any additional work when called. Instead, it simply waits until the work started earlier
+completes. In F#, this operation is already available as <code>Async.StartChild</code>.</p>
+
+<p>If you want to play with the example, try modifying the code by changing the <code>good</code> URL
+to some invalid address. When individual downloads complete, the first two clauses will 
+not match and the computation will have to wait for both downloads and
+then return <code>None</code>.</p>
+
+<h2>Waiting for user-interface events</h2>
+
+<p>So far, all of the examples used web page downlaod as an example of asynchronous oparation.
+However, the support for joinads in asynchronous workflows can be used in much wider range
+of scenarios. In this section, we look at an example that implements a simple user-interface
+using <code>async</code>.</p>
+
+<p>The user-interface implements a simple counter and consists of three elements. A label shows
+the current number of the counter and two buttons can be used to increment or decrement the
+number. The user-interface interaction can be implemented as a recursive asynchronous loop
+that keeps the current count as a function argument. In every iteration, it needs to wait 
+until user clicks on one of the buttons.</p>
+
+<pre class="fssnip">
+<span id="ftt42" onmouseout="hideTip(event, 'ft42', 88)" onmouseover="showTip(event, 'ft42', 88, document.getElementById('ftt42'))" class="omitted">Import necessary namespaces</span>
+
+<span class="c">/// Creates a label that shows the current count and</span>
+<span class="c">/// buttons that increment and decrement the number</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft43', 89)" onmouseover="showTip(event, 'ft43', 89)" class="i">createUserInterface</span>() <span class="o">=</span> <span id="ftt44" onmouseout="hideTip(event, 'ft44', 90)" onmouseover="showTip(event, 'ft44', 90, document.getElementById('ftt44'))" class="omitted">(...)</span>
+
+<span class="c">/// Runs the specified workflow on the main</span>
+<span class="c">/// user-interface thread of the F# console</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft45', 91)" onmouseover="showTip(event, 'ft45', 91)" class="i">runUserInterface</span> <span onmouseout="hideTip(event, 'ft46', 92)" onmouseover="showTip(event, 'ft46', 92)" class="i">work</span> <span class="o">=</span> <span id="ftt47" onmouseout="hideTip(event, 'ft47', 93)" onmouseover="showTip(event, 'ft47', 93, document.getElementById('ftt47'))" class="omitted">(...)</span>
+
+<span class="c">/// Main workflow of the widget - creates the user interface and then</span>
+<span class="c">/// starts a recursive async function that implements user interaction.</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft48', 94)" onmouseover="showTip(event, 'ft48', 94)" class="i">guiWorkflow</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 95)" onmouseover="showTip(event, 'ft12', 95)" class="i">async</span> {
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft49', 96)" onmouseover="showTip(event, 'ft49', 96)" class="i">label</span>, <span onmouseout="hideTip(event, 'ft50', 97)" onmouseover="showTip(event, 'ft50', 97)" class="i">inc</span>, <span onmouseout="hideTip(event, 'ft51', 98)" onmouseover="showTip(event, 'ft51', 98)" class="i">dec</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft43', 99)" onmouseover="showTip(event, 'ft43', 99)" class="i">createUserInterface</span>() 
+
+  <span class="c">/// Recursive workflow that keeps the current count as an argument</span>
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft52', 100)" onmouseover="showTip(event, 'ft52', 100)" class="i">counter</span> <span onmouseout="hideTip(event, 'ft53', 101)" onmouseover="showTip(event, 'ft53', 101)" class="i">n</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft27', 102)" onmouseover="showTip(event, 'ft27', 102)" class="i">Async</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft54', 103)" onmouseover="showTip(event, 'ft54', 103)" class="i">unit</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 104)" onmouseover="showTip(event, 'ft12', 104)" class="i">async</span> {
+    <span class="c">// Update the text on the label</span>
+    <span onmouseout="hideTip(event, 'ft49', 105)" onmouseover="showTip(event, 'ft49', 105)" class="i">label</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft55', 106)" onmouseover="showTip(event, 'ft55', 106)" class="i">Text</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'ft56', 107)" onmouseover="showTip(event, 'ft56', 107)" class="i">sprintf</span> <span class="s">&quot;</span><span class="s">Count</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft53', 108)" onmouseover="showTip(event, 'ft53', 108)" class="i">n</span>
+    <span class="c">// Wait for click on one of the two buttons </span>
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft27', 109)" onmouseover="showTip(event, 'ft27', 109)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft57', 110)" onmouseover="showTip(event, 'ft57', 110)" class="i">AwaitEvent</span> <span onmouseout="hideTip(event, 'ft50', 111)" onmouseover="showTip(event, 'ft50', 111)" class="i">inc</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft58', 112)" onmouseover="showTip(event, 'ft58', 112)" class="i">Click</span>, <span onmouseout="hideTip(event, 'ft27', 113)" onmouseover="showTip(event, 'ft27', 113)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft57', 114)" onmouseover="showTip(event, 'ft57', 114)" class="i">AwaitEvent</span> <span onmouseout="hideTip(event, 'ft51', 115)" onmouseover="showTip(event, 'ft51', 115)" class="i">dec</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft58', 116)" onmouseover="showTip(event, 'ft58', 116)" class="i">Click</span> <span class="k">with</span>
+    | _, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft52', 117)" onmouseover="showTip(event, 'ft52', 117)" class="i">counter</span> (<span onmouseout="hideTip(event, 'ft53', 118)" onmouseover="showTip(event, 'ft53', 118)" class="i">n</span> <span class="o">+</span> <span class="n">1</span>)
+    | <span class="o">?</span>, _ <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft52', 119)" onmouseover="showTip(event, 'ft52', 119)" class="i">counter</span> (<span onmouseout="hideTip(event, 'ft53', 120)" onmouseover="showTip(event, 'ft53', 120)" class="i">n</span> <span class="o">-</span> <span class="n">1</span>) }
+
+  <span class="c">// Start the counter user interaction</span>
+  <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft52', 121)" onmouseover="showTip(event, 'ft52', 121)" class="i">counter</span> <span class="n">0</span> }
+
+<span class="c">// Start the main computation on GUI thread</span>
+<span onmouseout="hideTip(event, 'ft45', 122)" onmouseover="showTip(event, 'ft45', 122)" class="i">runUserInterface</span> <span onmouseout="hideTip(event, 'ft48', 123)" onmouseover="showTip(event, 'ft48', 123)" class="i">guiWorkflow</span></pre>
+
+
+<p>The snippet uses the <code>App.Console</code> property (from the <code>FSharp.Console</code> namespace) to access
+a canvas of the F# Interactive console. The <code>runUserInterface</code> function starts a specified
+asynchronous workflow on the main Silverlight GUI thread, so that the code running inside the
+workflow can access the <code>Canvas</code> object.</p>
+
+<p>The <code>main</code> workflow first creates the user interface and gets three objects representing
+a label and two buttons. Then it starts the recursie asynchronous function <code>counter</code> to
+handle the interaction. The function uses <code>match!</code> to wait for the first of two events.
+The workflow created by <code>Async.AwaitEvent</code> completes when the specified event occurs for
+the first time (and ignores any further occurrences).</p>
+
+<p>The two clauses of <code>match!</code> specify that when any of the events happens, the <code>counter</code>
+function should be called recursively with incremented or decremented count as the argument.
+Note that there is a difference between the standard F# pattern <code>_</code> (underscore), which
+specifies that value <em>is required</em>, but is then discareded and a pattern <code>?</code> added by
+joinads, which specifies that the workflow does not have to complete, in order for a 
+clause to match.</p>
+
+<h2>Summary</h2>
+
+<p>When using joinads and the <code>match!</code> notation with asynchronous workflows, we get two 
+additional ways of composing asynchronous computations - <em>parallel composition</em> similar
+to <code>Async.Parallel</code> can be written using <code>match!</code> with multiple arguments and a single
+clause; <em>non-deterministic choic</em> can be written using multiple clauses that match on
+distinct arguments. However, it is also possible to combine these two operations, so 
+we can express fairly complex synchronization patterns, such as waiting for any two out
+of three computations or waiting for a value that matches a certain pattern.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace System</div>
+<div class="tip" id="ft2">namespace System.Net</div>
+<div class="tip" id="ft3">namespace System.Text</div>
+<div class="tip" id="ft4">namespace System.Text.RegularExpressions</div>
+<div class="tip" id="ft5">val extractTitle : string -&gt; string<br /><br />Full name: TryJoinads.extractTitle<br /><em><br /><br />&#160;Extracts the content of the &lt;title&gt; element</em></div>
+<div class="tip" id="ft6">val html : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft7">val regTitle : Regex</div>
+<div class="tip" id="ft8">type Regex =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : string -&gt; System.Text.RegularExpressions.Regex<br />&#160;&#160;&#160;&#160;new : string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.Regex<br />&#160;&#160;&#160;&#160;member GetGroupNames : unit -&gt; string []<br />&#160;&#160;&#160;&#160;member GetGroupNumbers : unit -&gt; int []<br />&#160;&#160;&#160;&#160;member GroupNameFromNumber : int -&gt; string<br />&#160;&#160;&#160;&#160;member GroupNumberFromName : string -&gt; int<br />&#160;&#160;&#160;&#160;member IsMatch : string -&gt; bool<br />&#160;&#160;&#160;&#160;member IsMatch : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;member Match : string -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Match : string * int -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Match : string * int * int -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Matches : string -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;member Matches : string * int -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;member Options : System.Text.RegularExpressions.RegexOptions<br />&#160;&#160;&#160;&#160;member Replace : string * string -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * string * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * string * int * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator * int * int -&gt; string<br />&#160;&#160;&#160;&#160;member RightToLeft : bool<br />&#160;&#160;&#160;&#160;member Split : string -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : string * int -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : string * int * int -&gt; string []<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member CacheSize : int with get, set<br />&#160;&#160;&#160;&#160;static member Escape : string -&gt; string<br />&#160;&#160;&#160;&#160;static member IsMatch : string * string -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsMatch : string * string * System.Text.RegularExpressions.RegexOptions -&gt; bool<br />&#160;&#160;&#160;&#160;static member Match : string * string -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;static member Match : string * string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;static member Matches : string * string -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;static member Matches : string * string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;static member Replace : string * string * string -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * System.Text.RegularExpressions.MatchEvaluator -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * string * System.Text.RegularExpressions.RegexOptions -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * System.Text.RegularExpressions.MatchEvaluator * System.Text.RegularExpressions.RegexOptions -&gt; string<br />&#160;&#160;&#160;&#160;static member Split : string * string -&gt; string []<br />&#160;&#160;&#160;&#160;static member Split : string * string * System.Text.RegularExpressions.RegexOptions -&gt; string []<br />&#160;&#160;&#160;&#160;static member Unescape : string -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.Text.RegularExpressions.Regex</div>
+<div class="tip" id="ft9">Regex.Match(input: string) : Match<br />Regex.Match(input: string, startat: int) : Match<br />Regex.Match(input: string, beginning: int, length: int) : Match</div>
+<div class="tip" id="ft10">val downloadTitle : string -&gt; Async&lt;string&gt;<br /><br />Full name: TryJoinads.downloadTitle<br /><em><br /><br />&#160;Asynchronously downloads a page and extracts the title<br />&#160;(uses a proxy to enable cross-domain downloads)</em></div>
+<div class="tip" id="ft11">val url : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft12">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="ft13">val wc : WebClient</div>
+<div class="tip" id="ft14">type WebClient =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Net.WebClient<br />&#160;&#160;&#160;&#160;member AllowReadStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member AllowWriteStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member BaseAddress : string with get, set<br />&#160;&#160;&#160;&#160;member CancelAsync : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Credentials : System.Net.ICredentials with get, set<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Encoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;member Headers : System.Net.WebHeaderCollection with get, set<br />&#160;&#160;&#160;&#160;member IsBusy : bool<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member ResponseHeaders : System.Net.WebHeaderCollection<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UseDefaultCredentials : bool with get, set<br />&#160;&#160;end<br /><br />Full name: System.Net.WebClient</div>
+<div class="tip" id="ft15">val proxy : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft16">member WebClient.AsyncDownloadString : address:Uri -&gt; Async&lt;string&gt;</div>
+<div class="tip" id="ft17">type Uri =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : string * System.UriKind -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member AbsolutePath : string<br />&#160;&#160;&#160;&#160;member AbsoluteUri : string<br />&#160;&#160;&#160;&#160;member DnsSafeHost : string<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Fragment : string<br />&#160;&#160;&#160;&#160;member GetComponents : System.UriComponents * System.UriFormat -&gt; string<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Host : string<br />&#160;&#160;&#160;&#160;member IsAbsoluteUri : bool<br />&#160;&#160;&#160;&#160;member IsBaseOf : System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;member IsUnc : bool<br />&#160;&#160;&#160;&#160;member LocalPath : string<br />&#160;&#160;&#160;&#160;member MakeRelativeUri : System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member OriginalString : string<br />&#160;&#160;&#160;&#160;member Port : int<br />&#160;&#160;&#160;&#160;member Query : string<br />&#160;&#160;&#160;&#160;member Scheme : string<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member UserEscaped : bool<br />&#160;&#160;&#160;&#160;member UserInfo : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFile : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFtp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeGopher : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttps : string<br />&#160;&#160;&#160;&#160;static val UriSchemeMailto : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNews : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNntp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetTcp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetPipe : string<br />&#160;&#160;&#160;&#160;static val SchemeDelimiter : string<br />&#160;&#160;&#160;&#160;static member CheckSchemeName : string -&gt; bool<br />&#160;&#160;&#160;&#160;static member Compare : System.Uri * System.Uri * System.UriComponents * System.UriFormat * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;static member EscapeDataString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member EscapeUriString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member FromHex : char -&gt; int<br />&#160;&#160;&#160;&#160;static member IsHexDigit : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsWellFormedUriString : string * System.UriKind -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : string * System.UriKind * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * string * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * System.Uri * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member UnescapeDataString : string -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.Uri</div>
+<div class="tip" id="ft18">namespace FSharp</div>
+<div class="tip" id="ft19">namespace FSharp.Extensions</div>
+<div class="tip" id="ft20">namespace FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft21">val fsharp : string<br /><br />Full name: TryJoinads.fsharp<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft22">val csharp : string<br /><br />Full name: TryJoinads.csharp<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft23">val titles : Async&lt;unit&gt;<br /><br />Full name: TryJoinads.titles<br /><em><br /><br />&#160;Download titles of two pages in parallel</em></div>
+<div class="tip" id="ft24">val title1 : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft25">val title2 : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft26">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="ft27">Multiple items<br />module Async<br /><br />from FSharp.Extensions.Joinads.AsyncTopLevel<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;<br /><br />--------------------<br />type Async =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member ParallelImmediate : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T []&gt;<br />&#160;&#160;&#160;&#160;static member StartChildImmediate : work:Async&lt;&#39;a0&gt; -&gt; Async&lt;Async&lt;&#39;a0&gt;&gt;<br />&#160;&#160;&#160;&#160;static member WhenAny : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.Async</div>
+<div class="tip" id="ft28">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:Threading.CancellationToken -&gt; unit</div>
+<div class="tip" id="ft29">val main : string<br /><br />Full name: TryJoinads.main<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft30">val backup : string<br /><br />Full name: TryJoinads.backup<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft31">val getFirst : Async&lt;unit&gt;<br /><br />Full name: TryJoinads.getFirst<br /><em><br /><br />&#160;Start two downloads and return the first available result</em></div>
+<div class="tip" id="ft32">val res : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft33">val good : string<br /><br />Full name: TryJoinads.good<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft34">val bad : string<br /><br />Full name: TryJoinads.bad<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft35">val tryDownloadTitle : string -&gt; Async&lt;string option&gt;<br /><br />Full name: TryJoinads.tryDownloadTitle<br /><em><br /><br />&#160;Wraps &#39;downloadTitle&#39; with an exception handler and returns<br />&#160;None if an exception occurs (or Some when download succeeds)</em></div>
+<div class="tip" id="ft36">async {<br />&#160;&#160;try<br />&#160;&#160;&#160;&#160;let! res = downloadTitle url<br />&#160;&#160;&#160;&#160;return Some res<br />&#160;&#160;with e -&gt; return None }</div>
+<div class="tip" id="ft37">val tryGetFirst : Async&lt;string option&gt;<br /><br />Full name: TryJoinads.tryGetFirst<br /><em><br /><br />&#160;Try to download first available title. If both downloads<br />&#160;fail, then the value &#39;None&#39; is returned.</em></div>
+<div class="tip" id="ft38">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft39">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft40">val res : string option<br /><br />Full name: TryJoinads.res<br />&#160;&#160;type: string option<br /></div>
+<div class="tip" id="ft41">static member Async.RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:Threading.CancellationToken -&gt; &#39;T</div>
+<div class="tip" id="ft42">open System.Windows<br />open System.Windows.Controls<br />open FSharp.Console<br />open FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft43">val createUserInterface : unit -&gt; TextBlock * Button * Button<br /><br />Full name: TryJoinads.createUserInterface<br /><em><br /><br />&#160;Creates a label that shows the current count and<br />&#160;buttons that increment and decrement the number</em></div>
+<div class="tip" id="ft44">let addControl (left, top) (ctrl:#UIElement) = <br />&#160;&#160;&#160;&#160;App.Console.Canvas.Children.Add(ctrl)<br />&#160;&#160;&#160;&#160;Canvas.SetTop(ctrl, top)<br />&#160;&#160;&#160;&#160;Canvas.SetLeft(ctrl, left)<br />&#160;&#160;&#160;&#160;ctrl<br /><br />&#160;&#160;let label = addControl (20.0, 20.0) (TextBlock(FontSize = 20.0))<br />&#160;&#160;let incBtn = addControl (20.0, 60.0) (Button(Content=&quot;Increment&quot;, Width = 80.0)) <br />&#160;&#160;let decBtn = addControl (110.0, 60.0) (Button(Content=&quot;Decrement&quot;, Width = 80.0)) <br />&#160;&#160;label, incBtn, decBtn</div>
+<div class="tip" id="ft45">val runUserInterface : Async&lt;unit&gt; -&gt; unit<br /><br />Full name: TryJoinads.runUserInterface<br /><em><br /><br />&#160;Runs the specified workflow on the main<br />&#160;user-interface thread of the F# console</em></div>
+<div class="tip" id="ft46">val work : Async&lt;unit&gt;</div>
+<div class="tip" id="ft47">App.Dispatch (fun() -&gt; <br />&#160;&#160;&#160;&#160;App.Console.ClearCanvas()<br />&#160;&#160;&#160;&#160;Async.StartImmediate work<br />&#160;&#160;&#160;&#160;App.Console.CanvasPosition &lt;- CanvasPosition.Right )</div>
+<div class="tip" id="ft48">val guiWorkflow : Async&lt;unit&gt;<br /><br />Full name: TryJoinads.guiWorkflow<br /><em><br /><br />&#160;Main workflow of the widget - creates the user interface and then<br />&#160;starts a recursive async function that implements user interaction.</em></div>
+<div class="tip" id="ft49">val label : TextBlock<br />&#160;&#160;type: TextBlock<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="ft50">val inc : Button<br />&#160;&#160;type: Button<br />&#160;&#160;inherits: Primitives.ButtonBase<br />&#160;&#160;inherits: ContentControl<br />&#160;&#160;inherits: Control<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="ft51">val dec : Button<br />&#160;&#160;type: Button<br />&#160;&#160;inherits: Primitives.ButtonBase<br />&#160;&#160;inherits: ContentControl<br />&#160;&#160;inherits: Control<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="ft52">val counter : (int -&gt; Async&lt;unit&gt;)<br /><em><br /><br />&#160;Recursive workflow that keeps the current count as an argument</em></div>
+<div class="tip" id="ft53">val n : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="ft54">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br />&#160;&#160;type: unit<br /></div>
+<div class="tip" id="ft55">property TextBlock.Text: string</div>
+<div class="tip" id="ft56">val sprintf : Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf</div>
+<div class="tip" id="ft57">static member Async.AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)</div>
+<div class="tip" id="ft58">event Primitives.ButtonBase.Click: IEvent&lt;RoutedEventHandler,RoutedEventArgs&gt;</div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-async-prog.aspx%2f&amp;text=TryJoinads+(I.)+-+Asynchronous+programmingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-async-prog.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-async-prog.aspx%2f&title=TryJoinads+(I.)+-+Asynchronous+programming">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=TryJoinads%20(I.)%20-%20Asynchronous%20programming&body=%20This%20article%20demonstrates%20the%20new%20expressive%20power%20that%20joinads%20add%20to%20F%23%20asynchronous%20workflows.%20The%20match!%20syntax%20can%20be%20used%20for%20parallel%20composition%2c%20as%20well%20as%20choice%2c%20in%20a%20wide%20range%20of%20areas.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fjoinads-async-prog.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 13 February 2012, 5:35 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/joinads/">joinads</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

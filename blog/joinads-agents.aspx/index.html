@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>TryJoinads (III.): Agent-based programming - Tomas Petricek</title>
+
+  <meta name="description" content=" Agent-based programming is a great way to write concurrent applications without the usual threading issues. In this article, we look how the \"match!\" research extension for F# simplifies writing agents. In particular, we can easily implement states that do not handle all incoming messages." />
+  <meta name="keywords" content="joinads, research, f#, parallel, asynchronous, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="TryJoinads (III.): Agent-based programming" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/joinads-agents.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Agent-based programming is a great way to write concurrent applications without the usual threading issues. In this article, we look how the \"match!\" research extension for F# simplifies writing agents. In particular, we can easily implement states that do not handle all incoming messages." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="TryJoinads (III.): Agent-based programming" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Agent-based programming is a great way to write concurrent applications without the usual threading issues. In this article, we look how the \"match!\" research extension for F# simplifies writing agents. In particular, we can easily implement states that do not handle all incoming messages." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "TryJoinads (III.): Agent-based programming",
+    "headline": "TryJoinads (III.): Agent-based programming",
+  	"description": " Agent-based programming is a great way to write concurrent applications without the usual threading issues. In this article, we look how the \"match!\" research extension for F# simplifies writing agents. In particular, we can easily implement states that do not handle all incoming messages.",
+  	"url": "http://tomasp.net/blog/joinads-agents.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2012-02-20T12:36:10.0000000",
+  	"datePublished": "2012-02-20T12:36:10.0000000",
+    "dateModified": "2012-02-20T12:36:10.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/joinads-agents.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["joinads", "research", "f#", "parallel", "asynchronous",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>TryJoinads (III.): Agent-based programming</h1>
+<p>Another area where the <code>match!</code> syntax can be used is when programming with F# <em>agents</em>,
+implemented by the <code>MailboxProcessor</code> type. Formally, agents do not form the monad
+structure in a useful way - when programming with agents, we do not compose a new agents,
+but instead we write code that (imperatively) receives messages from the agent's mailbox
+and handles them.</p>
+
+<p>This article demonstrates an <code>agent { ... }</code> computation builder that can be used for 
+implementing the body of an agent. Normally, the body of an agent is an <em>asynchronous
+workflow</em>. The code in the body uses <code>let!</code> to perform asynchronous operations, most 
+importantly to call <code>inbox.Receive</code> to get the next message from the inbox. When the
+agent intends to handle only certain kinds of messages, it can use <code>inbox.Scan</code>. When
+using the <code>agent</code> builder, pattern matching on messages can be written using <code>match!</code> and
+it is possible to write code that ignores certain types of messages simply by writing an
+incomplete pattern matching.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/agents.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Implementing pausable agent</h2>
+
+<p>As an example, let's implement a simple agent that handles <code>Print</code> messages by printing
+a received string to the console. In addition, the agent also supports <code>Pause</code> and 
+<code>Resume</code> messages - when it receives <code>Pause</code>, it stops accepting <code>Print</code> messages until
+it receives <code>Resume</code> and so all <code>Print</code> messages will be queued for later processing.</p>
+
+<p>First of all, we need to reference the namespace with <code>agent</code> builder and declare the type 
+of messages, which is a simple discriminated union:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">Extensions</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">Joinads</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">Message</span> <span class="o">=</span>
+  | <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">Print</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">string</span>
+  | <span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">Pause</span> 
+  | <span onmouseout="hideTip(event, 'ft8', 8)" onmouseover="showTip(event, 'ft8', 8)" class="i">Resume</span></pre>
+
+
+<p>The body of the agent consists of two functions. The <code>working</code> function represents the agent
+in a state where it can handle all messages and the <code>paused</code> function represents the state
+when the agent waits for <code>Resume</code> (and also dismisses <code>Paused</code> messages, because it is 
+already paused). Using <code>match!</code> this can be implemented as follows:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft9', 9)" onmouseover="showTip(event, 'ft9', 9)" class="i">printer</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 10)" onmouseover="showTip(event, 'ft10', 10)" class="i">MailboxProcessor</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft11', 11)" onmouseover="showTip(event, 'ft11', 11)" class="i">Start</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft12', 12)" onmouseover="showTip(event, 'ft12', 12)" class="i">inbox</span> <span class="k">-&gt;</span> 
+
+  <span class="c">/// Agent can receive and handle any message; after processing, </span>
+  <span class="c">/// it continues in &#39;working&#39; state unless it receives &#39;Pause&#39;</span>
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft13', 13)" onmouseover="showTip(event, 'ft13', 13)" class="i">working</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft14', 14)" onmouseover="showTip(event, 'ft14', 14)" class="i">agent</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft12', 15)" onmouseover="showTip(event, 'ft12', 15)" class="i">inbox</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft5', 16)" onmouseover="showTip(event, 'ft5', 16)" class="i">Print</span> <span onmouseout="hideTip(event, 'ft15', 17)" onmouseover="showTip(event, 'ft15', 17)" class="i">msg</span> <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'ft16', 18)" onmouseover="showTip(event, 'ft16', 18)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft15', 19)" onmouseover="showTip(event, 'ft15', 19)" class="i">msg</span>
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft13', 20)" onmouseover="showTip(event, 'ft13', 20)" class="i">working</span>()
+    | <span onmouseout="hideTip(event, 'ft7', 21)" onmouseover="showTip(event, 'ft7', 21)" class="i">Pause</span> <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft17', 22)" onmouseover="showTip(event, 'ft17', 22)" class="i">paused</span>()
+    | <span onmouseout="hideTip(event, 'ft8', 23)" onmouseover="showTip(event, 'ft8', 23)" class="i">Resume</span> <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft13', 24)" onmouseover="showTip(event, 'ft13', 24)" class="i">working</span>() }
+
+  <span class="c">/// Agent is paused and waits for &#39;Resume&#39; (and then continues in</span>
+  <span class="c">/// &#39;working&#39; state). If it receives &#39;Pause&#39;, it remains paused </span>
+  <span class="k">and</span> <span onmouseout="hideTip(event, 'ft17', 25)" onmouseover="showTip(event, 'ft17', 25)" class="i">paused</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft14', 26)" onmouseover="showTip(event, 'ft14', 26)" class="i">agent</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft12', 27)" onmouseover="showTip(event, 'ft12', 27)" class="i">inbox</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft7', 28)" onmouseover="showTip(event, 'ft7', 28)" class="i">Pause</span> <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft17', 29)" onmouseover="showTip(event, 'ft17', 29)" class="i">paused</span>()
+    | <span onmouseout="hideTip(event, 'ft8', 30)" onmouseover="showTip(event, 'ft8', 30)" class="i">Resume</span> <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'ft16', 31)" onmouseover="showTip(event, 'ft16', 31)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Resuming</span><span class="s">.</span><span class="s">.</span><span class="s">.</span><span class="s">&quot;</span>
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft13', 32)" onmouseover="showTip(event, 'ft13', 32)" class="i">working</span>() } 
+
+  <span class="c">// Start the agent in the working state</span>
+  <span onmouseout="hideTip(event, 'ft13', 33)" onmouseover="showTip(event, 'ft13', 33)" class="i">working</span>() )</pre>
+
+
+<p>The snippet creates an agent <code>printer</code> and starts it. Both of the functions that implement
+the body of the agent use <code>match!</code> to receive the next message from the inbox. Inside the
+<code>agent { ... }</code> computation, the <code>match!</code> keyword can be used to match on messages in the
+agent's inbox (of type <code>MailboxProcessor&lt;'T&gt;</code>). Otherwise, the computation builder behaves
+just like <code>async { ... }</code>, so the body can call asynchronous operations using <code>let!</code> as usual
+(in theory, it would be more clean to return <code>async { ... }</code> blocks from the body of <code>match!</code>,
+but the <code>agent</code> builder uses overloading to make the syntax nicer).</p>
+
+<p>As already discussed, the <code>working</code> state accepts all messages - when implementing F# agents
+in the usual way, this would be done by calling <code>inbox.Receive()</code> asynchronously and then
+pattern matching on the received message. With the <code>match!</code> construct, we can do both operations
+at the same time.</p>
+
+<p>However, the main benefit of using <code>match!</code> is apparent when implementing states that only
+accept certain messages. In the <code>paused</code> state, the pattern matching handles only <code>Pause</code>
+and <code>Resume</code>. In response to <code>Resume</code>, the agent also prints "Resuming..." to make the
+code slightly more interesting. The <code>match!</code> operation implemented by the <code>agent</code> workflow
+automatically leaves all unhandled messages in the inbox, so the pattern matching does not
+have to be complete. In a normal implementation (shown below), this would have to be done
+using <code>inbox.Scan</code>.</p>
+
+<p>To test the agent, you can try running the following commands. If you execute them one by
+one, you can see that the second <code>Print</code> message gets handled only after the <code>Resume</code> 
+message is received:</p>
+
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'ft9', 34)" onmouseover="showTip(event, 'ft9', 34)" class="i">printer</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft18', 35)" onmouseover="showTip(event, 'ft18', 35)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft5', 36)" onmouseover="showTip(event, 'ft5', 36)" class="i">Print</span> <span class="s">&quot;</span><span class="s">hello</span><span class="s"> </span><span class="s">world</span><span class="s">&quot;</span>)
+<span onmouseout="hideTip(event, 'ft9', 37)" onmouseover="showTip(event, 'ft9', 37)" class="i">printer</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft18', 38)" onmouseover="showTip(event, 'ft18', 38)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft7', 39)" onmouseover="showTip(event, 'ft7', 39)" class="i">Pause</span>)
+<span onmouseout="hideTip(event, 'ft9', 40)" onmouseover="showTip(event, 'ft9', 40)" class="i">printer</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft18', 41)" onmouseover="showTip(event, 'ft18', 41)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft5', 42)" onmouseover="showTip(event, 'ft5', 42)" class="i">Print</span> <span class="s">&quot;</span><span class="s">hello</span><span class="s"> </span><span class="s">again</span><span class="s">!</span><span class="s">&quot;</span>)
+<span onmouseout="hideTip(event, 'ft9', 43)" onmouseover="showTip(event, 'ft9', 43)" class="i">printer</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft18', 44)" onmouseover="showTip(event, 'ft18', 44)" class="i">Post</span>(<span onmouseout="hideTip(event, 'ft8', 45)" onmouseover="showTip(event, 'ft8', 45)" class="i">Resume</span>)</pre>
+
+
+<p>The agent discussed in this section is fairly simple, but it shows that handling messages
+is largely simplified using <code>match!</code>. The next section compares the previous code with 
+a version written using <code>inbox.Scan</code>.</p>
+
+<h3>Comparison with standard style</h3>
+
+<p>When implementing agents without using <code>match!</code>, states that do not handle all possible
+messages need to be implemented using <code>Scan</code>. The operation takes a function that 
+returns <code>option&lt;Async&lt;unit&gt;&gt;</code>. The result is <code>None</code> for messages that should be 
+left in the queue and <code>Some(async { ... })</code> when a message can be handled.</p>
+
+<p>In the above example, this only applies to the <code>paused</code> state:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft19', 46)" onmouseover="showTip(event, 'ft19', 46)" class="i">printer</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 47)" onmouseover="showTip(event, 'ft10', 47)" class="i">MailboxProcessor</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft11', 48)" onmouseover="showTip(event, 'ft11', 48)" class="i">Start</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft12', 49)" onmouseover="showTip(event, 'ft12', 49)" class="i">inbox</span> <span class="k">-&gt;</span> 
+
+  <span id="ftt20" onmouseout="hideTip(event, 'ft20', 50)" onmouseover="showTip(event, 'ft20', 50, document.getElementById('ftt20'))" class="omitted">(Working state omitted)</span>
+
+  <span class="c">// Use Scan to handle only Pause or Resume messages</span>
+  <span class="k">and</span> <span onmouseout="hideTip(event, 'ft21', 51)" onmouseover="showTip(event, 'ft21', 51)" class="i">paused</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 52)" onmouseover="showTip(event, 'ft12', 52)" class="i">inbox</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft22', 53)" onmouseover="showTip(event, 'ft22', 53)" class="i">Scan</span>(<span class="k">function</span>
+    | <span onmouseout="hideTip(event, 'ft7', 54)" onmouseover="showTip(event, 'ft7', 54)" class="i">Pause</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft23', 55)" onmouseover="showTip(event, 'ft23', 55)" class="i">Some</span>(<span onmouseout="hideTip(event, 'ft21', 56)" onmouseover="showTip(event, 'ft21', 56)" class="i">paused</span>())
+    | <span onmouseout="hideTip(event, 'ft8', 57)" onmouseover="showTip(event, 'ft8', 57)" class="i">Resume</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft23', 58)" onmouseover="showTip(event, 'ft23', 58)" class="i">Some</span>(<span onmouseout="hideTip(event, 'ft24', 59)" onmouseover="showTip(event, 'ft24', 59)" class="i">async</span> { 
+        <span onmouseout="hideTip(event, 'ft16', 60)" onmouseover="showTip(event, 'ft16', 60)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">Resuming</span><span class="s">.</span><span class="s">.</span><span class="s">.</span><span class="s">&quot;</span>
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft25', 61)" onmouseover="showTip(event, 'ft25', 61)" class="i">working</span>() })
+    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft26', 62)" onmouseover="showTip(event, 'ft26', 62)" class="i">None</span>) 
+
+  <span id="ftt27" onmouseout="hideTip(event, 'ft27', 63)" onmouseover="showTip(event, 'ft27', 63, document.getElementById('ftt27'))" class="omitted">(Start the agent)</span> )</pre>
+
+
+<p>The syntax is definitely less obvious, especially in the <code>Resume</code> case, where 
+we need to perform some operation before returning. This requires writing an
+asynchronous workflow that is wrapped in <code>Some</code> (which is a value returned by
+a pattern matching inside a function).</p>
+
+<h2>Simplifying blocking queue</h2>
+
+<p>To give a more complex example of an agent using <code>match!</code>, we can re-implement the 
+<code>BlockingQueueAgent</code> from the <a href="http://msdn.microsoft.com/en-us/library/hh297096.aspx">MSDN tutorial</a>.
+The agent implements an asynchronous blocking queue similar to <code>BlockingCollection</code>
+from .NET. It supports two messages - one for adding values to the queue and another
+for removing values from the queue. Both of the messages should be sent asynchronously,
+because their processing can be blocked. The <code>Add</code> message cannot be processed when
+the queue is <em>full</em> and the <code>Get</code> message cannot be processed when the queue is <em>empty</em>.</p>
+
+<p>We first reference a namespace that we'll need later and define the message type:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft28', 64)" onmouseover="showTip(event, 'ft28', 64)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft29', 65)" onmouseover="showTip(event, 'ft29', 65)" class="i">Collections</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft30', 66)" onmouseover="showTip(event, 'ft30', 66)" class="i">Generic</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft31', 67)" onmouseover="showTip(event, 'ft31', 67)" class="i">BlockingAgentMessage</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'ft32', 68)" onmouseover="showTip(event, 'ft32', 68)" class="i">Add</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">T</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ft33', 69)" onmouseover="showTip(event, 'ft33', 69)" class="i">AsyncReplyChannel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft34', 70)" onmouseover="showTip(event, 'ft34', 70)" class="i">unit</span><span class="o">&gt;</span> 
+  | <span onmouseout="hideTip(event, 'ft35', 71)" onmouseover="showTip(event, 'ft35', 71)" class="i">Get</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft33', 72)" onmouseover="showTip(event, 'ft33', 72)" class="i">AsyncReplyChannel</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span></pre>
+
+
+<p>Both messages also carry <code>AsyncReplyChannel</code>, because the agent needs to reply to 
+both of them. The reply to <code>Get</code> carries the obtained value, while a reply to <code>Add</code>
+is just a notification that the value was added to the queue.</p>
+
+<p>The implementation of the queue uses a mutable <code>Queue&lt;'T&gt;</code> to keep the items. This 
+is perfectly fine when writing an F# agent, because its body is not executed
+concurrently and the blocking queue agent does not need to expose the 
+entire queue of messages.</p>
+
+<p>The body of the agent consists of three functions that implement three states. The
+agent can be empty (waiting for <code>Put</code> message); full (waiting for the <code>Get</code> message)
+or it is able to handle both messages:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft36', 73)" onmouseover="showTip(event, 'ft36', 73)" class="i">createQueue</span> <span onmouseout="hideTip(event, 'ft37', 74)" onmouseover="showTip(event, 'ft37', 74)" class="i">maxLength</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 75)" onmouseover="showTip(event, 'ft10', 75)" class="i">MailboxProcessor</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft11', 76)" onmouseover="showTip(event, 'ft11', 76)" class="i">Start</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft38', 77)" onmouseover="showTip(event, 'ft38', 77)" class="i">inbox</span> <span class="k">-&gt;</span>
+  <span class="c">// Private queue that stores the values</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft39', 78)" onmouseover="showTip(event, 'ft39', 78)" class="i">items</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft40', 79)" onmouseover="showTip(event, 'ft40', 79)" class="i">Queue</span><span class="o">&lt;</span>_<span class="o">&gt;</span>()
+  <span class="c">// Continue in one of the states, depending on the queue</span>
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft41', 80)" onmouseover="showTip(event, 'ft41', 80)" class="i">chooseState</span>() <span class="o">=</span> <span id="ftt42" onmouseout="hideTip(event, 'ft42', 81)" onmouseover="showTip(event, 'ft42', 81, document.getElementById('ftt42'))" class="omitted">(...)</span>
+
+  <span class="c">// When the agent is empty, it can only handle &#39;Add&#39;</span>
+  <span class="k">and</span> <span onmouseout="hideTip(event, 'ft43', 82)" onmouseover="showTip(event, 'ft43', 82)" class="i">emptyQueue</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft14', 83)" onmouseover="showTip(event, 'ft14', 83)" class="i">agent</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft38', 84)" onmouseover="showTip(event, 'ft38', 84)" class="i">inbox</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft32', 85)" onmouseover="showTip(event, 'ft32', 85)" class="i">Add</span>(<span onmouseout="hideTip(event, 'ft44', 86)" onmouseover="showTip(event, 'ft44', 86)" class="i">value</span>, <span onmouseout="hideTip(event, 'ft45', 87)" onmouseover="showTip(event, 'ft45', 87)" class="i">reply</span>) <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'ft39', 88)" onmouseover="showTip(event, 'ft39', 88)" class="i">items</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft46', 89)" onmouseover="showTip(event, 'ft46', 89)" class="i">Enqueue</span>(<span class="i">value</span>)
+        <span class="i">reply</span><span class="o">.</span><span class="i">Reply</span>()
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft41', 90)" onmouseover="showTip(event, 'ft41', 90)" class="i">chooseState</span>() }
+  <span class="c">// When the agent is full, it can only handle &#39;Get&#39;</span>
+  <span class="k">and</span> <span onmouseout="hideTip(event, 'ft47', 91)" onmouseover="showTip(event, 'ft47', 91)" class="i">fullQueue</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft14', 92)" onmouseover="showTip(event, 'ft14', 92)" class="i">agent</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft38', 93)" onmouseover="showTip(event, 'ft38', 93)" class="i">inbox</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft35', 94)" onmouseover="showTip(event, 'ft35', 94)" class="i">Get</span>(<span onmouseout="hideTip(event, 'ft48', 95)" onmouseover="showTip(event, 'ft48', 95)" class="i">reply</span>) <span class="k">-&gt;</span> 
+        <span class="i">reply</span><span class="o">.</span><span class="i">Reply</span>(<span onmouseout="hideTip(event, 'ft39', 96)" onmouseover="showTip(event, 'ft39', 96)" class="i">items</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft49', 97)" onmouseover="showTip(event, 'ft49', 97)" class="i">Dequeue</span>())
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft41', 98)" onmouseover="showTip(event, 'ft41', 98)" class="i">chooseState</span>() }
+  <span class="c">// A state in which the agent can handle both messages</span>
+  <span class="k">and</span> <span onmouseout="hideTip(event, 'ft50', 99)" onmouseover="showTip(event, 'ft50', 99)" class="i">runningQueue</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft14', 100)" onmouseover="showTip(event, 'ft14', 100)" class="i">agent</span> {
+    <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft38', 101)" onmouseover="showTip(event, 'ft38', 101)" class="i">inbox</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft32', 102)" onmouseover="showTip(event, 'ft32', 102)" class="i">Add</span>(<span onmouseout="hideTip(event, 'ft44', 103)" onmouseover="showTip(event, 'ft44', 103)" class="i">value</span>, <span onmouseout="hideTip(event, 'ft45', 104)" onmouseover="showTip(event, 'ft45', 104)" class="i">reply</span>) <span class="k">-&gt;</span> 
+        <span class="i">reply</span><span class="o">.</span><span class="i">Reply</span>() 
+        <span onmouseout="hideTip(event, 'ft39', 105)" onmouseover="showTip(event, 'ft39', 105)" class="i">items</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft46', 106)" onmouseover="showTip(event, 'ft46', 106)" class="i">Enqueue</span>(<span class="i">value</span>)
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft41', 107)" onmouseover="showTip(event, 'ft41', 107)" class="i">chooseState</span>()
+    | <span onmouseout="hideTip(event, 'ft35', 108)" onmouseover="showTip(event, 'ft35', 108)" class="i">Get</span>(<span onmouseout="hideTip(event, 'ft48', 109)" onmouseover="showTip(event, 'ft48', 109)" class="i">reply</span>) <span class="k">-&gt;</span> 
+        <span class="i">reply</span><span class="o">.</span><span class="i">Reply</span>(<span onmouseout="hideTip(event, 'ft39', 110)" onmouseover="showTip(event, 'ft39', 110)" class="i">items</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft49', 111)" onmouseover="showTip(event, 'ft49', 111)" class="i">Dequeue</span>())
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'ft41', 112)" onmouseover="showTip(event, 'ft41', 112)" class="i">chooseState</span>() }
+
+  <span class="c">// Start with an empty queue</span>
+  <span onmouseout="hideTip(event, 'ft43', 113)" onmouseover="showTip(event, 'ft43', 113)" class="i">emptyQueue</span>() )</pre>
+
+
+<p>Compared with the original version of the agent in the MSDN tutorial, the code 
+is more consistent. We don't need to use different programming style for functions
+that can handle all messages (<code>runningQueue</code>) and for functions that only handle
+certain messages (<code>emptyQueue</code> and <code>fullQueue</code>).</p>
+
+<h2>Summary</h2>
+
+<p>This article demonstrated how to use <code>match!</code> construct when implementing agents
+using the <code>MailboxProcessor</code> type in F#. This use of <code>match!</code> does not follow the
+usual formal notion of <em>joinad</em> as explained in the recent <a href="../pubs.html">publications</a>,
+because the <code>agent { ... }</code> computation does not implement <em>parallel composition</em>
+(it is not possible to match on multiple mailboxes) and the <em>monadic bind</em> works
+over two different types (normal asynchronous workflows and agent's inbox). However,
+from the practical point of view, this use definitely simplifies programming with 
+agents.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace FSharp</div>
+<div class="tip" id="ft2">namespace FSharp.Extensions</div>
+<div class="tip" id="ft3">namespace FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft4">type Message =<br />&#160;&#160;| Print of string<br />&#160;&#160;| Pause<br />&#160;&#160;| Resume<br /><br />Full name: TryJoinads.Message<br />&#160;&#160;type: Message<br /></div>
+<div class="tip" id="ft5">union case Message.Print: string -&gt; Message</div>
+<div class="tip" id="ft6">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft7">union case Message.Pause: Message</div>
+<div class="tip" id="ft8">union case Message.Resume: Message</div>
+<div class="tip" id="ft9">val printer : MailboxProcessor&lt;Message&gt;<br /><br />Full name: TryJoinads.printer<br />&#160;&#160;type: MailboxProcessor&lt;Message&gt;<br /></div>
+<div class="tip" id="ft10">type MailboxProcessor&lt;&#39;Msg&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface System.IDisposable<br />&#160;&#160;&#160;&#160;new : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:System.Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Post : message:&#39;Msg -&gt; unit<br />&#160;&#160;&#160;&#160;member PostAndAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply&gt;<br />&#160;&#160;&#160;&#160;member PostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply<br />&#160;&#160;&#160;&#160;member PostAndTryAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply option&gt;<br />&#160;&#160;&#160;&#160;member Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;<br />&#160;&#160;&#160;&#160;member Scan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member TryPostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply option<br />&#160;&#160;&#160;&#160;member TryReceive : ?timeout:int -&gt; Async&lt;&#39;Msg option&gt;<br />&#160;&#160;&#160;&#160;member TryScan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T option&gt;<br />&#160;&#160;&#160;&#160;member add_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member CurrentQueueLength : int<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int<br />&#160;&#160;&#160;&#160;member Error : IEvent&lt;System.Exception&gt;<br />&#160;&#160;&#160;&#160;member remove_Error : Handler&lt;System.Exception&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;member DefaultTimeout : int with set<br />&#160;&#160;&#160;&#160;static member Start : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:System.Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.MailboxProcessor&lt;_&gt;<br />&#160;&#160;type: MailboxProcessor&lt;&#39;Msg&gt;<br /></div>
+<div class="tip" id="ft11">static member MailboxProcessor.Start : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:System.Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;</div>
+<div class="tip" id="ft12">val inbox : MailboxProcessor&lt;Message&gt;<br />&#160;&#160;type: MailboxProcessor&lt;Message&gt;<br /></div>
+<div class="tip" id="ft13">val working : (unit -&gt; Async&lt;&#39;a&gt;)<br /><em><br /><br />&#160;Agent can receive and handle any message; after processing, <br />&#160;it continues in &#39;working&#39; state unless it receives &#39;Pause&#39;</em></div>
+<div class="tip" id="ft14">val agent : AgentBuilder<br /><br />Full name: FSharp.Extensions.Joinads.TopLevelAgentValues.agent</div>
+<div class="tip" id="ft15">val msg : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft16">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="ft17">val paused : (unit -&gt; Async&lt;&#39;a&gt;)<br /><em><br /><br />&#160;Agent is paused and waits for &#39;Resume&#39; (and then continues in<br />&#160;&#39;working&#39; state). If it receives &#39;Pause&#39;, it remains paused </em></div>
+<div class="tip" id="ft18">member MailboxProcessor.Post : message:&#39;Msg -&gt; unit</div>
+<div class="tip" id="ft19">val printer : MailboxProcessor&lt;Message&gt;<br /><br />Full name: TryJoinads.Comparison.printer<br />&#160;&#160;type: MailboxProcessor&lt;Message&gt;<br /></div>
+<div class="tip" id="ft20">let rec working() = agent {<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;let! msg = inbox.Receive()<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;match msg with<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;| Print msg -&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;printfn &quot;%s&quot; msg<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return! working()<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;| Pause -&gt; return! paused()<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;| Resume -&gt; return! working() }</div>
+<div class="tip" id="ft21">val paused : (unit -&gt; Async&lt;&#39;a&gt;)</div>
+<div class="tip" id="ft22">member MailboxProcessor.Scan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T&gt;</div>
+<div class="tip" id="ft23">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft24">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="ft25">val working : (unit -&gt; Async&lt;&#39;a&gt;)</div>
+<div class="tip" id="ft26">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft27">// Start the agent in the working state<br />&#160;&#160;&#160;&#160;&#160;&#160;working()</div>
+<div class="tip" id="ft28">namespace System</div>
+<div class="tip" id="ft29">namespace System.Collections</div>
+<div class="tip" id="ft30">namespace System.Collections.Generic</div>
+<div class="tip" id="ft31">type BlockingAgentMessage&lt;&#39;T&gt; =<br />&#160;&#160;| Add of &#39;T * AsyncReplyChannel&lt;unit&gt;<br />&#160;&#160;| Get of AsyncReplyChannel&lt;&#39;T&gt;<br /><br />Full name: TryJoinads.BlockingAgentMessage&lt;_&gt;<br />&#160;&#160;type: BlockingAgentMessage&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft32">union case BlockingAgentMessage.Add: &#39;T * AsyncReplyChannel&lt;unit&gt; -&gt; BlockingAgentMessage&lt;&#39;T&gt;</div>
+<div class="tip" id="ft33">type AsyncReplyChannel&lt;&#39;Reply&gt;<br />with<br />&#160;&#160;member Reply : value:&#39;Reply -&gt; unit<br />end<br /><br />Full name: Microsoft.FSharp.Control.AsyncReplyChannel&lt;_&gt;</div>
+<div class="tip" id="ft34">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br />&#160;&#160;type: unit<br /></div>
+<div class="tip" id="ft35">union case BlockingAgentMessage.Get: AsyncReplyChannel&lt;&#39;T&gt; -&gt; BlockingAgentMessage&lt;&#39;T&gt;</div>
+<div class="tip" id="ft36">val createQueue : int -&gt; MailboxProcessor&lt;BlockingAgentMessage&lt;&#39;a&gt;&gt;<br /><br />Full name: TryJoinads.createQueue</div>
+<div class="tip" id="ft37">val maxLength : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft38">val inbox : MailboxProcessor&lt;BlockingAgentMessage&lt;&#39;a&gt;&gt;<br />&#160;&#160;type: MailboxProcessor&lt;BlockingAgentMessage&lt;&#39;a&gt;&gt;<br /></div>
+<div class="tip" id="ft39">val items : Queue&lt;&#39;a&gt;<br />&#160;&#160;type: Queue&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft40">type Queue&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Collections.Generic.Queue&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;new : int -&gt; System.Collections.Generic.Queue&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;new : System.Collections.Generic.IEnumerable&lt;&#39;T&gt; -&gt; System.Collections.Generic.Queue&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Clear : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Contains : &#39;T -&gt; bool<br />&#160;&#160;&#160;&#160;member CopyTo : &#39;T [] * int -&gt; unit<br />&#160;&#160;&#160;&#160;member Count : int<br />&#160;&#160;&#160;&#160;member Dequeue : unit -&gt; &#39;T<br />&#160;&#160;&#160;&#160;member Enqueue : &#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member GetEnumerator : unit -&gt; Enumerator&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Peek : unit -&gt; &#39;T<br />&#160;&#160;&#160;&#160;member ToArray : unit -&gt; &#39;T []<br />&#160;&#160;&#160;&#160;member TrimExcess : unit -&gt; unit<br />&#160;&#160;&#160;&#160;type Enumerator =<br />&#160;&#160;&#160;&#160;&#160;&#160;struct<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;member Current : &#39;T<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;member MoveNext : unit -&gt; bool<br />&#160;&#160;&#160;&#160;&#160;&#160;end<br />&#160;&#160;end<br /><br />Full name: System.Collections.Generic.Queue&lt;_&gt;<br />&#160;&#160;type: Queue&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft41">val chooseState : (unit -&gt; Async&lt;&#39;b&gt;)</div>
+<div class="tip" id="ft42">if items.Count = 0 then emptyQueue()<br />&#160;&#160;&#160;&#160;elif items.Count &lt; maxLength then runningQueue()<br />&#160;&#160;&#160;&#160;else fullQueue()</div>
+<div class="tip" id="ft43">val emptyQueue : (unit -&gt; Async&lt;&#39;b&gt;)</div>
+<div class="tip" id="ft44">val value : &#39;a</div>
+<div class="tip" id="ft45">val reply : AsyncReplyChannel&lt;unit&gt;</div>
+<div class="tip" id="ft46">Queue.Enqueue(item: &#39;a) : unit</div>
+<div class="tip" id="ft47">val fullQueue : (unit -&gt; Async&lt;&#39;b&gt;)</div>
+<div class="tip" id="ft48">val reply : AsyncReplyChannel&lt;&#39;a&gt;</div>
+<div class="tip" id="ft49">Queue.Dequeue() : &#39;a</div>
+<div class="tip" id="ft50">val runningQueue : (unit -&gt; Async&lt;&#39;b&gt;)</div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-agents.aspx%2f&amp;text=TryJoinads+(III.)%3a+Agent-based+programmingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-agents.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fjoinads-agents.aspx%2f&title=TryJoinads+(III.)%3a+Agent-based+programming">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=TryJoinads%20(III.)%3a%20Agent-based%20programming&body=%20Agent-based%20programming%20is%20a%20great%20way%20to%20write%20concurrent%20applications%20without%20the%20usual%20threading%20issues.%20In%20this%20article%2c%20we%20look%20how%20the%20%5c%22match!%5c%22%20research%20extension%20for%20F%23%20simplifies%20writing%20agents.%20In%20particular%2c%20we%20can%20easily%20implement%20states%20that%20do%20not%20handle%20all%20incoming%20messages.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fjoinads-agents.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 20 February 2012, 12:36 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/joinads/">joinads</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/parallel/">parallel</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

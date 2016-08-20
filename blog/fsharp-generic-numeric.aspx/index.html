@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Math (IV.) - Writing generic numeric code - Tomas Petricek</title>
+
+  <meta name="description" content=" Writing generic numeric code in .NET is difficult, because .NET generics do not support constraints specifying that a type has to support certain numeric operations. In this article, we look how to solve the problem in F#. Using static member constraints, it is possible to write simple generic calculations and using the INumeric interface, we can capture numeric operations for a type and use them when implementing complex types such as a matrix." />
+  <meta name="keywords" content="c#, functional, f#, math and numerics, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Math (IV.) - Writing generic numeric code" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-generic-numeric.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Writing generic numeric code in .NET is difficult, because .NET generics do not support constraints specifying that a type has to support certain numeric operations. In this article, we look how to solve the problem in F#. Using static member constraints, it is possible to write simple generic calculations and using the INumeric interface, we can capture numeric operations for a type and use them when implementing complex types such as a matrix." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Math (IV.) - Writing generic numeric code" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Writing generic numeric code in .NET is difficult, because .NET generics do not support constraints specifying that a type has to support certain numeric operations. In this article, we look how to solve the problem in F#. Using static member constraints, it is possible to write simple generic calculations and using the INumeric interface, we can capture numeric operations for a type and use them when implementing complex types such as a matrix." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Math (IV.) - Writing generic numeric code",
+    "headline": "F# Math (IV.) - Writing generic numeric code",
+  	"description": " Writing generic numeric code in .NET is difficult, because .NET generics do not support constraints specifying that a type has to support certain numeric operations. In this article, we look how to solve the problem in F#. Using static member constraints, it is possible to write simple generic calculations and using the INumeric interface, we can capture numeric operations for a type and use them when implementing complex types such as a matrix.",
+  	"url": "http://tomasp.net/blog/fsharp-generic-numeric.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2011-11-27T17:19:32.0000000",
+  	"datePublished": "2011-11-27T17:19:32.0000000",
+    "dateModified": "2011-11-27T17:19:32.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-generic-numeric.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["c#", "functional", "f#", "math and numerics",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>F# Math (IV.) - Writing generic numeric code</h1>
+<p>Generic numeric code is some calculation that can be used for working with multiple different numeric 
+  types including types such as <code>int</code>, <code>decimal</code> and <code>float</code> or even our own 
+  numeric types (such as the type for <a href="http://tomasp.net/blog/fsharp-custom-numeric.aspx">clock arithmetic 
+  from the previous article of the series</a>). Generic numeric code differs from ordinary generic F# code such 
+  as the <code>'a list</code> type or <code>List.map</code> function, because <em>numeric code</em> uses numeric operators 
+  such as <code>+</code> or <code>&gt;=</code> that are defined differently for each numeric type.</p>
+
+<p>When writing simple generic code that has some type parameter <code>'T</code>, we don’t know anything about 
+  the type parameter and there is no way to restrict it to a numeric type that provides all the operators that 
+  we may need to use in our code. This is a limitation of the .NET runtime and F# provides two ways for 
+  overcoming it.</p>
+
+<ul class="spaces">
+  <li><strong>Static member constraints</strong> can be used to write generic code where the actual 
+    numeric operations are resolved at compile-time (and a generic function is specialized for all required
+    numeric types). This approach makes resulting code very efficient and is generally very easy to use
+    when writing a function such as <code>List.sum</code>.</li>
+
+  <li><strong>Global numeric associations</strong> (available in F# PowerPack) give us a way to obtain 
+    an interface implementing required numeric operations dynamically at runtime. This approach has some 
+    runtime overhead, but can be used for complex numeric types (such as <code>Matrix&lt;'T&gt;</code>).</li>
+
+  <li><strong>Combination of both</strong> techniques can be used to implement complex numeric type
+    that is generic over the contained numeric values and has only a minimal runtime overhead.</li>
+</ul>
+
+<p>Static member constraints are a unique feature of F# that is not available in other .NET
+  languages, so if you're interested in writing numeric code for .NET,
+  this may be a good reason for choosing F#. In C# or Visual Basic, you would be limited to the 
+  second option (which can be implemented in C#). In dynamic languages (like IronPython), everything
+  is dynamic, so numeric computations can work with any numeric type, but will be significantly
+  less efficient. In the rest of the article, we look at the three options summarized above.
+</p>
+
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+
+
+<h2>Using static member constraints</h2>
+
+<p>In this section, we’ll write a function with statically resolved type parameter. This type of 
+  parameter differs from usual generic type parameters in that it is resolved (and replaced with the 
+  actual type parameter) at compile-time. </p>
+
+<p>When using statically resolved type parameter, we can use member constraints to specify that the 
+  actual type parameter must provide methods with certain types. These methods can then be called 
+  from the body of our generic function. Statically resolved type parameters can be used only when 
+  writing generic functions that are marked as <code>inline</code>. This means that a call to such 
+  function will be replaced with the body of the function during compilation, so this technique is 
+  useable only for relatively simple functions.</p>
+
+<p>You can find more information about statically resolved type parameters 
+  [<a href="#ppgnul">1</a>] and inline functions [<a href="#ppgnul">2</a>] in the official
+  MSDN documentation for F#, although I'll explain all the important bits in this article too.</p>
+
+<h3>Using built-in numeric operations</h3>
+<p>Even though it is possible to write a static member constraint manually, we can start more easily
+  just by relying on the F# type inference. When writing an <code>inline</code> function that calls 
+  another <code>inline</code> function with member constraint, the constraint is automatically 
+  propagated. This means that all we need to do is to mark our function as <code>inline</code> and 
+  use only operations that are themselves written using static member constraints. This includes functions 
+  in the <code>LanguagePrimitives</code> module as well as standard F# operators such as <code>*</code> and 
+  <code>+</code>:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppgn1', 1)" onmouseover="showTip(event, 'fppgn1', 1)" class="i">halfSquare</span> <span onmouseout="hideTip(event, 'fppgn2', 2)" onmouseover="showTip(event, 'fppgn2', 2)" class="i">num</span> <span class="o">=</span>
+<span class="l">2: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn3', 3)" onmouseover="showTip(event, 'fppgn3', 3)" class="i">res</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn4', 4)" onmouseover="showTip(event, 'fppgn4', 4)" class="i">LanguagePrimitives</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn5', 5)" onmouseover="showTip(event, 'fppgn5', 5)" class="i">DivideByInt</span> <span onmouseout="hideTip(event, 'fppgn2', 6)" onmouseover="showTip(event, 'fppgn2', 6)" class="i">num</span> <span class="n">2</span>
+<span class="l">3: </span>  <span onmouseout="hideTip(event, 'fppgn3', 7)" onmouseover="showTip(event, 'fppgn3', 7)" class="i">res</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppgn3', 8)" onmouseover="showTip(event, 'fppgn3', 8)" class="i">res</span>
+<span class="l">4: </span><span class="fsi">val inline halfSquare : ^a -&gt;  ^b</span>
+<span class="l">5: </span><span class="fsi">  when ^a: (static member DivideByInt : ^a * int -&gt; ^a)</span>
+<span class="l">6: </span><span class="fsi">   and ^a: (static member ( * ) : ^a * ^a -&gt; ^b)</span></pre>
+
+<p>The function takes a numeric argument, divides it by two and then calculates the square of the result. The 
+  division cannot be written simply as <code>num / 2</code>, because this would use standard integer 
+  division and the compiler would infer <code>num</code> to be of type <code>int</code>. Instead, we use the 
+  <code>DivideByInt</code> function. This function is defined in the core libraries for all standard numeric 
+  types. For non-standard types, it uses a static member constraint and requires the type to have a 
+  <code>DivideByInt</code> member.</p>
+
+<p>We can see the inferred static member constraints in the printed type signature of the function. The type 
+  parameter name is preceded with the caret (<code>^</code>) symbol denoting that it is a statically 
+  resolved type parameter. The <code>when</code> clause specifies the member constraints. As we can see, the 
+  type needs to provide <code>DivideByInt</code> method (which takes integer as the second parameter) and 
+  a multiplication operator.</p>
+
+<p>The following two examples show that the function can be used with multiple different numeric types:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'fppgn1', 9)" onmouseover="showTip(event, 'fppgn1', 9)" class="i">halfSquare</span> <span class="n">20.0f</span>
+<span class="l">2: </span><span class="fsi">val it : float32 = 100.0f</span>
+<span class="l">3: </span><span onmouseout="hideTip(event, 'fppgn1', 10)" onmouseover="showTip(event, 'fppgn1', 10)" class="i">halfSquare</span> <span class="n">11M</span>
+<span class="l">4: </span><span class="fsi">val it : decimal = 30.25M</span></pre>
+
+<p>In the first example, we use the <code>float32</code> type (which corresponds to <code>System.Single</code> 
+  or <code>float</code> in C#), while the second example uses <code>decimal</code>. It is worth noting that 
+  the <code>DivideByInt</code> member is not provided for integers, because it represents a precise 
+  floating point division. An alternative way to write the function above that would work for integers as 
+  well would use standard operators for division and addition (<code>/</code> and <code>+</code>) and the 
+  <code>GenericOne</code> value from the <code>LanguagePrimitives</code> module.</p>
+
+<h3>Writing custom constraints</h3>
+<p>In the previous example, we relied on the F# type inference and let the compiler figure out the
+  static constraints automatically, based on the operations that were used in our 
+  <code>inline</code> function. This worked well, because operators like <code>/</code>
+  or numeric functions from the <code>LanguagePrimitives</code> module generate constraints.</p>
+
+<p>However, the <code>LanguagePrimitives</code> module contains only a limited set of 
+  functions. If you want to write a function that works with any type with a specific member,
+  you may need to write static member constraints explicitly. For example, both <code>float32</code>
+  (<code>System.Single</code>) and <code>float</code> (<code>System.Double</code>) have
+  several members for dealing with IEEE floating point arithmetic.</p>
+
+<p>The following function uses a static method <code>IsInfinity</code> to return an option 
+  value that is <code>None</code> when the floating-point number is infinity and <code>Some</code>
+  otherwise:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppgn72', 235)" onmouseover="showTip(event, 'fppgn72', 235)" class="i">check</span><span class="o">&lt;</span> <span class="o">^</span><span class="i">T</span> <span class="k">when</span> <span class="o">^</span><span class="i">T</span> <span class="o">:</span> 
+<span class="l">2: </span>    (<span class="k">static</span> <span class="k">member</span> <span class="i">IsInfinity</span> <span class="o">:</span> <span class="o">^</span><span class="i">T</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppgn73', 236)" onmouseover="showTip(event, 'fppgn73', 236)" class="i">bool</span>)<span class="o">&gt;</span> (<span onmouseout="hideTip(event, 'fppgn74', 237)" onmouseover="showTip(event, 'fppgn74', 237)" class="i">num</span><span class="o">:</span><span class="o">^</span><span class="i">T</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fppgn75', 238)" onmouseover="showTip(event, 'fppgn75', 238)" class="i">option</span><span class="o">&lt;</span> <span class="o">^</span><span class="i">T</span> <span class="o">&gt;</span> <span class="o">=</span>
+<span class="l">3: </span>  <span class="k">if</span> (<span class="o">^</span><span class="i">T</span> <span class="o">:</span> (<span class="k">static</span> <span class="k">member</span> <span class="i">IsInfinity</span> <span class="o">:</span> <span class="o">^</span><span class="i">T</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppgn73', 239)" onmouseover="showTip(event, 'fppgn73', 239)" class="i">bool</span>) (<span onmouseout="hideTip(event, 'fppgn74', 240)" onmouseover="showTip(event, 'fppgn74', 240)" class="i">num</span>)) <span class="k">then</span> <span onmouseout="hideTip(event, 'fppgn76', 241)" onmouseover="showTip(event, 'fppgn76', 241)" class="i">None</span>
+<span class="l">4: </span>  <span class="k">else</span> <span onmouseout="hideTip(event, 'fppgn77', 242)" onmouseover="showTip(event, 'fppgn77', 242)" class="i">Some</span> <span onmouseout="hideTip(event, 'fppgn74', 243)" onmouseover="showTip(event, 'fppgn74', 243)" class="i">num</span></pre>
+
+<p>The declaration is quite verbose, but writing constraints explicitly is not usually needed
+  very often - once you write a function that does a basic operation, it can be easily used thanks
+  to type inference. The constraint is written as part of the generic parameter declaration.
+  The syntax <code>&lt; ^T, when ... &gt;</code> specifies that the function has a 
+  (statically resolved) parameter <code>^T</code> which must have a specified static member
+  (<code>IsInfinity</code>) of a specified type.</p>
+<p>To call the method inside the body of the function, we need to repeat the signature of 
+  the member constraint and we give it <code>num</code> as an argument. We can now call the
+  function with different arguments:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'fppgn72', 244)" onmouseover="showTip(event, 'fppgn72', 244)" class="i">check</span> <span class="n">42.0</span>
+<span class="l">2: </span><span class="fsi">val it : float option = Some(42)</span>
+<span class="l">3: </span><span onmouseout="hideTip(event, 'fppgn72', 245)" onmouseover="showTip(event, 'fppgn72', 245)" class="i">check</span> (<span class="n">1.0f</span> <span class="o">/</span> <span class="n">0.0f</span>)
+<span class="l">4: </span><span class="fsi">val it : float32 option = null</span>
+<span class="l">5: </span><span onmouseout="hideTip(event, 'fppgn72', 246)" onmouseover="showTip(event, 'fppgn72', 246)" class="i">check</span> (<span class="n">1</span> <span class="o">/</span> <span class="n">2</span>)
+<span class="l">6: </span><span class="fsi">error FS0001: The type &#39;int&#39; does not support </span>
+<span class="l">7: </span><span class="fsi">              any operators named &#39;IsInfinity&#39;</span></pre>
+
+
+<p>The first two calls are correct, because both <code>float</code> and <code>float32</code>
+  provide the required (static) member. In the third case, we get a compile-time error, 
+  because the F# compiler detects that the type <code>int</code> does not implement
+  the required <code>IsInfinity</code> method. It is worth noting that the <code>check</code>
+  function is not limited to the two types - if you define a custom numeric type that has
+  the required static method, the <code>check</code> function will work as well. However,
+  it is not possible to add <code>IsInfinity</code> method to existing types. Even if you 
+  implement it as an extension method, the F# compiler will ignore it (at least, in version 2.0).</p>
+
+<p>As discussed in the introduction, static member constraints are useable only when writing an
+  <code>inline</code> function. In the next section, we’ll explore the second technique of 
+  writing generic numerical code in F#.</p>
+
+<h2>Using global numeric associations</h2>
+
+<p>Using global numeric associations, we can obtain an interface providing implementations of basic 
+  operations for a specified numeric type at runtime. This is done using a global table of associations 
+  maintained by the F# PowerPack library [<a href="#ppgnul">3</a>]. The table contains numeric associations 
+  for all standard F# numeric types automatically and when you define a new type, you can register it 
+  with the table (see <a href="http://tomasp.net/blog/fsharp-custom-numeric.aspx">the previous article</a>
+  for an example). As a result any numeric code implemented using numeric associations will work 
+  with the newly defined type as well.</p>
+
+<p>In this section, we’ll implement a type <code>Quadruple&lt;'T&gt;</code>. 
+  The type stores four (possibly) different values of type <code>'T</code> and provides operations 
+  for point-wise addition and multiplication. You can think of it as a very simple vector type.
+  There are two ways to implement the operations of the type:</p>
+
+<ul>
+  <li>Operators of a type that are defined as static methods can be marked as 
+    <code>inline</code> and so they can use static member constraints. However, this
+    approach doesn't work for instance members.</li>
+  <li>When implementing a more complex type, we can pass around an interface 
+    <code>INumeric&lt;'T&gt;</code> that provides operations for the underlying
+    numeric type.</li>
+</ul>
+
+<p>The quadruple type implemented in this article is quite simple and we could use the
+  first approach. However, I'd like to demonstrate the second alternative (which would be
+  needed for more complex types like matrices). We'll get back to using static member 
+  constraints with quadruple in the last section. </p>
+
+<p>As already mentioned, global associations are provided by the F# PowerPack library, so 
+  we first need to add a reference to <code>FSharp.PowerPack.dll</code>. The core part of 
+  the <code>Quadruple&lt;'T&gt;</code> type is straightforward. The constructor takes four 
+  parameters of type <code>'T</code> and we expose them as members. More interestingly, 
+  the constructor also takes a value of type <code>INumeric&lt;'T&gt;</code> which provides
+  numeric operations for the type <code>'T</code>:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fppgn6', 11)" onmouseover="showTip(event, 'fppgn6', 11)" class="i">Quadruple</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fppgn7', 12)" onmouseover="showTip(event, 'fppgn7', 12)" class="i">a</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fppgn8', 13)" onmouseover="showTip(event, 'fppgn8', 13)" class="i">b</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fppgn9', 14)" onmouseover="showTip(event, 'fppgn9', 14)" class="i">c</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fppgn10', 15)" onmouseover="showTip(event, 'fppgn10', 15)" class="i">d</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fppgn11', 16)" onmouseover="showTip(event, 'fppgn11', 16)" class="i">ops</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppgn12', 17)" onmouseover="showTip(event, 'fppgn12', 17)" class="i">INumeric</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>) <span class="o">=</span>
+<span class="l"> 2: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn13', 18)" onmouseover="showTip(event, 'fppgn13', 18)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn14', 19)" onmouseover="showTip(event, 'fppgn14', 19)" class="i">Item1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn7', 20)" onmouseover="showTip(event, 'fppgn7', 20)" class="i">a</span>
+<span class="l"> 3: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn13', 21)" onmouseover="showTip(event, 'fppgn13', 21)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn15', 22)" onmouseover="showTip(event, 'fppgn15', 22)" class="i">Item2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn8', 23)" onmouseover="showTip(event, 'fppgn8', 23)" class="i">b</span>
+<span class="l"> 4: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn13', 24)" onmouseover="showTip(event, 'fppgn13', 24)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn16', 25)" onmouseover="showTip(event, 'fppgn16', 25)" class="i">Item3</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn9', 26)" onmouseover="showTip(event, 'fppgn9', 26)" class="i">c</span>
+<span class="l"> 5: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn13', 27)" onmouseover="showTip(event, 'fppgn13', 27)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn17', 28)" onmouseover="showTip(event, 'fppgn17', 28)" class="i">Item4</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn10', 29)" onmouseover="showTip(event, 'fppgn10', 29)" class="i">d</span>&#160;
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>  <span class="c">/// Expose implementation of operations for &#39;T</span>
+<span class="l"> 8: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn13', 30)" onmouseover="showTip(event, 'fppgn13', 30)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn18', 31)" onmouseover="showTip(event, 'fppgn18', 31)" class="i">Operations</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn11', 32)" onmouseover="showTip(event, 'fppgn11', 32)" class="i">ops</span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>  <span class="c">/// Create quadruple and retrieve numeric operations dynamically</span>
+<span class="l">11: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn19', 33)" onmouseover="showTip(event, 'fppgn19', 33)" class="i">CreateRuntime</span>(<span onmouseout="hideTip(event, 'fppgn7', 34)" onmouseover="showTip(event, 'fppgn7', 34)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn8', 35)" onmouseover="showTip(event, 'fppgn8', 35)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn9', 36)" onmouseover="showTip(event, 'fppgn9', 36)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn10', 37)" onmouseover="showTip(event, 'fppgn10', 37)" class="i">d</span>) <span class="o">=</span> 
+<span class="l">12: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn11', 38)" onmouseover="showTip(event, 'fppgn11', 38)" class="i">ops</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn20', 39)" onmouseover="showTip(event, 'fppgn20', 39)" class="i">GlobalAssociations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn21', 40)" onmouseover="showTip(event, 'fppgn21', 40)" class="i">GetNumericAssociation</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>()
+<span class="l">13: </span>    <span class="k">new</span> <span onmouseout="hideTip(event, 'fppgn6', 41)" onmouseover="showTip(event, 'fppgn6', 41)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fppgn7', 42)" onmouseover="showTip(event, 'fppgn7', 42)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn8', 43)" onmouseover="showTip(event, 'fppgn8', 43)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn9', 44)" onmouseover="showTip(event, 'fppgn9', 44)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn10', 45)" onmouseover="showTip(event, 'fppgn10', 45)" class="i">d</span>, <span onmouseout="hideTip(event, 'fppgn11', 46)" onmouseover="showTip(event, 'fppgn11', 46)" class="i">ops</span>)  
+<span class="l">14: </span>
+<span class="l">15: </span>  <span class="c">/// Format quadruple as a string</span>
+<span class="l">16: </span>  <span class="k">override</span> <span onmouseout="hideTip(event, 'fppgn13', 47)" onmouseover="showTip(event, 'fppgn13', 47)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn22', 48)" onmouseover="showTip(event, 'fppgn22', 48)" class="i">ToString</span>() <span class="o">=</span> 
+<span class="l">17: </span>    <span onmouseout="hideTip(event, 'fppgn23', 49)" onmouseover="showTip(event, 'fppgn23', 49)" class="i">sprintf</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fppgn7', 50)" onmouseover="showTip(event, 'fppgn7', 50)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn8', 51)" onmouseover="showTip(event, 'fppgn8', 51)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn9', 52)" onmouseover="showTip(event, 'fppgn9', 52)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn10', 53)" onmouseover="showTip(event, 'fppgn10', 53)" class="i">d</span>)</pre>
+
+<p>We don’t expect the users of our type to obtain the numeric association themselves, 
+  so the type will be typically created using a method <code>CreateRuntime</code>. The method
+  obtains numeric association dynamically using <code>GetNumericAssociation</code>. 
+  The function takes a single type parameter, which should be a numeric type and returns an 
+  implementation of the <code>INumeric&lt;'T&gt;</code> interface. In the above example, 
+  we don’t use the interface for anything yet. However, we expose it via a public property, 
+  so that we can use it for implementing overloaded operators.</p>
+
+<p>The following listing shows code for <code>*</code> and <code>+</code> operators that we 
+  can add to our <code>Quadruple&lt;'T&gt;</code> type. Both of them are implemented as 
+  point-wise operations meaning that they multiply first element of the first quadruple with 
+  the first element of the second quadruple and so on:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">static</span> <span class="k">member</span> (<span class="o">+</span>) (<span onmouseout="hideTip(event, 'fppgn24', 54)" onmouseover="showTip(event, 'fppgn24', 54)" class="i">q1</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppgn6', 55)" onmouseover="showTip(event, 'fppgn6', 55)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>, <span onmouseout="hideTip(event, 'fppgn25', 56)" onmouseover="showTip(event, 'fppgn25', 56)" class="i">q2</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppgn6', 57)" onmouseover="showTip(event, 'fppgn6', 57)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>) <span class="o">=</span>
+<span class="l"> 2: </span>  <span class="k">let</span> <span class="k">inline</span> ( <span class="o">+?</span> ) <span onmouseout="hideTip(event, 'fppgn26', 58)" onmouseover="showTip(event, 'fppgn26', 58)" class="i">a</span> <span onmouseout="hideTip(event, 'fppgn27', 59)" onmouseover="showTip(event, 'fppgn27', 59)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn24', 60)" onmouseover="showTip(event, 'fppgn24', 60)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn28', 61)" onmouseover="showTip(event, 'fppgn28', 61)" class="i">Operations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn29', 62)" onmouseover="showTip(event, 'fppgn29', 62)" class="i">Add</span>(<span onmouseout="hideTip(event, 'fppgn26', 63)" onmouseover="showTip(event, 'fppgn26', 63)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn27', 64)" onmouseover="showTip(event, 'fppgn27', 64)" class="i">b</span>)
+<span class="l"> 3: </span>  <span onmouseout="hideTip(event, 'fppgn6', 65)" onmouseover="showTip(event, 'fppgn6', 65)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fppgn24', 66)" onmouseover="showTip(event, 'fppgn24', 66)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn30', 67)" onmouseover="showTip(event, 'fppgn30', 67)" class="i">Item1</span> <span class="o">+?</span> <span onmouseout="hideTip(event, 'fppgn25', 68)" onmouseover="showTip(event, 'fppgn25', 68)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn30', 69)" onmouseover="showTip(event, 'fppgn30', 69)" class="i">Item1</span>, <span onmouseout="hideTip(event, 'fppgn24', 70)" onmouseover="showTip(event, 'fppgn24', 70)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn31', 71)" onmouseover="showTip(event, 'fppgn31', 71)" class="i">Item2</span> <span class="o">+?</span> <span onmouseout="hideTip(event, 'fppgn25', 72)" onmouseover="showTip(event, 'fppgn25', 72)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn31', 73)" onmouseover="showTip(event, 'fppgn31', 73)" class="i">Item2</span>, 
+<span class="l"> 4: </span>               <span onmouseout="hideTip(event, 'fppgn24', 74)" onmouseover="showTip(event, 'fppgn24', 74)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn32', 75)" onmouseover="showTip(event, 'fppgn32', 75)" class="i">Item3</span> <span class="o">+?</span> <span onmouseout="hideTip(event, 'fppgn25', 76)" onmouseover="showTip(event, 'fppgn25', 76)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn32', 77)" onmouseover="showTip(event, 'fppgn32', 77)" class="i">Item3</span>, <span onmouseout="hideTip(event, 'fppgn24', 78)" onmouseover="showTip(event, 'fppgn24', 78)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn33', 79)" onmouseover="showTip(event, 'fppgn33', 79)" class="i">Item4</span> <span class="o">+?</span> <span onmouseout="hideTip(event, 'fppgn25', 80)" onmouseover="showTip(event, 'fppgn25', 80)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn33', 81)" onmouseover="showTip(event, 'fppgn33', 81)" class="i">Item4</span>,
+<span class="l"> 5: </span>               <span onmouseout="hideTip(event, 'fppgn24', 82)" onmouseover="showTip(event, 'fppgn24', 82)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn28', 83)" onmouseover="showTip(event, 'fppgn28', 83)" class="i">Operations</span>)
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span class="k">static</span> <span class="k">member</span> <span class="o">(*)</span> (<span onmouseout="hideTip(event, 'fppgn24', 84)" onmouseover="showTip(event, 'fppgn24', 84)" class="i">q1</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppgn6', 85)" onmouseover="showTip(event, 'fppgn6', 85)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>, <span onmouseout="hideTip(event, 'fppgn25', 86)" onmouseover="showTip(event, 'fppgn25', 86)" class="i">q2</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppgn6', 87)" onmouseover="showTip(event, 'fppgn6', 87)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>) <span class="o">=</span>
+<span class="l"> 8: </span>  <span class="k">let</span> <span class="k">inline</span> ( <span class="o">*?</span> ) <span onmouseout="hideTip(event, 'fppgn26', 88)" onmouseover="showTip(event, 'fppgn26', 88)" class="i">a</span> <span onmouseout="hideTip(event, 'fppgn27', 89)" onmouseover="showTip(event, 'fppgn27', 89)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn24', 90)" onmouseover="showTip(event, 'fppgn24', 90)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn28', 91)" onmouseover="showTip(event, 'fppgn28', 91)" class="i">Operations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn34', 92)" onmouseover="showTip(event, 'fppgn34', 92)" class="i">Multiply</span>(<span onmouseout="hideTip(event, 'fppgn26', 93)" onmouseover="showTip(event, 'fppgn26', 93)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn27', 94)" onmouseover="showTip(event, 'fppgn27', 94)" class="i">b</span>)
+<span class="l"> 9: </span>  <span onmouseout="hideTip(event, 'fppgn6', 95)" onmouseover="showTip(event, 'fppgn6', 95)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fppgn24', 96)" onmouseover="showTip(event, 'fppgn24', 96)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn30', 97)" onmouseover="showTip(event, 'fppgn30', 97)" class="i">Item1</span> <span class="o">*?</span> <span onmouseout="hideTip(event, 'fppgn25', 98)" onmouseover="showTip(event, 'fppgn25', 98)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn30', 99)" onmouseover="showTip(event, 'fppgn30', 99)" class="i">Item1</span>, <span onmouseout="hideTip(event, 'fppgn24', 100)" onmouseover="showTip(event, 'fppgn24', 100)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn31', 101)" onmouseover="showTip(event, 'fppgn31', 101)" class="i">Item2</span> <span class="o">*?</span> <span onmouseout="hideTip(event, 'fppgn25', 102)" onmouseover="showTip(event, 'fppgn25', 102)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn31', 103)" onmouseover="showTip(event, 'fppgn31', 103)" class="i">Item2</span>, 
+<span class="l">10: </span>               <span onmouseout="hideTip(event, 'fppgn24', 104)" onmouseover="showTip(event, 'fppgn24', 104)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn32', 105)" onmouseover="showTip(event, 'fppgn32', 105)" class="i">Item3</span> <span class="o">*?</span> <span onmouseout="hideTip(event, 'fppgn25', 106)" onmouseover="showTip(event, 'fppgn25', 106)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn32', 107)" onmouseover="showTip(event, 'fppgn32', 107)" class="i">Item3</span>, <span onmouseout="hideTip(event, 'fppgn24', 108)" onmouseover="showTip(event, 'fppgn24', 108)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn33', 109)" onmouseover="showTip(event, 'fppgn33', 109)" class="i">Item4</span> <span class="o">*?</span> <span onmouseout="hideTip(event, 'fppgn25', 110)" onmouseover="showTip(event, 'fppgn25', 110)" class="i">q2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn33', 111)" onmouseover="showTip(event, 'fppgn33', 111)" class="i">Item4</span>,
+<span class="l">11: </span>               <span onmouseout="hideTip(event, 'fppgn24', 112)" onmouseover="showTip(event, 'fppgn24', 112)" class="i">q1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn28', 113)" onmouseover="showTip(event, 'fppgn28', 113)" class="i">Operations</span>)</pre>
+
+<p>The operators have exactly the same structure. Both of them take two quadruples as parameters. 
+  Next, we define a simple local operator (just to make the syntax more convenient) that adds 
+  or multiplies two numbers (of type <code>'T</code>) using the <code>Add</code> or <code>Multiply</code> 
+  method of the numeric association stored in the first quadruple. Since both of the quadruples 
+  have the same type, we could as well use the numeric association from the second one, 
+  because they are the same. Finally, we use the local helper operator to implement the point-wise 
+  operation and construct a new quadruple as the result. Note that we pass the numeric association 
+  as an argument to the newly constructed quadruple, so that it doesn’t need to access the 
+  associations table again.</p>
+
+<p>The following listing demonstrates how quadruple works with integer and floating-point values:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn58', 186)" onmouseover="showTip(event, 'fppgn58', 186)" class="i">quad</span> <span onmouseout="hideTip(event, 'fppgn26', 187)" onmouseover="showTip(event, 'fppgn26', 187)" class="i">a</span> <span onmouseout="hideTip(event, 'fppgn27', 188)" onmouseover="showTip(event, 'fppgn27', 188)" class="i">b</span> <span onmouseout="hideTip(event, 'fppgn59', 189)" onmouseover="showTip(event, 'fppgn59', 189)" class="i">c</span> <span onmouseout="hideTip(event, 'fppgn60', 190)" onmouseover="showTip(event, 'fppgn60', 190)" class="i">d</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn61', 191)" onmouseover="showTip(event, 'fppgn61', 191)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span><span class="o">.</span><span class="i">CreateRuntime</span>(<span onmouseout="hideTip(event, 'fppgn26', 192)" onmouseover="showTip(event, 'fppgn26', 192)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn27', 193)" onmouseover="showTip(event, 'fppgn27', 193)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn59', 194)" onmouseover="showTip(event, 'fppgn59', 194)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn60', 195)" onmouseover="showTip(event, 'fppgn60', 195)" class="i">d</span>)
+<span class="l"> 2: </span><span class="fsi">val quad : &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; Quadruple&lt;&#39;a&gt;</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>(<span onmouseout="hideTip(event, 'fppgn58', 196)" onmouseover="showTip(event, 'fppgn58', 196)" class="i">quad</span> <span class="n">1</span> <span class="n">2</span> <span class="n">3</span> <span class="n">4</span>) <span class="o">+</span> (<span onmouseout="hideTip(event, 'fppgn58', 197)" onmouseover="showTip(event, 'fppgn58', 197)" class="i">quad</span> <span class="n">4</span> <span class="n">3</span> <span class="n">2</span> <span class="n">1</span>)
+<span class="l"> 5: </span><span class="fsi">val it : Quadruple&lt;int&gt; = (5, 5, 5, 5)</span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn62', 198)" onmouseover="showTip(event, 'fppgn62', 198)" class="i">q1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn58', 199)" onmouseover="showTip(event, 'fppgn58', 199)" class="i">quad</span> <span class="n">1.0</span> <span class="n">2.0</span> <span class="n">3.0</span> <span class="n">4.0</span>
+<span class="l"> 8: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn63', 200)" onmouseover="showTip(event, 'fppgn63', 200)" class="i">q2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn58', 201)" onmouseover="showTip(event, 'fppgn58', 201)" class="i">quad</span> <span class="n">0.4</span> <span class="n">0.3</span> <span class="n">0.2</span> <span class="n">0.1</span>
+<span class="l"> 9: </span>(<span onmouseout="hideTip(event, 'fppgn62', 202)" onmouseover="showTip(event, 'fppgn62', 202)" class="i">q1</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fppgn63', 203)" onmouseover="showTip(event, 'fppgn63', 203)" class="i">q2</span>) <span class="o">*</span> <span onmouseout="hideTip(event, 'fppgn62', 204)" onmouseover="showTip(event, 'fppgn62', 204)" class="i">q1</span>
+<span class="l">10: </span><span class="fsi">val it : Quadruple&lt;float&gt; = (1.4, 4.6, 9.6, 16.4)</span></pre>
+
+<p>The snippet first defines a helper function <code>quad</code> that creates a quadruple.
+  The type isn’t restricted by any member constraints. However, the implementation works only with 
+  numeric types, which means that when we call <code>quad</code> with non-numeric parameters, 
+  it will throw an exception.</p>
+
+<p>It is also worth noting that the <code>GetNumericAssociation</code> function is called only 
+  when creating quadruples. Both of the operators extract the numeric association from one of the 
+  parameters, so once we construct quadruples, the rest of the computation can be efficient. 
+  This explains why this technique can be used for example by F# <code>Matrix&lt;'T&gt;</code> type, 
+  where we need to avoid unnecessary overheads.</p>
+
+<h2>Combining member constraints and <code>INumeric</code></h2>
+
+<p>Using the <code>GetNumericAssociations</code> method to obtain an implementation of 
+  <code>INumeric&lt;'T&gt;</code> interface from a table maintained by F# PowerPack has some
+  runtime overhead and it requires the numeric type to be registered in the associations table. 
+  However, it is possible to combine the approach based on static member constraints and the idea to 
+  capture the operations using the <code>INumeric&lt;'T&gt;</code> interface.</p>
+
+<p>In this section, we'll extend the <code>Quadruple&lt;'T&gt;</code> type with a static member
+  <code>Create</code> that constructs a value of the type more efficiently than <code>CreateRuntime</code>
+  that we implemented previously. The <code>CreateRuntime</code> method may still be useful if you
+  wanted to create quadruples dynamically using reflection. Before looking at a better way to 
+  implement the <code>Create</code> method, let's measure the performance of <code>CreateRuntime</code>
+  using a simple F# Interactive command:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="prep">#time</span>
+<span class="l">2: </span>
+<span class="l">3: </span><span class="c">// Add quadruples in a simple imperative loop</span>
+<span class="l">4: </span><span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fppgn64', 205)" onmouseover="showTip(event, 'fppgn64', 205)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn58', 206)" onmouseover="showTip(event, 'fppgn58', 206)" class="i">quad</span> <span class="n">0</span> <span class="n">0</span> <span class="n">0</span> <span class="n">0</span>
+<span class="l">5: </span><span class="k">for</span> <span onmouseout="hideTip(event, 'fppgn65', 207)" onmouseover="showTip(event, 'fppgn65', 207)" class="i">i</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">10000000</span> <span class="k">do</span>
+<span class="l">6: </span>  <span onmouseout="hideTip(event, 'fppgn64', 208)" onmouseover="showTip(event, 'fppgn64', 208)" class="i">sum</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fppgn64', 209)" onmouseover="showTip(event, 'fppgn64', 209)" class="i">sum</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'fppgn58', 210)" onmouseover="showTip(event, 'fppgn58', 210)" class="i">quad</span> <span onmouseout="hideTip(event, 'fppgn65', 211)" onmouseover="showTip(event, 'fppgn65', 211)" class="i">i</span> (<span onmouseout="hideTip(event, 'fppgn65', 212)" onmouseover="showTip(event, 'fppgn65', 212)" class="i">i</span><span class="o">/</span><span class="n">2</span>) (<span onmouseout="hideTip(event, 'fppgn65', 213)" onmouseover="showTip(event, 'fppgn65', 213)" class="i">i</span><span class="o">/</span><span class="n">3</span>) (<span onmouseout="hideTip(event, 'fppgn65', 214)" onmouseover="showTip(event, 'fppgn65', 214)" class="i">i</span><span class="o">/</span><span class="n">4</span>))
+<span class="l">7: </span><span class="fsi">Real: 00:00:02.536, CPU: 00:00:02.511, (...)</span>
+<span class="l">8: </span><span class="fsi">val mutable sum : Quadruple&lt;int&gt; = </span>
+<span class="l">9: </span><span class="fsi">  (-2004260032, -1004630016, -2103075776, 1642668640)</span></pre>
+
+<p>The snippet creates 10 million quadruples and adds them in an imperative <code>for</code> loop.
+  When executed as an unoptimized F# code in F# Interactive, the operation takes 2 and half seconds.</p>
+
+<p>To add the <code>Create</code> method, we can just modify the existing type. The method is
+  marked as <code>inline</code> and it has a statically resolved type parameter (hat-type) named
+  <code>^TStatic</code>. In the body, we use an object expression to implement the interface
+  <code>INumeric&lt;^TStatic&gt;</code> and then we use it to construct a quadruple:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">/// Initialize a quadruple and capture operations for working with the</span>
+<span class="l"> 2: </span><span class="c">/// type ^TStatic using static member constraints</span>
+<span class="l"> 3: </span><span class="k">static</span> <span class="k">member</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppgn35', 114)" onmouseover="showTip(event, 'fppgn35', 114)" class="i">Create</span>
+<span class="l"> 4: </span>    (<span onmouseout="hideTip(event, 'fppgn36', 115)" onmouseover="showTip(event, 'fppgn36', 115)" class="i">a</span> <span class="o">:</span> <span class="o">^</span><span class="i">TStatic</span>, <span onmouseout="hideTip(event, 'fppgn37', 116)" onmouseover="showTip(event, 'fppgn37', 116)" class="i">b</span><span class="o">:</span> <span class="o">^</span><span class="i">TStatic</span>, <span onmouseout="hideTip(event, 'fppgn38', 117)" onmouseover="showTip(event, 'fppgn38', 117)" class="i">c</span> <span class="o">:</span> <span class="o">^</span><span class="i">TStatic</span>, <span onmouseout="hideTip(event, 'fppgn39', 118)" onmouseover="showTip(event, 'fppgn39', 118)" class="i">d</span> <span class="o">:</span> <span class="o">^</span><span class="i">TStatic</span>) <span class="o">=</span>
+<span class="l"> 5: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppgn40', 119)" onmouseover="showTip(event, 'fppgn40', 119)" class="i">ops</span> <span class="o">=</span> 
+<span class="l"> 6: </span>    <span class="c">// Implement INumeric interface using generic operators</span>
+<span class="l"> 7: </span>    { <span class="k">new</span> <span onmouseout="hideTip(event, 'fppgn12', 120)" onmouseover="showTip(event, 'fppgn12', 120)" class="i">INumeric</span><span class="o">&lt;</span> <span class="o">^</span><span class="i">TStatic</span> <span class="o">&gt;</span> <span class="k">with</span>
+<span class="l"> 8: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 121)" onmouseover="sghowTip(event, 'fppgn41', 121)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn29', 122)" onmouseover="showTip(event, 'fppgn29', 122)" class="i">Add</span>(<span onmouseout="hideTip(event, 'fppgn36', 123)" onmouseover="showTip(event, 'fppgn36', 123)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 124)" onmouseover="showTip(event, 'fppgn37', 124)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn36', 125)" onmouseover="showTip(event, 'fppgn36', 125)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fppgn37', 126)" onmouseover="showTip(event, 'fppgn37', 126)" class="i">b</span> 
+<span class="l"> 9: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 127)" onmouseover="showTip(event, 'fppgn41', 127)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn42', 128)" onmouseover="showTip(event, 'fppgn42', 128)" class="i">Abs</span>(<span onmouseout="hideTip(event, 'fppgn36', 129)" onmouseover="showTip(event, 'fppgn36', 129)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn43', 130)" onmouseover="showTip(event, 'fppgn43', 130)" class="i">abs</span> <span onmouseout="hideTip(event, 'fppgn36', 131)" onmouseover="showTip(event, 'fppgn36', 131)" class="i">a</span>
+<span class="l">10: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 132)" onmouseover="showTip(event, 'fppgn41', 132)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn44', 133)" onmouseover="showTip(event, 'fppgn44', 133)" class="i">Compare</span>(<span onmouseout="hideTip(event, 'fppgn36', 134)" onmouseover="showTip(event, 'fppgn36', 134)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 135)" onmouseover="showTip(event, 'fppgn37', 135)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn45', 136)" onmouseover="showTip(event, 'fppgn45', 136)" class="i">compare</span> <span onmouseout="hideTip(event, 'fppgn36', 137)" onmouseover="showTip(event, 'fppgn36', 137)" class="i">a</span> <span onmouseout="hideTip(event, 'fppgn37', 138)" onmouseover="showTip(event, 'fppgn37', 138)" class="i">b</span>
+<span class="l">11: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 139)" onmouseover="showTip(event, 'fppgn41', 139)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn46', 140)" onmouseover="showTip(event, 'fppgn46', 140)" class="i">Equals</span>(<span onmouseout="hideTip(event, 'fppgn36', 141)" onmouseover="showTip(event, 'fppgn36', 141)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 142)" onmouseover="showTip(event, 'fppgn37', 142)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn36', 143)" onmouseover="showTip(event, 'fppgn36', 143)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn37', 144)" onmouseover="showTip(event, 'fppgn37', 144)" class="i">b</span>
+<span class="l">12: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 145)" onmouseover="showTip(event, 'fppgn41', 145)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn34', 146)" onmouseover="showTip(event, 'fppgn34', 146)" class="i">Multiply</span>(<span onmouseout="hideTip(event, 'fppgn36', 147)" onmouseover="showTip(event, 'fppgn36', 147)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 148)" onmouseover="showTip(event, 'fppgn37', 148)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn36', 149)" onmouseover="showTip(event, 'fppgn36', 149)" class="i">a</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppgn37', 150)" onmouseover="showTip(event, 'fppgn37', 150)" class="i">b</span>
+<span class="l">13: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 151)" onmouseover="showTip(event, 'fppgn41', 151)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn47', 152)" onmouseover="showTip(event, 'fppgn47', 152)" class="i">Negate</span>(<span onmouseout="hideTip(event, 'fppgn36', 153)" onmouseover="showTip(event, 'fppgn36', 153)" class="i">a</span>) <span class="o">=</span> <span class="o">-</span><span onmouseout="hideTip(event, 'fppgn36', 154)" onmouseover="showTip(event, 'fppgn36', 154)" class="i">a</span>
+<span class="l">14: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 155)" onmouseover="showTip(event, 'fppgn41', 155)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn48', 156)" onmouseover="showTip(event, 'fppgn48', 156)" class="i">Subtract</span>(<span onmouseout="hideTip(event, 'fppgn36', 157)" onmouseover="showTip(event, 'fppgn36', 157)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 158)" onmouseover="showTip(event, 'fppgn37', 158)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn36', 159)" onmouseover="showTip(event, 'fppgn36', 159)" class="i">a</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fppgn37', 160)" onmouseover="showTip(event, 'fppgn37', 160)" class="i">b</span> 
+<span class="l">15: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 161)" onmouseover="showTip(event, 'fppgn41', 161)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn49', 162)" onmouseover="showTip(event, 'fppgn49', 162)" class="i">Sign</span>(<span onmouseout="hideTip(event, 'fppgn36', 163)" onmouseover="showTip(event, 'fppgn36', 163)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn50', 164)" onmouseover="showTip(event, 'fppgn50', 164)" class="i">sign</span> <span onmouseout="hideTip(event, 'fppgn36', 165)" onmouseover="showTip(event, 'fppgn36', 165)" class="i">a</span>
+<span class="l">16: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 166)" onmouseover="showTip(event, 'fppgn41', 166)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn51', 167)" onmouseover="showTip(event, 'fppgn51', 167)" class="i">Zero</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn4', 168)" onmouseover="showTip(event, 'fppgn4', 168)" class="i">LanguagePrimitives</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn52', 169)" onmouseover="showTip(event, 'fppgn52', 169)" class="i">GenericZero</span> 
+<span class="l">17: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 170)" onmouseover="showTip(event, 'fppgn41', 170)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn53', 171)" onmouseover="showTip(event, 'fppgn53', 171)" class="i">One</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn4', 172)" onmouseover="showTip(event, 'fppgn4', 172)" class="i">LanguagePrimitives</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn54', 173)" onmouseover="showTip(event, 'fppgn54', 173)" class="i">GenericOne</span>
+<span class="l">18: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 174)" onmouseover="showTip(event, 'fppgn41', 174)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn55', 175)" onmouseover="showTip(event, 'fppgn55', 175)" class="i">ToString</span>(_, _, _) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn56', 176)" onmouseover="showTip(event, 'fppgn56', 176)" class="i">failwith</span> <span class="s">&quot;</span><span class="s">not</span><span class="s"> </span><span class="s">implemented</span><span class="s">&quot;</span>
+<span class="l">19: </span>        <span class="k">member</span> <span onmouseout="hideTip(event, 'fppgn41', 177)" onmouseover="showTip(event, 'fppgn41', 177)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppgn57', 178)" onmouseover="showTip(event, 'fppgn57', 178)" class="i">Parse</span>(_, _, _) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn56', 179)" onmouseover="showTip(event, 'fppgn56', 179)" class="i">failwith</span> <span class="s">&quot;</span><span class="s">not</span><span class="s"> </span><span class="s">implemented</span><span class="s">&quot;</span> }
+<span class="l">20: </span>
+<span class="l">21: </span>  <span class="c">// Create a quadruple and pass it an INumeric implementation </span>
+<span class="l">22: </span>  <span class="k">new</span> <span onmouseout="hideTip(event, 'fppgn6', 180)" onmouseover="showTip(event, 'fppgn6', 180)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fppgn36', 181)" onmouseover="showTip(event, 'fppgn36', 181)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn37', 182)" onmouseover="showTip(event, 'fppgn37', 182)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn38', 183)" onmouseover="showTip(event, 'fppgn38', 183)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn39', 184)" onmouseover="showTip(event, 'fppgn39', 184)" class="i">d</span>, <span onmouseout="hideTip(event, 'fppgn40', 185)" onmouseover="showTip(event, 'fppgn40', 185)" class="i">ops</span>)</pre>
+
+<p>When creating an inline static method, the <code>inline</code> keyword needs to be placed after
+  the <code>member</code> keyword. We don't need to explicitly define the statically resolved type
+  parameter - if we just use it in the type signature, the compiler will make the method generic
+  for us.</p>
+
+<p>The key idea of the trick that we used here is that the object expression that implements
+  <code>INumeric&lt;^TStatic&gt;</code> is also going to be inlined when someone calls 
+  <code>Create</code>. This means that the implementation will be specialized for the specific
+  numeric type and all operations that are used to implement it (<code>+</code>, <code>*</code>,
+  functions like <code>compare</code> etc.) will be replaced with the optimized code for a 
+  specific numeric type. The type signature of the <code>Create</code> method (hover over its
+  name to see a tool tip) shows all the requirements on the <code>^TStatic</code> type parameter.</p>
+
+<p>The only overhead of the <code>Create</code> method is that it creates an instance of a simple
+  object that implements the <code>INumeric&lt;'T&gt;</code>interface. On the other hand, the 
+  <code>CreateRuntime</code> method performed lookup in a dictionary, based on some token representing
+  a <code>System.Type</code> (that had to be retrieved based on a generic type parameter).
+  Let's measure the performance of our previous example using a new <code>quad</code> function:
+</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppgn66', 215)" onmouseover="showTip(event, 'fppgn66', 215)" class="i">quad</span> <span onmouseout="hideTip(event, 'fppgn67', 216)" onmouseover="showTip(event, 'fppgn67', 216)" class="i">a</span> <span onmouseout="hideTip(event, 'fppgn68', 217)" onmouseover="showTip(event, 'fppgn68', 217)" class="i">b</span> <span onmouseout="hideTip(event, 'fppgn69', 218)" onmouseover="showTip(event, 'fppgn69', 218)" class="i">c</span> <span onmouseout="hideTip(event, 'fppgn70', 219)" onmouseover="showTip(event, 'fppgn70', 219)" class="i">d</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn61', 220)" onmouseover="showTip(event, 'fppgn61', 220)" class="i">Quadruple</span><span class="o">&lt;</span>_<span class="o">&gt;</span><span class="o">.</span><span class="i">Create</span>(<span onmouseout="hideTip(event, 'fppgn67', 221)" onmouseover="showTip(event, 'fppgn67', 221)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppgn68', 222)" onmouseover="showTip(event, 'fppgn68', 222)" class="i">b</span>, <span onmouseout="hideTip(event, 'fppgn69', 223)" onmouseover="showTip(event, 'fppgn69', 223)" class="i">c</span>, <span onmouseout="hideTip(event, 'fppgn70', 224)" onmouseover="showTip(event, 'fppgn70', 224)" class="i">d</span>)
+<span class="l">2: </span>
+<span class="l">3: </span><span class="c">// Imperative loop using statically resolved &#39;quad&#39; function</span>
+<span class="l">4: </span><span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fppgn71', 225)" onmouseover="showTip(event, 'fppgn71', 225)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppgn66', 226)" onmouseover="showTip(event, 'fppgn66', 226)" class="i">quad</span> <span class="n">0</span> <span class="n">0</span> <span class="n">0</span> <span class="n">0</span>
+<span class="l">5: </span><span class="k">for</span> <span onmouseout="hideTip(event, 'fppgn65', 227)" onmouseover="showTip(event, 'fppgn65', 227)" class="i">i</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">10000000</span> <span class="k">do</span>
+<span class="l">6: </span>  <span onmouseout="hideTip(event, 'fppgn71', 228)" onmouseover="showTip(event, 'fppgn71', 228)" class="i">sum</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fppgn71', 229)" onmouseover="showTip(event, 'fppgn71', 229)" class="i">sum</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'fppgn66', 230)" onmouseover="showTip(event, 'fppgn66', 230)" class="i">quad</span> <span onmouseout="hideTip(event, 'fppgn65', 231)" onmouseover="showTip(event, 'fppgn65', 231)" class="i">i</span> (<span onmouseout="hideTip(event, 'fppgn65', 232)" onmouseover="showTip(event, 'fppgn65', 232)" class="i">i</span><span class="o">/</span><span class="n">2</span>) (<span onmouseout="hideTip(event, 'fppgn65', 233)" onmouseover="showTip(event, 'fppgn65', 233)" class="i">i</span><span class="o">/</span><span class="n">3</span>) (<span onmouseout="hideTip(event, 'fppgn65', 234)" onmouseover="showTip(event, 'fppgn65', 234)" class="i">i</span><span class="o">/</span><span class="n">4</span>))
+<span class="l">7: </span><span class="fsi">Real: 00:00:00.758, CPU: 00:00:00.748, (...)</span>
+<span class="l">8: </span><span class="fsi">val mutable sum : Quadruple&lt;int&gt; = </span>
+<span class="l">9: </span><span class="fsi">  (-2004260032, -1004630016, -2103075776, 1642668640)</span></pre>
+
+<p>The snippet starts by declaring a new version of <code>quad</code> helper function. This
+  time, it is implemented as <code>inline</code> function that calls the new <code>inline</code>
+  method <code>Create</code>. When we run the <code>for</code> loop using our new implementation,
+  the running time drops from 2.5 seconds to about 0,7 seconds, which means that the new version
+  is between three- and four-times faster! Moreover, the inlined code only creates an instance of
+  a specialized class, so the resulting binary isn't larger than the original version .</p>
+
+<h2>Summary</h2>
+
+<p>In .NET, there is no way to say that a generic type parameter should be a 
+  <em>numeric type</em> that supports basic numeric operators and functions. This makes it 
+  difficult to write numeric code that performs some calculation, but works with multiple different
+  types. Ideally, we'd like to be able to write a calculation (or a generic type) once and use
+  it with <code>float32</code> (<code>System.Single</code>) and <code>float</code> 
+  (<code>System.Double</code>) and possibly also <code>decimal</code> and <code>int</code>
+  if the calculation does not require floating-point arithmetic. Attempts to write generic numeric 
+  code in C# [<a href="#ppgnul">5</a>, <a href="#ppgnul">6</a>, <a href="#ppgnul">7</a>] 
+  have either runtime overhead or make simple code look very complicated.</p>
+
+<p>In this article, we've seen how to solve the problem in F#. Thanks to <em>static member
+  constraints</em> and the <code>inline</code> keyword, it is easy to write simple numeric 
+  functions that are generic over the numeric type used. The F# library itself uses this technique
+  to implement functions like <code>List.sum</code> (to sum elements of a list). Such functions
+  work with all standard types, but also with custom numeric types (as discussed in 
+  <a href="http://tomasp.net/blog/fsharp-custom-numeric.aspx">previous article</a>).</p>
+
+<p>For more complex generic types, we need to store the numeric operations in an object.
+  In F#, this can be easily done using <code>INumeric&lt;'T&gt;</code> type that is
+  available in F# PowerPack. If we need to obtain the implementation of the interface
+  only rarely, we can use <code>GlobalAssociations</code> module that provides a runtime
+  lookup. However, we've also seen that it is possible to make this more efficient by
+  combining the <code>INumeric&lt;'T&gt;</code> interface and static member constraints.
+  As far as I'm aware, this is probably the best solution available for .NET programmers 
+  in terms of succinctness and efficiency.</p>
+
+<h2>References &amp; Links<a name="ppgnul"></a></h2>
+<ul>
+  <li>[1] <a href="http://msdn.microsoft.com/en-us/library/dd548046.aspx">Statically Resolved Type Parameters (F#)</a> - MSDN Documentation</li>
+  <li>[2] <a href="http://msdn.microsoft.com/en-us/library/dd548047.aspx">Inline Functions (F#)</a> - MSDN Documentation</li>
+  <li>[3] <a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> (source code and binary packages) - CodePlex</li>
+  <li>[4] <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numeric Computing</a> - Real World Functional Programming on MSDN</li>
+  <li>[5] <a href="http://www.codeproject.com/KB/cs/genericnumerics.aspx">Using generics for calculations</a> - Rüdiger Klaehn at CodeProject</li>
+  <li>[6] <a href="http://www.yoda.arachsys.com/csharp/genericoperators.html">Generic operators</a> - Marc Gravell, Jon Skeet</li>
+  <li>[7] <a href="http://blogs.msdn.com/b/lucabol/archive/2009/02/05/simulating-inumeric-with-dynamic-in-c-4-0.aspx">Simulating INumeric with dynamic in C# 4.0</a> - Luca Bolognese</li>
+</ul>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fppgn1">val halfSquare : &#39;a -&gt; &#39;b (requires member DivideByInt and member ( * ))<br /><br />Full name: Untitled.halfSquare<br /></div>
+<div class="tip" id="fppgn2">val num : &#39;a (requires member DivideByInt and member ( * ))<br /></div>
+<div class="tip" id="fppgn3">val res : &#39;a (requires member DivideByInt and member ( * ))<br /></div>
+<div class="tip" id="fppgn4">module LanguagePrimitives<br /><br />from Microsoft.FSharp.Core<br /></div>
+<div class="tip" id="fppgn5">val DivideByInt : &#39;T -&gt; int -&gt; &#39;T (requires member DivideByInt)<br /><br />Full name: Microsoft.FSharp.Core.LanguagePrimitives.DivideByInt<br /></div>
+<div class="tip" id="fppgn6">Multiple items
+<br />type Quadruple&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;private new : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T * ops:INumeric&lt;&#39;T&gt; -&gt; Quadruple&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Item1 : &#39;T<br />&#160;&#160;&#160;&#160;member Item2 : &#39;T<br />&#160;&#160;&#160;&#160;member Item3 : &#39;T<br />&#160;&#160;&#160;&#160;member Item4 : &#39;T<br />&#160;&#160;&#160;&#160;member Operations : INumeric&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member Create : a:&#39;TStatic * b:&#39;TStatic * c:&#39;TStatic * d:&#39;TStatic -&gt; Quadruple&lt;&#39;TStatic&gt; (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br />&#160;&#160;&#160;&#160;static member CreateRuntime : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T -&gt; Quadruple&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member ( + ) : q1:Quadruple&lt;&#39;a&gt; * q2:Quadruple&lt;&#39;a&gt; -&gt; Quadruple&lt;&#39;a&gt;<br />&#160;&#160;&#160;&#160;static member ( * ) : q1:Quadruple&lt;&#39;a&gt; * q2:Quadruple&lt;&#39;a&gt; -&gt; Quadruple&lt;&#39;a&gt;<br />&#160;&#160;end<br /><br />Full name: Untitled.Quadruple&lt;_&gt;
+<br /><br />--------------------<br />
+<br />private new : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T * ops:INumeric&lt;&#39;T&gt; -&gt; Quadruple&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="fppgn7">val a : &#39;T<br /></div>
+<div class="tip" id="fppgn8">val b : &#39;T<br /></div>
+<div class="tip" id="fppgn9">val c : &#39;T<br /></div>
+<div class="tip" id="fppgn10">val d : &#39;T<br /></div>
+<div class="tip" id="fppgn11">val ops : INumeric&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="fppgn12">Multiple items
+<br />type INumeric&lt;&#39;T&gt; =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;abstract member Abs : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Add : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Compare : &#39;T * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Equals : &#39;T * &#39;T -&gt; bool<br />&#160;&#160;&#160;&#160;abstract member Multiply : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Negate : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Parse : string * System.Globalization.NumberStyles * System.IFormatProvider -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Sign : &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Subtract : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member ToString : &#39;T * string * System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;abstract member One : &#39;T<br />&#160;&#160;&#160;&#160;abstract member Zero : &#39;T<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Math.INumeric&lt;_&gt;
+<br /><br />--------------------<br />
+<br />INumeric<br /></div>
+<div class="tip" id="fppgn13">val x : Quadruple&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="fppgn14">member Quadruple.Item1 : &#39;T<br /><br />Full name: Untitled.Quadruple`1.Item1<br /></div>
+<div class="tip" id="fppgn15">member Quadruple.Item2 : &#39;T<br /><br />Full name: Untitled.Quadruple`1.Item2<br /></div>
+<div class="tip" id="fppgn16">member Quadruple.Item3 : &#39;T<br /><br />Full name: Untitled.Quadruple`1.Item3<br /></div>
+<div class="tip" id="fppgn17">member Quadruple.Item4 : &#39;T<br /><br />Full name: Untitled.Quadruple`1.Item4<br /></div>
+<div class="tip" id="fppgn18">member Quadruple.Operations : INumeric&lt;&#39;T&gt;<br /><br />Full name: Untitled.Quadruple`1.Operations
+<br /><br /><em>Expose implementation of operations for &#39;T</em><br /></div>
+<div class="tip" id="fppgn19">static member Quadruple.CreateRuntime : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T -&gt; Quadruple&lt;&#39;T&gt;<br /><br />Full name: Untitled.Quadruple`1.CreateRuntime
+<br /><br /><em>Create quadruple and retrieve numeric operations dynamically</em><br /></div>
+<div class="tip" id="fppgn20">module GlobalAssociations<br /><br />from Microsoft.FSharp.Math<br /></div>
+<div class="tip" id="fppgn21">val GetNumericAssociation : unit -&gt; INumeric&lt;&#39;a&gt;<br /><br />Full name: Microsoft.FSharp.Math.GlobalAssociations.GetNumericAssociation<br /></div>
+<div class="tip" id="fppgn22">override Quadruple.ToString : unit -&gt; string<br /><br />Full name: Untitled.Quadruple`1.ToString
+<br /><br /><em>Format quadruple as a string</em><br /></div>
+<div class="tip" id="fppgn23">val sprintf : Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf<br /></div>
+<div class="tip" id="fppgn24">val q1 : Quadruple&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="fppgn25">val q2 : Quadruple&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="fppgn26">val a : &#39;a<br /></div>
+<div class="tip" id="fppgn27">val b : &#39;a<br /></div>
+<div class="tip" id="fppgn28">property Quadruple.Operations: INumeric&lt;&#39;a&gt;
+<br /><br /><em>Expose implementation of operations for &#39;T</em><br /></div>
+<div class="tip" id="fppgn29">abstract member INumeric.Add : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn30">property Quadruple.Item1: &#39;a<br /></div>
+<div class="tip" id="fppgn31">property Quadruple.Item2: &#39;a<br /></div>
+<div class="tip" id="fppgn32">property Quadruple.Item3: &#39;a<br /></div>
+<div class="tip" id="fppgn33">property Quadruple.Item4: &#39;a<br /></div>
+<div class="tip" id="fppgn34">abstract member INumeric.Multiply : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn35">static member Quadruple.Create : a:&#39;TStatic * b:&#39;TStatic * c:&#39;TStatic * d:&#39;TStatic -&gt; Quadruple&lt;&#39;TStatic&gt; (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /><br />Full name: Untitled.Quadruple`1.Create
+<br /><br /><em>Initialize a quadruple and capture operations for working with the<br />&#160;type ^TStatic using static member constraints</em><br /></div>
+<div class="tip" id="fppgn36">val a : &#39;TStatic (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn37">val b : &#39;TStatic (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn38">val c : &#39;TStatic (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn39">val d : &#39;TStatic (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn40">val ops : INumeric&lt;&#39;TStatic&gt; (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn41">val x : INumeric&lt;&#39;TStatic&gt; (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br /></div>
+<div class="tip" id="fppgn42">abstract member INumeric.Abs : &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn43">val abs : &#39;T -&gt; &#39;T (requires member Abs)<br /><br />Full name: Microsoft.FSharp.Core.Operators.abs<br /></div>
+<div class="tip" id="fppgn44">abstract member INumeric.Compare : &#39;T * &#39;T -&gt; int<br /></div>
+<div class="tip" id="fppgn45">val compare : &#39;T -&gt; &#39;T -&gt; int (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.compare<br /></div>
+<div class="tip" id="fppgn46">Multiple overloads
+<br />System.Object.Equals(obj: obj) : bool
+<br />abstract member INumeric.Equals : &#39;T * &#39;T -&gt; bool<br /></div>
+<div class="tip" id="fppgn47">abstract member INumeric.Negate : &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn48">abstract member INumeric.Subtract : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn49">abstract member INumeric.Sign : &#39;T -&gt; int<br /></div>
+<div class="tip" id="fppgn50">val sign : &#39;T -&gt; int (requires member get_Sign)<br /><br />Full name: Microsoft.FSharp.Core.Operators.sign<br /></div>
+<div class="tip" id="fppgn51">property INumeric.Zero: &#39;TStatic<br /></div>
+<div class="tip" id="fppgn52">val GenericZero&lt;&#39;T (requires member get_Zero)&gt; : &#39;T (requires member get_Zero)<br /><br />Full name: Microsoft.FSharp.Core.LanguagePrimitives.GenericZero<br /></div>
+<div class="tip" id="fppgn53">property INumeric.One: &#39;TStatic<br /></div>
+<div class="tip" id="fppgn54">val GenericOne&lt;&#39;T (requires member get_One)&gt; : &#39;T (requires member get_One)<br /><br />Full name: Microsoft.FSharp.Core.LanguagePrimitives.GenericOne<br /></div>
+<div class="tip" id="fppgn55">Multiple overloads
+<br />System.Object.ToString() : string
+<br />abstract member INumeric.ToString : &#39;T * string * System.IFormatProvider -&gt; string<br /></div>
+<div class="tip" id="fppgn56">val failwith : string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith<br /></div>
+<div class="tip" id="fppgn57">abstract member INumeric.Parse : string * System.Globalization.NumberStyles * System.IFormatProvider -&gt; &#39;T<br /></div>
+<div class="tip" id="fppgn58">val quad : &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; Quadruple&lt;&#39;a&gt;<br /><br />Full name: Untitled.quad<br /></div>
+<div class="tip" id="fppgn59">val c : &#39;a<br /></div>
+<div class="tip" id="fppgn60">val d : &#39;a<br /></div>
+<div class="tip" id="fppgn61">type Quadruple&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;private new : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T * ops:INumeric&lt;&#39;T&gt; -&gt; Quadruple&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Item1 : &#39;T<br />&#160;&#160;&#160;&#160;member Item2 : &#39;T<br />&#160;&#160;&#160;&#160;member Item3 : &#39;T<br />&#160;&#160;&#160;&#160;member Item4 : &#39;T<br />&#160;&#160;&#160;&#160;member Operations : INumeric&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member Create : a:&#39;TStatic * b:&#39;TStatic * c:&#39;TStatic * d:&#39;TStatic -&gt; Quadruple&lt;&#39;TStatic&gt; (requires member ( + ) and member Abs and comparison and member ( * ) and member ( ~- ) and member ( - ) and member get_Sign and member get_Zero and member get_One)<br />&#160;&#160;&#160;&#160;static member CreateRuntime : a:&#39;T * b:&#39;T * c:&#39;T * d:&#39;T -&gt; Quadruple&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member ( + ) : q1:Quadruple&lt;&#39;a&gt; * q2:Quadruple&lt;&#39;a&gt; -&gt; Quadruple&lt;&#39;a&gt;<br />&#160;&#160;&#160;&#160;static member ( * ) : q1:Quadruple&lt;&#39;a&gt; * q2:Quadruple&lt;&#39;a&gt; -&gt; Quadruple&lt;&#39;a&gt;<br />&#160;&#160;end<br /><br />Full name: Untitled.Quadruple&lt;_&gt;<br /></div>
+<div class="tip" id="fppgn62">val q1 : Quadruple&lt;float&gt;<br /><br />Full name: Untitled.q1<br /></div>
+<div class="tip" id="fppgn63">val q2 : Quadruple&lt;float&gt;<br /><br />Full name: Untitled.q2<br /></div>
+<div class="tip" id="fppgn64">val mutable sum : Quadruple&lt;int&gt;<br /><br />Full name: Untitled.sum<br /></div>
+<div class="tip" id="fppgn65">val i : int32<br /><br />&#160;&#160;type: int32<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppgn66">val quad : &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; &#39;a -&gt; Quadruple&lt;&#39;a&gt; (requires member get_One and member get_Zero and member get_Sign and member ( - ) and member ( ~- ) and member ( * ) and member Abs and member ( + ) and comparison)<br /><br />Full name: Untitled.Demo2.quad<br /></div>
+<div class="tip" id="fppgn67">val a : &#39;a (requires member get_One and member get_Zero and member get_Sign and member ( - ) and member ( ~- ) and member ( * ) and member Abs and member ( + ) and comparison)<br /></div>
+<div class="tip" id="fppgn68">val b : &#39;a (requires member get_One and member get_Zero and member get_Sign and member ( - ) and member ( ~- ) and member ( * ) and member Abs and member ( + ) and comparison)<br /></div>
+<div class="tip" id="fppgn69">val c : &#39;a (requires member get_One and member get_Zero and member get_Sign and member ( - ) and member ( ~- ) and member ( * ) and member Abs and member ( + ) and comparison)<br /></div>
+<div class="tip" id="fppgn70">val d : &#39;a (requires member get_One and member get_Zero and member get_Sign and member ( - ) and member ( ~- ) and member ( * ) and member Abs and member ( + ) and comparison)<br /></div>
+<div class="tip" id="fppgn71">val mutable sum : Quadruple&lt;int&gt;<br /><br />Full name: Untitled.Demo2.sum<br /></div>
+<div class="tip" id="fppgn72">val check : &#39;T -&gt; &#39;T option (requires member IsInfinity)<br /><br />Full name: Untitled.check<br /></div>
+<div class="tip" id="fppgn73">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool<br /><br />&#160;&#160;type: bool<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;bool&gt;<br />&#160;&#160;implements: System.IEquatable&lt;bool&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppgn74">val num : &#39;T (requires member IsInfinity)<br /></div>
+<div class="tip" id="fppgn75">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;<br /><br />&#160;&#160;type: &#39;T option<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Option&lt;&#39;T&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppgn76">union case Option.None: Option&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="fppgn77">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-generic-numeric.aspx%2f&amp;text=F%23+Math+(IV.)+-+Writing+generic+numeric+codevia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-generic-numeric.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-generic-numeric.aspx%2f&title=F%23+Math+(IV.)+-+Writing+generic+numeric+code">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Math%20(IV.)%20-%20Writing%20generic%20numeric%20code&body=%20Writing%20generic%20numeric%20code%20in%20.NET%20is%20difficult%2c%20because%20.NET%20generics%20do%20not%20support%20constraints%20specifying%20that%20a%20type%20has%20to%20support%20certain%20numeric%20operations.%20In%20this%20article%2c%20we%20look%20how%20to%20solve%20the%20problem%20in%20F%23.%20Using%20static%20member%20constraints%2c%20it%20is%20possible%20to%20write%20simple%20generic%20calculations%20and%20using%20the%20INumeric%20interface%2c%20we%20can%20capture%20numeric%20operations%20for%20a%20type%20and%20use%20them%20when%20implementing%20complex%20types%20such%20as%20a%20matrix.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-generic-numeric.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Sunday, 27 November 2011, 5:19 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/math-and-numerics/">math and numerics</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

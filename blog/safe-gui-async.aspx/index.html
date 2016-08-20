@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Safer asynchronous workflows for GUI programming - Tomas Petricek</title>
+
+  <meta name="description" content=" When writing reactive applications using F# asynchronous workflows, it is important to run some operations on the right thread. User interface elements are accessible only on GUI threads and CPU-intensive computations should be done on a background thread. This article describes an extension of F# asynchronous workflows that guarantees correct use of threads using types." />
+  <meta name="keywords" content="research, f#, asynchronous, functional, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Safer asynchronous workflows for GUI programming" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/safe-gui-async.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" When writing reactive applications using F# asynchronous workflows, it is important to run some operations on the right thread. User interface elements are accessible only on GUI threads and CPU-intensive computations should be done on a background thread. This article describes an extension of F# asynchronous workflows that guarantees correct use of threads using types." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Safer asynchronous workflows for GUI programming" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" When writing reactive applications using F# asynchronous workflows, it is important to run some operations on the right thread. User interface elements are accessible only on GUI threads and CPU-intensive computations should be done on a background thread. This article describes an extension of F# asynchronous workflows that guarantees correct use of threads using types." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Safer asynchronous workflows for GUI programming",
+    "headline": "Safer asynchronous workflows for GUI programming",
+  	"description": " When writing reactive applications using F# asynchronous workflows, it is important to run some operations on the right thread. User interface elements are accessible only on GUI threads and CPU-intensive computations should be done on a background thread. This article describes an extension of F# asynchronous workflows that guarantees correct use of threads using types.",
+  	"url": "http://tomasp.net/blog/safe-gui-async.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2011-06-15T21:36:40.0000000",
+  	"datePublished": "2011-06-15T21:36:40.0000000",
+    "dateModified": "2011-06-15T21:36:40.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/safe-gui-async.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["research", "f#", "asynchronous", "functional",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Safer asynchronous workflows for GUI programming</h1>
+<img src="http://tomasp.net/articles/safe-gui-async/screen.png" style="float:right; margin:0px 0px 0px 15px;" />
+
+<p>In the <a href="http://tomasp.net/blog/async-non-blocking-gui.aspx">previous article</a>,
+  I discussed how to use F# asynchronous work&#173;flows for creating reactive user-interfaces.
+  One of the main concerns was to avoid blocking the GUI thread (to prevent the user-interface
+  from freezing). The workflow shouldn't perform any CPU-intensive compu&#173;tation when running
+  on the GUI thread.</p>
+
+<p>The standard F# library provides two ways to run a computation on a background thread from
+  an asynchronous workflow. The <code>StartChild</code> operation starts an operation 
+  in the thread pool and returns a workflow that can be called using asynchronous (non-blocking)
+  <code>let!</code> construct. The <code>SwitchToThreadPool</code> operation can be called
+  using <code>do!</code> and resumes the rest of the workflow on a background thread.</p>
+
+<p>When using the <code>SwitchToThreadPool</code> operation, we also need to eventually use
+  <code>SwitchToContext</code> to transfer the execution back to the GUI thread (after 
+  completing the CPU-intensive calculations). In this article, I describe a variation of 
+  F# asynchronous workflows that keeps track of the running thread in the type of the 
+  computation. As a result, calling a workflow that should be executed on a GUI thread 
+  from a background thread is a compile-time error as opposed to failing at runtime.</p>
+
+<h2>Introducing checked async</h2>
+<p>The easiest way to implement <em>checked asynchronous workflows</em> is to just wrap
+  the standard F# implementation and add type parameters for keeping the additional 
+  information. Then we also need to create a wrapper for a computation builder that
+  will correctly propagate the additional information. Let's first look at the type
+  declarations and then explore some examples. The definition of computation builder
+  is briefly discussed at the end of the article.</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Represents an</span><span class="c"> </span><span class="c">asynchronous</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">starts</span>
+<span class="l">2: </span><span class="c">///</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">&#39;Pre</span><span class="c"> </span><span class="c">thread,</span><span class="c"> </span><span class="c">ends</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">&#39;Post</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">and</span>
+<span class="l">3: </span><span class="c">///</span><span class="c"> </span><span class="c">produces</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">value</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">type</span><span class="c"> </span><span class="c">&#39;Value.</span>
+<span class="l">4: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips1', 1)" onmouseover="showTip(event, 'fstips1', 1)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre</span>, <span class="o">&#39;</span><span class="i">Post</span>, <span class="o">&#39;</span><span class="i">Value</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips2', 2)" onmouseover="showTip(event, 'fstips2', 2)" class="omitted">(...)</span>
+<span class="l">5: </span>
+<span class="l">6: </span><span class="c">//</span><span class="c"> </span><span class="c">Two</span><span class="c"> </span><span class="c">phantom</span><span class="c"> </span><span class="c">types</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">represent</span><span class="c"> </span><span class="c">threads</span>
+<span class="l">7: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips3', 3)" onmouseover="showTip(event, 'fstips3', 3)" class="i">GuiThread</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips4', 4)" onmouseover="showTip(event, 'fstips4', 4)" class="omitted">(...)</span>
+<span class="l">8: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips5', 5)" onmouseover="showTip(event, 'fstips5', 5)" class="i">BackgroundThread</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips4', 6)" onmouseover="showTip(event, 'fstips4', 6)" class="omitted">(...)</span></pre>
+
+<p>The last type parameter of <code>CheckedAsync</code> is the type of the value produced 
+  by the asynchronous workflow and is uses as an argument to the wrapped <code>Async</code>.
+  The two additional parameters are called <em>phantom type parameters</em>, because they
+  do not appear anywhere in the definition. In many ways, they are similar to units of measure
+  - they just add additional information to the type that is checked at compile-time. </p>
+
+<p>The next two types can be used in place of the first two type parameters. For example,
+  a computation of type <code>CheckedAsync&lt;GuiThread, BackgroundThread, string&gt;</code>
+  represents an asynchronous computation that starts on the GUI thread (where it can access
+  user-interface elements), then switches to the background thread (which can be done using 
+  <code>SwitchToThreadPool</code>), then performs some CPU-intensive computation and produces
+  a <code>string</code> value. When called using <code>let!</code> from another asynchronous
+  workflow, it resumes the rest of the workflow on the background thread (which is quite 
+  subtle behavior - most of the standard asynchronous operations resume on the same thread
+  where they started).</p>
+
+<h3>Processing data and creating charts</h3>
+<p>To demonstrate how checked asynchronous workflows work in practice, we'll reimplement
+  the examples from my <a href="http://tomasp.net/blog/async-non-blocking-gui.aspx">previous article</a>.
+  The sample application downloads stock prices, processes them (which may be CPU consuming) 
+  and then creates a chart (which must be run on the GUI thread). The following two helper
+  functions will be called from the main asynchronous workflow:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Parse</span><span class="c"> </span><span class="c">downloaded</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">set.</span><span class="c"> </span><span class="c">This</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">CPU-expensive</span><span class="c"> </span>
+<span class="l"> 2: </span><span class="c">///</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">should</span><span class="c"> </span><span class="c">not</span><span class="c"> </span><span class="c">block</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user-interface.</span>
+<span class="l"> 3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips6', 7)" onmouseover="showTip(event, 'fstips6', 7)" class="i">extractStockPrices</span> (<span onmouseout="hideTip(event, 'fstips7', 8)" onmouseover="showTip(event, 'fstips7', 8)" class="i">data</span><span class="o">:</span><span onmouseout="hideTip(event, 'fstips8', 9)" onmouseover="showTip(event, 'fstips8', 9)" class="i">string</span>) <span onmouseout="hideTip(event, 'fstips9', 10)" onmouseover="showTip(event, 'fstips9', 10)" class="i">count</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 11)" onmouseover="showTip(event, 'fstips10', 11)" class="i">asyncOn</span> <span onmouseout="hideTip(event, 'fstips11', 12)" onmouseover="showTip(event, 'fstips11', 12)" class="i">background</span> {
+<span class="l"> 4: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips12', 13)" onmouseover="showTip(event, 'fstips12', 13)" class="i">dataLines</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips13', 14)" onmouseover="showTip(event, 'fstips13', 14)" class="omitted">(...)</span>
+<span class="l"> 5: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips14', 15)" onmouseover="showTip(event, 'fstips14', 15)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips15', 16)" onmouseover="showTip(event, 'fstips15', 16)" class="omitted">(...)</span>
+<span class="l"> 6: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Additional</span><span class="c"> </span><span class="c">CPU-bound</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">processing</span>
+<span class="l"> 7: </span>  <span onmouseout="hideTip(event, 'fstips16', 17)" onmouseover="showTip(event, 'fstips16', 17)" class="i">Thread</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips17', 18)" onmouseover="showTip(event, 'fstips17', 18)" class="i">Sleep</span>(<span class="n">5000</span>)
+<span class="l"> 8: </span>  <span class="k">return</span> <span onmouseout="hideTip(event, 'fstips14', 19)" onmouseover="showTip(event, 'fstips14', 19)" class="i">data</span> }
+<span class="l"> 9: </span>
+<span class="l">10: </span><span class="c">///</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">&amp;</span><span class="c"> </span><span class="c">display</span><span class="c"> </span><span class="c">chart.</span><span class="c"> </span><span class="c">The</span><span class="c"> </span><span class="c">function</span><span class="c"> </span><span class="c">needs</span><span class="c"> </span><span class="c">to</span><span class="c"> </span>
+<span class="l">11: </span><span class="c">///</span><span class="c"> </span><span class="c">access</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">interface</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">should</span><span class="c"> </span><span class="c">run</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread.</span>
+<span class="l">12: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips18', 20)" onmouseover="showTip(event, 'fstips18', 20)" class="i">displayChart</span> <span onmouseout="hideTip(event, 'fstips19', 21)" onmouseover="showTip(event, 'fstips19', 21)" class="i">color</span> <span onmouseout="hideTip(event, 'fstips20', 22)" onmouseover="showTip(event, 'fstips20', 22)" class="i">prices</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 23)" onmouseover="showTip(event, 'fstips10', 23)" class="i">asyncOn</span> <span onmouseout="hideTip(event, 'fstips21', 24)" onmouseover="showTip(event, 'fstips21', 24)" class="i">gui</span> {
+<span class="l">13: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips22', 25)" onmouseover="showTip(event, 'fstips22', 25)" class="i">chart</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips23', 26)" onmouseover="showTip(event, 'fstips23', 26)" class="i">createChart</span> <span class="n">600.0</span> <span class="n">200.0</span> <span onmouseout="hideTip(event, 'fstips19', 27)" onmouseover="showTip(event, 'fstips19', 27)" class="i">color</span> <span onmouseout="hideTip(event, 'fstips20', 28)" onmouseover="showTip(event, 'fstips20', 28)" class="i">prices</span>
+<span class="l">14: </span>  <span onmouseout="hideTip(event, 'fstips22', 29)" onmouseover="showTip(event, 'fstips22', 29)" class="i">chart</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips24', 30)" onmouseover="showTip(event, 'fstips24', 30)" class="i">SetValue</span>(<span onmouseout="hideTip(event, 'fstips25', 31)" onmouseover="showTip(event, 'fstips25', 31)" class="i">Canvas</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips26', 32)" onmouseover="showTip(event, 'fstips26', 32)" class="i">LeftProperty</span>, <span class="n">100.0</span>)
+<span class="l">15: </span>  <span onmouseout="hideTip(event, 'fstips22', 33)" onmouseover="showTip(event, 'fstips22', 33)" class="i">chart</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips24', 34)" onmouseover="showTip(event, 'fstips24', 34)" class="i">SetValue</span>(<span onmouseout="hideTip(event, 'fstips25', 35)" onmouseover="showTip(event, 'fstips25', 35)" class="i">Canvas</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips27', 36)" onmouseover="showTip(event, 'fstips27', 36)" class="i">TopProperty</span>, <span class="n">100.0</span>)
+<span class="l">16: </span>  <span onmouseout="hideTip(event, 'fstips28', 37)" onmouseover="showTip(event, 'fstips28', 37)" class="i">holder</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips29', 38)" onmouseover="showTip(event, 'fstips29', 38)" class="i">Children</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips30', 39)" onmouseover="showTip(event, 'fstips30', 39)" class="i">Clear</span>()
+<span class="l">17: </span>  <span onmouseout="hideTip(event, 'fstips28', 40)" onmouseover="showTip(event, 'fstips28', 40)" class="i">holder</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips29', 41)" onmouseover="showTip(event, 'fstips29', 41)" class="i">Children</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips31', 42)" onmouseover="showTip(event, 'fstips31', 42)" class="i">Add</span>(<span onmouseout="hideTip(event, 'fstips22', 43)" onmouseover="showTip(event, 'fstips22', 43)" class="i">chart</span>) }</pre>
+
+<p>The functions are declared almost like ordinary asynchronous workflow. The only difference is that the
+  snippet uses a parameterized computation builder <code>asyncOn</code>. The argument specifies the thread where 
+  the computation should start (the values <code>gui</code> and <code>background</code> are just dummy values to
+  specify the type using a nice syntax). The F# compiler infers the thread where the computation will complete
+  from the initial thread and from the code of the workflow. Both of the functions are quite simple and they do 
+  not change the thread where the workflow is running. As a result the type of the first workflow is
+  <code>CheckedAsync&lt;BackgroundThread, BackgroundThread, float[]&gt;</code> and the type of the second
+  one is <code>CheckedAsync&lt;GuiThread, GuiThread, unit&gt;</code>.</p>
+
+<h3>Type-checking threads</h3>
+<p>The main workflow needs to call the above two functions. When it gets the data, it processes them to 
+  extract the prices (and possibly other statistics) and then draws the chart. Let's now look how could we
+  go about writing a composed workflow. In this case, we don't need to be explicit about the thread where
+  the computation starts. To leave the compiler to infer this, we can use <code>asyncChecked</code> computation
+  builder instead of more specific <code>asyncOn</code>. In the first attempt we just try to call the
+  two functions:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips32', 44)" onmouseover="showTip(event, 'fstips32', 44)" class="i">wrongWorkflow</span> <span onmouseout="hideTip(event, 'fstips7', 45)" onmouseover="showTip(event, 'fstips7', 45)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips33', 46)" onmouseover="showTip(event, 'fstips33', 46)" class="i">asyncChecked</span> {
+<span class="l">2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Starts</span><span class="c"> </span><span class="c">executing</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">background</span><span class="c"> </span><span class="c">thread...</span>
+<span class="l">3: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips34', 47)" onmouseover="showTip(event, 'fstips34', 47)" class="i">prices</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips6', 48)" onmouseover="showTip(event, 'fstips6', 48)" class="i">extractStockPrices</span> <span onmouseout="hideTip(event, 'fstips7', 49)" onmouseover="showTip(event, 'fstips7', 49)" class="i">data</span> <span class="n">500</span>
+<span class="l">4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">...but</span><span class="c"> </span><span class="c">cannot</span><span class="c"> </span><span class="c">continue</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the GUI</span><span class="c"> </span><span class="c">thread!</span>
+<span class="l">5: </span>  <span class="k">do!</span> <span id="fstipst35" onmouseout="hideTip(event, 'fstips35', 50)" onmouseover="showTip(event, 'fstips35', 50, document.getElementById('fstipst35'))" class="cerr"><span class="i">displayChart</span> <span class="i">Color</span><span class="o">.</span><span class="i">Red</span> <span class="i">prices</span></span> }</pre>
+
+<p>As the snippet shows, the code doesn't compile. The problem is that the workflow created by <code>extractStockPrices</code>
+  ends on the background thread, but the workflow created by <code>displayChart</code> can be only started
+  on the GUI thread. The definition of <code>Bind</code> in the computation builder (discussed below) 
+  specifies that the end-thread of the first operation must match the begin-thread of the second operation,
+  which is not the case in this snippet. Also note that the F# type inference correctly deduced that 
+  the entire <code>wrongWorkflow</code> starts on the background thread, because this is where the
+  first operation starts. This also follows from the definition of the computation builder.</p>
+
+<p>To fix the error, we need to run the workflow created by <code>displayChart</code> on the GUI thread.
+  One way to do this is to use a special operation named <code>SwitchToGui</code> that changes the
+  current thread to the GUI thread using the <code>Dispatcher</code> type provided by Silverlight.
+  The method has the following type:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb1', 1)" onmouseover="showTip(event, 'fstipsb1', 1)" class="i">CheckedAsync</span> <span class="k">with</span>
+<span class="l">2: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Continue</span><span class="c"> </span><span class="c">executing</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">(regardless</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">current</span><span class="c"> </span><span class="c">thread)</span>
+<span class="l">3: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb2', 2)" onmouseover="showTip(event, 'fstipsb2', 2)" class="i">SwitchToGui</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstipsb3', 3)" onmouseover="showTip(event, 'fstipsb3', 3)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 4)" onmouseover="showTip(event, 'fstipsb1', 4)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre</span>, <span onmouseout="hideTip(event, 'fstipsb4', 5)" onmouseover="showTip(event, 'fstipsb4', 5)" class="i">GuiThread</span>, <span onmouseout="hideTip(event, 'fstipsb3', 6)" onmouseover="showTip(event, 'fstipsb3', 6)" class="i">unit</span><span class="o">&gt;</span></pre>
+
+<p>The type of the workflow specifies that it can be started on any thread. The type parameter <code>'Pre</code> 
+  can be specified to both <code>GuiThread</code> (which would be legal, but not very useful) and 
+  to <code>BackgroundThread</code>. The resulting thread is however always <code>GuiThread</code>. Finally,
+  the last type parameter specifies that the workflow returns <code>unit</code>, which means that 
+  it can be called using the <code>do!</code> syntax:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips36', 51)" onmouseover="showTip(event, 'fstips36', 51)" class="i">goodWorkflow</span> <span onmouseout="hideTip(event, 'fstips7', 52)" onmouseover="showTip(event, 'fstips7', 52)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips33', 53)" onmouseover="showTip(event, 'fstips33', 53)" class="i">asyncChecked</span> {
+<span class="l">2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">executing</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">background</span><span class="c"> </span><span class="c">thread</span>
+<span class="l">3: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips34', 54)" onmouseover="showTip(event, 'fstips34', 54)" class="i">prices</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips6', 55)" onmouseover="showTip(event, 'fstips6', 55)" class="i">extractStockPrices</span> <span onmouseout="hideTip(event, 'fstips7', 56)" onmouseover="showTip(event, 'fstips7', 56)" class="i">data</span> <span class="n">500</span>
+<span class="l">4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Switch</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread</span>
+<span class="l">5: </span>  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips37', 57)" onmouseover="showTip(event, 'fstips37', 57)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips38', 58)" onmouseover="showTip(event, 'fstips38', 58)" class="i">SwitchToGui</span>()
+<span class="l">6: </span>  <span class="c">//</span><span class="c"> </span><span class="c">And</span><span class="c"> </span><span class="c">display</span><span class="c"> </span><span class="c">chart</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the GUI</span><span class="c"> </span><span class="c">thread</span>
+<span class="l">7: </span>  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips18', 59)" onmouseover="showTip(event, 'fstips18', 59)" class="i">displayChart</span> <span onmouseout="hideTip(event, 'fstips39', 60)" onmouseover="showTip(event, 'fstips39', 60)" class="i">Color</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips40', 61)" onmouseover="showTip(event, 'fstips40', 61)" class="i">Red</span> <span onmouseout="hideTip(event, 'fstips34', 62)" onmouseover="showTip(event, 'fstips34', 62)" class="i">prices</span> }</pre>
+
+<p>With the additional thread transition in the middle, the snippet now type-checks and it 
+  creates a workflow that starts on the background thread, does some work, switches to the
+  GUI thread and then displays the chart and returns. You can verify that by looking at the
+  (inferred) type of the <code>goodWorkflow</code> function.</p>
+
+<h2>Verifying stock price sample</h2>
+
+<p>Let's now look how checked asynchronous workflows work on a larger example. First of all,
+  the <a href="http://tomasp.net/blog/async-non-blocking-gui.aspx">previous article</a> included 
+  an incorrect example that called the two functions declared above from a single 
+  asynchronous workflow without any thread switching. The example compiled, but it caused
+  the user-interface to hang, which is what we want to avoid. The <code>main</code> workflow
+  is expected to start on the GUI thread. If we replace ordinary <code>async</code> with
+  <code>asyncOn gui</code> and use operations provided by <code>CheckedAsync</code>
+  (instead of <code>Async</code>), the snippet no longer compiles:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips41', 63)" onmouseover="showTip(event, 'fstips41', 63)" class="i">main</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 64)" onmouseover="showTip(event, 'fstips10', 64)" class="i">asyncOn</span> <span onmouseout="hideTip(event, 'fstips21', 65)" onmouseover="showTip(event, 'fstips21', 65)" class="i">gui</span> {
+<span class="l"> 2: </span>    <span onmouseout="hideTip(event, 'fstips42', 66)" onmouseover="showTip(event, 'fstips42', 66)" class="omitted">(Initialization omitted)</span>
+<span class="l"> 3: </span>  
+<span class="l"> 4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">The</span><span class="c"> </span><span class="c">main</span><span class="c"> </span><span class="c">application</span><span class="c"> </span><span class="c">loop</span>
+<span class="l"> 5: </span>  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> 
+<span class="l"> 6: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 7: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips19', 67)" onmouseover="showTip(event, 'fstips19', 67)" class="i">color</span>, <span onmouseout="hideTip(event, 'fstips43', 68)" onmouseover="showTip(event, 'fstips43', 68)" class="i">stock</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 69)" onmouseover="showTip(event, 'fstips37', 69)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips44', 70)" onmouseover="showTip(event, 'fstips44', 70)" class="i">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fstips45', 71)" onmouseover="showTip(event, 'fstips45', 71)" class="i">stockClicked</span>)
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Download</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(non-blocking</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 9: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips46', 72)" onmouseover="showTip(event, 'fstips46', 72)" class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips47', 73)" onmouseover="showTip(event, 'fstips47', 73)" class="i">WebClient</span>()
+<span class="l">10: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips7', 74)" onmouseover="showTip(event, 'fstips7', 74)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips46', 75)" onmouseover="showTip(event, 'fstips46', 75)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips48', 76)" onmouseover="showTip(event, 'fstips48', 76)" class="i">AsyncDownloadString</span>(<span onmouseout="hideTip(event, 'fstips49', 77)" onmouseover="showTip(event, 'fstips49', 77)" class="i">Uri</span>(<span onmouseout="hideTip(event, 'fstips50', 78)" onmouseover="showTip(event, 'fstips50', 78)" class="i">root</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fstips43', 79)" onmouseover="showTip(event, 'fstips43', 79)" class="i">stock</span>))    
+<span class="l">11: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Process</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">(CPU-bound</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">12: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips51', 80)" onmouseover="showTip(event, 'fstips51', 80)" class="i">prices</span> <span class="o">=</span> <span id="fstipst52" onmouseout="hideTip(event, 'fstips52', 81)" onmouseover="showTip(event, 'fstips52', 81, document.getElementById('fstipst52'))" class="cerr"><span class="i">extractStockPrices</span> <span class="i">data</span> <span class="n">500</span></span>
+<span class="l">13: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">&amp;</span><span class="c"> </span><span class="c">display</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">chart</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">14: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips18', 82)" onmouseover="showTip(event, 'fstips18', 82)" class="i">displayChart</span> <span onmouseout="hideTip(event, 'fstips19', 83)" onmouseover="showTip(event, 'fstips19', 83)" class="i">color</span> <span onmouseout="hideTip(event, 'fstips51', 84)" onmouseover="showTip(event, 'fstips51', 84)" class="i">prices</span> }
+<span class="l">15: </span>
+<span class="l">16: </span><span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">workflow</span><span class="c"> </span><span class="c">immediately</span><span class="c"> </span><span class="c">(on</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread)</span>
+<span class="l">17: </span><span class="k">do</span> <span onmouseout="hideTip(event, 'fstips41', 85)" onmouseover="showTip(event, 'fstips41', 85)" class="i">main</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstips37', 86)" onmouseover="showTip(event, 'fstips37', 86)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips53', 87)" onmouseover="showTip(event, 'fstips53', 87)" class="i">StartImmediate</span></pre>
+
+<p>The error is the same as in the earlier brief example - we cannot call CPU-bound workflow 
+  <code>extractStockPrices</code> from a workflow that runs on the GUI thread. When writing code
+  using checked workflows, we need to use checked versions of all standard operations. These are
+  implemented as simple wrappers, but they annotate the type with the specification of threading
+  behavior (which is otherwise difficult to find, even in the documentation). The operations used
+  in the above example have the following signatures:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb1', 7)" onmouseover="showTip(event, 'fstipsb1', 7)" class="i">CheckedAsync</span> <span class="k">with</span>
+<span class="l"> 2: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Waiting</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">event</span><span class="c"> </span><span class="c">occurrence</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">allowed</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">only</span>
+<span class="l"> 3: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb5', 8)" onmouseover="showTip(event, 'fstipsb5', 8)" class="i">AwaitObservable</span>  <span class="o">:</span> <span onmouseout="hideTip(event, 'fstipsb6', 9)" onmouseover="showTip(event, 'fstipsb6', 9)" class="i">IObservable</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="k">-&gt;</span> 
+<span class="l"> 4: </span>                                   <span onmouseout="hideTip(event, 'fstipsb1', 10)" onmouseover="showTip(event, 'fstipsb1', 10)" class="i">CheckedAsync</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstipsb4', 11)" onmouseover="showTip(event, 'fstipsb4', 11)" class="i">GuiThread</span>, <span onmouseout="hideTip(event, 'fstipsb4', 12)" onmouseover="showTip(event, 'fstipsb4', 12)" class="i">GuiThread</span>, <span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>
+<span class="l"> 5: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Starts</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">(current)</span><span class="c"> </span><span class="c">GUI</span><span class="c"> </span><span class="c">thread</span>
+<span class="l"> 6: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb7', 13)" onmouseover="showTip(event, 'fstipsb7', 13)" class="i">StartImmediate</span>   <span class="o">:</span> <span onmouseout="hideTip(event, 'fstipsb1', 14)" onmouseover="showTip(event, 'fstipsb1', 14)" class="i">CheckedAsync</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstipsb4', 15)" onmouseover="showTip(event, 'fstipsb4', 15)" class="i">GuiThread</span>, <span class="o">&#39;</span><span class="i">Post</span>, <span onmouseout="hideTip(event, 'fstipsb3', 25)" onmouseover="showTip(event, 'fstipsb3', 25)" class="i">unit</span><span class="o">&gt;</span> 
+<span class="l"> 7: </span>
+<span class="l"> 8: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb8', 16)" onmouseover="showTip(event, 'fstipsb8', 16)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstipsb9', 17)" onmouseover="showTip(event, 'fstipsb9', 17)" class="i">Net</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstipsb10', 18)" onmouseover="showTip(event, 'fstipsb10', 18)" class="i">WebClient</span> <span class="k">with</span>
+<span class="l"> 9: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Downloads</span><span class="c"> </span><span class="c">string</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">returns</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">original</span><span class="c"> </span><span class="c">thread</span>
+<span class="l">10: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb11', 19)" onmouseover="showTip(event, 'fstipsb11', 19)" class="i">AsyncDownloadString</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstipsb12', 20)" onmouseover="showTip(event, 'fstipsb12', 20)" class="i">Uri</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 21)" onmouseover="showTip(event, 'fstipsb1', 21)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span>, <span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fstipsb13', 22)" onmouseover="showTip(event, 'fstipsb13', 22)" class="i">string</span><span class="o">&gt;</span></pre>
+
+<p>The types of operations now also carry the specification of threading behavior. </p>
+
+<ul class="spaces">
+<li>The <code>AwaitObservable</code>
+  operation can be used only on the GUI thread and it resumes the workflow on the GUI thread. This
+  works for standard F# events, but other sources of <code>IObservable&lt;'T&gt;</code> may behave
+  differently (the right solution would be to use a more expressive type <code>IObservable&lt;'Thread, 'T&gt;</code> with
+  <code>'Thread</code> describing where events are triggered).</li>
+
+<li>The <code>StartImmediate</code> operation starts a workflow on the current thread. It is expected to be 
+  used on the main thread (outside of asynchronous workflows), so the type specifies that the argument will
+  be executed on the GUI thread. The operation doesn't care where the workflow completes, so it uses a type
+  variable <code>'Post</code>. </li>
+
+<li>The <code>AsyncDownloadString</code> operation is implemented such that it returns back to the original
+  thread where it was started. This is behavior used by most of the standard F# asynchronous operations and
+  is captured by the fact that the same type variable (<code>'T</code>) is used for both starting and finishing
+  thread.</li>
+</ul>
+
+<p>Now that we've seen numerous primitive asynchronous operations, let's look how to fix the above example.
+  The following two sections implement the two approaches introduced in the previous article. We start with
+  switching of the current thread and then look at starting computation as a child.</p>
+
+<h3>Switching between threads</h3>
+<p>After introducing the type-checking of threading behavior, the switching approach makes more sense.
+  In the earlier snippet, I demonstrated how the <code>SwitchToGui</code> operation makes that possible, 
+  but that's a Silverlight-specific operation. In general, F# asynchronous workflows use standard 
+  .NET <code>SynchronizationContext</code> type that represents an arbitrary thread (it can be either
+  background or GUI). Current context can be obtained using <code>Synchronization&#173;Context.&#173;Current</code>.
+  The following snippet uses checked wrappers for these operations:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips54', 88)" onmouseover="showTip(event, 'fstips54', 88)" class="i">main</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 89)" onmouseover="showTip(event, 'fstips10', 89)" class="i">asyncOn</span> <span onmouseout="hideTip(event, 'fstips21', 90)" onmouseover="showTip(event, 'fstips21', 90)" class="i">gui</span> {
+<span class="l"> 2: </span>  <span onmouseout="hideTip(event, 'fstips42', 91)" onmouseover="showTip(event, 'fstips42', 91)" class="omitted">(Initialization omitted)</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">The</span><span class="c"> </span><span class="c">main</span><span class="c"> </span><span class="c">application</span><span class="c"> </span><span class="c">loop</span>
+<span class="l"> 5: </span>  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> 
+<span class="l"> 6: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 7: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips19', 92)" onmouseover="showTip(event, 'fstips19', 92)" class="i">color</span>, <span onmouseout="hideTip(event, 'fstips43', 93)" onmouseover="showTip(event, 'fstips43', 93)" class="i">stock</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 94)" onmouseover="showTip(event, 'fstips37', 94)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips44', 95)" onmouseover="showTip(event, 'fstips44', 95)" class="i">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fstips45', 96)" onmouseover="showTip(event, 'fstips45', 96)" class="i">stockClicked</span>)
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Download</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(non-blocking</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 9: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips46', 97)" onmouseover="showTip(event, 'fstips46', 97)" class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips47', 98)" onmouseover="showTip(event, 'fstips47', 98)" class="i">WebClient</span>()
+<span class="l">10: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips7', 99)" onmouseover="showTip(event, 'fstips7', 99)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips46', 100)" onmouseover="showTip(event, 'fstips46', 100)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips48', 101)" onmouseover="showTip(event, 'fstips48', 101)" class="i">AsyncDownloadString</span>(<span onmouseout="hideTip(event, 'fstips49', 102)" onmouseover="showTip(event, 'fstips49', 102)" class="i">Uri</span>(<span onmouseout="hideTip(event, 'fstips50', 103)" onmouseover="showTip(event, 'fstips50', 103)" class="i">root</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fstips43', 104)" onmouseover="showTip(event, 'fstips43', 104)" class="i">stock</span>))    
+<span class="l">11: </span>
+<span class="l">12: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Process</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">(CPU-bound</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">13: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips55', 105)" onmouseover="showTip(event, 'fstips55', 105)" class="i">ctx</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 106)" onmouseover="showTip(event, 'fstips37', 106)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips56', 107)" onmouseover="showTip(event, 'fstips56', 107)" class="i">CurrentContext</span>()
+<span class="l">14: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips37', 108)" onmouseover="showTip(event, 'fstips37', 108)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips57', 109)" onmouseover="showTip(event, 'fstips57', 109)" class="i">SwitchToThreadPool</span>()
+<span class="l">15: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips34', 110)" onmouseover="showTip(event, 'fstips34', 110)" class="i">prices</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips6', 111)" onmouseover="showTip(event, 'fstips6', 111)" class="i">extractStockPrices</span> <span onmouseout="hideTip(event, 'fstips7', 112)" onmouseover="showTip(event, 'fstips7', 112)" class="i">data</span> <span class="n">500</span>
+<span class="l">16: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips37', 113)" onmouseover="showTip(event, 'fstips37', 113)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips58', 114)" onmouseover="showTip(event, 'fstips58', 114)" class="i">SwitchToContext</span>(<span onmouseout="hideTip(event, 'fstips55', 115)" onmouseover="showTip(event, 'fstips55', 115)" class="i">ctx</span>)
+<span class="l">17: </span>
+<span class="l">18: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">&amp;</span><span class="c"> </span><span class="c">display</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">chart</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">19: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips18', 116)" onmouseover="showTip(event, 'fstips18', 116)" class="i">displayChart</span> <span onmouseout="hideTip(event, 'fstips19', 117)" onmouseover="showTip(event, 'fstips19', 117)" class="i">color</span> <span onmouseout="hideTip(event, 'fstips34', 118)" onmouseover="showTip(event, 'fstips34', 118)" class="i">prices</span> }</pre>
+
+<p>Before we can call the <code>extractStockPrices</code> function, we need to switch the execution of the
+  workflow to a back&#173;ground thread. This is done simply using <code>SwitchToThreadPool</code>
+  which resumes the workflow on a thread from the thread pool. To switch back, we use <code>SwitchToContext</code>, which
+  resumes the workflow on a thread represented by the <code>SynchronizationContext</code> used as an argument.
+  This may be either a GUI or a background thread - to make this type-safe, we need to keep track of the 
+  thread in the type of synchronization context too, so we use a wrapper <code>Synchronization&#173;Context&lt;'Thread&gt;</code>.
+  The type parameter <code>'Thread</code> represents the thread captured by the context.</p>
+
+<p>When getting the current context, we use an operation <code>CurrentContext</code>provided by <code>CheckedAsync</code>.
+  It returns a synchronization context of the current thread and annotates it with an appropriate type. When 
+  executed from a workflow running on a thread <code>SomeThread</code>, the result will have a type
+  <code>Synchronization&#173;Context&lt;SomeThread&gt;</code>. The type signatures of the operation
+  used in the above snippet clarify the behavior:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb1', 23)" onmouseover="showTip(event, 'fstipsb1', 23)" class="i">CheckedAsync</span> <span class="k">with</span>
+<span class="l"> 2: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Get</span><span class="c"> </span><span class="c">current</span><span class="c"> </span><span class="c">context</span><span class="c"> </span><span class="c">(the</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">also</span><span class="c"> </span><span class="c">kept</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">type)</span>
+<span class="l"> 3: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb14', 24)" onmouseover="showTip(event, 'fstipsb14', 24)" class="i">CurrentContext</span> <span class="o">:</span>
+<span class="l"> 4: </span>    <span onmouseout="hideTip(event, 'fstipsb3', 25)" onmouseover="showTip(event, 'fstipsb3', 25)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 26)" onmouseover="showTip(event, 'fstipsb1', 26)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span>, <span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fstipsb15', 27)" onmouseover="showTip(event, 'fstipsb15', 27)" class="i">SynchronizationContext</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span><span class="o">&gt;</span>
+<span class="l"> 5: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Switch</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">new</span><span class="c"> </span><span class="c">background</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">(from</span><span class="c"> </span><span class="c">any</span><span class="c"> </span><span class="c">thread)</span>
+<span class="l"> 6: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb16', 28)" onmouseover="showTip(event, 'fstipsb16', 28)" class="i">SwitchToThreadPool</span> <span class="o">:</span>
+<span class="l"> 7: </span>    <span onmouseout="hideTip(event, 'fstipsb3', 29)" onmouseover="showTip(event, 'fstipsb3', 29)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 30)" onmouseover="showTip(event, 'fstipsb1', 30)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fstipsb17', 31)" onmouseover="showTip(event, 'fstipsb17', 31)" class="i">BackgroundThread</span>, <span onmouseout="hideTip(event, 'fstipsb3', 32)" onmouseover="showTip(event, 'fstipsb3', 32)" class="i">unit</span><span class="o">&gt;</span>
+<span class="l"> 8: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Switch</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">represented</span><span class="c"> </span><span class="c">by</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">synchronization</span><span class="c"> </span><span class="c">context</span>
+<span class="l"> 9: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb18', 33)" onmouseover="showTip(event, 'fstipsb18', 33)" class="i">SwitchToContext</span> <span class="o">:</span> 
+<span class="l">10: </span>    <span onmouseout="hideTip(event, 'fstipsb15', 34)" onmouseover="showTip(event, 'fstipsb15', 34)" class="i">SynchronizationContext</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 35)" onmouseover="showTip(event, 'fstipsb1', 35)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre</span>, <span class="o">&#39;</span><span class="i">T</span>, <span onmouseout="hideTip(event, 'fstipsb3', 36)" onmouseover="showTip(event, 'fstipsb3', 36)" class="i">unit</span><span class="o">&gt;</span></pre>
+
+<p>The <code>CurrentContext</code> method creates a workflow that starts on a thread <code>'T</code>,
+  ends on a thread <code>'T</code> and returns a synchronization context representing the same thread
+  <code>'T</code>. When used in the snippet above, the operation is called from the GUI thread and so
+  the type of <code>ctx</code> is <code>Synchronization&#173;Context&lt;GuiThread&gt;</code>. The 
+  <code>SwitchToContext</code> operation takes a typed synchronization context representing a thread
+  <code>'T</code> and creates an asynchronous workflow that resumes on a thread specified by the context.
+  In the above example, the operation switches the execution to a GUI thread (stored previously), so 
+  that we can call the <code>displayChart</code> function.</p>
+
+<p>The use of generic types when working with synchronization contexts demonstrated one of the
+  fascinating things about programming in F# that is carried over to checking of threads in asynchronous
+  workflows. We can easily write polymorphic code that works with any values and executes on any threads
+  while still checking that computations are composed correctly. With a bit of effort, it is even 
+  possible to capture dynamic behavior introduced by synchro&#173;nization contexts.</p>
+
+<h3>Starting child workflow</h3>
+
+<p>Another way to run a computation without blocking the GUI thread is to start it as a child workflow.
+  This is done using the <code>StartChild</code> operation that guarantees that it will not introduce
+  blocking. When using this approach, it is almost impossible to write the code in a wrong way, so there
+  is less need for thread checking. However, when we annotate the operation, it has an interesting type
+  that is worth demonstrating:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips59', 119)" onmouseover="showTip(event, 'fstips59', 119)" class="i">main</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 120)" onmouseover="showTip(event, 'fstips10', 120)" class="i">asyncOn</span> <span onmouseout="hideTip(event, 'fstips21', 121)" onmouseover="showTip(event, 'fstips21', 121)" class="i">gui</span> {
+<span class="l"> 2: </span>  <span onmouseout="hideTip(event, 'fstips42', 122)" onmouseover="showTip(event, 'fstips42', 122)" class="omitted">(Initialization omitted)</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">The</span><span class="c"> </span><span class="c">main</span><span class="c"> </span><span class="c">application</span><span class="c"> </span><span class="c">loop</span>
+<span class="l"> 5: </span>  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> 
+<span class="l"> 6: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 7: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips19', 123)" onmouseover="showTip(event, 'fstips19', 123)" class="i">color</span>, <span onmouseout="hideTip(event, 'fstips43', 124)" onmouseover="showTip(event, 'fstips43', 124)" class="i">stock</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 125)" onmouseover="showTip(event, 'fstips37', 125)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips44', 126)" onmouseover="showTip(event, 'fstips44', 126)" class="i">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fstips45', 127)" onmouseover="showTip(event, 'fstips45', 127)" class="i">stockClicked</span>)
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Download</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">stock</span><span class="c"> </span><span class="c">(non-blocking</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l"> 9: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips46', 128)" onmouseover="showTip(event, 'fstips46', 128)" class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips47', 129)" onmouseover="showTip(event, 'fstips47', 129)" class="i">WebClient</span>()
+<span class="l">10: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips7', 130)" onmouseover="showTip(event, 'fstips7', 130)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips46', 131)" onmouseover="showTip(event, 'fstips46', 131)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips48', 132)" onmouseover="showTip(event, 'fstips48', 132)" class="i">AsyncDownloadString</span>(<span onmouseout="hideTip(event, 'fstips49', 133)" onmouseover="showTip(event, 'fstips49', 133)" class="i">Uri</span>(<span onmouseout="hideTip(event, 'fstips50', 134)" onmouseover="showTip(event, 'fstips50', 134)" class="i">root</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fstips43', 135)" onmouseover="showTip(event, 'fstips43', 135)" class="i">stock</span>))    
+<span class="l">11: </span>    
+<span class="l">12: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Process</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">(CPU-bound</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">13: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips60', 136)" onmouseover="showTip(event, 'fstips60', 136)" class="i">token</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 137)" onmouseover="showTip(event, 'fstips37', 137)" class="i">CheckedAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips61', 138)" onmouseover="showTip(event, 'fstips61', 138)" class="i">StartChild</span>(<span onmouseout="hideTip(event, 'fstips6', 139)" onmouseover="showTip(event, 'fstips6', 139)" class="i">extractStockPrices</span> <span onmouseout="hideTip(event, 'fstips7', 140)" onmouseover="showTip(event, 'fstips7', 140)" class="i">data</span> <span class="n">500</span>)
+<span class="l">14: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips34', 141)" onmouseover="showTip(event, 'fstips34', 141)" class="i">prices</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips60', 142)" onmouseover="showTip(event, 'fstips60', 142)" class="i">token</span>
+<span class="l">15: </span>
+<span class="l">16: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">&amp;</span><span class="c"> </span><span class="c">display</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">chart</span><span class="c"> </span><span class="c">(GUI</span><span class="c"> </span><span class="c">operation)</span>
+<span class="l">17: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fstips18', 143)" onmouseover="showTip(event, 'fstips18', 143)" class="i">displayChart</span> <span onmouseout="hideTip(event, 'fstips19', 144)" onmouseover="showTip(event, 'fstips19', 144)" class="i">color</span> <span onmouseout="hideTip(event, 'fstips34', 145)" onmouseover="showTip(event, 'fstips34', 145)" class="i">prices</span> }</pre>
+
+<p>The <code>StartChild</code> operation creates a workflow that can be executed on any thread 
+  (and finishes on the same thread). We immediately execute it using the <code>let!</code> construct.
+  This starts the workflow given as an argument on the background thread (which is also specified by
+  the type of the argument). The result is a token that can be used for waiting for the completion
+  of the background operation. This operation can be (again) used on any thread, because it performs
+  non-blocking waiting. The whole type signature looks as follows:</p>
+
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb1', 37)" onmouseover="showTip(event, 'fstipsb1', 37)" class="i">CheckedAsync</span> <span class="k">with</span>
+<span class="l">2: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">child</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">background</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">(without</span><span class="c"> </span><span class="c">changing</span><span class="c"> </span><span class="c">current</span><span class="c"> </span><span class="c">thread)</span>
+<span class="l">3: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb19', 38)" onmouseover="showTip(event, 'fstipsb19', 38)" class="i">StartChild</span> <span class="o">:</span> 
+<span class="l">4: </span>    <span onmouseout="hideTip(event, 'fstipsb1', 39)" onmouseover="showTip(event, 'fstipsb1', 39)" class="i">CheckedAsync</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstipsb17', 40)" onmouseover="showTip(event, 'fstipsb17', 40)" class="i">BackgroundThread</span>, <span class="o">&#39;</span><span class="i">Post</span>, <span class="o">&#39;</span><span class="i">R</span><span class="o">&gt;</span> <span class="k">-&gt;</span>
+<span class="l">5: </span>    <span onmouseout="hideTip(event, 'fstipsb1', 41)" onmouseover="showTip(event, 'fstipsb1', 41)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre1</span>, <span class="o">&#39;</span><span class="i">Pre1</span>, <span onmouseout="hideTip(event, 'fstipsb1', 42)" onmouseover="showTip(event, 'fstipsb1', 42)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre2</span>, <span class="o">&#39;</span><span class="i">Pre2</span>, <span class="o">&#39;</span><span class="i">R</span><span class="o">&gt;</span><span class="o">&gt;</span></pre>
+
+<p>As already explained, the argument should be a workflow that can be started on the background thread
+  and we don't care where it completes. The result of the operation is a checked asynchronous workflow (that waits for the completion)
+  wrapped in another checked asynchronous operation (that starts the task). These two operations use two different
+  type parameters to track the thread, because it is perfectly possible to use them from different threads.
+  For example, we may start the background operation on a GUI thread and then pass the result to some other
+  workflow that will wait on another background thread (in which case <code>'Pre1</code> would be <code>GuiThread</code>
+  and <code>'Pre2</code> would be <code>BackgroundThread</code>).</p>
+
+<h2>Looking under the cover</h2>
+
+<p>The key idea of the approach demonstrated in this article is to extend the type of asynchronous workflows
+  to also include two type parameters that do not appear in the type definition (these are called <em>phantom 
+  types</em>). The additional type parameters specify threads where the workflow starts and where it completes.
+  Then we need to annotate standard async operations with the additional types to specify the behavior. 
+  I demonstrated type signatures of several of the operations of the <code>CheckedAsync</code> type earlier
+  in the article. The implementation can be found in the source code, but is mostly trivial - just wrap the
+  operation from standard F# async and add types.</p>
+
+<p>The last important piece is to specify how the operations compose. When you run one operation and then 
+  some other operation, the resulting thread of the first one must match the starting thread of the second
+  one. This rule is also used by the F# compiler to infer the types of operations written using
+  <code>asyncChecked</code> and to infer the type of operations that can be run on any thread and preserve
+  the thread (such as <code>AsyncDownloadString</code>).</p>
+
+<p>The composition rules are defined by the F# computation builder. The following snippet shows the type
+  signatures of the standard operations and also adds <code>While</code> (which was used in the example
+  and is quite interesting too):</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstipsb20', 43)" onmouseover="showTip(event, 'fstipsb20', 43)" class="i">CheckedAsyncBuilder</span> <span class="o">=</span>
+<span class="l"> 2: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Return</span><span class="c"> </span><span class="c">creates</span><span class="c"> </span><span class="c">async</span><span class="c"> </span><span class="c">workflow</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">resumes</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">same</span><span class="c"> </span><span class="c">thread</span>
+<span class="l"> 3: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb21', 44)" onmouseover="showTip(event, 'fstipsb21', 44)" class="i">Return</span> <span class="o">:</span> <span class="o">&#39;</span><span class="i">V</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 45)" onmouseover="showTip(event, 'fstipsb1', 45)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Thread</span>, <span class="o">&#39;</span><span class="i">Thread</span>, <span class="o">&#39;</span><span class="i">V</span><span class="o">&gt;</span>
+<span class="l"> 4: </span>  <span class="c">///</span><span class="c"> </span><span class="c">Composed</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">starts</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">&#39;Pre,</span><span class="c"> </span><span class="c">switches</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">&#39;Interm</span><span class="c"> </span><span class="c">and</span>
+<span class="l"> 5: </span>  <span class="c">///</span><span class="c"> </span><span class="c">then</span><span class="c"> </span><span class="c">switches</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">&#39;Post</span><span class="c"> </span><span class="c">(The</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">hides</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">intermediate</span><span class="c"> </span><span class="c">step)</span>
+<span class="l"> 6: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb22', 46)" onmouseover="showTip(event, 'fstipsb22', 46)" class="i">Bind</span>   <span class="o">:</span> <span onmouseout="hideTip(event, 'fstipsb1', 47)" onmouseover="showTip(event, 'fstipsb1', 47)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre</span>, <span class="o">&#39;</span><span class="i">Interm</span>, <span class="o">&#39;</span><span class="i">V1</span><span class="o">&gt;</span> <span class="k">-&gt;</span> 
+<span class="l"> 7: </span>                  (<span class="o">&#39;</span><span class="i">V1</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 48)" onmouseover="showTip(event, 'fstipsb1', 48)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Interm</span>, <span class="o">&#39;</span><span class="i">Post</span>, <span class="o">&#39;</span><span class="i">V2</span><span class="o">&gt;</span>) <span class="k">-&gt;</span>
+<span class="l"> 8: </span>                  <span onmouseout="hideTip(event, 'fstipsb1', 49)" onmouseover="showTip(event, 'fstipsb1', 49)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Pre</span>, <span class="o">&#39;</span><span class="i">Post</span>, <span class="o">&#39;</span><span class="i">V2</span><span class="o">&gt;</span>
+<span class="l"> 9: </span>  <span class="c">///</span><span class="c"> </span><span class="c">The</span><span class="c"> </span><span class="c">body</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">while</span><span class="c"> </span><span class="c">loop</span><span class="c"> </span><span class="c">must</span><span class="c"> </span><span class="c">end</span><span class="c"> </span><span class="c">at</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">same</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">as</span><span class="c"> </span><span class="c">where</span><span class="c"> </span><span class="c">it</span><span class="c"> </span>
+<span class="l">10: </span>  <span class="c">///</span><span class="c"> </span><span class="c">was</span><span class="c"> </span><span class="c">started</span><span class="c"> </span><span class="c">(otherwise</span><span class="c"> </span><span class="c">it</span><span class="c"> </span><span class="c">cannot</span><span class="c"> </span><span class="c">be</span><span class="c"> </span><span class="c">composed</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">run</span><span class="c"> </span><span class="c">multiple</span><span class="c"> </span><span class="c">times)</span>
+<span class="l">11: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fstipsb23', 50)" onmouseover="showTip(event, 'fstipsb23', 50)" class="i">While</span>  <span class="o">:</span> (<span onmouseout="hideTip(event, 'fstipsb3', 51)" onmouseover="showTip(event, 'fstipsb3', 51)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb24', 52)" onmouseover="showTip(event, 'fstipsb24', 52)" class="i">bool</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstipsb1', 53)" onmouseover="showTip(event, 'fstipsb1', 53)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Thread</span>, <span class="o">&#39;</span><span class="i">Thread</span>, <span onmouseout="hideTip(event, 'fstipsb3', 54)" onmouseover="showTip(event, 'fstipsb3', 54)" class="i">unit</span><span class="o">&gt;</span> <span class="k">-&gt;</span>
+<span class="l">12: </span>                  <span onmouseout="hideTip(event, 'fstipsb1', 55)" onmouseover="showTip(event, 'fstipsb1', 55)" class="i">CheckedAsync</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">Thread</span>, <span class="o">&#39;</span><span class="i">Thread</span>, <span onmouseout="hideTip(event, 'fstipsb3', 56)" onmouseover="showTip(event, 'fstipsb3', 56)" class="i">unit</span><span class="o">&gt;</span></pre>
+
+<p>If we consider just the last type parameter (representing the value returned by a checked asynchronous
+  workflow), the types are the standard types of a monad (and an F# computation builder). However,
+  the first two type parameters add an interesting additional power:</p>
+<ul class="spaces">
+  <li>The <code>Return</code> operation creates an asynchronous workflow that immediately returns the
+    given value. It doesn't interact with threads in any way - the workflow will finish on the same thread
+    where it was started.</li>
+  <li>The <code>Bind</code> operation is interesting. It takes a workflow of type <code>CheckedAsync&lt;'Pre, 'Interm, 'V1&gt;</code>
+    as the first argument. In order to produce the result, it needs to evaluate this workflow first. This means
+    that the computation will start on the <code>'Pre</code> thread and end on the <code>'Interm</code> thread.
+    Then the operator calls the provided function and gets a workflow of type <code>CheckedAsync&lt;'Interm, 'Post, 'V2&gt;</code>.
+    This workflow can be executed after the first one because the ending thread of the first one matches the
+    starting thread of the second. After executing, the result will be reported on the thread <code>'Post</code>,
+    so the overall computation starts on <code>'Pre</code> and ends on <code>'Post</code> (which is reflected
+    by the returned workflow type).</li>
+  <li>The snippet also shows the type of <code>While</code>, which takes a function that is called
+    to test whether a condition holds and the (asynchronous) body. When the loop executes the body 
+    repeatedly, the body must end at the same thread where it started. This directly follows from the 
+    type of <code>Bind</code> and the way <code>Bind</code> can be used to implement <code>While</code>.
+    The typing rule for the <code>For</code> operation would be similar.</li>
+</ul>
+
+<p>Another interesting operation that is not discussed in detail in this article is 
+  <code>TryWith</code>, which represents an exception handler. This is quite tricky, because
+  the exception will be handled on the thread where it happened, but that can be any thread
+  where the body of the workflow can run!</p>
+
+<p>In the source code, I solved this problem by adding a new type named <code>AnyThread</code>,
+  which is not compatible with any other type. For practical purposes, this is probably sufficient,
+  but you can imagine several possible extensions. The <code>AnyThread</code> type could be a 
+  base type of both <code>GuiThread</code> and <code>BackgroundThread</code> making it possible
+  to compose computations that end on a specific thread with a computation that starts on any
+  (unknown) thread. We could also use even more complicated types in to track all possible threads
+  that can be used by the body and then have types like <code>AnyOf&lt;GuiThread, BackgroundThread&gt;</code>
+  representing any of the two. However, this doesn't add much practical value and it may be
+  only interesting from a research perspective.</p>
+
+<p>Some of the ideas that I mentioned above have been actually done in different contexts.
+  Although this is a blog post and not a research paper, the next section mentions several
+  of the related academic papers (as well as some readable blog posts). If you're interested
+  only in practical uses of checked asynchronous workflows, then you can safely skip it.</p>
+
+<h2>Related work</h2>
+<p>The definition of a monad used in this article adds two type parameters to capture 
+  the required initial state (a <em>pre-condition</em>) and a resulting state (a <em>post-condition</em>).
+  This idea is quite common when reasoning about programming languages and it can be
+  traced back to Hoare logic [<a href="#sgusa">1</a>]. In Hoare logic, the pre- and post-conditions
+  are not written as part of the progam - they are just a way of reasoning about existing 
+  programs. More recent work on "Hoare type theory" tries to embed this reasoning in the
+  types of programs.</p>
+
+<p>More specifically, the signature of monadic operations that I used in the previous section
+  is also called <em>parameterized monad</em> and has been studied from the theoretical 
+  perspective [<a href="#sgusa">2</a>], but there is also a more readable introduction
+  [<a href="#sgusa">3</a>]. It can be used for a variety of other things (besides threads in 
+  asynchronous workflows), such as tracking of acative file handles [<a href="#sgusa">4</a>].</p>
+
+<h2>Summary</h2>
+<p>In this article, I demonstrated an extension of F# asynchronous workflows that makes
+  them safer. It adds a way to track where the workflow is executing - whether it is a GUI
+  thread or a background thread. We can create computations that should be executed on the
+  background thread using <code>asyncOn background</code>. These can safely perform long-running
+  CPU-intensive computations and we know that this won't freeze the user-interface. Similarly,
+  we can create workflows that can be only executed on the GUI thread using <code>asyncOn gui</code>.
+  These computations can safely access user-interface elements.</p>
+
+<p>Thanks to the right definition of a computation builder, the current thread is 
+  automatically tracked in the asynchronous workflow syntax. Calling a workflow that should
+  run on a particular thread from a wrong thread is a compile-time error. This adds very useful
+  additional checking. The examples in this article relied on some help from the programmer.
+  We had to explicitly mark <code>extractStockPrices</code> as background-thread computaiton and
+  <code>displayChart</code> as GUI-thread computation. In a perfect world, the compiler would
+  know that certain operations should be executed only on certain threads and it would infer the
+  type for us...
+  </p>
+
+
+<h3>Downloads &amp; Source code</h3>
+<ul>
+  <li>Browse <a href="http://github.com/tpetricek/Documents/tree/master/Blog%202011/AsyncChecked">the source code on GitHub</a></li>
+  <li>Download <a href="http://github.com/tpetricek/Documents/raw/master/Blog%202011/AsyncChecked/stockdata.zip">the source code</a> (ZIP)</li>
+</ul>
+
+<h3>References<a name="sgusa">&#160;</a></h3>
+<ul>
+  <li>[1] <a href="http://en.wikipedia.org/wiki/Hoare_logic">Hoare logic</a> - Wikipedia</li>
+  <li>[2] <a href="http://personal.cis.strath.ac.uk/~raa/paramnotions-jfp.pdf" type="external">Parameterised Notions of Computations</a> - Robert Atkey</li>
+  <li>[3] <a href="http://blog.sigfpe.com/2009/02/beyond-monads.html" type="external">Beyond Monads</a> - A Neighborhood of Infinity</li>
+  <li>[4] <a href="http://okmij.org/ftp/Computation/resource-aware-prog/region-io.pdf" type="external">Lightweight monadic regions</a> - Oleg Kiselyov, Chung-chieh Shan</li>
+</ul>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fstips1">Multiple items
+<br />type CheckedAsync&lt;&#39;Pre,&#39;Post,&#39;Value&gt; = | SA of Async&lt;&#39;Value&gt;<br /><br />Full name: Demo.CheckedAsync.CheckedAsync&lt;_,_,_&gt;
+<br /><br /><em>Represents asynchronous computation that starts<br />&#160;on the &#39;Pre thread, ends on the &#39;Post thread and<br />&#160;produces a value of type &#39;Value.</em>
+<br /><br />--------------------<br />
+<br />type CheckedAsync =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member CurrentContext : unit -&gt; CheckedAsync&lt;&#39;T,&#39;T,SynchronizationContext&lt;&#39;T&gt;&gt;<br />&#160;&#160;&#160;&#160;static member Start : CheckedAsync&lt;BackgroundThread,&#39;Post,unit&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member StartChild : CheckedAsync&lt;BackgroundThread,&#39;Post,&#39;R&gt; -&gt; CheckedAsync&lt;&#39;Pre1,&#39;Pre1,CheckedAsync&lt;&#39;Pre2,&#39;Pre2,&#39;R&gt;&gt;<br />&#160;&#160;&#160;&#160;static member StartImmediate : CheckedAsync&lt;GuiThread,&#39;Post,unit&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member SwitchToContext : ctx:SynchronizationContext&lt;&#39;C&gt; -&gt; CheckedAsync&lt;&#39;Pre,&#39;C,unit&gt;<br />&#160;&#160;&#160;&#160;static member SwitchToGui : unit -&gt; CheckedAsync&lt;&#39;Pre,GuiThread,unit&gt;<br />&#160;&#160;&#160;&#160;static member SwitchToThreadPool : unit -&gt; CheckedAsync&lt;&#39;Pre,BackgroundThread,unit&gt;<br />&#160;&#160;&#160;&#160;static member UnsafeSwitchToAnything : unit -&gt; CheckedAsync&lt;&#39;a0,&#39;a1,unit&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.CheckedAsync.CheckedAsync<br /></div>
+<div class="tip" id="fstips2">SA of Async&lt;&#39;Value&gt;<br /></div>
+<div class="tip" id="fstips3">Multiple items
+<br />type GuiThread =<br />&#160;&#160;interface<br />&#160;&#160;end<br /><br />Full name: Demo.CheckedAsync.GuiThread
+<br /><br />--------------------<br />
+<br />GuiThread<br /></div>
+<div class="tip" id="fstips4">interface end<br /></div>
+<div class="tip" id="fstips5">Multiple items
+<br />type BackgroundThread =<br />&#160;&#160;interface<br />&#160;&#160;end<br /><br />Full name: Demo.CheckedAsync.BackgroundThread
+<br /><br />--------------------<br />
+<br />BackgroundThread<br /></div>
+<div class="tip" id="fstips6">val extractStockPrices : string -&gt; int -&gt; CheckedAsync&lt;BackgroundThread,BackgroundThread,float []&gt;<br /><br />Full name: Demo.StandardAsync.extractStockPrices
+<br /><br /><em>Parse downloaded data set. This is a CPU-expensive <br />&#160;computation that should not block the user-interface.</em><br /></div>
+<div class="tip" id="fstips7">val data : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips8">Multiple items
+<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string
+<br /><br />--------------------<br />
+<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips9">val count : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fstips10">val asyncOn : &#39;T -&gt; CheckedAsyncBuilderForThread&lt;&#39;T&gt;<br /><br />Full name: FSharp.CheckedAsync.Values.asyncOn<br /></div>
+<div class="tip" id="fstips11">val background : BackgroundThread<br /><br />Full name: FSharp.CheckedAsync.Values.background<br /></div>
+<div class="tip" id="fstips12">val dataLines : string []<br /><br />&#160;&#160;type: string []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;string&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;string&gt;<br />&#160;&#160;implements: seq&lt;string&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fstips13">data.Split([| &#39;\n&#39; |], StringSplitOptions.RemoveEmptyEntries) <br /></div>
+<div class="tip" id="fstips14">val data : float []<br /><br />&#160;&#160;type: float []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;float&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;float&gt;<br />&#160;&#160;implements: seq&lt;float&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fstips15">[| for line in dataLines |&gt; Seq.skip 1 do<br />&#160;&#160;&#160;&#160;&#160;let infos = line.Split(&#39;,&#39;)<br />&#160;&#160;&#160;&#160;&#160;yield float infos.[1] |]<br />|&gt; Seq.take count |&gt; Array.ofSeq |&gt; Array.rev <br /></div>
+<div class="tip" id="fstips16">type Thread =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Runtime.ConstrainedExecution.CriticalFinalizerObject<br />&#160;&#160;&#160;&#160;new : System.Threading.ThreadStart -&gt; System.Threading.Thread<br />&#160;&#160;&#160;&#160;new : System.Threading.ThreadStart * int -&gt; System.Threading.Thread<br />&#160;&#160;&#160;&#160;new : System.Threading.ParameterizedThreadStart -&gt; System.Threading.Thread<br />&#160;&#160;&#160;&#160;new : System.Threading.ParameterizedThreadStart * int -&gt; System.Threading.Thread<br />&#160;&#160;&#160;&#160;member Abort : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Abort : obj -&gt; unit<br />&#160;&#160;&#160;&#160;member ApartmentState : System.Threading.ApartmentState with get, set<br />&#160;&#160;&#160;&#160;member CurrentCulture : System.Globalization.CultureInfo with get, set<br />&#160;&#160;&#160;&#160;member CurrentUICulture : System.Globalization.CultureInfo with get, set<br />&#160;&#160;&#160;&#160;member DisableComObjectEagerCleanup : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member ExecutionContext : System.Threading.ExecutionContext<br />&#160;&#160;&#160;&#160;member GetApartmentState : unit -&gt; System.Threading.ApartmentState<br />&#160;&#160;&#160;&#160;member GetCompressedStack : unit -&gt; System.Threading.CompressedStack<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Interrupt : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member IsAlive : bool<br />&#160;&#160;&#160;&#160;member IsBackground : bool with get, set<br />&#160;&#160;&#160;&#160;member IsThreadPoolThread : bool<br />&#160;&#160;&#160;&#160;member Join : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Join : int -&gt; bool<br />&#160;&#160;&#160;&#160;member Join : System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;member ManagedThreadId : int<br />&#160;&#160;&#160;&#160;member Name : string with get, set<br />&#160;&#160;&#160;&#160;member Priority : System.Threading.ThreadPriority with get, set<br />&#160;&#160;&#160;&#160;member Resume : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member SetApartmentState : System.Threading.ApartmentState -&gt; unit<br />&#160;&#160;&#160;&#160;member SetCompressedStack : System.Threading.CompressedStack -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Suspend : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member ThreadState : System.Threading.ThreadState<br />&#160;&#160;&#160;&#160;member TrySetApartmentState : System.Threading.ApartmentState -&gt; bool<br />&#160;&#160;&#160;&#160;static member AllocateDataSlot : unit -&gt; System.LocalDataStoreSlot<br />&#160;&#160;&#160;&#160;static member AllocateNamedDataSlot : string -&gt; System.LocalDataStoreSlot<br />&#160;&#160;&#160;&#160;static member BeginCriticalRegion : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member BeginThreadAffinity : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member CurrentContext : System.Runtime.Remoting.Contexts.Context<br />&#160;&#160;&#160;&#160;static member CurrentPrincipal : System.Security.Principal.IPrincipal with get, set<br />&#160;&#160;&#160;&#160;static member CurrentThread : System.Threading.Thread<br />&#160;&#160;&#160;&#160;static member EndCriticalRegion : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member EndThreadAffinity : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member FreeNamedDataSlot : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member GetData : System.LocalDataStoreSlot -&gt; obj<br />&#160;&#160;&#160;&#160;static member GetDomain : unit -&gt; System.AppDomain<br />&#160;&#160;&#160;&#160;static member GetDomainID : unit -&gt; int<br />&#160;&#160;&#160;&#160;static member GetNamedDataSlot : string -&gt; System.LocalDataStoreSlot<br />&#160;&#160;&#160;&#160;static member MemoryBarrier : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member ResetAbort : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetData : System.LocalDataStoreSlot * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sleep : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sleep : System.TimeSpan -&gt; unit<br />&#160;&#160;&#160;&#160;static member SpinWait : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileRead : System.Byte -&gt; System.Byte<br />&#160;&#160;&#160;&#160;static member VolatileRead : int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member VolatileRead : int -&gt; int<br />&#160;&#160;&#160;&#160;static member VolatileRead : int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member VolatileRead : System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member VolatileRead : uint16 -&gt; uint16<br />&#160;&#160;&#160;&#160;static member VolatileRead : uint32 -&gt; uint32<br />&#160;&#160;&#160;&#160;static member VolatileRead : System.IntPtr -&gt; System.IntPtr<br />&#160;&#160;&#160;&#160;static member VolatileRead : System.UIntPtr -&gt; System.UIntPtr<br />&#160;&#160;&#160;&#160;static member VolatileRead : uint64 -&gt; uint64<br />&#160;&#160;&#160;&#160;static member VolatileRead : float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member VolatileRead : float -&gt; float<br />&#160;&#160;&#160;&#160;static member VolatileRead : obj -&gt; obj<br />&#160;&#160;&#160;&#160;static member VolatileWrite : System.Byte * System.Byte -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : int16 * int16 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : int64 * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : System.SByte * System.SByte -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : uint16 * uint16 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : uint32 * uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : System.IntPtr * System.IntPtr -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : System.UIntPtr * System.UIntPtr -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : uint64 * uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : float32 * float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : float * float -&gt; unit<br />&#160;&#160;&#160;&#160;static member VolatileWrite : obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Yield : unit -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Threading.Thread<br /><br />&#160;&#160;type: Thread<br />&#160;&#160;implements: Runtime.InteropServices._Thread<br />&#160;&#160;inherits: Runtime.ConstrainedExecution.CriticalFinalizerObject<br /></div>
+<div class="tip" id="fstips17">Multiple overloads
+<br />Thread.Sleep(timeout: TimeSpan) : unit
+<br />Thread.Sleep(millisecondsTimeout: int) : unit<br /></div>
+<div class="tip" id="fstips18">val displayChart : Color -&gt; seq&lt;float&gt; -&gt; CheckedAsync&lt;GuiThread,GuiThread,unit&gt;<br /><br />Full name: Demo.StandardAsync.displayChart
+<br /><br /><em>Create &amp; display chart. The function needs to <br />&#160;access user interface and should run on GUI thread.</em><br /></div>
+<div class="tip" id="fstips19">val color : Color<br /><br />&#160;&#160;type: Color<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fstips20">val prices : seq&lt;float&gt;<br /><br />&#160;&#160;type: seq&lt;float&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips21">val gui : GuiThread<br /><br />Full name: FSharp.CheckedAsync.Values.gui<br /></div>
+<div class="tip" id="fstips22">val chart : Canvas<br /><br />&#160;&#160;type: Canvas<br />&#160;&#160;implements: MS.Internal.IManagedPeer<br />&#160;&#160;implements: MS.Internal.IManagedPeerBase<br />&#160;&#160;implements: MS.Internal.INativeCoreTypeWrapper<br />&#160;&#160;implements: Automation.IAutomationElement<br />&#160;&#160;inherits: Panel<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="fstips23">val createChart : float -&gt; float -&gt; Color -&gt; seq&lt;float&gt; -&gt; Canvas<br /><br />Full name: Demo.Core.createChart<br /></div>
+<div class="tip" id="fstips24">DependencyObject.SetValue(dp: DependencyProperty, value: obj) : unit<br /></div>
+<div class="tip" id="fstips25">type Canvas =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Windows.Controls.Panel<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Windows.Controls.Canvas<br />&#160;&#160;&#160;&#160;static val LeftProperty : System.Windows.DependencyProperty<br />&#160;&#160;&#160;&#160;static val TopProperty : System.Windows.DependencyProperty<br />&#160;&#160;&#160;&#160;static val ZIndexProperty : System.Windows.DependencyProperty<br />&#160;&#160;&#160;&#160;static member GetLeft : System.Windows.UIElement -&gt; float<br />&#160;&#160;&#160;&#160;static member GetTop : System.Windows.UIElement -&gt; float<br />&#160;&#160;&#160;&#160;static member GetZIndex : System.Windows.UIElement -&gt; int<br />&#160;&#160;&#160;&#160;static member SetLeft : System.Windows.UIElement * float -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetTop : System.Windows.UIElement * float -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetZIndex : System.Windows.UIElement * int -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Windows.Controls.Canvas<br /><br />&#160;&#160;type: Canvas<br />&#160;&#160;implements: MS.Internal.IManagedPeer<br />&#160;&#160;implements: MS.Internal.IManagedPeerBase<br />&#160;&#160;implements: MS.Internal.INativeCoreTypeWrapper<br />&#160;&#160;implements: Automation.IAutomationElement<br />&#160;&#160;inherits: Panel<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="fstips26">field Canvas.LeftProperty<br /></div>
+<div class="tip" id="fstips27">field Canvas.TopProperty<br /></div>
+<div class="tip" id="fstips28">val holder : Canvas<br /><br />Full name: Demo.Core.holder<br /><br />&#160;&#160;type: Canvas<br />&#160;&#160;implements: MS.Internal.IManagedPeer<br />&#160;&#160;implements: MS.Internal.IManagedPeerBase<br />&#160;&#160;implements: MS.Internal.INativeCoreTypeWrapper<br />&#160;&#160;implements: Automation.IAutomationElement<br />&#160;&#160;inherits: Panel<br />&#160;&#160;inherits: FrameworkElement<br />&#160;&#160;inherits: UIElement<br />&#160;&#160;inherits: DependencyObject<br /></div>
+<div class="tip" id="fstips29">property Panel.Children: UIElementCollection<br /></div>
+<div class="tip" id="fstips30">PresentationFrameworkCollection.Clear() : unit<br /></div>
+<div class="tip" id="fstips31">PresentationFrameworkCollection.Add(value: UIElement) : unit<br /></div>
+<div class="tip" id="fstips32">val wrongWorkflow : string -&gt; CheckedAsync&lt;BackgroundThread,&#39;a,unit&gt;<br /><br />Full name: Demo.StandardAsync.wrongWorkflow<br /></div>
+<div class="tip" id="fstips33">val asyncChecked&lt;&#39;T&gt; : CheckedAsyncBuilderForThread&lt;&#39;T&gt;<br /><br />Full name: FSharp.CheckedAsync.Values.asyncChecked<br /></div>
+<div class="tip" id="fstips34">val prices : float []<br /><br />&#160;&#160;type: float []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;float&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;float&gt;<br />&#160;&#160;implements: seq&lt;float&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fstips35">Type mismatch. Expecting a<br />&#160;&#160;&#160;&#160;CheckedAsync&lt;BackgroundThread,&#39;a,&#39;b&gt;    <br />but given a<br />&#160;&#160;&#160;&#160;CheckedAsync&lt;GuiThread,GuiThread,unit&gt;    <br />The type &#39;BackgroundThread&#39; does not match the type &#39;GuiThread&#39;<br /></div>
+<div class="tip" id="fstips36">val goodWorkflow : string -&gt; CheckedAsync&lt;BackgroundThread,GuiThread,unit&gt;<br /><br />Full name: Demo.StandardAsync.goodWorkflow<br /></div>
+<div class="tip" id="fstips37">Multiple items
+<br />module CheckedAsync<br /><br />from Demo
+<br /><br />--------------------<br />
+<br />type CheckedAsync&lt;&#39;Pre,&#39;Post,&#39;Value&gt; = | SA of Async&lt;&#39;Value&gt;<br /><br />Full name: FSharp.CheckedAsync.CheckedAsync&lt;_,_,_&gt;
+<br /><br />--------------------<br />
+<br />type CheckedAsync =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member CurrentContext : unit -&gt; CheckedAsync&lt;&#39;T,&#39;T,SynchronizationContext&lt;&#39;T&gt;&gt;<br />&#160;&#160;&#160;&#160;static member Start : CheckedAsync&lt;BackgroundThread,&#39;Post,unit&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member StartChild : CheckedAsync&lt;BackgroundThread,&#39;Post,&#39;R&gt; -&gt; CheckedAsync&lt;&#39;Pre1,&#39;Pre1,CheckedAsync&lt;&#39;Pre2,&#39;Pre2,&#39;R&gt;&gt;<br />&#160;&#160;&#160;&#160;static member StartImmediate : CheckedAsync&lt;GuiThread,&#39;Post,unit&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member SwitchToContext : ctx:SynchronizationContext&lt;&#39;C&gt; -&gt; CheckedAsync&lt;&#39;Pre,&#39;C,unit&gt;<br />&#160;&#160;&#160;&#160;static member SwitchToGui : unit -&gt; CheckedAsync&lt;&#39;Pre,GuiThread,unit&gt;<br />&#160;&#160;&#160;&#160;static member SwitchToThreadPool : unit -&gt; CheckedAsync&lt;&#39;Pre,BackgroundThread,unit&gt;<br />&#160;&#160;&#160;&#160;static member UnsafeSwitchToAnything : unit -&gt; CheckedAsync&lt;&#39;a0,&#39;a1,unit&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.CheckedAsync.CheckedAsync<br /></div>
+<div class="tip" id="fstips38">static member CheckedAsync.SwitchToGui : unit -&gt; CheckedAsync&lt;&#39;Pre,GuiThread,unit&gt;<br /></div>
+<div class="tip" id="fstips39">type Color =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member A : System.Byte with get, set<br />&#160;&#160;&#160;&#160;member B : System.Byte with get, set<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : System.Windows.Media.Color -&gt; bool<br />&#160;&#160;&#160;&#160;member G : System.Byte with get, set<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member R : System.Byte with get, set<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;static member FromArgb : System.Byte * System.Byte * System.Byte * System.Byte -&gt; System.Windows.Media.Color<br />&#160;&#160;end<br /><br />Full name: System.Windows.Media.Color<br /><br />&#160;&#160;type: Color<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fstips40">property Color.Red: Color<br /></div>
+<div class="tip" id="fstips41">val main : CheckedAsync&lt;GuiThread,GuiThread,unit&gt;<br /><br />Full name: Demo.StandardAsync.main<br /></div>
+<div class="tip" id="fstips42">let stockClicked = <br />&#160;&#160;[ for stock, btn in Seq.zip stocks buttons -&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;btn.Click |&gt; Observable.map (fun _ -&gt; stock) ]<br />&#160;&#160;|&gt; List.reduce Observable.merge<br /></div>
+<div class="tip" id="fstips43">val stock : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips44">static member CheckedAsync.AwaitObservable : ev1:IObservable&lt;&#39;a&gt; -&gt; CheckedAsync&lt;GuiThread,GuiThread,&#39;a&gt;<br /></div>
+<div class="tip" id="fstips45">val stockClicked : IObservable&lt;Color * string&gt;<br /></div>
+<div class="tip" id="fstips46">val wc : WebClient<br /></div>
+<div class="tip" id="fstips47">type WebClient =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Net.WebClient<br />&#160;&#160;&#160;&#160;member AllowReadStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member AllowWriteStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member BaseAddress : string with get, set<br />&#160;&#160;&#160;&#160;member CancelAsync : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Credentials : System.Net.ICredentials with get, set<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Encoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;member Headers : System.Net.WebHeaderCollection with get, set<br />&#160;&#160;&#160;&#160;member IsBusy : bool<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member ResponseHeaders : System.Net.WebHeaderCollection<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UseDefaultCredentials : bool with get, set<br />&#160;&#160;end<br /><br />Full name: System.Net.WebClient<br /></div>
+<div class="tip" id="fstips48">member WebClient.AsyncDownloadString : address:Uri -&gt; CheckedAsync&lt;&#39;T,&#39;T,string&gt;<br /></div>
+<div class="tip" id="fstips49">type Uri =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : string * bool -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : string * System.UriKind -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * string * bool -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member AbsolutePath : string<br />&#160;&#160;&#160;&#160;member AbsoluteUri : string<br />&#160;&#160;&#160;&#160;member Authority : string<br />&#160;&#160;&#160;&#160;member DnsSafeHost : string<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Fragment : string<br />&#160;&#160;&#160;&#160;member GetComponents : System.UriComponents * System.UriFormat -&gt; string<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetLeftPart : System.UriPartial -&gt; string<br />&#160;&#160;&#160;&#160;member Host : string<br />&#160;&#160;&#160;&#160;member HostNameType : System.UriHostNameType<br />&#160;&#160;&#160;&#160;member IsAbsoluteUri : bool<br />&#160;&#160;&#160;&#160;member IsBaseOf : System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;member IsDefaultPort : bool<br />&#160;&#160;&#160;&#160;member IsFile : bool<br />&#160;&#160;&#160;&#160;member IsLoopback : bool<br />&#160;&#160;&#160;&#160;member IsUnc : bool<br />&#160;&#160;&#160;&#160;member IsWellFormedOriginalString : unit -&gt; bool<br />&#160;&#160;&#160;&#160;member LocalPath : string<br />&#160;&#160;&#160;&#160;member MakeRelative : System.Uri -&gt; string<br />&#160;&#160;&#160;&#160;member MakeRelativeUri : System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member OriginalString : string<br />&#160;&#160;&#160;&#160;member PathAndQuery : string<br />&#160;&#160;&#160;&#160;member Port : int<br />&#160;&#160;&#160;&#160;member Query : string<br />&#160;&#160;&#160;&#160;member Scheme : string<br />&#160;&#160;&#160;&#160;member Segments : string []<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member UserEscaped : bool<br />&#160;&#160;&#160;&#160;member UserInfo : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFile : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFtp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeGopher : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttps : string<br />&#160;&#160;&#160;&#160;static val UriSchemeMailto : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNews : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNntp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetTcp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetPipe : string<br />&#160;&#160;&#160;&#160;static val SchemeDelimiter : string<br />&#160;&#160;&#160;&#160;static member CheckHostName : string -&gt; System.UriHostNameType<br />&#160;&#160;&#160;&#160;static member CheckSchemeName : string -&gt; bool<br />&#160;&#160;&#160;&#160;static member Compare : System.Uri * System.Uri * System.UriComponents * System.UriFormat * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;static member EscapeDataString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member EscapeUriString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member FromHex : char -&gt; int<br />&#160;&#160;&#160;&#160;static member HexEscape : char -&gt; string<br />&#160;&#160;&#160;&#160;static member HexUnescape : string * int -&gt; char<br />&#160;&#160;&#160;&#160;static member IsHexDigit : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsHexEncoding : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsWellFormedUriString : string * System.UriKind -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : string * System.UriKind * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * string * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * System.Uri * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member UnescapeDataString : string -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.Uri<br /><br />&#160;&#160;type: Uri<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br /></div>
+<div class="tip" id="fstips50">val root : string<br /><br />Full name: Demo.Core.root<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips51">val prices : &#39;a (requires &#39;a :&gt; seq&lt;float&gt;)<br /><br />&#160;&#160;type: &#39;a<br />&#160;&#160;implements: seq&lt;float&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips52">Type mismatch. Expecting a<br />&#160;&#160;&#160;&#160;CheckedAsync&lt;GuiThread,&#39;a,&#39;b&gt;    <br />but given a<br />&#160;&#160;&#160;&#160;CheckedAsync&lt;BackgroundThread,BackgroundThread,float []&gt;    <br />The type &#39;GuiThread&#39; does not match the type &#39;BackgroundThread&#39;<br /></div>
+<div class="tip" id="fstips53">static member CheckedAsync.StartImmediate : CheckedAsync&lt;GuiThread,&#39;Post,unit&gt; -&gt; unit<br /></div>
+<div class="tip" id="fstips54">val main : CheckedAsync&lt;GuiThread,GuiThread,unit&gt;<br /><br />Full name: Demo.StandardAsync.Switching.main<br /></div>
+<div class="tip" id="fstips55">val ctx : SynchronizationContext&lt;GuiThread&gt;<br /></div>
+<div class="tip" id="fstips56">static member CheckedAsync.CurrentContext : unit -&gt; CheckedAsync&lt;&#39;T,&#39;T,SynchronizationContext&lt;&#39;T&gt;&gt;<br /></div>
+<div class="tip" id="fstips57">static member CheckedAsync.SwitchToThreadPool : unit -&gt; CheckedAsync&lt;&#39;Pre,BackgroundThread,unit&gt;<br /></div>
+<div class="tip" id="fstips58">static member CheckedAsync.SwitchToContext : ctx:SynchronizationContext&lt;&#39;C&gt; -&gt; CheckedAsync&lt;&#39;Pre,&#39;C,unit&gt;<br /></div>
+<div class="tip" id="fstips59">val main : CheckedAsync&lt;GuiThread,GuiThread,unit&gt;<br /><br />Full name: Demo.StandardAsync.StartChild.main<br /></div>
+<div class="tip" id="fstips60">val token : CheckedAsync&lt;GuiThread,GuiThread,float []&gt;<br /></div>
+<div class="tip" id="fstips61">static member CheckedAsync.StartChild : CheckedAsync&lt;BackgroundThread,&#39;Post,&#39;R&gt; -&gt; CheckedAsync&lt;&#39;Pre1,&#39;Pre1,CheckedAsync&lt;&#39;Pre2,&#39;Pre2,&#39;R&gt;&gt;<br /></div>
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fstipsb1">Multiple items
+<br />type CheckedAsync&lt;&#39;Pre,&#39;Post,&#39;Value&gt; = | SA of Async&lt;&#39;Value&gt;<br /><br />Full name: FSharp.CheckedAsync.CheckedAsync&lt;_,_,_&gt;
+<br /><br />--------------------<br />
+<br />type CheckedAsync<br /><br />Full name: FSharp.CheckedAsync.CheckedAsync<br /></div>
+<div class="tip" id="fstipsb2">static member CheckedAsync.SwitchToGui : unit -&gt; CheckedAsync&lt;&#39;Pre,GuiThread,unit&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.SwitchToGui
+<br /><br /><em>Continue executing on the GUI thread (regardless of the current thread)</em><br /></div>
+<div class="tip" id="fstipsb3">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br /><br />&#160;&#160;type: unit<br />&#160;&#160;implements: IComparable<br /></div>
+<div class="tip" id="fstipsb4">Multiple items
+<br />type GuiThread =<br />&#160;&#160;interface<br />&#160;&#160;end<br /><br />Full name: FSharp.CheckedAsync.GuiThread
+<br /><br />--------------------<br />
+<br />GuiThread<br /></div>
+<div class="tip" id="fstipsb5">static member CheckedAsync.AwaitObservable : IObservable&lt;&#39;T&gt; -&gt; CheckedAsync&lt;GuiThread,GuiThread,&#39;T&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.AwaitObservable
+<br /><br /><em>Waiting for event occurrence is allowed on GUI thread only</em><br /></div>
+<div class="tip" id="fstipsb6">Multiple items
+<br />type IObservable&lt;&#39;T&gt; =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;member Subscribe : System.IObserver&lt;&#39;T&gt; -&gt; System.IDisposable<br />&#160;&#160;end<br /><br />Full name: System.IObservable&lt;_&gt;
+<br /><br />--------------------<br />
+<br />IObservable<br /></div>
+<div class="tip" id="fstipsb7">static member CheckedAsync.StartImmediate : CheckedAsync&lt;GuiThread,&#39;Post,&#39;R&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.StartImmediate
+<br /><br /><em>Starts a computation on the (current) GUI thread</em><br /></div>
+<div class="tip" id="fstipsb8">namespace System<br /></div>
+<div class="tip" id="fstipsb9">namespace System.Net<br /></div>
+<div class="tip" id="fstipsb10">type WebClient =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.ComponentModel.Component<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Net.WebClient<br />&#160;&#160;&#160;&#160;member BaseAddress : string with get, set<br />&#160;&#160;&#160;&#160;member CachePolicy : System.Net.Cache.RequestCachePolicy with get, set<br />&#160;&#160;&#160;&#160;member CancelAsync : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Credentials : System.Net.ICredentials with get, set<br />&#160;&#160;&#160;&#160;member DownloadData : string -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member DownloadData : System.Uri -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member DownloadDataAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadDataAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadFile : string * string -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadFile : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadFileAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadFileAsync : System.Uri * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadString : string -&gt; string<br />&#160;&#160;&#160;&#160;member DownloadString : System.Uri -&gt; string<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member DownloadStringAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Encoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;member Headers : System.Net.WebHeaderCollection with get, set<br />&#160;&#160;&#160;&#160;member IsBusy : bool<br />&#160;&#160;&#160;&#160;member OpenRead : string -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenRead : System.Uri -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenReadAsync : System.Uri * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWrite : string -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenWrite : System.Uri -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenWrite : string * string -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenWrite : System.Uri * string -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member OpenWriteAsync : System.Uri * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member Proxy : System.Net.IWebProxy with get, set<br />&#160;&#160;&#160;&#160;member QueryString : System.Collections.Specialized.NameValueCollection with get, set<br />&#160;&#160;&#160;&#160;member ResponseHeaders : System.Net.WebHeaderCollection<br />&#160;&#160;&#160;&#160;member UploadData : string * System.Byte [] -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadData : System.Uri * System.Byte [] -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadData : string * string * System.Byte [] -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadData : System.Uri * string * System.Byte [] -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadDataAsync : System.Uri * System.Byte [] -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadDataAsync : System.Uri * string * System.Byte [] -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadDataAsync : System.Uri * string * System.Byte [] * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadFile : string * string -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadFile : System.Uri * string -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadFile : string * string * string -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadFile : System.Uri * string * string -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadFileAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadFileAsync : System.Uri * string * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadFileAsync : System.Uri * string * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadString : string * string -&gt; string<br />&#160;&#160;&#160;&#160;member UploadString : System.Uri * string -&gt; string<br />&#160;&#160;&#160;&#160;member UploadString : string * string * string -&gt; string<br />&#160;&#160;&#160;&#160;member UploadString : System.Uri * string * string -&gt; string<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadStringAsync : System.Uri * string * string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadValues : string * System.Collections.Specialized.NameValueCollection -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadValues : System.Uri * System.Collections.Specialized.NameValueCollection -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadValues : string * string * System.Collections.Specialized.NameValueCollection -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadValues : System.Uri * string * System.Collections.Specialized.NameValueCollection -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member UploadValuesAsync : System.Uri * System.Collections.Specialized.NameValueCollection -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadValuesAsync : System.Uri * string * System.Collections.Specialized.NameValueCollection -&gt; unit<br />&#160;&#160;&#160;&#160;member UploadValuesAsync : System.Uri * string * System.Collections.Specialized.NameValueCollection * obj -&gt; unit<br />&#160;&#160;&#160;&#160;member UseDefaultCredentials : bool with get, set<br />&#160;&#160;end<br /><br />Full name: System.Net.WebClient<br /><br />&#160;&#160;type: Net.WebClient<br />&#160;&#160;implements: ComponentModel.IComponent<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: ComponentModel.Component<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fstipsb11">member Net.WebClient.AsyncDownloadString : Uri -&gt; CheckedAsync&lt;&#39;T,&#39;T,string&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.AsyncDownloadString
+<br /><br /><em>Downloads string and returns to original thread</em><br /></div>
+<div class="tip" id="fstipsb12">type Uri =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : string * bool -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : string * System.UriKind -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * string -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * string * bool -&gt; System.Uri<br />&#160;&#160;&#160;&#160;new : System.Uri * System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member AbsolutePath : string<br />&#160;&#160;&#160;&#160;member AbsoluteUri : string<br />&#160;&#160;&#160;&#160;member Authority : string<br />&#160;&#160;&#160;&#160;member DnsSafeHost : string<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Fragment : string<br />&#160;&#160;&#160;&#160;member GetComponents : System.UriComponents * System.UriFormat -&gt; string<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetLeftPart : System.UriPartial -&gt; string<br />&#160;&#160;&#160;&#160;member Host : string<br />&#160;&#160;&#160;&#160;member HostNameType : System.UriHostNameType<br />&#160;&#160;&#160;&#160;member IsAbsoluteUri : bool<br />&#160;&#160;&#160;&#160;member IsBaseOf : System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;member IsDefaultPort : bool<br />&#160;&#160;&#160;&#160;member IsFile : bool<br />&#160;&#160;&#160;&#160;member IsLoopback : bool<br />&#160;&#160;&#160;&#160;member IsUnc : bool<br />&#160;&#160;&#160;&#160;member IsWellFormedOriginalString : unit -&gt; bool<br />&#160;&#160;&#160;&#160;member LocalPath : string<br />&#160;&#160;&#160;&#160;member MakeRelative : System.Uri -&gt; string<br />&#160;&#160;&#160;&#160;member MakeRelativeUri : System.Uri -&gt; System.Uri<br />&#160;&#160;&#160;&#160;member OriginalString : string<br />&#160;&#160;&#160;&#160;member PathAndQuery : string<br />&#160;&#160;&#160;&#160;member Port : int<br />&#160;&#160;&#160;&#160;member Query : string<br />&#160;&#160;&#160;&#160;member Scheme : string<br />&#160;&#160;&#160;&#160;member Segments : string []<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member UserEscaped : bool<br />&#160;&#160;&#160;&#160;member UserInfo : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFile : string<br />&#160;&#160;&#160;&#160;static val UriSchemeFtp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeGopher : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeHttps : string<br />&#160;&#160;&#160;&#160;static val UriSchemeMailto : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNews : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNntp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetTcp : string<br />&#160;&#160;&#160;&#160;static val UriSchemeNetPipe : string<br />&#160;&#160;&#160;&#160;static val SchemeDelimiter : string<br />&#160;&#160;&#160;&#160;static member CheckHostName : string -&gt; System.UriHostNameType<br />&#160;&#160;&#160;&#160;static member CheckSchemeName : string -&gt; bool<br />&#160;&#160;&#160;&#160;static member Compare : System.Uri * System.Uri * System.UriComponents * System.UriFormat * System.StringComparison -&gt; int<br />&#160;&#160;&#160;&#160;static member EscapeDataString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member EscapeUriString : string -&gt; string<br />&#160;&#160;&#160;&#160;static member FromHex : char -&gt; int<br />&#160;&#160;&#160;&#160;static member HexEscape : char -&gt; string<br />&#160;&#160;&#160;&#160;static member HexUnescape : string * int -&gt; char<br />&#160;&#160;&#160;&#160;static member IsHexDigit : char -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsHexEncoding : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsWellFormedUriString : string * System.UriKind -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : string * System.UriKind * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * string * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryCreate : System.Uri * System.Uri * System.Uri -&gt; bool<br />&#160;&#160;&#160;&#160;static member UnescapeDataString : string -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.Uri<br /><br />&#160;&#160;type: Uri<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br /></div>
+<div class="tip" id="fstipsb13">Multiple items
+<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string
+<br /><br />--------------------<br />
+<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstipsb14">static member CheckedAsync.CurrentContext : unit -&gt; CheckedAsync&lt;&#39;T,&#39;T,SynchronizationContext&lt;&#39;T&gt;&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.CurrentContext
+<br /><br /><em>Get current context (the thread is also kept in the type)</em><br /></div>
+<div class="tip" id="fstipsb15">type SynchronizationContext&lt;&#39;T&gt;<br /><br />Full name: FSharp.CheckedAsync.SynchronizationContext&lt;_&gt;<br /></div>
+<div class="tip" id="fstipsb16">static member CheckedAsync.SwitchToThreadPool : unit -&gt; CheckedAsync&lt;&#39;T,BackgroundThread,unit&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.SwitchToThreadPool
+<br /><br /><em>Switch to new background thread (from any thread)</em><br /></div>
+<div class="tip" id="fstipsb17">Multiple items
+<br />type BackgroundThread =<br />&#160;&#160;interface<br />&#160;&#160;end<br /><br />Full name: FSharp.CheckedAsync.BackgroundThread
+<br /><br />--------------------<br />
+<br />BackgroundThread<br /></div>
+<div class="tip" id="fstipsb18">static member CheckedAsync.SwitchToContext : SynchronizationContext&lt;&#39;T&gt; -&gt; CheckedAsync&lt;&#39;Pre,&#39;T,unit&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.SwitchToContext
+<br /><br /><em>Switch to thread represented by a synchronization context</em><br /></div>
+<div class="tip" id="fstipsb19">static member CheckedAsync.StartChild : CheckedAsync&lt;BackgroundThread,&#39;Post,&#39;R&gt; -&gt; CheckedAsync&lt;&#39;Pre1,&#39;Pre1,CheckedAsync&lt;&#39;Pre2,&#39;Pre2,&#39;R&gt;&gt;<br /><br />Full name: FSharp.CheckedAsync.Extensions.StartChild
+<br /><br /><em>Start child on a background thread (without changing current thread)</em><br /></div>
+<div class="tip" id="fstipsb20">type CheckedAsyncBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;member Bind : CheckedAsync&lt;&#39;Pre,&#39;Interm,&#39;V1&gt; -&gt; (&#39;V1 -&gt; CheckedAsync&lt;&#39;Interm,&#39;Post,&#39;V2&gt;) -&gt; CheckedAsync&lt;&#39;Pre,&#39;Post,&#39;V2&gt;<br />&#160;&#160;&#160;&#160;member Return : &#39;V -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,&#39;V&gt;<br />&#160;&#160;&#160;&#160;member While : (unit -&gt; bool) -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,unit&gt; -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,unit&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.CheckedAsync.CheckedAsyncBuilder<br /></div>
+<div class="tip" id="fstipsb21">member CheckedAsyncBuilder.Return : &#39;V -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,&#39;V&gt;<br /><br />Full name: FSharp.CheckedAsync.CheckedAsyncBuilder.Return
+<br /><br /><em>Return creates async workflow that resumes on the same thread</em><br /></div>
+<div class="tip" id="fstipsb22">member CheckedAsyncBuilder.Bind : CheckedAsync&lt;&#39;Pre,&#39;Interm,&#39;V1&gt; -&gt; (&#39;V1 -&gt; CheckedAsync&lt;&#39;Interm,&#39;Post,&#39;V2&gt;) -&gt; CheckedAsync&lt;&#39;Pre,&#39;Post,&#39;V2&gt;<br /><br />Full name: FSharp.CheckedAsync.CheckedAsyncBuilder.Bind
+<br /><br /><em>Composed computation starts on &#39;Pre, switches to &#39;Interm and<br />&#160;then switches to &#39;Post (The result hides the intermediate step)</em><br /></div>
+<div class="tip" id="fstipsb23">member CheckedAsyncBuilder.While : (unit -&gt; bool) -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,unit&gt; -&gt; CheckedAsync&lt;&#39;Thread,&#39;Thread,unit&gt;<br /><br />Full name: FSharp.CheckedAsync.CheckedAsyncBuilder.While
+<br /><br /><em>The body of a while loop must end at the same thread as where it <br />&#160;was started (otherwise it cannot be composed to run multiple times)</em><br /></div>
+<div class="tip" id="fstipsb24">type bool = Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool<br /><br />&#160;&#160;type: bool<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;bool&gt;<br />&#160;&#160;implements: IEquatable&lt;bool&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fsafe-gui-async.aspx%2f&amp;text=Safer+asynchronous+workflows+for+GUI+programmingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fsafe-gui-async.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fsafe-gui-async.aspx%2f&title=Safer+asynchronous+workflows+for+GUI+programming">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Safer%20asynchronous%20workflows%20for%20GUI%20programming&body=%20When%20writing%20reactive%20applications%20using%20F%23%20asynchronous%20workflows%2c%20it%20is%20important%20to%20run%20some%20operations%20on%20the%20right%20thread.%20User%20interface%20elements%20are%20accessible%20only%20on%20GUI%20threads%20and%20CPU-intensive%20computations%20should%20be%20done%20on%20a%20background%20thread.%20This%20article%20describes%20an%20extension%20of%20F%23%20asynchronous%20workflows%20that%20guarantees%20correct%20use%20of%20threads%20using%20types.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fsafe-gui-async.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 15 June 2011, 9:36 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/functional/">functional</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

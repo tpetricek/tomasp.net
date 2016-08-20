@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Building LINQ Queries at Runtime in C# - Tomas Petricek</title>
+
+  <meta name="description" content=" Common criticism of LINQ is that it doesn't support a scenario where queries are build dynamically at the runtime. In this article I show that this can be acutally done very well for most of the common scenarios." />
+  <meta name="keywords" content="c#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Building LINQ Queries at Runtime in C#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/dynamic-linq-queries.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Common criticism of LINQ is that it doesn't support a scenario where queries are build dynamically at the runtime. In this article I show that this can be acutally done very well for most of the common scenarios." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Building LINQ Queries at Runtime in C#" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Common criticism of LINQ is that it doesn't support a scenario where queries are build dynamically at the runtime. In this article I show that this can be acutally done very well for most of the common scenarios." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Building LINQ Queries at Runtime in C#",
+    "headline": "Building LINQ Queries at Runtime in C#",
+  	"description": " Common criticism of LINQ is that it doesn't support a scenario where queries are build dynamically at the runtime. In this article I show that this can be acutally done very well for most of the common scenarios.",
+  	"url": "http://tomasp.net/blog/dynamic-linq-queries.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-07-30T02:10:17.0000000",
+  	"datePublished": "2007-07-30T02:10:17.0000000",
+    "dateModified": "2007-07-30T02:10:17.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/dynamic-linq-queries.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["c#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Building LINQ Queries at Runtime in C#</h1>
+<p>Since the first beta versions of LINQ we could hear comments that it is perfect for 
+  queries known at compile-time, however it is not possible to use it for building queries 
+  dynamically at runtime. In this article I show that this can be actually done very well for 
+  most of the common cases. The solution offered by Microsoft (mentioned in [<a href="#dynqlinks">1</a>]) is to 
+  build query from a string, however this has many limitations and it in fact goes completely 
+  against what LINQ tries to achieve, which is writing queries in a type-safe way with full 
+  compile-time checking. In this article I will first show a few support functions to make the life 
+  a bit easier and then we will use them for building two sample applications that allows user to 
+  build a query dynamically. The solution is largely motivated by my previous use of F#, where 
+  working with “expressions” is possible at more advanced level, however I’ll write about F# later 
+  and now let’s get back to C# 3.0.</p>
+  
+<h2>Linq Utilities #1: Expandable Queries</h2>
+<p>First of all, we will need an extension that I wrote some time ago, which allows us to “call functions in LINQ queries” as 
+  demonstrated in the following example:</p>
+<pre lang="csharp">
+// Lambda expression that calculates the price
+Expression&lt;Func&lt;Nwind.Product, decimal?&gt;&gt; calcPrice = 
+  (p) =&gt; p.UnitPrice * 1.19m;
+
+// Query that selects products 
+var q = 
+  from p in db.Products.ToExpandable()  
+  where calcPrice.Expand(p) &gt; 30.0m
+  select new { 
+    p.ProductName, 
+    OriginalPrice = p.UnitPrice,
+    ShopPrice = calcPrice.Expand(p) };
+</pre>
+
+<p>It works relatively simple – you can write a function you want to call in a query using anonymous 
+  function declared as an Expression, than you’ll have to add a ToExpandable call to the data table and finally, 
+  you can call your functions (which are actually expressions) using the Expand extension method (note that 
+  in the earlier versions I used Invoke, but the name conflicts with some standard functions in the newest beta 
+  versions). You can read more about this in my earlier blog post [<a href="#dynqlinks">2</a>], but in an essence, the ToQueryable creates a 
+  thin layer that processed the entire LINQ query before it is sent to the “LINQ to SQL” translator and it replaces 
+  all occurrences of the Expand call with the body of the function, so that the “LINQ to SQL” can understand the query.
+  The latest version of these extensions is available at CodePlex [<a href="#dynqlinks">3</a>], but the DLL is also included in the 
+  downloads at the end of this article.</p>
+  
+<h2>Linq Utilities #2: Type Inference for Anonymous Functions</h2>
+<p>The second little utility will allow us to use C# implicitly typed variables (using the var keyword) to declare 
+  anonymous functions and lambda expressions (i.e. data representation of the anonymous function). As you probably know you, 
+  the decision whether anonymous function will be compiled as a Func delegate (that can be invoked) or as an Expression data 
+  structure (that can be for example translated to SQL) depends on the variable type:</p>
+
+<pre lang="csharp">
+Func&lt;int,int,int&gt; func = (int a, int b) =&gt; a + b;
+Expression&lt;Func&lt;int,int,int&gt;&gt; expr = (int a, int b) =&gt; a + b;
+</pre>
+<p>Obviously the following code looks very confusing:</p>
+<pre lang="csharp">var func = (int a, int b) =&gt; a + b;</pre>
+<p>The problem is that the compiler doesn’t know if func should be of type Expression or Func and indeed, if you 
+  try it you will get a compiler error message saying “Cannot assign lambda expression to an implicitly-typed local variable”. 
+  Unfortunately this forces you to write the type, which can be really complicated sometimes and also this way of declaring 
+  anonymous functions makes it impossible to write an anonymous function returning C# 3.0 anonymous type:</p>
+  
+<pre lang="csharp">Func&lt;int,int,???&gt; func = (int a, int b) =&gt; new { Sum = a + b, Mul = a * b };</pre>
+<p>When you want to return anonymous type you can no longer write name of the type (because it is anonymous!), so 
+  writing expression like this looks like an impossible task. Luckily we can implement really simple workaround for this problem:</p>
+<pre lang="csharp">
+public static class Linq {
+  // Returns the given anonymous method as a lambda expression
+  public static Expression&lt;Func&lt;T, R&gt;&gt; 
+      Expr&lt;T, R&gt;(Expression&lt;Func&lt;T, R&gt;&gt; f) {
+    return f;
+  }
+
+  // Returns the given anonymous function as a Func delegate
+  public static Func&lt;T, R&gt; 
+      Func&lt;T, R&gt;(Func&lt;T, R&gt; f) {
+    return f;
+  }
+}</pre>
+<p>You can see that we declared two simple static methods that just return the argument, however the type of the 
+  argument (which is a Func delegate in case of the Func method and Expression data type in case of the Expr method) 
+  tells the compiler if we want to build an expression or a delegate. Using this class we can rewrite the previous examples as following:</p>
+<pre lang="csharp">
+// Let’s start with the simple examples:
+var func = Linq.Func((int a, int b) =&gt; a + b);
+var expr = Linq.Expr((int a, int b) =&gt; a + b);
+
+// .. and using anonymous types is possible as well!
+var func = Linq.Func((int a, int b) =&gt; 
+  new { Sum = a + b, Mul = a * b });
+var expr = Linq.Expr ((int a, int b) =&gt; 
+  new { Sum = a + b, Mul = a * b });
+</pre>
+<p>Note that when using Linq.Func or Linq.Expr you have to explicitly specify the type of the arguments, because the 
+  compiler can’t infer this from the type of the variable, however the code is usually shorter anyway and in addition you can use anonymous types!</p>
+
+<h2>Dynamic Queries #1: Selecting Customers</h2>
+<p>All right, let’s finally look how we can build a LINQ query dynamically at runtime! In the first example we will implement 
+  one feature that may be quite common in a lot of applications. We will build a query for selecting customers from the 
+  Northwind database and we will let user to choose what property of the <code>Customer</code> type he wants to enter. For simplicity 
+  we will give a choice between <code>CompanyName</code>, <code>Country</code> and a <code>ContactName</code>. Once the user selects what property he wants to 
+  query, we will ask for the value and run a query that will return all customers whose property selected by the user 
+  contains the entered value (as a substring). To implement this we first create a data context and then we write a function 
+  that will build a LINQ query once it gets a value entered by the user and a lambda expression representing a function 
+  that reads the selected property from of the customer. It may sound a bit confusing, but I’ll explain everything soon:</p>
+<pre lang="csharp">
+NorthwindDataContext db = new NorthwindDataContext();
+
+var queryBuilder = Linq.Func
+  ((Expression&lt;Func&lt;Customer, string&gt;&gt; selector, string val) =&gt;
+      from c in db.Customers.ToExpandable()
+      where selector.Expand(c).IndexOf(val) != -1
+      select c);
+</pre>
+<p>Before digging deeper, let’s look how the queryBuilder function can be used:</p>
+<pre lang="csharp">
+var q = queryBuilder(c =&gt; c.CompanyName, "ab");
+foreach (var cust in q)
+  Console.WriteLine(cust);
+</pre>
+<p>So what exactly happens here? We built a function (or maybe parameterized query would be better name) called <code>queryBuilder</code> 
+  that has two arguments. The second argument is a value that the user entered and the first argument is a lambda expression 
+  (named <code>selector</code>) that specifies what property of the <code>Customer</code> type we want to look for – when we give it an anonymous method 
+  that returns company name of a customer as an argument it will build a query that returns all customers with the specified company name.</p>
+  
+<p>When you run the code, it executes the <code>queryBuilder</code> function with the lambda expression reading company name and a value 
+  “ab”. The <code>queryBuilder</code> then returns a query that calls the lambda expression using the <code>Expand</code> method which I talked about 
+  earlier (in <strong>Linq Utilities #1</strong>). It is also important to note that the query uses the <code>ToExpandable</code> method, because this has to 
+  be present anywhere where we want to use <code>Expand</code> to call some lambda expression in a LINQ query.</p>
+  
+<p>Let’s now finish the sample and write a code that actually allows user to choose how he wants to query the <code>Customers</code> data table:</p>
+<pre lang="csharp">
+var dict = new Dictionary&lt;string, Expression&lt;Func&lt;Customer, string&gt;&gt;&gt; 
+  { { "CompanyName", c =&gt; c.CompanyName },
+    { "Country",     c =&gt; c.Country },
+    { "ContactName", c =&gt; c.ContactName } };
+
+// Get the input from the user
+Console.Write("Filter - field name (CompanyName, ContactName, Country):\n&gt; ");
+string field = Console.ReadLine();
+
+Console.Write("Filter - value:\n&gt; ");
+string value = Console.ReadLine();
+
+// Build the query using query builder and run it
+var q = queryBuilder(dict[field], value);
+foreach (var cust in q)
+  Console.WriteLine(cust);
+</pre>
+<p>The application (just a simple console program) creates a dictionary that contains string as a key and a lambda 
+  expression for reading specific properties of a customer as a value. When user enters a string representing the 
+  property, it looks it up in the dictionary and gets a lambda expression that can be given as an argument to our 
+  parameterized query declared earlier. And that’s all! You could very easily use the same principle in a Windows 
+  Forms applications and let user select the property for example from a drop down list, which is probably the most 
+  common scenario for building LINQ queries at runtime.</p>
+
+<h2>Dynamic Queries #2: Combining Functions Using “OR” and “AND”</h2>
+<p>In this example, we will write slightly more complex application that builds LINQ query dynamically.
+  It will allow user to choose if he wants to combine several criteria using <code>AND</code> or <code>OR</code>
+  logical operator and then enter the values to find for every property (again, we use <code>Customer</code> 
+  table from a Northwind database). This means that the user we will be able to enter queries like <code>(CompanyName = "Google") OR 
+  (Country = "Czech Republic")</code> or <code>(CompanyName = "Microsoft") AND (Country = "USA")</code>. The key aspect in
+  this example is that query is combined from several basic conditions without knowing the number of these conditions in advance, 
+  so this principle could be used when you want to allow the user to add any number of conditions he wants.
+</p>
+<p>We will again need a dictionary for mapping string (entered by the user) to a lambda expression returning
+  the property of the <code>Customer</code> object. To make the code a bit more readable then in the previous example
+  we will define an abbreviation for this rather complex type, which can be done thanks to the C# <code>using</code> construct
+  (unfortunately there are a few limitations, so we have to use fully qualified namespace names):
+  </p>
+<pre lang="csharp">
+using CustomerPropSelector = System.Linq.Expressions
+  .Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, string&gt;&gt;;
+</pre>
+<p>Now we can use the <code>CustomerPropSelector</code> type as a value in a dictionary (it is actually the
+  same dictionary as the one we used in the previous example):</p>
+<pre lang="csharp">
+NorthwindDataContext db = new NorthwindDataContext();
+var dict = new Dictionary&lt;string, CustomerPropSelector&gt; 
+   { { "CompanyName", c =&gt; c.CompanyName },
+     { "Country",     c =&gt; c.Country },
+     { "ContactName", c =&gt; c.ContactName } };
+</pre>
+<p>The next type abbreviation that we will use in the code will represent a condition telling whether
+  specified customer matches the specified criteria or not. The condition is a lambda expression
+  taking a <code>Customer</code> object as an argument and returning a boolean value:</p>
+<pre lang="csharp">
+using CustomerCondition = System.Linq.Expressions
+  .Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;;
+</pre>
+<p>We can now define two primitive conditions that we will need later - to define a condition
+  we use the C# anonymous function syntax, so you can easily write a condition that for example
+  tests whether a customer is from UK or something like that. The two primitive conditions that we need
+  are however really trivial - one of them returns <code>true</code> for every customer and the other <code>false</code>:  </p>
+<pre lang="csharp">
+CustomerCondition trueCond  = (c) =&gt; true;
+CustomerCondition falseCond = (c) =&gt; false;
+</pre>
+<p>Now, we will need a way for combining two conditions, so we can write a <em>combinator</em> that can be used
+  to produce a condition from two of them. We will use two such combinators later. One will be <code>OR</code> which 
+  takes two conditions and returns <code>true</code> when any of them returns <code>true</code> and the other
+  will be <code>AND</code> which will return <code>true</code> when both conditions return <code>true</code>, 
+  as you would expect. The interesting is the type of these combinators - it is a function taking two conditions
+  and returning a condition as a result, so we could write them as <code>Func&lt;CustomerCondition, CustomerCondition, CustomerCondition&gt;</code>.
+  Unfortunately, the C# <code>using</code> statement doesn't allow using nested abbreviations, so we have to 
+  replace <code>CustomerCondition</code> in the previous type and we'll get somewhat ugly type:
+</p>
+
+<pre lang="csharp">
+using CustomerConditionCombinator = 
+  System.Func&lt;System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;, 
+              System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;, 
+              System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;&gt;;
+</pre>
+<p>Despite the fact that C# forces us to write this in a really ugly way, it isn't that difficult to understand what it actually does - 
+  it just takes two conditions (which are actually lambda expressions returning a boolean value when given 
+  <code>Customer</code> as an argument) and returns a condition that can call these two conditions and produces 
+  boolean as a result, very likely by performing some logical operation on the values
+  returned by these two conditions. We can now write two basic combinators for logical <code>OR</code> and <code>AND</code>.
+  The combinator receives two conditions (<code>f</code> and <code>g</code>) as arguments, and returns a
+  new lambda expression as the result. This lambda expression takes a <code>Customer</code> value as an argument,
+  calls the two conditions using the <code>Expand</code> method and performs the logical operation on the result: </p>
+<pre lang="csharp">
+CustomerConditionCombinator combineOr = 
+  (f, g) =&gt; (c) =&gt; f.Expand(c) || g.Expand(c);
+
+CustomerConditionCombinator combineAnd = 
+  (f, g) =&gt; (c) =&gt; f.Expand(c) &amp;&amp; g.Expand(c);
+</pre>
+
+<p>Now we have everything we need to finally start building the query! Let me first demonstrate how we can
+  build a query using the <code>combineOr</code> combinator from two simple conditions, one testing whether
+  the customer is from UK and the other testing if it's from Seattle:</p>
+<pre lang="csharp">
+// Define two simple conditions first
+CustomerCondition isUk = (c) =&gt; c.Country == "UK";
+CustomerCondition isSeattle = (c) =&gt; c.City == "Seattle"
+
+// Combine the conditions using OR
+CustomerCondition expr = combineOr(isUk, isSeattle);
+
+// Build a query (using 'Expand' and 'ToExpandable')
+var q = from c in db.Customers.ToExpandable()
+        where expr.Expand(c) select c;
+</pre>
+<p>If you run this example, it will indeed return all customers that are either from UK or live in Seattle.
+  Note that we still have to use the <code>Expand</code> to call the condition we built in the 
+  LINQ query and it is also important not to forget the <code>ToExpandable</code> call, otherwise the “LINQ to SQL”
+  will give an error message that it doesn't understand the query. </p>
+<p>Let's now move to the final example - here we will actually let user construct a query he wants. Let's assume
+  we have a value <code>generateOr</code> saying if we want to build a query by combinating several conditions using
+  <code>OR</code> or using <code>AND</code>. To build a query we will start with one of our primitive conditions and
+  add a condition using the combinator for every property of the customer. This means that when combining conditions
+  using <code>OR</code> we will start with a query representing <code>"false"</code>, than we will append first condition
+  and get something like <code>"(false || cond1)"</code>, after adding second condition we will get
+  <code>"(false || cond1) || cond2"</code> and so on. You can see that when building a sequence of 
+  <code>OR</code>s we need to start with <code>falseCond</code>, so that the condition returns <code>true</code> only
+  when any of the conditions succeeds and when building sequence of <code>AND</code>s, we have to start with <code>trueCond</code>, 
+  so that the condition succeeds when all conditions return <code>true</code>.</p>
+<p>The code to build a condition in the way described in the previous paragraph can be written as a <code>foreach</code> loop
+  (working with the <code>KeyValuePair</code> from the dictionary declared above) that modifies the variable
+  holding the current expression (<code>expr</code>) in every iteration:</p>
+<pre lang="csharp">
+// Select the combinator and initial condition
+CustomerConditionCombinator combinator = 
+  generateOr ? combineOr : combineAnd;
+CustomerCondition expr = 
+  generateOr ? falseCond : trueCond;
+  
+// Loop over all properties in the dictionary  
+foreach (var item in dict)
+{
+  // Read the value from the user
+  Console.Write("Enter value for '{0}':\n&gt; ", item.Key);
+  string enteredVal = Console.ReadLine();
+  CustomerPropSelector propSelector = item.Value;
+  
+  // Build a condition testing whether entered value is a substring
+  CustomerCondition currentCond = (c) =&gt; 
+    propSelector.Expand(c).IndexOf(enteredVal) != -1;
+    
+  // Finally, combine expressions using the combinator
+  expr = combinator(expr, currentCond);
+}
+</pre>
+<p>Since C# 3.0 and LINQ in general use some of the concepts from functional programming, we can actually used
+  one nice functional trick to write the code in a slightly shorter and less error-prone way. We can use
+  a query operator called <code>Fold</code> (it was part of the LINQ in earlier version, but it seems to be missing
+  now, so I added it to my LINQ Extensions [<a href="#dynqlinks">3</a>] project). What does this operation do?
+  It takes some initial value and runs a specified function to combine the value with every element in the 
+  sequence step by step. In our case the initial value is a condition (either <code>trueCond</code> or <code>falseCond</code>)
+  and the function to combine values is essentially the body of the <code>foreach</code> loop. This means that
+  function will ask user for the value and return the value newly produced by the combinator:</p>
+  
+<pre lang="csharp">
+CustomerConditionCombinator combinator = 
+  generateOr ? combineOr : combineAnd;
+
+// Build expression using the 'Fold' aggregate operator
+var expr = dict.Fold((e, item) =&gt; {
+    // Read the value from the user
+    Console.Write("Enter value for '{0}':\n&gt; ", item.Key);
+    string enteredVal = Console.ReadLine();
+    CustomerPropSelector propSelector = item.Value;    
+    
+    // Build a condition testing whether entered value is a substring
+    CustomerCondition currentCond = (c) =&gt; 
+      propSelector.Expand(c).IndexOf(enteredVal) != -1;
+      
+    // Finally, return the combined expression
+    return combinator(e, currentCond); 
+  }, generateOr ? falseCond : trueCond);
+</pre>
+
+<p>Finally, we can use a simple LINQ query to run the generated condition (<code>expr</code> variable) - as mentioned in 
+  other places of this article, we can call it using <code>Expand</code> and we shouldn't forgot <code>ToExpandable</code>
+  call which processes our combined expression before calling the “LINQ to SQL” translator:</p>
+<pre lang="csharp">
+var q = from c in db.Customers.ToExpandable()
+        where expr.Expand(c) select c;
+</pre>
+<h2>Summary</h2>
+<p>I hope this article convinced you that there is quite reasonable way for building queries dynamically at runtime in LINQ,
+  which is much safer and less error-prone than building a string. Even though it may look complicated at the beginning after
+  defining a few primitive constructs the code for building queries looks reasonable and is also extensible, so you're not limited
+  to combining conditions sequentially using only two operators as I demonstrated in the example, in fact it could be easily
+  modified to build for example a tree representing more complex logical combinations of conditions.
+  To run this code you'll need a few (not very difficult to write, but important) extensions that are part of my LINQ Extensions
+  project available at CodePlex. Finally, I'd like to give a credit to the authors of the F# language where this kind of expression
+  processing is natively supported, because without my experiences with F# I probably wouldn't think of building queries in a way
+  I present it in this article.
+  </p>
+
+<h2>Downloads and Related Links<a name="dynqlinks"></a></h2>
+<ul>
+<li><a href="/articles/dynamic-linq-queries/sources.zip">Download the examples</a> (51 kB)</li>
+</ul>
+<ul>
+  <li>[1] <a href="http://209.85.135.104/search?hl=en&amp;q=cache%3Ahttp%3A%2F%2Fforums.microsoft.com%2FMSDN%2FShowPost.aspx%3FPostID%3D1752078%26SiteID%3D1">Dynamic SQL and LINQ, Post by Anders Hejlsberg</a>
+    [<a href="http://209.85.135.104/search?hl=en&amp;q=cache%3Ahttp%3A%2F%2Fforums.microsoft.com%2FMSDN%2FShowPost.aspx%3FPostID%3D1752078%26SiteID%3D1" target="_blank">^</a>] - MSDN Forums - LINQ</li>
+  <li>[2] <a href="http://tomasp.net/blog/linq-expand.aspx">Calling functions in LINQ queries</a>
+    [<a href="http://tomasp.net/blog/linq-expand.aspx">^</a>] - Blog | TomasP.Net</li>    
+  <li>[3] <a href="http://www.codeplex.com/linqextensions">LINQ Extensions</a>
+    [<a href="http://www.codeplex.com/linqextensions" target="_blank">^</a>] - CodePlex</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-linq-queries.aspx%2f&amp;text=Building+LINQ+Queries+at+Runtime+in+C%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-linq-queries.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-linq-queries.aspx%2f&title=Building+LINQ+Queries+at+Runtime+in+C%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Building%20LINQ%20Queries%20at%20Runtime%20in%20C%23&body=%20Common%20criticism%20of%20LINQ%20is%20that%20it%20doesn%27t%20support%20a%20scenario%20where%20queries%20are%20build%20dynamically%20at%20the%20runtime.%20In%20this%20article%20I%20show%20that%20this%20can%20be%20acutally%20done%20very%20well%20for%20most%20of%20the%20common%20scenarios.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fdynamic-linq-queries.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 30 July 2007, 2:10 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/csharp/">c#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

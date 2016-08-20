@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Reactive programming (I.) - First class events in F# - Tomas Petricek</title>
+
+  <meta name="description" content=" The LINQ project and changes in C# 3.0 are interesting because they allow implementing many ideas from functional languages in C#. In this article I'll explain \"first-class events\" in F# and later I'll implemet similar concept using LINQ." />
+  <meta name="keywords" content="functional, c#, asynchronous, meta-programming, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Reactive programming (I.) - First class events in F#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/reactive-i-fsevents.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" The LINQ project and changes in C# 3.0 are interesting because they allow implementing many ideas from functional languages in C#. In this article I'll explain \"first-class events\" in F# and later I'll implemet similar concept using LINQ." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Reactive programming (I.) - First class events in F#" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" The LINQ project and changes in C# 3.0 are interesting because they allow implementing many ideas from functional languages in C#. In this article I'll explain \"first-class events\" in F# and later I'll implemet similar concept using LINQ." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Reactive programming (I.) - First class events in F#",
+    "headline": "Reactive programming (I.) - First class events in F#",
+  	"description": " The LINQ project and changes in C# 3.0 are interesting because they allow implementing many ideas from functional languages in C#. In this article I'll explain \"first-class events\" in F# and later I'll implemet similar concept using LINQ.",
+  	"url": "http://tomasp.net/blog/reactive-i-fsevents.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2008-11-16T17:14:04.0000000",
+  	"datePublished": "2008-11-16T17:14:04.0000000",
+    "dateModified": "2008-11-16T17:14:04.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/reactive-i-fsevents.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "c#", "asynchronous", "meta-programming", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Reactive programming (I.) - First class events in F#</h1>
+<p>I believe that the LINQ project and changes in C# 3.0 and VB 9 are interesting because they 
+  allow rewriting of many ideas from functional programming. An ability to express queries easily
+  is one of these ideas, but it is definitely not the only one. There are many other interesting ideas.
+  The C# 3.0 language isn't primary a functional language, so it isn't easy to discover the idea
+  if you use only C#, but it is possible to implement it if you know the idea already.</p>
+<p>I already wrote a few interesting C# examples that were inspired by some functional idea.
+  I'm a big fan of the F# language, so it is not a surprise that I started with an F# version
+  of the problem and then looked at the way to do the same thing in C#. In particular, this is 
+  how my article about building dynamic queries in C# came to the existence - the F# version used
+  FLINQ and Quotations [<a href="#react1links">2</a>] and then I demonstrated how to do the same in C# 
+  using expression trees [<a href="#react1links">3</a>]. Another example is my article about asynchronous 
+  programming in C# using iterators [<a href="#react1links">4</a>], which shows how to implement something 
+  like F# asynchronous workflows [<a href="#react1links">5</a>] using iterators in C# 2.0.</p>
+
+<h3>Functional Reactive Programming</h3>  
+<p>Today, I'm going to look at another very interesting idea from functional programming. It is 
+  called <em>Functional Reactive Programming</em> and it comes from the Haskell community. You can find 
+  a list of related <a href="http://www.haskell.org/frp/" type="external">Haskell projects here</a>.
+  However, similar things (though they are not purely functional and somewhat simplified) are available 
+  in the F# language as well. Don Syme introduced them in his blog post called 
+  <em>"F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming"</em> 
+  [<a href="#react1links">1</a>]. In this article, I'm going to briefly introduce the implementation
+  available in F# and I'll extend it a little bit to allow some more interesting things. In the 
+  second article from this series, I'll show how to implement the same thing in C# 3.0 (and in VB 9 too!)</p>  
+
+<p>Actually this relation between functional programming in F# and C# is the key topic for my book 
+  <a href="http://tomasp.net/blog/functional-net-update.aspx">Real-world Functional Programming in .NET</a>. 
+  The book will discuss some of the topics that I'll introduce in this article in a larger detail. In this
+  article I'll talk about events only, but the second important part of functional reactive programming
+  is the use of continuous, time-varying values (such as the position of mouse or the time). In the book,
+  this will be discussed as part of the Chapter 15 and events are the key topic for Chapter 16.</p>
+  
+<h2>Working with events in F#</h2>  
+<img src="/articles/reactive/form_ellipse.png" alt="Form with an ellipse" style="float:right; margin:15px;"/>
+<p>Let's briefly look at the features that are already available in the F# language and libraries. In F#,
+  you can work with events as if they were ordinary objects (in functional terminology, we'd say <em>values</em>).
+  This means that you can write a function that takes an event as an argument and returns an event. This 
+  allows us to write various functions for processing events. We'll demonstrate this soon, but first let's 
+  create some form that we can use for testing. The following example shows how to create a Windows Form 
+  with a small green ellipse somewhere on the form. You can see the expected result in the attached screenshot.
+  If you paste the source code to the F# interactive, a form should appear (Note, you can open the code in 
+  Visual Studio, select it and hit <strong>Alt + Enter</strong> to run it in the F# interactive):</p>
+<pre lang="fsharp">
+#light
+open System.Drawing
+open System.Windows.Forms
+
+// Generate random location for the ellipse
+let rnd = new System.Random()
+let x, y = rnd.Next(550), rnd.Next(350)
+
+// Create the main form
+let frm = new Form(ClientSize=Size(600,400))
+// Add event handler to paint the ellipse
+frm.Paint.Add(fun e -&gt;
+    e.Graphics.FillRectangle(Brushes.White, 0, 0, 600, 400)
+    e.Graphics.FillEllipse(Brushes.DarkOliveGreen, x, y, 50, 50)  
+  )
+frm.Show()
+</pre>
+<p>Nothing very exciting so far; n this example we used events in the traditional way. This means 
+  that we used the <code>Add</code> method to attach a handler to the event and we specified the 
+  event handler in a lambda function (which is just like anonymous delegate in C# 2.0 or function in C# 3.0).
+  This is the usual way for attaching handlers to events in C# too, with the difference that you use 
+  built-in <code>+=</code> operator.</p>
+
+<h3>Processing event streams</h3>
+<p>Now, let's finally take a look at the F# way of processing events. We'll extend the example to
+  display some message when a user clicks on the ellipse. Traditionally, you'd write an event handler
+  that would get <code>MouseEventArgs</code> as an argument. It would test whether the position 
+  of the cursor is inside the ellipse and then show the message.
+  However, there is another way we can think about events. You can imagine that event such as
+  <code>MouseDown</code> is a stream of information about the clicks. Once you click on the form,
+  new information appears in the stream and we can process it. When we think of events in this way,
+  we can see that events (or <em>event streams</em>) are very similar to lists or other collections.
+  This means that we can use techniques for working with collections for processing events. </p>
+<p>I already wrote about functions for working with lists in F# in my F# overview [<a href="#react1links">6</a>], but 
+  very briefly - you can use functions like <code>filter</code> and <code>map</code> for working with 
+  lists. The first one returns a list with elements for which a given predicate is true. The second one
+  uses the given function to transform an element (for example a number <code>n</code>) into something
+  else (for example a type that contains the original number and its square). Let's take a look at an example
+  that demonstrates this:</p>
+<pre lang="fsharp">
+> [1 .. 10]
+    |&gt; List.filter (fun n -&gt; n % 2 = 1)
+    |&gt; List.map (fun n -&gt; (n, n*n));;
+val it : (int * int) list = [(1, 1); (3, 9); (5, 25); (7, 49); (9, 81)]
+</pre>  
+<p>In this example, we took a list of numbers from 1 to 10. Then we filtered it using <code>List.filter</code>, so
+  the result contained only odd numbers. Finally, we used the <code>List.map</code> function to transform the 
+  list into a list that contains a number and its square. We're using the pipeline operator (written as <code>|&gt;</code>)
+  to sequence the operations. This simply means that the result of the operation on the left side will be 
+  used as an argument for the next operation in the pipeline. You can see that the result printed by the F# interactive 
+  contains squares of all odd numbers in that range.</p>
+<p>You may be wondering why I am talking about lists here, when I promised an article about events. The answer is
+  that functions like this make perfect sense for working with events as well. We can use <code>filter</code> to
+  ignore events that are not interesting for us (such as when the user clicks outside of the ellipse) and we 
+  can use <code>map</code> to turn information about the click into something more interesting, such as
+  a message that we'll show to the user. Let's finally implement the code that handles clicks on the ellipse 
+  using these event processing functions:</p>
+<pre lang="fsharp">
+&gt; // Utility function to calculate the distance 
+  open System
+  let dist (x1, y1) (x2, y2) =
+    Math.Sqrt(Math.Pow(x1 - x2, 2.0) + Math.Pow(y1 - y2, 2.0))
+  ;;
+val dist : float * float -> float * float -> float
+
+&gt; let evtMessages =
+    frm.MouseDown
+      |&gt; Event.filter (fun mi -&gt; 
+          // The distance between click location and 
+          // the center of the ellipse is less than 25
+          dist (float mi.X, float mi.Y) (float(x + 25), float(y + 25)) &lt; 25.0 )
+      |&gt; Event.map (fun mi -&gt;
+          // Return message that we'll show to the user
+          if (int (mi.Button &amp;&amp;&amp; MouseButtons.Left) &lt;&gt; 0) then "Left button"
+          elif (int (mi.Button &amp;&amp;&amp; MouseButtons.Right) &lt;&gt; 0) then "Right button"
+          else "Some trick!")
+  ;;
+val evtMessages : IEvent&lt;string&gt;
+</pre>  
+<p>We aren't yet done with the application, but we did two important steps. Let's take a look at them in detail.
+  We first used the <code>Event.filter</code> processing function. The predicate that we gave it tests whether
+  the center of the ellipse <code>(x + 25, y + 25)</code> is close enough to the location of the mouse click.
+  The <code>mi</code> value represents <code>MouseEventArgs</code>, so the location of the click is stored 
+  in <code>(mi.X, mi.Y)</code>. The next processing function we're using is <code>Event.map</code>. This 
+  takes the information about the click and returns some string depending on the button that was used.</p>
+
+<img src="/articles/reactive/form_clicked.png" alt="Clicked on the ellipse" style="float:right; margin:15px;"/>
+<p>I entered the code to the F# interactive, so that we can see what the result is. As you can see, this 
+  creates a value called <code>evtMessages</code> that has a type <code>IEvent&lt;string&gt;</code>. This 
+  is the F# representation of events. This means that the result is an event that will be raised when the 
+  user clicks on the ellipse. The values carried by the event will be of type string. The only thing that 
+  we need to do now is to add handler for the event and display the message in the message box. Our goal
+  is to get something like the message in the screenshot on the right side.</p>  
+
+<h3>Reacting to events</h3>
+<p>The <code>evtMessages</code> value is an ordinary event, so we could use its <code>Add</code> method
+  just like we used <code>Add</code> method of the <code>frm.Paint</code> event earlier. However, F# 
+  gives us more ways to do this and it's a good idea to use the same approach that we used in the previous
+  listing to filter the event stream.</p>
+<p>We need to do two things - first, we'll need to add some additional text to the message and second, 
+  we want to display the message box. This can be written using two primitives. You know the first one already - 
+  we'll use <code>Event.map</code> to turn the event stream with simple messages into a stream that
+  contains messages that we actually want to show to the user. In the next step, we'll use <code>Event.listen</code>.
+  This is a processing function that simply calls a function we give it when the event is raised and doesn't 
+  do anything else. This means that it ends our event processing code and returns <code>unit</code>, which is 
+  just like <code>void</code> in C#. We'll use two more functional tricks - partial function application and 
+  function composition. These are in detail explained in my <a href="http://tomasp.net/blog/functional-net-update.aspx">F# book</a>,
+  but you can get some idea from the F# overview [<a href="#react1links">5</a>] that I wrote some time ago. </p>  
+  
+<pre lang="fsharp">
+evtMessages
+  |&gt; Event.map (sprintf "Hey, you clicked on the ellipse.\nUsing: %s")
+  |&gt; Event.listen (MessageBox.Show &gt;&gt; ignore)
+</pre>
+<p>This time we'll writing processing code for the <code>evtMessages</code> value, which is an event that
+  we constructed in the previous example. In the first line, we use the <code>Event.map</code> function to 
+  format the message. We use the <code>sprintf</code> function and give it a format string that specifies 
+  that the function should expect a string as an argument. This means that the type of the expression in parentheses
+  will be a function that takes a string and returns a string. This is compatible with what <code>Event.map</code>
+  expects - it is a function. We used partial application, which means that we omitted the last argument and 
+  used the expression as a function value.
+</p>
+<p>The second line uses <code>Event.listen</code> to show the message box. As other functions for processing
+  events, this one also expects a function as an argument. The function will get string as an argument and 
+  shouldn't return anything, because <code>Event.listen</code> terminates the event processing. In the example,
+  we use function composition operator (<code>&gt;&gt;</code>) to create a function that will take a string, 
+  call <code>MessageBox.Show</code> and then <code>ignore</code> the value returned by the <code>MessageBox.Show</code>
+  (we have to add <code>ignore</code>, because <code>MessageBox.Show</code> returns a <code>DialogResult</code>
+  and <code>Event.listen</code> expects that nothing will be returned).</p>
+
+<h2>Summary</h2>
+<p>In this article, we've looked at an example that demonstrates the idea behind reactive programming and 
+  working with events as values in F#. I haven't discussed all the details - there are many other operations
+  such as <code>Event.map</code> and <code>Event.filter</code> that you can use to combine event processing
+  code in different ways (and these are indeed discussed in <a href="http://tomasp.net/blog/functional-net-update.aspx">my book</a>). 
+  In the next part of this mini-series, we're going to look how to implement the same ideas in C#. 
+  I'll also introduce my project, which is an implementation of LINQ query operators for events that I call 
+  <strong>Reactive LINQ</strong>.</p>
+<ul>
+  <li><a href="/articles/reactive/reactive1.zip">Download the examples</a> (1.10kB)</li>
+</ul>
+
+<h3>Series links</h3>
+<ul>
+  <li>Reactive programming (I.) - First class events in F#</li>
+  <li><a href="/blog/reactive-ii-csevents.aspx">Reactive programming (II.) - Introducing Reactive LINQ</a></li>
+  <li><a href="/blog/reactive-iii-linqoperators.aspx">Reactive Programming (III.) - Useful Reactive LINQ Operators</a></li>
+  <li><a href="/blog/reactive-iv-reactivegame.aspx">Reactive Programming (IV.) - Developing reactive game in Reactive LINQ</a></li>
+</ul>
+
+
+<h2>References<a name="react1links"></a></h2>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx" type="external">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a> - Don Syme's WebLog on the F# Language and Related Topics</li>
+  <li>[2] <a href="http://tomasp.net/blog/dynamic-flinq.aspx" type="external">Building LINQ Queries at Runtime in F#</a> - TomasP.Net</li>
+  <li>[3] <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx" type="external">Building LINQ Queries at Runtime in C#</a> - TomasP.Net</li>
+  <li>[4] <a href="http://tomasp.net/blog/csharp-async.aspx" type="external">Asynchronous Programming in C# using Iterators</a> - TomasP.Net</li>
+  <li>[5] <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx" type="external">Introducing F# Asynchronous Workflows</a> - Don Syme's WebLog on the F# Language and Related Topics</li>
+  <li>[6] <a href="http://tomasp.net/blog/fsharp-ii-functional.aspx">F# Overview (II.) - Functional programming</a> - TomasP.Net</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-i-fsevents.aspx%2f&amp;text=Reactive+programming+(I.)+-+First+class+events+in+F%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2freactive-i-fsevents.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-i-fsevents.aspx%2f&title=Reactive+programming+(I.)+-+First+class+events+in+F%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Reactive%20programming%20(I.)%20-%20First%20class%20events%20in%20F%23&body=%20The%20LINQ%20project%20and%20changes%20in%20C%23%203.0%20are%20interesting%20because%20they%20allow%20implementing%20many%20ideas%20from%20functional%20languages%20in%20C%23.%20In%20this%20article%20I%27ll%20explain%20%5c%22first-class%20events%5c%22%20in%20F%23%20and%20later%20I%27ll%20implemet%20similar%20concept%20using%20LINQ.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2freactive-i-fsevents.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Sunday, 16 November 2008, 5:14 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

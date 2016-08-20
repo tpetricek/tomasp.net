@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Miscomputation: Learning to live with errors - Tomas Petricek</title>
+
+  <meta name="description" content=" Charles Babbage once said that 'if trials of three or four simple cases have been made, it is scarcely possible that there can be any error'. We now know that errors are more common and harder to eliminate. In this blog post, I look at different strategies that programmers use for dealing with errors. It turns out that there is a surprisingly wide range of options!" />
+  <meta name="keywords" content="philosophy, research, programming languages, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Miscomputation: Learning to live with errors" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2015/failures/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2015/failures/babbage.png" />
+  <meta property="og:description" content=" Charles Babbage once said that 'if trials of three or four simple cases have been made, it is scarcely possible that there can be any error'. We now know that errors are more common and harder to eliminate. In this blog post, I look at different strategies that programmers use for dealing with errors. It turns out that there is a surprisingly wide range of options!" />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Miscomputation: Learning to live with errors" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2015/failures/babbage.png" />
+  <meta name="twitter:description" content=" Charles Babbage once said that 'if trials of three or four simple cases have been made, it is scarcely possible that there can be any error'. We now know that errors are more common and harder to eliminate. In this blog post, I look at different strategies that programmers use for dealing with errors. It turns out that there is a surprisingly wide range of options!" />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Miscomputation: Learning to live with errors",
+    "headline": "Miscomputation: Learning to live with errors",
+  	"description": " Charles Babbage once said that 'if trials of three or four simple cases have been made, it is scarcely possible that there can be any error'. We now know that errors are more common and harder to eliminate. In this blog post, I look at different strategies that programmers use for dealing with errors. It turns out that there is a surprisingly wide range of options!",
+  	"url": "http://tomasp.net/blog/2015/failures/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2015-07-27T14:15:31.7814254+01:00",
+  	"datePublished": "2015-07-27T14:15:31.7814254+01:00",
+    "dateModified": "2015-07-27T14:15:31.7814254+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2015/failures/",
+  	"image": "http://tomasp.net/blog/2015/failures/babbage.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2015/failures/babbage.png",
+  	"keywords": ["philosophy", "research", "programming languages",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">Miscomputation</span><span class="hs"> Learning to live with errors</span></h1>
+<blockquote>
+<img src="http://tomasp.net/blog/2015/failures/babbage.png" style="float:right;width:110px;margin:5px 0px 10px 20px" />
+<p style="margin-bottom:5px">If trials of three or four simple cases have been made, and are found
+to agree with the results given by the engine, it is scarcely possible that there can be any error
+(...).</p>
+<p style="text-align:right">Charles Babbage, On the mathematical<br /> powers of the calculating engine (1837)</p>
+</blockquote>
+<p>Anybody who has something to do with modern computers will agree that the above statement made by
+Charles Babbage about the analytical engine is understatement, to say the least.</p>
+<p>Computer programs do not always work as expected. There is a complex taxonomy of errors or
+<a href="http://link.springer.com/article/10.1007/s13347-013-0112-0"><em>miscomputations</em></a>. The taxonomy of
+possible errors is itself interesting. Syntax errors like missing semicolons are quite obvious
+and are easy to catch. Logical errors are harder to find, but at least we know that something
+went wrong. For example, our algorithm does not correctly sort some lists. There are also issues that
+may or may not be actual errors. For example an algorithm in online store might suggest slightly
+suspicious products. Finally, we also have concurrency errors that happen very rarely in some
+very specific scenario.</p>
+<p>If Babbage was right, we would just try three or four simple cases and eradicate all errors from
+our programs, but eliminating errors is not so easy. In retrospect, it is quite interesting to
+see how long it took early computer engineers to realise that coding (i.e. translating
+mathematical algorithm to program code) errors are a problem:</p>
+<blockquote>
+<p style="margin-bottom:5px">Errors in coding were only gradually recognized to be a signiﬁcant
+problem: a typical early comment was that of Miller [circa 1949], who wrote that such errors,
+along with hardware faults, could be "expected, in time, to become infrequent".</p>
+<p style="text-align:right">Mark Priestley, Science of Operations (2011)</p>
+</blockquote>
+<p>We <em>mostly</em> got rid of hardware faults, but coding errors are still here. Programmers spent
+over 50 years finding different practical strategies for dealing with them. In this
+blog post, I want to look at four of the strategies. Quite curiously, there is a very wide range.</p>
+<h2>Introducing the heroes</h2>
+<ul>
+<li>
+<p><em>"Errors are a curse and must be avoided at all costs,"</em> says our first hero <em>"if it contains
+an error, you cannot even call it a program!"</em> This sounds a bit idealistic, but our hero hopes
+that dependently typed languages will make this dream a reality.</p>
+</li>
+<li>
+<p><em>"But how do you know it works?"</em> comes a reply from our second doubtful hero. <em>"You need to
+write a specification, or tests!"</em> And our second hero becomes even more extreme <em>"In fact,
+I will only write new code to fix errors revealed by tests!"</em></p>
+</li>
+<li>
+<p>As our first two heroes start arguing, a third (a bit weird) hero comes in saying <em>"You both
+really believe you can eliminate all errors?"</em> Our two heroes start looking puzzled and the
+newcomer adds <em>"When there is an error, just let it crash!"</em> Our first two heroes burst into
+laughter, but start feeling uneasy as the third hero continues looking like she <em>knows something</em>.</p>
+</li>
+<li>
+<p>As if the situation was not bad enough already, a new hero appears (looking a bit like a rock
+star): <em>"I like errors. Errors are fun!"</em> Everyone else steps back a bit as our fourth hero
+continues <em>"How do you even tell what is an error? Just watch what's going on. Maybe it'll do
+something new and interesting!"</em></p>
+</li>
+</ul>
+<h2>Error as a curse: Avoiding errors at all costs</h2>
+<img src="http://tomasp.net/blog/2015/failures/hero1.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
+<p>Many software developers share some of the thoughts with our first hero. Wouldn't it be nice
+if we could <em>never</em> make errors, avoid miscomputations altogether and all software we created
+was fully correct? As we saw in an earlier quote, people only realized that coding errors is
+a significant problem in 1950s. A bit later, in 1960s, the <em>Algol research programme</em> first
+advocated using formal logic to avoid errors:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+One of the goals of the Algol research programme was to utilize the resources of logic to
+increase the confidence (...) in the correctness of a program. As McCarthy had put it, "[instead]
+of debugging a program, one should prove that it meets its specifications (...)".</p>
+<p style="text-align:right">Mark Priestley, Science of Operations (2011)</p>
+</blockquote>
+<p>Modern statically-typed programming languages follow the same basic approach. In their case,
+the "resources of logic" are concretely instantiated in type systems that rule out some of
+the errors. This is captured by the slogan <em>"well-typed programs do not go wrong"</em> that was
+stated by Robin Milner in 1978 (as part of the <em>Semantic Soundness Theorem</em>).</p>
+<p>Followers of the Algol research programme (and statically typed languages) aim to create correct
+programs that never miscompute. When there is an error, the compiler will reject the program.
+However, types used today can only specify some of the program properties that we need to check,
+and so the Algol camp is finding ways for checking stronger properties.</p>
+<p>One way towards checking more program properties is to use <em>dependently-typed programming languages</em>
+such as Idris, Agda or Coq. With these languages, there is even more focus on using the
+<em>resources of logic</em> (as suggested by the Algol research programme) to make sure that our
+programs meet specification. In fact, <em>proving</em> that your program matches specification
+becomes a part of programming!</p>
+<p>Whether we can actually eliminate all errors in this way remains an open question. Our first
+hero and his friends will, of course, tell you that the world where all software is provably
+correct is close:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+[T]oday most people who write software, practitioners and academics alike, assume that the
+costs of formal program verification outweigh the benefits. The purpose of this book is to
+convince you that the technology of program verification is mature enough today that it
+makes sense to use it in a support role in many kinds of research projects in computer science.</p>
+<p style="text-align:right">Adam Chlipala, Certified Programming with Dependent Types (2013)</p>
+</blockquote>
+<p>The Algol research programme started in 1960s and there has certainly been a lot of progress
+over the last 50 years towards using formal methods to ensure that programs are correct. The
+ML-family of languages (including OCaml and F#) provides basic guarantees for very low
+cost. That said, I think our first hero still has a few dragons to slay!</p>
+<h2>Error as a progress: Test-driven development</h2>
+<img src="http://tomasp.net/blog/2015/failures/hero2.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
+<p>Looking through the perspective of the Algol research programme, it might be surprising that any
+software actually works at all. Sir Tony Hoare, one of the proponents of the Algol research
+programme asks exactly this question in his paper <a href="http://dl.acm.org/citation.cfm?id=729681">How did software get so reliable without
+proof?</a> The summary of the answer is that solid
+engineering practices are often good enough to produce working software. This is where our
+second hero comes to the scene.</p>
+<p>One of the engineering practices for avoiding errors is to write tests. At the first sight,
+this might look very similar to the first approach - we write tests to rule out errors!
+You could see tests from this perspective. Regression tests and some tests for code in
+dynamically-typed languages certainly play this role.</p>
+<p>The use of tests in programming may have started from the aim to rule out errors, but it developed
+in a very different direction. This is the idea summarized by <em>test-driven development</em>. In
+TDD, tests are not just a method for automatically checking the absence of certain errors, but
+they also become a part of specification and a <em>driving force</em> behind development:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+[H]ere's what we do: we drive development with automated tests (...).
+In Test-Driven Development, we (1) write new code only if an automated test has failed
+(2) eliminate duplication. These are two simple rules, but they generate complex
+individual and group behavior (...).</p>
+<p style="text-align:right">Kent Beck, Test-Driven Development by Example (2003)</p>
+</blockquote>
+<p>This leads to the Red-Green-Refactor mantra of TDD:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+1.	Red – write a little test that doesn't work, and perhaps doesn't even compile at first.<br />
+2.	Green – Make the test work quickly, committing whatever sins necessary in the process<br />
+3.	Refactor – Eliminate all of the duplication created in merely getting the test to work.</p>
+<p style="text-align:right">Kent Beck, Test-Driven Development by Example (2003)</p>
+</blockquote>
+<p>I don't intend to contribute to the recent heated discussion about TDD (and I'm by no means a
+TDD expert). What is interesting here is that test-driven development treats errors, or
+miscomputations, in a very special way. In particular, we should first produce an <em>isolated miscomputation</em>
+and then write code to remove it. We write a failing test to exemplify an error present in
+our implementation (unsupported behaviour) and then implement the functionality and
+remove the error.</p>
+<p>In this way, TDD <em>incorporates miscomputation</em> as a part of the development cycle!
+Saying that TDD is about avoiding miscomputations would not be accurate. In fact, it is
+deliberately introducing them, and then eliminating them.</p>
+<p>Although very different, both of the approaches discussed so far aim to eliminate miscomputation from
+completed programs that are deployed or sold to customers. In the first case, this is done through proofs.
+In the second case, this is done by adding tests (as a specification) and making them pass. However,
+there are other ways for dealing with errors...</p>
+<h2>Error as the unavoidable: Let it crash</h2>
+<img src="http://tomasp.net/blog/2015/failures/hero3.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
+<p>A group that takes a very different approach to errors is the Erlang community. This was represented by
+the third here from the introduction who even used the famous Erlang slogan "let it crash". In the Erlang
+mindset, there are two separate (and quite different) situations that can cause problems. Here is a nice
+summary from Joe Armstrong:</p>
+<blockquote>
+<ul><li style="margin-left:10px;">
+  <strong>exceptions</strong> occur when the run-time system does not know what to do.
+</li><li style="margin-left:10px;">
+  <strong>errors</strong> occur when the programmer doesn’t know what to do.
+</li></ul>
+</blockquote>
+<p>I think both of these would qualify as <em>miscomputations</em>, but in a quite different way. If some code
+throws an exception, we can handle it and we might be able to continue (say, return 0 when dividing by
+zero). In case of error, we have <em>by definition</em> no way of recovering. We do not have enough information
+to proceed:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+Errors occur when the programmer does not know what to do. Programmers are supposed to follow
+specifications, but often the specification does not say what to do and therefore the programmer
+does not know what to do.</p>
+<p style="text-align:right">Joe Armstrong, Programming reliable systems (2003)</p>
+</blockquote>
+<p>The interesting thing is that in Erlang, <em>miscomputations</em> of this kind are expected to happen and
+programmers have a practical strategy for dealing with them:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+What kind of code must the programmer write when they find an error? The philosophy is let some
+other process fix the error, but what does this mean for their code? The answer is let it crash.</p>
+<p style="text-align:right">Joe Armstrong, Programming reliable systems (2003)</p>
+</blockquote>
+<p>Unlike in the first two cases (logic and tests) errors or miscomputations are actually expected to
+happen during normal operation of Erlang programs. This works because Erlang programs typically use
+a sophisticated supervision model. A supervisor process can restart the worker process that miscomputed
+or it can try some alternate way of doing what needs to be done.</p>
+<p>It is important to understand that in the Erlang philosophy, having crashing processes is a perfectly
+normal thing and there is nothing wrong with it. So, miscomputation becomes not a thing to be avoided;
+not a thing integrated into the development process, but something that we can deliberately introduce
+into programs to deal with unexpected conditions.</p>
+<p>Now, there is a deeper philosophical question about miscomputation which I'm going to skip in this
+blog post - is it actually a <em>miscomputation</em> when it is a normal part of the operation? If we want
+to use the same definition of <em>miscomputation</em> for all the cases covered in this blog post, then we
+have to say that crashing a process <em>is</em> a miscomputation.</p>
+<p>You probably already guessed the structure of this article. We started by avoiding miscomputations,
+then we made them a part of the development process and now we are making them a part of program
+execution. The question is, can we go even further?</p>
+<h2>Error as an inspiration: Live coding</h2>
+<img src="http://tomasp.net/blog/2015/failures/hero4.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
+<p>In all of the three previous cases, the miscomputations or errors were never visible to the end
+user. Our third hero is going to change this. But let me start by going back to the early history
+of programming and the Algol research programme. Although the Algol programme (with its focus on
+formal proofs) become very influential, there were other languages. One of the first ones that
+took a very different perspective was Smalltalk in 1970s:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+Smalltalk appears to represent an approach to the design of programming languages
+that is quite different from what was familiar in the Algol research programme.
+</p><p style="text-align:right">Mark Priestley, Science of Operations (2011)</p>
+</blockquote>
+<p>There is more fundamental difference than you would think. It is also hard to see, because we are
+used to certain ways of thinking about programming languages that are actually very similar for
+all languages in use today. In a way, Smalltalk is not a <em>programming language</em>, but a <em>programming
+environment</em>. When you are working with it, you are not <em>writing code</em>, but you are <em>interacting</em>
+with the Smalltalk environment:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+Programming [in Smalltalk] was not thought of as the task of constructing a linguistic entity,
+but rather as a process of working interactively with the semantic representation of the
+program, using text simply as one possible interface.
+</p><p style="text-align:right">Mark Priestley, Science of Operations (2011)</p>
+</blockquote>
+<p>When we treat computation as an interaction, miscomputation and errors take yet another form. This
+is easier to see when we look at more recent work that treats programming as interaction or
+<a href="http://sam.aaron.name/2009/11/24/hand-shadows-as-an-analogy-for-understanding-communicative-programming.html"><em>communication</em>, a term that Sam Aaron uses</a>.
+A nice example of this is live coding environments for performing music. This changes our metaphors
+for miscomputation in interesting ways:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+An error in the performance of classical music occurs when the performer plays a note that is not written on the page. In musical genres that are not notated so closely (...), there are no wrong notes – only notes that are more or less appropriate to the performance.
+</p><p style="text-align:right">Alan Blackwell and Nick Collins,<br /><a href="http://community.dur.ac.uk/nick.collins/research/proglangasmusicinstr.pdf">The Programming Language as a Musical Instrument</a> (2005)</p>
+</blockquote>
+<p>Live coding brings the same ideas to programming:</p>
+<blockquote>
+<p style="margin-bottom:5px">
+[Live coders] may well prefer to accept the results of an imperfect execution.
+[They] might perhaps compensate for an unexpected result by manual intervention
+(like a guitarist lifting his finger from a discordant note), or even accept the result
+as a serendipitous alternative to the original note.
+</p><p style="text-align:right">Alan Blackwell and Nick Collins,<br /><a href="http://community.dur.ac.uk/nick.collins/research/proglangasmusicinstr.pdf">The Programming Language as a Musical Instrument</a> (2005)</p>
+</blockquote>
+<p>One interesting point is that making miscomputation apparent (we hear a dissonant note) enables
+live coder to quickly react. This might mean adapting the program to correct the behaviour or
+perhaps incorporating the behaviour into the system (when the accidental note fits well).</p>
+<p>It is easy to understand this approach in live coded music, but that is just one of the domains.
+In Smalltalk, live coding can be used to interactively change a running system in response to errors
+and it is perfectly possible to see this exact approach used in other environments:</p>
+<ul>
+<li>
+<p>When we look at trading and finance, people are already engaged in live interactions - though
+mostly through spreadsheet-like applications. Imagine they could write live code to trade on the
+markets! The ability to see unexpected behaviour and quickly react (to adapt it) would, no doubt,
+be one of the key aspects of the programming environment.</p>
+</li>
+<li>
+<p>In the web space, someone is typically ready to interact with the servers all the time if something
+goes wrong. The DevOps movement is making the link between developers and the system shorter to
+the extent that you can (almost?) live code your web server.</p>
+</li>
+</ul>
+<p>In summary, in live coding, errors and miscomputations can be treated as something that provokes creativity.
+You can easily see how this works in live coded music (and other performances), but I think this extends
+further (and I believe we'll see more of this in the future).</p>
+<h2>Conclusions</h2>
+<p>Perhaps the most interesting message from the blog post is that miscomputation does not always have
+to be fully avoided. Avoiding miscomputation at all cost (through formal proofs or thorough testing) is
+the most common technique, but there are interesting alternatives that embrace miscomputation.</p>
+<p>In <em>test-driven development</em>, errors become a driving force for the development process, but we still
+hope to remove them from the running software. In <em>Erlang</em>, errors are a normal part of program execution,
+but the runtime handles them (e.g. by restarting an agent) and so they are not visible to the user.
+In <em>live coding</em>, errors are visible and are part of the live interaction with the system, be it live
+coded music, web server or a (futuristic) financial system.</p>
+<p>Another really important point here is the difference between different approaches to programming.
+When you're comparing Idris, Java, Erlang and Ruby <a href="http://sonic-pi.net/">used in Sonic Pi</a>, you can
+talk about different language features, but that's completely missing the point. The differences are
+more in how they are used and how the communities approach different problems - here, the problem of
+errors.</p>
+<p>Finally, if we sort the approaches to errors by decades when they appeared, we get Algol (1960s),
+Smalltalk (1970s), Erlang (1980s) and TDD (2000s), so there is still room for new ideas!
+I think errors and miscomputations are here to stay, but how will future languages deal with them
+is an interesting question.</p>
+
+
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2ffailures%2f&amp;text=Miscomputation%3a+Learning+to+live+with+errorsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2015%2ffailures%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2ffailures%2f&title=Miscomputation%3a+Learning+to+live+with+errors">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Miscomputation%3a%20Learning%20to%20live%20with%20errors&body=%20Charles%20Babbage%20once%20said%20that%20%27if%20trials%20of%20three%20or%20four%20simple%20cases%20have%20been%20made%2c%20it%20is%20scarcely%20possible%20that%20there%20can%20be%20any%20error%27.%20We%20now%20know%20that%20errors%20are%20more%20common%20and%20harder%20to%20eliminate.%20In%20this%20blog%20post%2c%20I%20look%20at%20different%20strategies%20that%20programmers%20use%20for%20dealing%20with%20errors.%20It%20turns%20out%20that%20there%20is%20a%20surprisingly%20wide%20range%20of%20options!%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2015%2ffailures%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 27 July 2015, 2:15 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/philosophy/">philosophy</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

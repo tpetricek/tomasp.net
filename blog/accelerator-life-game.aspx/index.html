@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Accelerator and F# (II.): The Game of Life on GPU - Tomas Petricek</title>
+
+  <meta name="description" content=" This article shows how to use Accelerator from F#, which I already discussed, to implement a massively parallel version of the famous Conway's Game of Life." />
+  <meta name="keywords" content="academic, functional, meta-programming, accelerator, f#, math and numerics, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Accelerator and F# (II.): The Game of Life on GPU" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/accelerator-life-game.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article shows how to use Accelerator from F#, which I already discussed, to implement a massively parallel version of the famous Conway's Game of Life." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Accelerator and F# (II.): The Game of Life on GPU" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article shows how to use Accelerator from F#, which I already discussed, to implement a massively parallel version of the famous Conway's Game of Life." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Accelerator and F# (II.): The Game of Life on GPU",
+    "headline": "Accelerator and F# (II.): The Game of Life on GPU",
+  	"description": " This article shows how to use Accelerator from F#, which I already discussed, to implement a massively parallel version of the famous Conway's Game of Life.",
+  	"url": "http://tomasp.net/blog/accelerator-life-game.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2009-12-28T21:16:03.0000000",
+  	"datePublished": "2009-12-28T21:16:03.0000000",
+    "dateModified": "2009-12-28T21:16:03.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/accelerator-life-game.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["academic", "functional", "meta-programming", "accelerator", "f#", "math and numerics",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Accelerator and F# (II.): The Game of Life on GPU</h1>
+<img src="/articles/accelerator-life-game/life.png" alt="Conway's Game of Life" style="float:right; margin:10px" />
+<p>In the <a href="/blog/accelerator-intro.aspx">previous article</a>, I introduced the
+  Microsoft Research Accelerator library. It allows us to write computations with arrays
+  in C# and execute them in parallel on multi-core CPU or more interestingly, 
+  using GPU shaders. In the previous artcile, we've seen how Accelerator works and 
+  how it can be accessed from F#. In this article, we'll look at one more interesting
+  F# demo - we'll implement the famous Conway's Game of Life [<a href="#accelfsh2links">1</a>] using Accelerator.
+  We'll use a v2 version of Accelerator which has been announced just recently and
+  is available from Microsoft Connect [<a href="#accelfsh2links">2</a>].</p>
+<p>This article is the second one from a series about using Accelerator from F#. 
+  Today, we'll use Accelerator types directly from F# - this is the simplest possible 
+  approach and is very similar to the way you'd work with Accelerator in C#. However, 
+  we can use some nice F# features such as custom operators to make the code more 
+  readable. In the next article, we'll discuss a different approach - we'll look how
+  to execute more "standard" F# code (that doesn't reference Accelerator explicitly)
+  with Accelerator using F# quotations. The list of articles may change, but here is 
+  a list of articles that I'm currently planning to write:</p>
+<ul>
+  <li><a href="/blog/accelerator-intro.aspx">Accelerator and F# (I.): Introduction and calculating PI</a></li>
+  <li><strong>Accelerator and F# (II.): The Game of Life on GPU</strong></li>
+  <li><a href="http://tomasp.net/blog/accelerator-dataparallel.aspx">Accelerator and F# (III.): Data-parallel programs using F# quotations</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-quotations.aspx">Accelerator and F# (IV.): Composing computations with quotations</a></li></ul>  
+
+<h2>Implementing the Game of Life</h2>
+<img src="/articles/accelerator-life-game/schema.png" style="float:right; margin:10px" alt="Game of Life Schema" />
+<p>The Game of Life is a zero-player game, which means that once we start it with
+  some initial configuration, it will run without any other input. It runs on a square
+  grid and looks like a cell or simple organism simulation. In each step, some of the
+  organisms die and some new organisms appear, so we'll just need to calculate a new
+  state of the grid. The game is truly amazing, because it has extremely simple set of rules, 
+  but can create fantastic and very complicated structures. In fact, it is 
+  <a href="http://en.wikipedia.org/wiki/Turing_completeness" type="external">Turing-complete</a>, which (roughly) means that you could 
+  encode arbitrary computer program with its inputs as an initial configuration of the
+  Game of Life and it would simulate the program. It would require some additional 
+  coding of inputs and outputs as well as an extremely large grid, but it is theoretically
+  possible!</p>
+<p>You can see the rules of the game visualized in the diagram above:</p>
+<ul>
+  <li><strong>Green</strong> - When an existing cell (green in the middle) has 
+    three or two neighbours it survives to the next round</li>
+  <li><strong>Red</strong> - When an existing cell has less than two neigbors it dies, 
+    because it is lonely (first red case), when it has more than three neighbors
+    it dies of overcrowding (second red case)</li>    
+  <li><strong>Blue</strong> - Finally, a new cell is born in an empty grid location
+    if there are exactly three neighbors.</li>    
+</ul>
+<p>As you can see, there are only three simple rules that drive the Game.
+  Our implementation will simply need to calculate a new state of the grid
+  based on the original one and for each element of the array, we'll check the
+  three rules. However, before looking at the implementation, we'll write a couple
+  of constants to configure the game and a few hlepers.</p>
+
+<h3>Getting ready</h3>
+<p>Our implementation allows us to specify the size of the grid (it has to be a square)
+  and a size of the window. The visualization looks the best when the size of the 
+  window is a multiple of the grid size. Once we know the size, we'll initialize
+  a couple of <code>FloatParallelArray</code> instances representing arrays
+  of the specified size that contain constant values. We're using the <code>FPA</code>
+  type alias from the <a href="/blog/accelerator-intro.aspx">previous article</a>.</p>
+
+<pre lang="fsharp">
+// Configuration of the game
+let gridSize, formSize = 512, 512
+
+// Initialization of constant 2D arrays
+let shape = [| gridSize; gridSize; |]
+let [zero; one; two; three] =
+  [ for f in [0.0f; 1.0f; 2.0f; 3.0f] -&gt; new FPA(f, shape) ]
+</pre>
+<p>The code uses a simple sequence expression that iterates over a list of 
+  constants stored as floats and yields a new <code>FPA</code> instance with
+  the required size. Note that we're using a compact syntax of sequence
+  expressions, because we only need to perfrom a projection. The result
+  of the sequence expression is a list and we use pattern matching to 
+  decompose the list into individual elements. The compiler cannot verify
+  at compile-time that the number of elements will match, so it will issue
+  a warning. However, we know that the code is correct in this case, so we don't
+  need to worry. You can also turn the warning off by adding <code>#nowarn "25"</code>
+  to the beginning of the file.</p>
+<p>Now that we know the size of the grid and have all the needed constant arrays,
+  we'll also implement a single function that wrap the Accelerator 
+  functionality and three custom operators:</p>
+  
+<pre lang="fsharp">
+// Calculating with 2D float arrays 
+let rotate (a:FPA) (dx:int) dy = PA.Rotate(a, [| dx; dy |]);
+
+// Custom operators - simulating logical operations using floats
+let (&amp;&amp;.) (a:FPA) (b:FPA) = PA.Min(a, b)
+let (||.) (a:FPA) (b:FPA) = PA.Max(a, b)
+let (==.) (a:FPA) (b:FPA) = PA.Cond(PA.CompareEqual(a, b), one, zero)
+</pre>
+
+<p>As you can see, all of our functions and operators are simple wrappers for
+  static methods of the <code>ParallelArrays</code> class (type alias <code>PA</code>).
+  This makes the F# code more idiomatic and also allows us to use operators
+  with the infix notation. The names of the operators ends with an additional
+  dot to denote that they implement point-wise operations.</p>
+<p>The <code>rotate</code> function moves elements of the array by the specified 
+  offset (it is a bit similar to <code>Shift</code> that we discussed in the 
+  <a href="/blog/accelerator-intro.aspx">previous article</a>). However, when elements
+  is shifted outside outside of the grid, values are copied back from 
+  the other side. To demonstrate this, if we moved the contents of 1D array 
+  <code>[1; 2; 3; 4; 5]</code> by +2, we'd get <code>[4; 5; 1; 2; 3]</code>.</p>
+<p>Next, we define three operators that simulate Boolean operations 
+  using floats. Accelerator also provides <code>BoolParallelArray</code> type,
+  which can be used for calculating with arrays of Booleans, but we'll need
+  to combine calculations with floats and Booleans in more sophisticated ways,
+  so simulating logical operations with floating point numbers works better.</p>
+<ul>
+  <li>The <code>&amp;&amp;.</code>operator simulates <em>and</em> by returning the minimum of 
+    the two values. This means, that the result will be 1 only if both of the
+    inputs contain 1. If any of the inputs contains 0, the overall result will be 0.</li>
+  <li>The <code>||.</code> operator simulates logical <em>or</em> using maximum. 
+    This means that the result will be 1 if any of the inputs contains 1.</li>    
+  <li>Finally, the <code>==.</code> operator implements an equality check using
+    <code>CompareWith</code> and <code>Cond</code>. When the values are equal, it
+    returns a value from <code>one</code> and otherwise it returns a value from 
+    <code>zero</code>.</li>
+</ul>
+<p>Now we can manipulate with the game grid using <code>rotate</code> and also 
+  simulate logical operations using floating point values 1.0 and 0.0. Let's 
+  finally look how we could implement a single step of the Game of Life.</p>
+
+<h3>Calculating the game step</h3>
+<p>The state of the game will be represented as a 2D array <code>float32[,]</code>.
+  We'll need some interesting initial state for the game, so we'll set all values
+  to zero with the exception of a diagonal from left-upper location (when <code>x = y</code>)
+  and the first row and column of the grid (<code>x = 0 || y = 0</code>). This is
+  enough to start a very interesting simulation. If you'll later want to experiment
+  with the code, you may try changing the initial configuration:</p>
+<pre lang="fsharp">
+// Create an initial data grid
+let initial = Array2D.init gridSize gridSize (fun x y -&gt; 
+  if x = 0 || y = 0 || x = y then 1.0f else 0.0f)
+</pre>
+<p>The code uses F# library function <code>Array2D.init</code>, which takes the
+  dimensions of an array as first two arguments. The last argument is a function
+  that calculates a value of the array at the specified coordinate. Otherwise, the
+  listing doesn't show anything interesting. The function that calculates the 
+  next state of the grid is much more interesting. We'll start by writing a function
+  that takes <code>FPA</code> as an input and returns <code>FPA</code> as the 
+  result. As I explained earlier, this is just a representation of a computation
+  that can be executed later. We'll run the constructed computation later to get a 
+  result of type <code>float32[,]</code>, which can be easily visualized.</p>  
+<pre lang="fsharp">
+let nextGeneration (grid:FPA) =
+  // Generate grids shifted by 1 in every direction
+  let hd::tl = 
+    [ for dx in -1 .. 1 do
+        for dy in -1 .. 1 do
+          if dx &lt;&gt; 0 || dy &lt;&gt; 0 then 
+            yield rotate grid dx dy ]
+
+  // Count neighbors of each grid element
+  let sum = tl |&gt; List.fold (+) hd
+  
+  // Implements the Game of Life logic
+  (sum ==. three) ||. ((sum ==. two) &amp;&amp;. grid)
+</pre>
+<p>In the first step, the function creates a list of 8 grids rotated in all 
+  of the 8 possible directions (north, northeast, east, southeast, etc). 
+  This is implemented as a sequence exprssion that generates a single rotated
+  grid for each combination of offsets (<code>dx</code> and <code>dy</code>).
+  It only skips the combination when both <code>dx</code> and <code>dy</code>
+  are zero (which would correspond to the original <code>grid</code>). Note 
+  that we decompose the created list into a head (first element) and a tail 
+  (list of all remaining elements), because this will make further processing
+  easier.</p>
+<p>Now we have 8 grids, which represent the original grid shifted in each 
+  direction. If we put all these layers over each other and count the number
+  of living cells in each location, we'll get the number of neighbors for
+  each location. This is exactly what the next line does. We're using the
+  <code>List.fold</code> function with the first grid (<code>hd</code>) as an initial value and
+  the overloaded point-wise addition of arrays (<code>+</code> for the <code>FPA</code> 
+  type) as the aggregation function. By running the aggregation with the remaining 
+  7 grids (<code>tl</code>) as the source specified using pipelining, we'll get 
+  the count of neighbors.</p>
+<p>Finally, the last line implements the Game of Life logic using our custom
+  logical operators. We use a slightly different (but equivalent) encoding of the 
+  original three rules - a specific location in the newly constructed grid
+  will contain a living cell if and only if it originally had three living cells
+  as neighbors (in this case we don't care whether there was originally a living
+  cell in this location) or if there was a living cell originally and had two 
+  neighbors.</p>
+<p>Without any doubt, the last line of our code makes the F# implementation
+  of the Game of Life using Accelerator really neat. A single succinct line 
+  of code impplements all the game logic. Now we only need to add some code to 
+  visualize the Game, so that we can see the complex behavior patterns it 
+  creates...</p>
+  
+<h2>Visualizing the game</h2>
+<p>To actually run the computation and display the results, we'll need to specify
+  the <em>target</em>, which is an Accelerator engine, which we can use to evaluate 
+  <code>FPA</code> computations. We'll implement the game as a function that
+  takes the target as an arguments, implements two local functions and then
+  instantiates the <code>DrawingForm</code> type. This is a form that keeps
+  running the step operation in a loop and we'll look at its source in 
+  the next subsection.</p>
+
+<pre lang="fsharp">
+let life(target:Target) =
+  // Functions to calculate next state and to draw it
+  let nextState (g:float32[,]) =
+    target.ToArray2D(nextGeneration(new FPA(g)))
+  let display (data:float32[,]) =
+    data |&gt; toBitmap (fun f -&gt; 
+      if (f &lt; 0.5f) then Color.White else Color.DarkCyan)
+
+  // Run the drawing form with life game
+  let gameForm = 
+    new DrawingForm&lt;_&gt;
+      (initial, nextState, display, 
+       ClientSize = Size(formSize, formSize))
+  Application.Run(gameForm)  
+
+do
+  life(new DX9Target())
+</pre>
+<p>We already have the <code>nextGeneration</code> function, which has a type
+  <code>FPA -&gt; FPA</code>. It returns a computation that represents the next 
+  step of the game. As we said earlier, we'll keep the current state as a type
+  <code>float32[,]</code> that contains actual grid values instead of some
+  abstract computation. The function <code>nextState</code> calculates the
+  new state using the final representation. It takes an array as an argument,
+  wraps it into <code>FPA</code> type, then calculates the next generation and
+  evaluates the result using the specified target. The type of this function
+  is <code>float32[,] -&gt; float32[,]</code>.</p>
+<p>The second local function is <code>display</code>. It is used to visualize 
+  the current state in a bitmap. This function has a type <code>float32[,] -&gt; Bitmap</code>.
+  We implement it using a higher-order function <code>toBitmap</code> which takes 
+  a 2D array as an argument and a function that turns a value from the array
+  (in our case <code>float32</code>) into a pixel color. We provide a simple function
+  that returns white color for values 0.0 and dark cyan for values 1.0. The <code>toBitmap</code>
+  function isn't a part of standard F# libraries - it is implemented using direct
+  memory access, which is unsafe, but efficient. You can find the implementation
+  in the source code at the end of the article.</p>
+<p>The last part of the function initializes the <code>DrawingForm</code> type.
+  This is a reusable type that we'll implement shortly. It can be used for running
+  any simulations where we want to calculate new state as fast as possible
+  and redraw the form after every recalculation. We give it three parameters - 
+  an initial state, a function to calculate new state and a function that draws
+  the current state into a bitmap. Note that the state is a generic type parameter.
+  We don't need to know what the state is as long as we're able to create a bitmap 
+  from it. The last step we need to do is to implement the <code>DrawingForm</code> type...</p>
+
+<h3>Implementing a drawing form </h3>
+<p>The <code>DrawingForm</code> type is a generic class with a single type parameter
+  and three constructor parameters. The type parameter represents a state, which is 
+  recomputed using the provided function when the form is running. We'll implement 
+  the form using the implicit class syntax:</p>
+  
+<pre lang="fsharp">
+type DrawingForm&lt;'TState&gt;(initial, update, draw) as x = 
+  inherit Form()
+  // Loop that runs computation &amp; redraws form
+  let rec drawingLoop(state) = 
+    if not x.IsDisposed then
+      ( use gr = x.CreateGraphics()
+        gr.InterpolationMode &lt;- Drawing2D.InterpolationMode.NearestNeighbor
+        gr.DrawImage(draw(state), x.ClientRectangle) )
+      drawingLoop(update(state))
+
+  do
+    // Run the computation
+    Async.Start(async { drawingLoop(initial) })
+</pre>
+<p>The form doesn't contain any members, so the entire body is essentially just a 
+  constructor. The constructor parameters (an initial state and two functions) are
+  written directly following the type name. It starts by inheriting from the .NET
+  <code>Form</code> type. Next, it declares a single local recursive function 
+  <code>drawingLoop</code> the function runs until the form is closed. It keeps the 
+  current state as a parameter (which is a typical functional technique). </p>
+<p>After making sure that the form is still displayed, it redraws the graphics 
+  using the current state. Note that we use the <code>use</code> keyword to dispose
+  the <code>gr</code> object when it is no longer in scope. In this case, we
+  need to specify the scope explicitly using parentheses.
+  Inside the drawing code, we need to obtain a bitmap to draw on the form. We
+  do it by calling the <code>draw</code> function (a constructor parameter) with 
+  the current state as an argument. Once we're done with drawing, we calculate
+  new state by calling the <code>update</code> function and continue looping
+  by recursively invoking <code>drawingLoop</code>.</p>  
+<p>Finally, the <code>do</code> block contains code that's executed when the object is created.
+  The only thing we do is that we start the function performing the drawing on
+  a background thread. Note that this is safe, because <code>CreateGraphics</code> 
+  method is one of the few members of the <code>Form</code> type that can be 
+  accessed from non-GUI threads. We use a single asynchronous workflow to 
+  start the computation. This is simply a convenient way to start a background
+  task, because <code>Async.Start</code> starts executing the workflow in 
+  background.</p>
+  
+<h2>Extending the example</h2>
+<p>And that's it! There are various ways to make the application more interesting.
+  One option is to enable some user interaction. The source code below adds a simple
+  handler for mouse click. When you click on the form using left button, it will add 
+  some randomly located living cells and right button removes some of them. This allows
+  you to create some nice patterns:</p>
+<div style="text-align:center;">
+<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/OoergJ5vyUk&amp;hl=en&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/OoergJ5vyUk&amp;hl=en&amp;fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+</div>
+
+
+<h2>Summary</h2>  
+<p>In this article, we've seen an interesting demo of using the Accelerator library 
+  from F#. We've used many of the standard methods for working with <code>FloatParallelArray</code>
+  type, which is the core of Accelerator. Among others, we've used <code>Rotate</code> for calculating
+  neighbors and <code>Min</code>, <code>Max</code> together with <code>Cond</code> to implement
+  logical operators for working with arrays. Then we encoded the logic of the Game of Life using
+  a simple data-parallel expression that allows the Accelerator to run the code efficiently in parallel
+  either using GPU or using multi-core CPU.</p>
+<p>There are still many interesting things to explore. We've already seen two examples of using
+  Accelerator from F# in the direct way, so we won't look at more complicated demos. Instead, we'll
+  look at more sophisticated way of using Accelerator. In the next part, we'll use F# quotations
+  (which are similar to C# expression trees) to write the data processing code as a standard F# code
+  (this for example enables easier debugging) and then execute it using Accelerator.</p>
+
+<h2>Downloads and References<a name="accelfsh2links">&#160;</a></h2>  
+<ul>
+  <li><a href="/articles/accelerator-life-game/accelerator-life-game.zip">Download the Game of Life</a> (ZIP, 5.5kB)</li>
+  <li><a href="http://silverlight.services.live.com/99254/Game%20of%20Life/video.wmv">Download video</a> (WMV, 2.35MB)</li>
+</ul>
+<ul>
+  <li>[1] <a type="external" href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway's Game of Life</a> - Wikipedia.org</li>
+  <li>[2] <a type="external" href="http://connect.microsoft.com/acceleratorv2">Microsoft Research Accelerator v2</a> - Microsoft Connect</li>
+  <li>[3] <a type="external" href="http://blogs.msdn.com/satnam_singh/archive/2009/12/15/gpgpu-and-x64-multicore-programming-with-accelerator-from-f.aspx">GPGPU and x64 Multicore Programming with Accelerator from F#</a> - Satnam Singh's blog at MSDN</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-life-game.aspx%2f&amp;text=Accelerator+and+F%23+(II.)%3a+The+Game+of+Life+on+GPUvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-life-game.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-life-game.aspx%2f&title=Accelerator+and+F%23+(II.)%3a+The+Game+of+Life+on+GPU">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Accelerator%20and%20F%23%20(II.)%3a%20The%20Game%20of%20Life%20on%20GPU&body=%20This%20article%20shows%20how%20to%20use%20Accelerator%20from%20F%23%2c%20which%20I%20already%20discussed%2c%20to%20implement%20a%20massively%20parallel%20version%20of%20the%20famous%20Conway%27s%20Game%20of%20Life.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2faccelerator-life-game.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 28 December 2009, 9:16 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/accelerator/">accelerator</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/math-and-numerics/">math and numerics</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Dynamic in F#: Reading data from SQL database - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article we look at working with SQL databases in F# using ADO.NET. We'll see how to use dynamic invoke operator to make the usual ADO.NET code remarkably elegant and simple..." />
+  <meta name="keywords" content="functional, web, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Dynamic in F#: Reading data from SQL database" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/dynamic-sql.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article we look at working with SQL databases in F# using ADO.NET. We'll see how to use dynamic invoke operator to make the usual ADO.NET code remarkably elegant and simple..." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Dynamic in F#: Reading data from SQL database" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article we look at working with SQL databases in F# using ADO.NET. We'll see how to use dynamic invoke operator to make the usual ADO.NET code remarkably elegant and simple..." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Dynamic in F#: Reading data from SQL database",
+    "headline": "Dynamic in F#: Reading data from SQL database",
+  	"description": " In this article we look at working with SQL databases in F# using ADO.NET. We'll see how to use dynamic invoke operator to make the usual ADO.NET code remarkably elegant and simple...",
+  	"url": "http://tomasp.net/blog/dynamic-sql.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2010-07-09T02:03:00.0000000",
+  	"datePublished": "2010-07-09T02:03:00.0000000",
+    "dateModified": "2010-07-09T02:03:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/dynamic-sql.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "web", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Dynamic in F#: Reading data from SQL database</h1>
+<p>When reading data from a SQL database in F#, you have a couple of options.
+  You can use F# implementation of LINQ, which allows you to write queries directly
+  in the F# language or you can use standard ADO.NET classes such as <code>SqlCommand</code>.
+  The second option is often good enough - when you just need to call a simple 
+  query, you probably don't want to setup the whole LINQ infrastructure (generate
+  classes, reference F# PowerPack, etc.) Unfortunately, ADO.NET classes are a bit
+  ugly to use. When calling an SQL stored procedure, you need to specify the name
+  of the procedure as a string, you need to add parameters one-by-one by creating
+  instances of <code>SqlParameter</code>, you need to dynamically cast results from 
+  the <code>obj</code> type and so on...</p>
+
+<p>In this article, we'll look how to use the <em>dynamic operator</em> to make the
+  experience of using ADO.NET from F# dramatically better. Dynamic operator (there are
+  actually two of them) are a simple way of supporting dynamic invoke in F#. We can use
+  it to write code that looks almost like an ordinary method call or property access,
+  but is resolved dynamically at runtime (using the name of the method or property).
+  The following example shows what we'll be able to write at the end 
+  of this article:</p>
+
+<pre lang="fsharp">
+// Call 'GetProducts' procedure with 'CategoryID' set to 1
+use conn = new DynamicSqlConnection(connectionString)
+use cmd = conn?GetProducts
+cmd?CategoryID &lt;- 1
+conn.Open()
+
+// Read all products and print their names
+use reader = cmd.ExecuteReader()
+while reader.Read() do
+  printfn "Product: %s" reader?ProductName
+</pre>
+
+<p>If you ever tried to call a SQL stored procedure directly using the 
+  <code>SqlCommand</code>, then you can surely appreciate the elegance of this code
+  snippet. Let's now take a look at a larger example and some of the neat 
+  tricks that make this possible...</p>
+
+<h2>Calling stored procedure: The usual way</h2>
+<p>We'll start the article by looking at a single, more complete, example of
+  calling an SQL stored procedure. I wrote this while porting the Personal Web Site
+  Starter Kit to F# (which I'll describe in the next blog post). The project has 
+  a simple photo gallery that contains albums and each album contains some photos.
+  When reading photos from the database, we can nicely store them in the following
+  F# record type:</p>
+<pre lang="fsharp">
+// Record type that represents photo with caption
+type Photo = 
+  { PhotoID:int 
+    PhotoAlbumID:int
+    PhotoCaption:string }
+</pre>
+
+<p>Now that we have a type to represent photos, we can look at a function
+  that reads photos from the database. Our database has an SQL stored 
+  procedure called <code>GetPhotos</code> that takes two parameters. The
+  parameter <code>AlbumID</code> specifies the ID of the album and the
+  parameter <code>IsPublic</code> specifies whether we want to get only
+  publicly accessible photos in the gallery. The following function calls the
+  stored procedure and reads the returned photos. The whole function body is
+  wrapped in a sequence expression, so the return type will be <code>seq&lt;Photo&gt;</code>:</p>
+
+<pre lang="fsharp">
+// Function that obtains photos in a specified album from database
+let GetPhotos (albumID:int) = seq { 
+  // Create a command to call SQL stored procedure
+  use conn = new SqlConnection(connectionString)
+  use cmd = new SqlCommand("GetPhotos", conn)
+  cmd.CommandType &lt;- CommandType.StoredProcedure
+
+  // Add parameters to the stored procedure call
+  cmd.Parameters.Add(SqlParameter("@@AlbumID", albumID)) |&gt; ignore
+  cmd.Parameters.Add(SqlParameter("@@IsPublic", true)) |&gt; ignore
+  
+  // Run the command and read results into an F# record
+  conn.Open()
+  use reader = cmd.ExecuteReader()
+  while reader.Read() do
+    yield { PhotoID = unbox (reader.["PhotoID"])
+            PhotoAlbumID = unbox (reader.["AlbumID"])
+            PhotoCaption = unbox (reader.["Caption"])} } 
+</pre>
+<p>As you can see, we first create an instance of the <code>SqlConnection</code>
+  type, then create a new command and set its type to <code>StoredProcedure</code>.
+  Then we need to specify parameters of the procedure, which is done by calling
+  <code>cmd.Parameters.Add</code>, which takes <code>SqlParameter</code> as an argument.
+  To read the result, we get <code>SqlDataReader</code> and then repeatedly call
+  <code>Read</code>. When processing a single result row, we need to use the 
+  indexer to access individual columns of the result by name. The indexer returns
+  the data as value of type <code>obj</code>, so we use <code>unbox</code> to cast
+  the result to the type expected by the record.</p>
+<p>There are no particularly tricky places in the code, but if you look at it,
+  there is quite a lot of noise that doesn't express anything important. For 
+  example, we need to create <code>SqlCommand</code> explicitly (giving it the name
+  of the procedure as a string). When adding a parameter, we need to create 
+  an object (giving it the name of the parameter as a string), call a method
+  and ignore the result. And finally, when reading the results, we need to insert
+  explicit conversion. </p>
+<p>You could try writing a function for creating the SQL command to make the code
+  simple. However, there are still some problems. For example, if you decided to 
+  pass parameters of the procedure as a list of name-value pairs, the value would
+  have to be of type <code>obj</code> and you would need to add explicit boxing.
+  Luckily, we can throw all this noise away using the dynamic invoke operator...</p>
+
+<h2>Calling stored procedure: Using dynamic operator</h2>
+<p>Let's look how to write the same function using the dynamic operator. 
+  In order to make this work, you need to get an implementation of the 
+  operator that is available at the end of the article. The file with the 
+  implementation also defines several wrapper types that add the dynamic
+  functionality to standard ADO.NET types.</p>
+<p>Instead of creating 
+  standard <code>SqlConnection</code>, we need to create an instance of the
+  <code>DynamicSqlConnection</code> type (we'll look at why this is needed and 
+  how does it work soon). Once we do this change, we can use <code>?</code>
+  to create commands representing SQL procedure calls, to specify parameters
+  of the procedure and also to access columns when reading the result:</p>
+<pre lang="fsharp">
+// Function that obtains photos in a specified album from database
+let GetPhotos (albumID:int) = seq { 
+  use conn = new DynamicSqlConnection(connectionString)
+  use cmd = conn?GetPhotos
+  cmd?AlbumID &lt;- albumID
+  cmd?IsPublic &lt;- true
+
+  // Run the command and read results into an F# record
+  conn.Open()
+  use reader = cmd.ExecuteReader()
+  while (reader.Read()) do
+    yield { PhotoID = reader?PhotoID 
+            PhotoAlbumID = reader?AlbumID
+            PhotoCaption = reader?Caption } } 
+</pre>
+<p>Let's now look at the most interesting places in the code where we use
+  the dynamic invoke operator:</p>
+<ul>
+  <li><strong>Creating commands</strong> (e.g. <code>conn?GetPhotos</code>) - Here we use the operator to create a command
+    that will call the SQL stored procedure named <code>GetPhotos</code>. This snippet
+    doesn't call the procedure yet - it only returns a command, so that we can 
+    specify parameters of the procedure and decide how to call the command (in our
+    example, we're using <code>ExecuteReader</code> to get access to the returned
+    result set).</li>
+  <li><strong>Setting parameters</strong> (e.g. <code>cmd?AlbumID &lt;- albumID</code>) - This is
+    an example of using an operator <code>?&lt;-</code>, which sets a value of dynamically
+    accessed property. We're using it to specify parameters of the command created in 
+    the previous step.</li>
+  <li><strong>Accessing results</strong> (e.g. <code>reader?PhotoID</code>) - 
+    In this case, we're using dynamic access to get a value of a column with the
+    specified name. The result type of the operator is generic and the implementation
+    automatically converts the result to the specified type. Since the F# compiler
+    infers the type of the result from the context (e.g. when assigning result to 
+    a field of a specific type), the type casting is done fully automatically.</li>
+</ul>
+
+<h2>Looking under the cover</h2>
+<p>We're using the <code>?</code> operator in two ways. It can be called on an object 
+  representing SQL connection (e.g. <code>conn?GetPhotos</code>) in which case it 
+  returns a command for calling a stored procedure. It can be also called on an 
+  object representing SQL data reader (e.g. <code>reader?PhotoID</code>) in which case
+  it accesses column from the result set. As a result, we cannot write a single 
+  global declaration of the operator (using the <code>let</code> keyword), but we need
+  to associate the implementation with some type. However, we cannot add operators
+  to existing .NET types, so we create simple wrappers for the well-known ADO.NET 
+  types.</p>
+
+<p>Let's start by looking at the <code>DynamicSqlDataReader</code> type, which 
+  wraps a <code>SqlDataReader</code>. We didn't need to use this type directly in the
+  previous examples, because the wrapping is done automatically - when we invoke
+  <code>ExecuteReader</code> on a wrapped command object, it automatically wraps the
+  returned data reader. The implementation is slightly simplified (you can get
+  a full version at the end of the article), but it shows the two most important
+  things. Firstly, we expose the method <code>Read</code> for iterating through the 
+  result set and secondly, we implement the <code>?</code> operator for accessing 
+  results. (Note that the operator must be <code>static</code>, so we need to expose
+  the wrapped reader using a <code>private</code> property):</p>
+
+<pre lang="fsharp">
+// SqlDataReader wrapper that provides access to columns 
+// of the result-set using dynamic access operator
+type DynamicSqlDataReader(reader:SqlDataReader) =
+  member private x.Reader = reader
+  member x.Read() = reader.Read
+  // Read the specified column and casts it to the specified type
+  static member (?) (dr:DynamicSqlDataReader, name:string) : 'R = 
+    unbox (dr.Reader.[name])
+</pre>
+
+<p>The implementation of the dynamic operator is quite simple. The only interesting
+  aspect is the fact that the operator is generic (in the return type) and that 
+  it uses <code>unbox</code> to convert the obtained value from <code>obj</code>
+  to the type (which will be deduced by F# type inference based on how we use the
+  result). The next wrapper wraps the <code>SqlCommand</code> type and adds a
+  support for adding parameters using the <code>?&lt;-</code> operator:</p>
+
+<pre lang="fsharp">
+// SqlCommand wrapper that allows setting properties of a
+// stored procedure using dynamic setter operator
+type DynamicSqlCommand(cmd:SqlCommand) = 
+  member private x.Command = cmd
+  // Adds parameter with the specified name and value
+  static member (?&lt;-) (cmd:DynamicSqlCommand, name:string, value) = 
+    let p = SqlParameter("@@" + name, box value)
+    cmd.Command.Parameters.Add(p) |&gt; ignore
+  // Execute command and wrap returned SqlDataReader
+  member x.ExecuteReader() = 
+    new DynamicSqlDataReader(cmd.ExecuteReader())
+</pre>
+
+<p>The implementation is again pretty straightforward. Note that we need to 
+  provide an operator named <code>?&lt;-</code>, because F# uses different dynamic
+  access operator when reading properties and when setting value of a property. 
+  The operator takes three parameters - the target command (which needs to expose
+  the underlying command), a name of the property and a value to be used. We also
+  expose the <code>ExecuteReader</code> method, which automatically wraps the
+  returned reader (so that we can dynamically access columns).</p>
+<p>The last wrapper is the only one that needs to be created explicitly. It represents
+  connection to the database and provides an implementation of the <code>?</code> 
+  operator that can be used for creating commands that call SQL stored procedure
+  (the returned command is automatically wrapped using the previous type):</p>
+
+<pre lang="fsharp">
+// SqlConnection wrapper that allows creating stored 
+// procedure calls using the dynamic access operator
+type DynamicSqlConnection(connStr:string) =
+  let conn = new SqlConnection(connStr)
+  member private x.Connection = conn
+  member x.Open() = conn.Open()
+  // Creates command that calls the specified stored procedure
+  static member (?) (conn:DynamicSqlConnection, name) = 
+    let command = new SqlCommand(name, conn.Connection)
+    command.CommandType &lt;- CommandType.StoredProcedure
+    new DynamicSqlCommand(command)
+</pre>
+
+<p>The type exposes the <code>Open</code> method of the underlying connection and
+  implements the dynamic access operator <code>?</code>. The implementation of the
+  operator constructs a new command, specifies its type and wraps it using the 
+  <code>DynamicSqlCommand</code> type (so that we can set parameters of the stored
+  procedure call).</p>
+
+<h2>Summary &amp; downloads</h2>
+<p>In this article, we've seen how to make accessing data using ADO.NET from F# nicer 
+  using dynamic operators. This allows us to reduce the number of noise that has to 
+  be written in tasks related to data-access such as creating SQL commands, specifying
+  parameters of a stored procedure and reading data from the returned result-set. </p>
+
+<p>We've also seen one useful technique of implementing dynamic access in general. 
+  Because we needed to provide different implementation of the operator for different
+  types, we couldn't use a global implementation (written using the <code>let</code>
+  keyword). Instead, we implemented the operator in several wrappers that wrap standard
+  ADO.NET classes and augment them with the dynamic features. I believe that this technique can be
+  quite useful in other related scenarios.</p>
+
+<p>Below you can download the implementation of the wrappers that were used and presented
+  in this article. The download doesn't contain any examples (you can use the example
+  from the article as the starting point). I'll post an ASP.NET project that uses the
+  wrappers in another blog post soon...</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/dynamic-sql/dynamicsql.fs">Download F# source with the implementation of wrappers</a> (FS)</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-sql.aspx%2f&amp;text=Dynamic+in+F%23%3a+Reading+data+from+SQL+databasevia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-sql.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fdynamic-sql.aspx%2f&title=Dynamic+in+F%23%3a+Reading+data+from+SQL+database">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Dynamic%20in%20F%23%3a%20Reading%20data%20from%20SQL%20database&body=%20In%20this%20article%20we%20look%20at%20working%20with%20SQL%20databases%20in%20F%23%20using%20ADO.NET.%20We%27ll%20see%20how%20to%20use%20dynamic%20invoke%20operator%20to%20make%20the%20usual%20ADO.NET%20code%20remarkably%20elegant%20and%20simple...%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fdynamic-sql.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Friday, 9 July 2010, 2:03 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/web/">web</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

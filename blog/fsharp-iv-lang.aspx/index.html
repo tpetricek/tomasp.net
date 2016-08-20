@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Overview (IV.) - Language Oriented Programming - Tomas Petricek</title>
+
+  <meta name="description" content=" In the fourth article of the F# overview series, I will shortly describe how I understad the language oriented paradigm and how the F# language can be used for developing libraries using this paradigm." />
+  <meta name="keywords" content="functional, asynchronous, meta-programming, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Overview (IV.) - Language Oriented Programming" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-iv-lang.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In the fourth article of the F# overview series, I will shortly describe how I understad the language oriented paradigm and how the F# language can be used for developing libraries using this paradigm." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Overview (IV.) - Language Oriented Programming" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In the fourth article of the F# overview series, I will shortly describe how I understad the language oriented paradigm and how the F# language can be used for developing libraries using this paradigm." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Overview (IV.) - Language Oriented Programming",
+    "headline": "F# Overview (IV.) - Language Oriented Programming",
+  	"description": " In the fourth article of the F# overview series, I will shortly describe how I understad the language oriented paradigm and how the F# language can be used for developing libraries using this paradigm.",
+  	"url": "http://tomasp.net/blog/fsharp-iv-lang.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-11-03T00:00:04.0000000",
+  	"datePublished": "2007-11-03T00:00:04.0000000",
+    "dateModified": "2007-11-03T00:00:04.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-iv-lang.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "asynchronous", "meta-programming", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>F# Overview (IV.) - Language Oriented Programming</h1>
+<p>Defining precisely what the term <em>language oriented programming</em> means in context of the F# language would be difficult,
+  so I will instead explain a few examples that will demonstrate how I understand it. In general, the goal of language oriented
+  programming is to develop a <em>language</em> that would be suitable for some (more specific) class of tasks and use this language 
+  for solving these tasks. Of course, developing a real programming language is extremely complex problem, so there are several ways
+  for making it easier. As the most elementary example, you can look at XML files (with certain schema) as language that 
+  are processed by your program and solve some specific problem (for example configuring the application). As a side note,
+  I should mention that I'm not particularly happy with the term ‘language’ in this context, because the term can be used
+  for describing a wide range of techniques from very trivial constructs to a complex object-oriented class libraries, 
+  but I have not seen any better term for the class of techniques that I’m going to talk about.</p>
+  
+<p>What I will focus on in this article is using languages inside F# - this means that the custom language will be always a subset
+  of the F# language, but we will look at ways for giving it a different meaning than the standard F# code would have. In some articles
+  you can also see the term <em>domain specific language</em>, which is quite close to what we're discussing here. The domain specific
+  language is a language suitable for solving some class of problems and in general it can be either <em>external</em>, meaning
+  that it is a separate language (e.g. a XML file) or an <em>internal</em>, meaning that it is written using a subset of the host language.
+  Using this terminology, we will focus on writing <em>internal DSLs</em> in F#.</p>  
+<p>Since this term is not as widely used as functional or object oriented programming which we discussed in earlier articles in this series
+  (<a href="/blog/fsharp-ii-functional.aspx">Functional Programming</a> [<a href="/blog/fsharp-ii-functional.aspx">^</a>], 
+   <a href="/blog/fsharp-iii-oop.aspx">Object Oriented and Imperative Programming</a> [<a href="/blog/fsharp-iii-oop.aspx">^</a>]), let me 
+   very quickly introduce why I believe that this is an important topic. I think the main reason why language oriented
+   development is appealing paradigm is that it allows very smooth cooperation of people working on the project - 
+   there are people who develop the language and those who use it. The language developers need to have advanced 
+   knowledge of the technology (F#) and also of the problem that their language is trying to solve (e.g. some mathematical
+   processing), but they don't need to know about all the problems that are being solved using the language. On the other
+   side, the users of the language need only basic F# knowledge and they can fully focus on solving the real problems.</p>
+
+<h2>Discriminated Union as Declarative Language</h2>
+<p>Probably the simplest example of domain-specific language that can be embedded in the F# code is a discriminated union, 
+  which can be used for writing declarative specifications of behavior or for example for representing and processing mathematical 
+  expressions:</p>
+<pre lang="fsharp">
+&gt; type Expr = 
+  | Binary of string * Expr * Expr
+  | Var    of string 
+  | Const  of int;;
+(...)
+
+&gt; let e = Binary("+", Const(2), Binary("*", Var("x"), Const(4)));;
+val e : Expr
+</pre>
+<p>In this example we created a discriminated union and used it for building a value representing a mathematical expression.
+  This is of course very primitive ‘language’, but when you implement functions for working with these values (for example
+  differentiation or evaluation) you’ll get a simple language for processing mathematical expressions inside F#. Another problems
+  that could be solved using this technique include for example configuration of some graphical user interface or 
+  definition of template for some simple data manipulation.</p>
+
+<h2>Active Patterns</h2>
+<p>A language feature that is closely related to discriminated unions is called active patterns. Active patterns can be used for 
+  providing different views on some data type, which allows us to hide the internal representation of the type and publish only 
+  these views. Active patterns are similar to discriminated unions, because they can provide several views on a single value (in 
+  the previous example we had a value that we could view either as <code>Binary</code>, <code>Var</code> or <code>Const</code>) and 
+  similarly as constructors of discriminated union, active patterns can be used in pattern matching constructs.</p>
+<p>A typical example, where a type can be viewed using different views is a complex number, which can be either viewed in a 
+  Cartesian representation (real and imaginary part) or in a polar form (absolute value and phase). Once the module provides 
+  these two views for a complex number type, the internal representation of the type can be hidden, because all users of the 
+  type will work with the number using active patterns, which also makes it easy to change the implementation of the type as 
+  needed.</p>
+<p>It is recommended to use active patterns in public library API instead of exposing the names of discriminated union 
+  constructors, because this makes it possible to change the internal representation without breaking the existing code. The 
+  second possible use of active patterns is extending the ‘vocabulary’ of a language built using discriminated union. In the 
+  following example we will implement an active pattern <code>Commutative</code> that allows us to decompose a value of type 
+  <code>Expr</code> into a call to commutative binary operator:</p>
+<pre lang="fsharp">
+&gt; let (|Commutative|_|) x =
+    match x with
+    | Binary(s, e1, e2) when (s = "+") || (s = "*") -&gt; Some(s, e1, e2)
+    | _ -&gt; None;;
+val ( |Commutative|_| ) : Expr -&gt; (string * Expr * Expr) option
+</pre>
+
+<p>As you can see, the declaration of active pattern looks like a function declaration, but uses a strangely looking function 
+  name. In this case we use the <code>(|PatternName|_|)</code> syntax, which declares a pattern that can return a successful match or 
+  can fail. The pattern has a single argument (of type <code>Expr</code>) and returns an option type, which can be either <code>Some(...)</code>
+  when the value matches the pattern or <code>None</code>. As we will show later, the patterns that can fail can be used in a match 
+  construct, where you can test a value against several different patterns.</p>
+<p>As demonstrated in this example, active patterns can be used in a similar sense in which you can use discriminated 
+  unions to define a language for constructing the values. The key difference is that discriminated unions can be used 
+  for building the value (meaning that they will be used by all users of the language) and active patterns are used for 
+  decomposing the values and so they will be used in a code that interprets the language (written usually by the language 
+  designer) or by some pre-processing or optimizing code (written by advanced users of the language).</p>
+
+<p>In the next example we will look at one advanced example of using the numerical language that we define earlier. We 
+  will implement a function that tests whether two expressions are equal using the commutativity rule, meaning that for example
+  <code>10*(a+5)</code> will be considered as equal to <code>(5+a)*10</code>:</p>
+<pre lang="fsharp">
+&gt; let rec equal e1 e2 = 
+    match e1, e2 with
+    | Commutative(o1, l1, r1), Commutative(o2, l2, r2) -&gt;
+       (o1 = o2) &amp;&amp; (equal l1 r2) &amp;&amp; (equal r1 l2)
+    | _ -&gt; e1 = e2;;
+val equal : Expr -&gt; Expr -&gt; bool
+
+&gt; let e1 = Binary("*", Binary("+", Const(10), Var("x")), Const(4));;
+  let e2 = Binary("*", Const(4), Binary("+", Var("x"), Const(10)));;
+  equal e1 e2;;
+val it : bool = true</pre>
+  
+<p>As you can see, implementing the <code>equal</code> function that uses the commutativity rule
+  is much easier using the <code>Commutative</code> active pattern than it would be explicitly by testing
+  if the value is a use of specific binary operator. Also, when we’ll introduce a new commutative operator,
+  we’ll only need to modify the active pattern and the <code>equal</code> function will work correctly.</p>
+
+
+<h2>Sequence comprehensions</h2>
+<p>Before digging deeper into advanced language-oriented features of F#, I'll need to do a small 
+  digression and talk about <em>sequence comprehensions</em>. This is a language construct that
+  allows us to generate sequences, lists and arrays of data in F# and as we will see later it can
+  be generalized to allow solving several related problems. Anyway, let's first look at an
+  example that filters an F# list:</p>
+<pre lang="fsharp">
+&gt; let people = [ ("Joe", 55); ("John", 32); ("Jane", 24); ("Jimmy", 42) ];;
+val people : (string * int) list
+
+&gt; [ for (name, age) in people
+    when age &lt; 30
+    -&gt; name ];;
+val it : string list = ["Jane"]</pre>
+<p>In this example we first declared a list with some data and then used a sequence expression, wrapped
+  between square brackets <code>[</code> and <code>]</code>, to select only some elements from the list. 
+  The use of square brackets indicate that the result should be an F# list (you can also use <code>[| .. |]</code> 
+  to get an array or <code>seq { .. }</code> to get a sequence as I'll show later). The code inside the
+  comprehension can contain most of the ordinary F# expressions, but in this example I used one extension,
+  the <code>when .. -&gt;</code> construct, which can be used for typical filtering and projection operations.
+  The same code can be written like this:</p> 
+<pre lang="fsharp">
+&gt; [ for (name, age) in people do
+    if (age &lt; 30) then
+      yield name ];;
+val it : string list = ["Jane"]</pre>
+<p>In this example, we used an ordinary <code>for .. do</code> loop (in the previous example the <code>do</code>
+  keyword was missing and we used <code>if .. then</code> condition instead of <code>when</code>. Finally, 
+  returning a value from a sequence comprehension can be done using the <code>yield</code> construct.
+  The point of this example is to demonstrate that the code inside the comprehension is not limited to 
+  some specific set of expressions and can, in fact, contain very complex F# code. I will demonstrate the
+  flexibility of sequence comprehensions in one more example - the code will generate all possible words
+  (of specified length) that can be generated using the given alphabet:</p>
+<pre lang="fsharp">
+&gt; let rec generateWords letters start len =
+    seq { for l in letters do
+            let word = (start ^ l)
+            if len = 1 then
+              yield  word
+            if len &gt; 1 then
+              yield! generateWords letters word (len-1) }
+val generateWords : #seq&lt;string&gt; -&gt; string -&gt; int -&gt; seq&lt;string&gt;
+              
+&gt; generateWords ["a"; "b"; "c"] "" 4;;
+val it : seq&lt;string&gt; = seq ["aaaa"; "aaab"; "aaac"; "aaba"; ...]
+</pre>
+<p>This example introduces two interesting constructs. First of all, we're using <code>seq { .. }</code> expression
+  to build the sequence, which is a lazy data structure, meaning that the code will be evaluated on demand. When 
+  you ask for the next element, it will continue evaluating until it reaches <code>yield</code> construct,
+  which returns a word and then it will block again (until you ask for the next element). The second interesting
+  fact is that the code is recursive - the <code>generateWord</code> function calls itself using
+  <code>yield!</code> construct, which first computes the elements from the given sequence and then
+  continues with evaluation of the remaining elements in the current comprehension.</p>
+
+<h2>F# Computation Expression</h2>
+<p>The next F# feature that we will look at can be viewed as a generalization of the sequence comprehensions.
+  In general, it allows you to declare blocks similar to the <code>seq { .. }</code> block that execute 
+  the F# code in a slightly different way. In the case of <code>seq</code> this difference is that the 
+  code can return multiple values using <code>yield</code>.</p>
+<p>In the next example we will implement a similar block called <code>maybe</code> that performs some 
+  computation and returns <code>Some(res)</code> when the computation succeeds, but it can also stop its 
+  execution when some operation fails and return <code>None</code> immediately, without executing the
+  rest of the code inside the block. Let's first implement a simple function that can either return some
+  value or can fail and return <code>None</code>:</p>  
+<pre lang="fsharp">
+let readNum () =
+  let s = Console.ReadLine()
+  let succ,v = Int32.TryParse(s)
+  if (succ) then Some(v) else None
+</pre>
+
+<p>Now, we can write a code that reads two numbers from the console and adds them together, producing
+  a value <code>Some(a+b)</code>. However, when a call to <code>readNum</code> fails, we want to return
+  <code>None</code> immediately without executing the second call to <code>readNum</code>. This is
+  exactly what the <code>maybe</code> block will do (I'll show the implementation of the block shortly):</p>
+<pre lang="fsharp">
+let n = 
+  maybe { do   printf "Enter a: "
+          let! a = readNum()
+          do   printf "Enter b: "
+          let! b = readNum()
+          return a + b }  
+printf "Result is: %A" n</pre>
+<p>The code inside the block first calls <code>printf</code> and then uses a <code>let!</code> construct
+  to call the <code>readNum</code> function. This operation is called <em>monadic bind</em> and the implementation
+  of <code>maybe</code> block specifies the behavior of this operation. Similarly, it can also specify
+  behavior of the <code>do</code> and <code>return</code> operation, but in this example the <code>let!</code>
+  is the most interesting, because it tests whether the computed value is <code>None</code> and stops the 
+  execution in such case (otherwise it starts executing the rest of the block).
+</p>
+
+<p>Before looking at the implementation of the <code>maybe</code> block, let's look at the type of the
+  functions that we'll need to implement. Every block (usually called <em>computation expression</em> in F#) is
+  implemented by a <em>monadic builder</em> which has the following members that define elementary operators:</p>
+
+<pre lang="fsharp">
+// Signature of the builder for monad M
+type MaybeBuilder with
+  member Bind   : M&lt;'a&gt; * ('a -&gt; M&lt;'b&gt;) -&gt; M&lt;'b&gt;
+  member Return : 'a -&gt; M&lt;'a&gt;
+  member Delay  : (unit -&gt; M&lt;'a&gt;) -&gt; M&lt;'a&gt;
+</pre>
+
+<p>We'll shortly discuss how the F# compiler uses these members to execute the computation expression, but let me 
+  first add a few short comments for those who are familiar with Haskell monads. The <code>Bind</code> and 
+  <code>Return</code> members specify the standard monadic operators (known from Haskell), meaning that <code>Bind</code>
+  is used when we use the <code>let!</code> operator in the code and <code>Return</code> is called when the
+  computation expression contains <code>return</code> and finally, 
+  the <code>Delay</code> member allows building monads that are executed lazily.</p>
+  
+<p>The computation expression block is just a syntactic extension that makes it possible to write a code that uses the 
+  monadic operations, but is similar to an ordinary F# code. This means that the code inside the computation expression
+  is simply translated to calls to the basic monadic operation, which we looked at earlier. The following example should
+  put some light on the problem, because it shows how the F# compiler translates the code written using the <code>maybe</code>
+  block:</p>
+<pre lang="fsharp">
+maybe.Delay(fun () -&gt;
+  printf "Enter a"
+  maybe.Bind(readNum(), fun a -&gt;
+    printf "Enter b"
+    maybe.Bind(readNum(), fun b -&gt;
+      maybe.Return(a + b))</pre>         
+
+<p>As we can see, the original code is split into single expressions and these are evaluated separately as
+  arguments of the monadic operations. It is also important to note that the expression may not be evaluated,
+  because this depends on the behavior of the monadic operation.</p>
+  
+<p>For example, let's analyze the third line,
+  where a first call to the <code>Bind</code> operation occurs. The first argument will be evaluated asking 
+  for a user input and will produce either <code>None</code> or <code>Some(n)</code>. The second argument
+  is a function that takes one argument (<code>a</code>) and executes the rest of the computation expression.
+  As you can see, the let binding in the original code was translated to a call to the <code>Bind</code> 
+  operation which can perform some additional processing and change the semantics and then assign a value
+  to the variable by calling the given function. Also note that the first argument of the <code>Bind</code>
+  operation is a <em>monadic type</em> (in the signature presented above it was <code>M&lt;'a&gt;</code>, 
+  while the argument of the function given as a second argument is ordinary type (unwrapped <code>'a</code>).
+  This means that the monadic type can hold some additional information - in our <code>maybe</code> monad,
+  the additional information is a possibility of the failure of the operation.</p>          
+
+<p>Let's look at the implementation of the <code>maybe</code> monad now. The <code>Bind</code> operation will 
+  test if the first argument is <code>Some(n)</code> and then it will call the function given as a second argument 
+  with <code>n</code> as an argument. If the value of the first argument is <code>None</code> the <code>Bind</code> 
+  operation just returns <code>None</code>. The second key operation is <code>Result</code> which simply wraps an 
+  ordinary value into a monadic type - in our example it will take a value <code>a</code> (of type <code>'a</code>)
+  and turn it into a value <code>Some(a)</code> (of type M&lt;'a&gt;):</p>
+
+<pre lang="fsharp">
+type M&lt;'a&gt; = option&lt;'a&gt;
+
+let bind f d = 
+  match d with
+   | None -> None
+   | Some(v) -> f v
+let result v = Some(v)
+let delay  f = f()
+  
+type MaybeBuilder() =
+  member x.Bind(v, f) = bind v f
+  member x.Return(v)  = result v
+  member x.Delay(f)   = delay f 
+  member x.Let(v, f)  = bind (result v) f
+  
+let maybe = MaybeBuilder()</pre>
+<p>In this example we looked at computation expressions and implemented a simple <em>monadic builder</em> for 
+  representing a computations that can fail. We implemented support only for basic language constructs (like
+  <code>let</code> and <code>let!</code>), but in general the computation expression can allow using constructs
+  like <code>if</code>, <code>try .. when</code> and other. For more information, please refer to [<a href="#fsintro4links">1</a>]. 
+  Computation expressions are very powerful when you want to modify the behavior of the F# code, without changing the semantics
+  of elementary expressions, for example by adding a possibility to fail (as we did in this example), or by executing the code 
+  asynchronously (as <em>asynchronous workflows</em> [<a href="#fsintro4links">2</a>], which are part of the F# library do).</p>  
+  
+<h2>F# Meta-Programming and Reflection</h2>
+<p>The last approach to language oriented programming that I’ll present in this overview is using <em>meta-programming</em>
+  capabilities of the F# language and .NET runtime. In general the term ‘meta-programming’ means writing a program
+  that treats code as data and manipulates with it in some way. In F# this technique can be used for translating a code
+  written in F# to other languages or formats that can be executed in some other execution environment or it can be
+  used for analysis of the F# code and for calculating some additional properties of this code.</p>
+
+<p>The meta-programming capabilities of F# and .NET runtime can be viewed as a two separate and orthogonal parts. The .NET 
+  runtime provides a way for discovering all the types and top-level method definitions in a running program: this API is 
+  called <em>reflection</em>. F# <em>quotations</em> provide a second part of the full meta-programming support - they
+  can be used for extracting an abstract syntax trees of members discovered using the .NET reflection mechanism
+  (note that the F# <em>quotations</em> are a feature of the F# compiler and as such can’t be produced by 
+  C# or VB compilers).</p>
+  
+<h3>.NET and F# Reflection</h3>
+<p>The F# library also extends the .NET <code>System.Reflection</code> to give additional information about F# data types – 
+  for example we can use the F# reflection library to examine possible values of the <code>Expr</code> type (discriminated 
+  union) declared earlier:</p>
+<pre lang="fsharp">
+&gt; open Microsoft.FSharp.Reflection;;
+&gt; let exprTy = typeof&lt;Expr&gt;
+  if FSharpType.IsUnion(exprTy) then
+    let opts = FSharpType.GetUnionCases(exprTy)
+    opts |> Array.map (fun m -> m.Name)
+  else
+    [| |];;
+val it : string[] = [| "Binary"; "Var"; "Const" |]</pre>
+<p>An important part of the .NET reflection mechanism is the use of custom attributes, which can be used to annotate any 
+  program construct accessible via reflection with additional metadata. The following example demonstrates the syntax for 
+  attributes in F# by declaring <code>Documentation</code> attribute (simply by inheriting from the <code>System.Attribute</code> 
+  base class) and also demonstrates how a static method in a class can be annotated with the attribute: </p>
+<pre lang="fsharp">
+type DocumentationAttribute(doc:string) =
+  inherit System.Attribute()
+  member x.Documentation = doc
+
+type Demo =
+  [&lt;Documentation("Adds one to a given number")&gt;]
+  static member AddOne x = x + 1</pre>
+<p>Using the .NET <code>System.Reflection</code> library it is possible to examine members of the <code>Demo</code> type 
+  including reading of the associated attributes (which are stored in the compiled DLL and are available at run-time):</p>
+<pre lang="fsharp">
+&gt; let ty = typeof&lt;Demo&gt;
+  let mi = ty.GetMethod("AddOne")
+  let at = mi.GetCustomAttributes
+                (typeof&lt;DocumentationAttribute&gt;, false)
+  (at.[0] :?&gt; DocumentationAttribute).Doc;;
+val it : string = "Adds one to a given number"</pre>
+
+<h3>F# Quotations</h3>
+<p>F# quotations form the second part of the meta-programming mechanism, by allowing the capture of type-checked F# 
+  expressions as structured terms. There are two ways for capturing quotations – the first way is to use quotation literals 
+  and explicitly mark a piece of code as a quotation and the second way is to use <code>ReflectedDefinition</code> attribute, which instructs 
+  the compiler to store quotation data for a specified top-level member. The following example demonstrates a few simple 
+  quoted F# expressions – the quoted expressions are ordinary type-checked F# expressions wrapped between &lt;@@ and @@&gt;:</p>
+<pre lang="fsharp">&gt; open Microsoft.FSharp.Quotations;;
+&gt; &lt;@@ 1 + 1 @@&gt;
+val it : Expr&lt;int&gt;
+
+&gt; &lt;@@ (fun x -&gt; x + 1) @@&gt;
+val it : Expr&lt;int -&gt; int&gt;</pre>
+<p>Quotation processing is usually done on the raw representation of the quotations, which is represented by the non-generic 
+  <code>Expr</code> type (however the type information about the quoted expression is still available dynamically via the <code>Type</code> property). 
+  The following example implements a trivial evaluator for quotations. <code>GenericTopDefnApp</code> is an active pattern 
+  that matches with the use of a function given as a first argument (in this example a plus operator), the <code>Int32</code> 
+  pattern recognizes a constant of type <code>int</code>):</p>
+<pre lang="fsharp">
+&gt; open Microsoft.FSharp.Quotations.Patterns;;
+&gt; open Microsoft.FSharp.Quotations.DerivedPatterns;;
+&gt; let plusOp = &lt;@@ (+) @@&gt;
+  let rec eval x =
+    match x with
+    | SpecificCall plusOp (_, [l; r]) -&gt;
+        (eval l) + (eval r)
+    | Int32(n) -&gt; 
+        n
+    | _ -&gt;        
+        failwith "unknonw construct"  
+val eval : Expr -&gt; int
+
+&gt; let tst = &lt;@@ (1+2) + (3+4) @@&gt;
+  eval tst
+val it : int = 10</pre>
+
+
+<h3>Quotation Templates and Splicing</h3>
+<p>When generating quotations programmatically, it is often useful to build a quotation by combining several elementary
+  quotations into a one, more complex quotation. This can be done by creating a <em>quotation template</em>, which is a quotation
+  that contains one or more <em>holes</em>. Holes are written using the underscore symbol and define a place, where another quotation
+  can be filled in the template. In the following example, we will look at a template that contains two holes and can be used
+  for generating a quotation that represents addition of two values:</p>
+<pre lang="fsharp">
+&gt; let addTempl a b = &lt;@@ %a + %b @@&gt;;;
+val addTempl : Expr&lt;int&gt; -&gt; Expr&lt;int&gt; -&gt; Expr&lt;int&gt;
+
+&gt; eval(addTempl &lt;@@ 2 @@&gt; &lt;@@ 40 @@&gt;);;
+val it : int = 42</pre>
+<p>In this example, we first create a quotation template <code>addTempl</code>. This template takes two expressions as parameters and constructs an expression that represnts addition. The two expression given as an argument ar 'spliced' into the created expression using the <code>%</code> operator. Note that the holes are typed, meaning that the values that can be filled
+  in the template have to be quotations representing an expression of type <code>int</code>.  </p>
+
+<p>The splicing operator is also useful mechanism for providing 
+  input data for programs that evaluate quotations. As you can see in the 
+  following example, we can use it for embedding a value that represents a database table  (the <code>|&gt;</code> is a pipelining operator, 
+  which applies the argument on the left hand side to the function on the right hand side). This example is based
+  on the FLINQ project, which allows writing database queries in F# and executing them as SQL queries on a database
+  engine:</p>
+<pre lang="fsharp">
+&gt; &lt;@@ (%db).Customers 
+      |&gt; filter (fun x -&gt; x.City = "London")
+      |&gt; map (fun x -&gt; x.Name) @@&gt;
+val it : Expr&lt;seq&lt;string&gt;&gt;</pre>
+<p>In the raw representation, the spliced value can be recognized using the <code>LiftedValue</code> pattern, which returns a 
+  value of type <code>obj</code>, which can contain any F# value.</p>
+
+<h3>Quoting Top-Level Definitions</h3>    
+<p>The second option for quoting F# code is by explicitly marking top-level definitions with an attribute that 
+  instructs the F# compiler to capture the quotation of the entire definition body. This option is sometimes 
+  called <em>non-intrusive meta-programming</em>, because it allows processing of the member body (e.g. translating it to 
+  some other language and executing it heterogeneously), but doesn’t require any deep understanding of meta-programming 
+  from the user of the library. The following code gives a simple example:</p>
+<pre lang="fsharp">
+[&lt;ReflectedDefinition&gt;]
+let addOne x = 
+  x + 1</pre>
+<p>The quotation of a top-level definition (which can be either a function or a class member) annotated using the 
+  <code>ReflectedDefinition</code> attribute is then made available through the F# quotation library at runtime using 
+  the reflection mechanism described earlier, but the member is still available as a compiled code and can be executed.</p>
+<p>When a quotation represents a use of a top-level definition it is possible to check if this top-level definition
+  was annotated using the <code>ReflectedDefinition</code> attribute and so the quotation of the definition is accessible.
+  This can be done using the <code>ResolveTopDefinition</code> function as demonstrated in the following example:</p>  
+<pre lang="fsharp">
+let expandedQuotation = 
+  match &lt;@@ addOne @@&gt; with 
+  | Lambda(_, Call(_, mi, _)) -&gt; 
+      match mi with
+      | MethodWithReflectedDefinition(quot) -&gt; quot
+      | _ -&gt; faliwith "Quotation not available!"
+  | _ -&gt; failwith "Not a method use!"      
+</pre>  
+
+<h3>Using Active Patterns with Quotations</h3>
+<p>As already mentioned, the programmatic access to F# quotation trees uses F# active patterns, 
+  which allow the internal representation of quotation trees to be hidden while still allowing the use of 
+  pattern matching as a convenient way to decompose and analyze F# quotation terms. Active-patterns
+  can be also used when implementing a quotation processor, because they can be used to group similar cases 
+  together. In the following example we declare an active pattern that recognizes two binary operations:</p>
+<pre lang="fsharp">
+let plusOp  = &lt;@@ (+) @@&gt;
+let minusOp = &lt;@@ (-) @@&gt;
+let (|BinaryOp|_|) x =
+  match x with
+  | SpecificCall plusOp (_, [l; r]) -&gt; Some("+", l, r)
+  | SpecificCall minusOp (_, [l; r]) -&gt; Some("-", l, r)
+  | _ -&gt; None
+
+let rec eval x =
+  match x with
+  | BinaryOp (op, l, r) -&gt;
+      if (op = "+") then (eval l) + (eval r)
+        else (eval l) - (eval r)
+  (* ... *)
+</pre>
+<p>In this example we declared <code>BinaryOp</code> active pattern, which can be used for matching a quotation
+  that represents either addition or subtraction. In a code that processes quotations, grouping of related
+  cases together by using active patterns is very useful, because you can define active patterns for all
+  quotation types that your translator or analyzer can process, factor out all the code that recognizes all the supported
+  cases and keep the translator or analyzer itself very simple.</p>
+
+<h2>Article Series Links</h2>
+<ul>
+  <li><a href="/blog/fsharp-i-introduction.aspx">F# Overview (I.) - Introduction</a></li>
+  <li><a href="/blog/fsharp-ii-functional.aspx">F# Overview (II.) - Functional Programming</a></li>
+  <li><a href="/blog/fsharp-iii-oop.aspx">F# Overview (III.) - Object Oriented and Imperative Programming </a></li>
+  <li>F# Overview (IV.) - Language Oriented Programming</li>
+</ul>  
+
+<h2>References<a name="fsintro4links"></a></h2>
+<ul>
+  <li>[1] <a type="external" href="http://blogs.msdn.com/dsyme/archive/2007/09/22/some-details-on-f-computation-expressions-aka-monadic-or-workflow-syntax.aspx">Some Details on F# Computation Expressions</a> - Don Syme's WebLog on F# and Other Research Projects</li>
+  <li>[2] <a type="external" href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx">Introducing F# Asynchronous Workflows</a> - Don Syme's WebLog on F# and Other Research Projects</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iv-lang.aspx%2f&amp;text=F%23+Overview+(IV.)+-+Language+Oriented+Programmingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iv-lang.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iv-lang.aspx%2f&title=F%23+Overview+(IV.)+-+Language+Oriented+Programming">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Overview%20(IV.)%20-%20Language%20Oriented%20Programming&body=%20In%20the%20fourth%20article%20of%20the%20F%23%20overview%20series%2c%20I%20will%20shortly%20describe%20how%20I%20understad%20the%20language%20oriented%20paradigm%20and%20how%20the%20F%23%20language%20can%20be%20used%20for%20developing%20libraries%20using%20this%20paradigm.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iv-lang.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Saturday, 3 November 2007, 12:00 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

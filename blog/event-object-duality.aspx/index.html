@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>The Duality of Object and Event references - Tomas Petricek</title>
+
+  <meta name="description" content=" This article describes an interesting example of mathematical duality in programming languages - the duality between references between objects and references between events. The idea is useful for understading what events are garbage and can be garbage collected." />
+  <meta name="keywords" content="academic, research, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="The Duality of Object and Event references" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/event-object-duality.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article describes an interesting example of mathematical duality in programming languages - the duality between references between objects and references between events. The idea is useful for understading what events are garbage and can be garbage collected." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="The Duality of Object and Event references" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article describes an interesting example of mathematical duality in programming languages - the duality between references between objects and references between events. The idea is useful for understading what events are garbage and can be garbage collected." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "The Duality of Object and Event references",
+    "headline": "The Duality of Object and Event references",
+  	"description": " This article describes an interesting example of mathematical duality in programming languages - the duality between references between objects and references between events. The idea is useful for understading what events are garbage and can be garbage collected.",
+  	"url": "http://tomasp.net/blog/event-object-duality.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2010-07-19T16:58:05.0000000",
+  	"datePublished": "2010-07-19T16:58:05.0000000",
+    "dateModified": "2010-07-19T16:58:05.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/event-object-duality.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["academic", "research",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>The Duality of Object and Event references</h1>
+<p>Mathematical duality [<a href="#duallinks">2</a>] 
+  is a very useful and elegant concept that gives us a nice way of speaking
+  about objects or structures that behave in some way exactly conversely. There
+  is no clear definition of what <em>duality</em> is. However, the idea is that when we
+  have two structures that behave conversely and we know that something is true
+  about the first one, then we get the opposite statement about the other structure
+  "for free" (if you know how to translate from one structure to the other).</p>
+
+<p>In this article, I'll talk about an interesting example of duality that (to my best
+  knowledge) wasn't described by anyone before. The two dual structures are 
+  <strong>references between objects</strong> in a normal program and <strong>references
+  between events</strong> in a reactive application. The statement that is going to 
+  become obvious thanks to the duality principle is describing which of the objects (or
+  events) are garbage and can be safely collected by garbage collector.</p>
+
+<p>This topic is in much more details 
+  discussed in a paper [<a href="#duallinks">4</a>] I wrote with <a href="http://research.microsoft.com/en-us/people/dsyme/">Don Syme</a> 
+  and that I presented at the ISMM Workshop (see also <a href="http://tomasp.net/blog/pldi-2010-trip.aspx">my
+  trip report from PLDI</a>). In this article, I'll try to give an accessible
+  description of the most interesting idea from the paper...</p>
+
+<h2>Introduction</h2>
+<p>This concept of duality is quite useful in programming. In functional programming, the
+  <em>product type</em> (usually called tuple or record) is dual of <em>sum type</em>
+  (called discriminated union in F#). Let me demonstrate this using a simple example.
+  Here are two simple type declarations:</p>
+<pre lang="fsharp">
+// Color with R, G, B components   // Shape can be one of three types
+type Color =                       type Shape = 
+  { Red : int                        | Square of Point * int
+    Green : int                      | Circle of Point * int
+    Blue : int }                     | Triangle of Point * Point * Point
+</pre>
+<p>What is <em>dual</em> about these two types? When you have a record type consisting of three
+  values (such as <code>Color</code>), you get three functions for extracting individual 
+  values from the record (reading <code>Red</code>, <code>Green</code> and <code>Blue</code>  
+  component). On the other hand, when you have a discriminated union type, you get three
+  functions for constructing <code>Shape</code> from the three possible cases (creating a 
+  shape representing <code>Square</code>, <code>Circle</code> and <code>Triangle</code>). 
+  When we draw this idea using a simple diagram, you can easily see what the 
+  duality means:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/event-object-duality/duality.png" />
+</div>
+  
+<p>The two diagrams are essentially the same, with the only difference that the arrows in the
+  diagrams are reversed! In fact, most of the dualities usually mean just this - when you
+  find some nice way of drawing the concept as a diagram with arrows, the dual concept
+  looks exactly the same, just with the arrows reversed.</p>
+
+<p>Other interesting examples of duality in the programming languages world are for example   
+  the duality between <code>IEnumerable</code> (representing pull-based sequence of
+  values) and <code>IObservable</code> (representing push-based sequence of values) in .NET, which
+  has been nicely described by Erik Meijer [<a href="#duallinks">1</a>]. There are also some nice 
+  arrows involving <code>IObservable</code> in an article by Matthew Podwysocki [<a href="#duallinks">3</a>].
+  The next example is <em>covariance</em> and <em>contravariance</em> of generic types,
+  which is now available in C# 4.0. If you're wondering what arrows would be reversed 
+  in this case, you would change the orientation of arrows representing the inheritance,
+  but I'll write about this in some future article.</p>
+
+<p>Now, let's look at the duality between <strong>object references</strong> and <strong>event
+  references</strong> that I wanted to talk about in this article. I'll first describe the two
+  (idealized) dual world - the World of Objects and the World of Events and then we'll look
+  what does that tell us about garbage collection...</p>
+
+<h2>World of Objects</h2>
+<img src="http://tomasp.net/articles/event-object-duality/objects.png" style="float:right;margin:10px;margin-left:20px;" />
+<p>Let's start by looking at references between objects in the usual environment.
+  The diagram on the right gives an example - we have a root object called <code>program</code>
+  that references two other objects (<code>product</code> and <code>customer</code>). 
+  The diagram also shows an object <code>order</code> which references <code>product</code>,
+  but isn't referenced from any other object (we'll see that it can be garbage collected 
+  later).
+  </p>
+
+<p>There are two important facts about the World of Objects:</p>
+<ul>
+  <li><strong>Roots can be called directly</strong> - The <em>root</em> object is the one
+    that is called initially (there may be more of them, but that's not important). When the
+    object is called, it can make calls to other (referenced) objects and transfer the control
+    flow to them. </li>
+  <li><strong>Any node can have visible effect</strong> - All of the objects in the 
+    graph can "do something useful" such as print to the console, interact with the user
+    or modify some state of the application.</li>
+</ul>
+<p>These two points describe essential information that is important for specifying
+  what is a garbage. We don't want to dispose of any object that can do something useful.
+  In this scenario, this means that we cannot collect <em>roots</em> (because they can
+  be called from an external caller) and we cannot collect any object that is reachable
+  from the roots (because the control flow may be transferred to it while the application
+  is running). This leads to the usual definition of what is <em>garbage</em> in this 
+  environment:</p>
+<ul>
+  <li>An object is <strong>reachable</strong> if there is a path to it from some <strong>root</strong>.</li>
+  <li>An object that is not <strong>reachable</strong> is <strong>garbage</strong> and can be collected.</li>
+</ul>
+
+<p>As we'll see shortly, we can translate all of the points that I highlighted with bullets 
+  to the World of Events. We just need to write a few things in exactly the opposite way.
+  However, first I should talk a little bit about what I mean by the <em>World of Events</em>...</p>
+
+<h2>World of Events</h2>
+<p>When talking about <em>events</em>, you can imagine events as they are used in .NET and
+  first-class events in F# [<a href="#duallinks">5</a>] (see also <a href="http://tomasp.net/blog/reactive-i-fsevents.aspx">my
+  earlier article about them</a>). In general, an <em>event</em> is something that can 
+  emit a value at any time. You can create derived events that listen to some other 
+  events and emit the value that they receive only when it matches some predicate or 
+  for example emit a value that is calculated based on the original value. Let's 
+  demonstrate the idea using a simple snippet that uses first-class events in F#:</p>
+<pre lang="fsharp">
+// Creates an event that emits a value whenever one of 
+// the two events (MouseDown of btnOne or btnTwo) emit 
+let anyButton = 
+  Event.merge btnOne.MouseDown btnTwo.MouseDown
+
+// Creates an event that emits a string "click!"
+// whenever user clicks on any button with left-click
+let anyLeft = anyButton 
+  |&gt; Event.filter (fun e -&gt; 
+    e.Button = MouseButtons.Left)
+  |&gt; Event.map (fun _ -&gt; "click!")
+</pre>
+<p>These two examples are pretty simple, but they should illustrate the point.
+  You can write pretty complicated event processing code just by creating and 
+  composing events. So, let's now imagine that we have an environment that contains
+  <em>only events</em>. What would this kind of world look like?</p>
+
+<img src="http://tomasp.net/articles/event-object-duality/events.png" style="float:right;margin:10px;margin-left:20px;" />
+<p>The diagram on the right shows a simple scenario from the World of Events. 
+  Let's start from the <code>click</code> event. When it emits a value, the value
+  will be forwarded to the <code>right click</code> event (which emits the value only
+  when it was caused by right mouse button). The value is also forwarded to an event
+  called <code>handler</code> - we'll talk about this event shortly. The next branch
+  contains <code>key press</code> event which also sends values to <code>handler</code>.</p>
+
+<p>The <code>handler</code> event is a special event that can also have observable 
+  effects. When it receives a value from other events (or from the "outside"), it can 
+  for example modify something in the user interface or print to the console. In the terminology
+  used in .NET, those events actually represent <em>event handlers</em> that can be 
+  attached to events, but we can easily model them as special types of events.</p>
+
+<p>Let's summarize the interesting aspects of the World of Events (you may want to 
+  compare the points with those that I wrote about the World of Objects):</p>
+<ul>
+  <li><strong>Any event can emit</strong> - In general, we assume that any
+    events can emit value whenever it wants (for example, when the user does something). 
+    This is caused by some "external" source that we don't analyze. However an event
+    can also send values to other events (by following the references in the diagram).</li>
+  <li><strong>Only leaves can have visible effect</strong> - Only some of the 
+    events can perform something else than just emit a value. We call these special
+    events <em>leaves</em> (and they are displayed in green).</li>
+</ul>
+
+<p>Just like when discussing the World of Objects, these two points tell us which 
+  of the events are garbage. In general, we can dispose of any events that cannot
+  cause an observable action. An observable action can be caused only by special 
+  <em>leaf</em> events (drawn in the green color). However, these events can be triggered
+  by other events that have a reference to them (e.g. in the above example, the event
+  <code>click</code> can trigger the event <code>handler</code>). Now, we can 
+  easily define what is a garbage when it comes to events:</p>
+
+<ul>
+  <li>An event is <strong>observable</strong> if there is a path from it to some <strong>leaf</strong>.</li>
+  <li>An event that is not <strong>observable</strong> is <strong>garbage</strong> and can be collected.</li>
+</ul>
+
+<p>These definitions are <em>dual</em> to the two points that we've seen 
+  earlier when discussing the World of Objects. In the next section, we'll compare
+  the two in more detail and I'll explain the duality between them.</p>
+
+<h2>Garbage Collection and Duality</h2>
+<p>As I wrote in the introduction, <em>duality</em> usually means that two structures
+  are the same, with the only difference that some arrows are reversed. This is exactly
+  the case of <em>garbage</em> in the World of Objects and World of Events.
+  In both of the cases, we draw objects (or events) as nodes and references as 
+  oriented links between them. When we want to find objects (or events) that are garbage,
+  we need to check the following:</p>
+
+<ul>
+  <li>An object is garbage if there is no path <strong>to</strong> it <strong>from</strong> some root.</li>
+  <li>An event is garbage if there is no path <strong>from</strong> it <strong>to</strong> some leaf.</li>
+</ul>
+
+<p>I highlighted the words <strong>from</strong> and <strong>to</strong>, so that you can 
+  easily see that they are swapped. Let's now look at the two diagrams that I used
+  earlier in the discussion. The following version also shows which of the objects (events)
+  are garbage and can be safely collected:</p>
+
+<div style="text-align:center;">
+<img src="http://tomasp.net/articles/event-object-duality/objects-gc.png" style="margin-right:40px" />
+<img src="http://tomasp.net/articles/event-object-duality/events-gc.png" />
+</div>
+<p>In this case, the duality between the two structures tells us how to implement
+  garbage collection for the idealized World of Events. Instead of looking for objects
+  that are not referenced from roots, we need to look for the <em>dual</em> of this 
+  description - events that do not reference any leaves.</p>
+<p>We can also use duality in a different way. Let's say that we already have a standard garbage 
+  collection algorithm for objects and some graph of references between events. Now, we can
+  collect events that are garbage using the algorithm for garbage collection in the non-reversed
+  scenario. We just need to reverse all the links in the graph and then run the garbage collection
+  algorithm for objects. The nodes that will be marked as garbage will be those that 
+  are garbage when talking about events. You can look at the two above diagrams and easily
+  see that this trick would work!</p>
+
+<h2>Summary</h2>
+<p>The main point of this article was to demonstrate an elegant concept of duality 
+  that comes from mathematics and to show that it can be used when thinking about 
+  garbage collection in two dual worlds - the World of Objects and an idealized World
+  of Events. If you want to read more about this topic, you can also read our 
+  paper [<a href="#duallinks">4</a>], which also describes why this is an important problem
+  when it comes to first-class events in F# and how to integrate the two worlds - if you
+  wanted to model for example .NET application which contains both objects and events.</p>
+
+<p>How can the ideas from this article be useful in practice? First of all, duality
+  gives us a nice way of understanding the problem. When we know that something works in 
+  case of object references, we can easily find something that works for event references
+  (just by replacing <strong>from</strong> with <strong>to</strong> and the other way 
+  round in the description). However, to take the idea further, I believe that a framework for
+  reactive programming based on events could use the <em>dual garbage collection</em>
+  described in this article to collect unused events...</p>
+
+
+<h2>References<a name="duallinks">&#160;</a></h2>
+<ul>
+  <li>[1] <a href="http://channel9.msdn.com/shows/Going+Deep/Expert-to-Expert-Brian-Beckman-and-Erik-Meijer-Inside-the-NET-Reactive-Framework-Rx" type="external">Expert to Expert: Brian Beckman and Erik Meijer - Inside the .NET Reactive Framework (Rx)</a> - Interview at Channel 9</li>
+  <li>[2] <a href="http://en.wikipedia.org/wiki/Duality_(mathematics)" type="external">Mathematical duality</a> - wikipedia.org</li>
+  <li>[3] <a href="http://codebetter.com/blogs/matthew.podwysocki/archive/2009/11/03/introduction-to-the-reactive-framework-part-ii.aspx">Introduction to the Reactive Framework Part II </a> - Matthew Podwysocki</li>
+  <li>[4] <a href="http://tomasp.net/academic/event-chains.aspx">Collecting Hollywood's Garbage: Avoiding Space-Leaks in Composite Events</a> - Tomas Petricek, Don Syme</li>
+  <li>[5] <a href="http://blogs.msdn.com/b/dsyme/archive/2006/03/24/559582.aspx">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a> - Don Syme's WebLog on F# and Related Topics</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fevent-object-duality.aspx%2f&amp;text=The+Duality+of+Object+and+Event+referencesvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fevent-object-duality.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fevent-object-duality.aspx%2f&title=The+Duality+of+Object+and+Event+references">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=The%20Duality%20of%20Object%20and%20Event%20references&body=%20This%20article%20describes%20an%20interesting%20example%20of%20mathematical%20duality%20in%20programming%20languages%20-%20the%20duality%20between%20references%20between%20objects%20and%20references%20between%20events.%20The%20idea%20is%20useful%20for%20understading%20what%20events%20are%20garbage%20and%20can%20be%20garbage%20collected.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fevent-object-duality.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 19 July 2010, 4:58 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/research/">research</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

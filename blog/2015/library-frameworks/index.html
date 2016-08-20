@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Library patterns: Why frameworks are evil - Tomas Petricek</title>
+
+  <meta name="description" content=" This article continues my mini-series on functional library design. Previously, I discussed why your library should provide multiple levels of abstraction. Today, we look at composability and avoiding callbacks. These two often go together - frameworks are based on callbacks and are not composable, while good libraries avoid callbacks and compose well." />
+  <meta name="keywords" content="f#, open source, functional programming, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Library patterns: Why frameworks are evil" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2015/library-frameworks/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2015/library-frameworks/diagram.png" />
+  <meta property="og:description" content=" This article continues my mini-series on functional library design. Previously, I discussed why your library should provide multiple levels of abstraction. Today, we look at composability and avoiding callbacks. These two often go together - frameworks are based on callbacks and are not composable, while good libraries avoid callbacks and compose well." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Library patterns: Why frameworks are evil" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2015/library-frameworks/diagram.png" />
+  <meta name="twitter:description" content=" This article continues my mini-series on functional library design. Previously, I discussed why your library should provide multiple levels of abstraction. Today, we look at composability and avoiding callbacks. These two often go together - frameworks are based on callbacks and are not composable, while good libraries avoid callbacks and compose well." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Library patterns: Why frameworks are evil",
+    "headline": "Library patterns: Why frameworks are evil",
+  	"description": " This article continues my mini-series on functional library design. Previously, I discussed why your library should provide multiple levels of abstraction. Today, we look at composability and avoiding callbacks. These two often go together - frameworks are based on callbacks and are not composable, while good libraries avoid callbacks and compose well.",
+  	"url": "http://tomasp.net/blog/2015/library-frameworks/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2015-03-03T16:13:48.1147024+00:00",
+  	"datePublished": "2015-03-03T16:13:48.1147024+00:00",
+    "dateModified": "2015-03-03T16:13:48.1147024+00:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2015/library-frameworks/",
+  	"image": "http://tomasp.net/blog/2015/library-frameworks/diagram.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2015/library-frameworks/diagram.png",
+  	"keywords": ["f#", "open source", "functional programming",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">Library patterns</span><span class="hs"> Why frameworks are evil</span></h1>
+<p>This article is a follow up to my previous blog post about <a href="http://tomasp.net/blog/2015/library-layers">functional library
+design</a>, but you do not need to read the previous one,
+because I'll focus on a different topic.</p>
+<p>In the previous article, I wrote about a couple of principles that I find useful when
+designing libraries in a functional style. This follows from my experience with building
+F# libraries, but the ideas are quite general and can be useful in any programming language.
+Previously, I wrote how <em>multiple layers of abstraction</em> let you build libraries that make
+80% of scenarios easy while still supporting the more interesting use cases.</p>
+<p>In this article, I'll focus on two other points from the list - how to design <em>composable</em>
+libraries and how (and why) to <em>avoid callbacks</em> in library design. As the title suggests, this
+boils down to one thing - build <strong>libraries</strong> rather than <strong>frameworks</strong>!</p>
+<h2>Frameworks vs. Libraries</h2>
+<img src="diagram-narrow.png" style="float:right;margin:0px 0px 10px 20px" />
+<p>What is a difference between a framework and a library? The key difference is how you can use
+them and what kind of code you need to write.</p>
+<ul>
+<li>
+<p><strong>Frameworks.</strong> When using a framework, the framework is in charge of running the system.
+It defines some extensibility points (interfaces) where you need to put your
+implementation.</p>
+</li>
+<li>
+<p><strong>Libraries.</strong> When using a library, you are in charge of running the system. The library defines
+some points through which you can access it (functions and types) and your code can
+call it as it needs.</p>
+</li>
+</ul>
+<p>You can see the difference in the diagram. A framework defines a structure that you have to
+fill, while library has some structure that you have to build around.</p>
+<p>Of course, the separation between the two is not complete. Some components have aspects of both -
+you call it as a library, but it has some holes (e.g. an interface) that you have to fill.</p>
+<h2>Why are frameworks evil?</h2>
+<p>If you look at the diagram above, you can already see some of the problems with frameworks.
+In this section, I'd like to say a few things about three of the problems (before looking
+at ways to avoid those in the next section).</p>
+<h3>Frameworks do not compose</h3>
+<img src="compose.png" style="float:right;margin:35px 0px 35px 10px" />
+<p>Perhaps the biggest and the most obvious problem with frameworks is that they cannot be composed.
+When you have two frameworks, they both force you to fill in a specific hole. But there is usually
+no way to fit one framework inside another (and it is usually not clear which one should be
+the one on the outside and which one should be on the inside).</p>
+<p>With libraries, the situation is different. You are in control, so your program can easily call
+multiple libraries. This may have some cost - you may need to write more complex code around the
+library end-points - but it is usually possible.</p>
+<blockquote>
+<p><strong>Theoretical side note</strong></p>
+<p>I do not claim that there is any theoretical basis for this,
+but frameworks seem to be a bit like monads. When you're out of a monad, you can "get
+inside" using <em>unit</em>. Then you can do various things within the monad, but you can
+never "get out". Frameworks are similar.</p>
+<p>It is quite well known that composing monads is hard (just like composing frameworks).
+If you have monads <span class="math">\(M_1\)</span> and <span class="math">\(M_2\)</span>, you can compose them when you have an operation
+<span class="math">\(M_1 (M_2~\alpha) \rightarrow M_2 (M_1~\alpha)\)</span>, i.e. you can switch the order in which
+they are wrapped. Can something similar be defined for frameworks?</p>
+</blockquote>
+<h3>Frameworks are hard to explore</h3>
+<p>Another big problem with frameworks is that they are difficult to test and explore. In F#,
+it is very useful to load a library into F# Interactive and try running it with various
+inputs to see what the library does. For example you can use the web development library
+<a href="http://suave.io/">Suave</a> to start a simple web server like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Reference the library &amp; open namespaces</span>
+<span class="prep">#r</span> <span class="s">&quot;Suave.0.25.0/lib/net40/Suave.dll&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs39', 62)" onmouseover="showTip(event, 'fs39', 62)" class="i">Suave</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs40', 63)" onmouseover="showTip(event, 'fs40', 63)" class="i">Web</span> 
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs39', 64)" onmouseover="showTip(event, 'fs39', 64)" class="i">Suave</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs41', 65)" onmouseover="showTip(event, 'fs41', 65)" class="i">Http</span>
+ 
+<span class="c">// Start a simple web server printing hello</span>
+<span onmouseout="hideTip(event, 'fs42', 66)" onmouseover="showTip(event, 'fs42', 66)" class="f">startWebServer</span> <span onmouseout="hideTip(event, 'fs43', 67)" onmouseover="showTip(event, 'fs43', 67)" class="i">defaultConfig</span> <span class="o">&lt;|</span> <span class="k">fun</span> <span onmouseout="hideTip(event, 'fs44', 68)" onmouseover="showTip(event, 'fs44', 68)" class="i">ctx</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs45', 69)" onmouseover="showTip(event, 'fs45', 69)" class="i">async</span> {
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs46', 70)" onmouseover="showTip(event, 'fs46', 70)" class="i">whoOpt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs44', 71)" onmouseover="showTip(event, 'fs44', 71)" class="i">ctx</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs47', 72)" onmouseover="showTip(event, 'fs47', 72)" class="i">request</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs48', 73)" onmouseover="showTip(event, 'fs48', 73)" class="f">queryParam</span> <span class="s">&quot;who&quot;</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs49', 74)" onmouseover="showTip(event, 'fs49', 74)" class="i">message</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs50', 75)" onmouseover="showTip(event, 'fs50', 75)" class="f">sprintf</span> <span class="s">&quot;Hello </span><span class="pf">%s</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fs51', 76)" onmouseover="showTip(event, 'fs51', 76)" class="f">defaultArg</span> <span onmouseout="hideTip(event, 'fs46', 77)" onmouseover="showTip(event, 'fs46', 77)" class="i">whoOpt</span> <span class="s">&quot;world&quot;</span>)
+  <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs44', 78)" onmouseover="showTip(event, 'fs44', 78)" class="i">ctx</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs52', 79)" onmouseover="showTip(event, 'fs52', 79)" class="t">Successful</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs53', 80)" onmouseover="showTip(event, 'fs53', 80)" class="f">OK</span> <span onmouseout="hideTip(event, 'fs49', 81)" onmouseover="showTip(event, 'fs49', 81)" class="i">message</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>The snippet loads the library and then calls <code>startWebServer</code> with a default configuration
+and a function to handle requests (the function gets the query parameter <code>who</code> and prints
+a greeting).</p>
+<p>This kind of usage is extremely useful, because it lets the user experiment with the library
+quickly. You can try calling <code>startWebServer</code> with different kinds of parameters and see what
+it does (or, for other functions, see what it returns).</p>
+<blockquote>
+<p><strong>Theoretical side note</strong></p>
+<p>The difference between libraries and frameworks is pretty much the same as the difference
+between calling a function and having to provide a function as an argument:</p>
+<p><span class="math">\[\tag{library}
+lib : \tau_1 \rightarrow \tau_2\]</span></p>
+<p><span class="math">\[\tag{framework}
+fwk : (\sigma_2 \rightarrow \sigma_1) \rightarrow unit\]</span></p>
+<p>In the <strong>library</strong> case, you need to create a <span class="math">\(\tau_1\)</span> value so that you can call the <span class="math">\(lib\)</span> function.
+Sometimes, the library gives you other functions that create <span class="math">\(\tau_1\)</span> (in which case, you just need
+to find the first function of the chain to call). When writing code interactively, you can try to
+create various <span class="math">\(\tau_1\)</span> values, run the function and see what it returns. This gives you an easy way
+to explore how the library behaves (and how to call it to get what you need). It also makes code that
+uses libraries easy to test.</p>
+<p>In the <strong>framework</strong> case, the situation is more difficult. You have to write a function that accepts
+<span class="math">\(\sigma_2\)</span> and produces <span class="math">\(\sigma_1\)</span>. The first problem is that you do not quite know what <span class="math">\(\sigma_2\)</span> value are
+you going to get in different cases. In a perfect world <em>"invalid values are not representable"</em>, but in
+reality, you want to start writing code that handles the most common cases first. Similarly, it is hard
+to understand (and explore) what kind of <span class="math">\(\sigma_1\)</span> values you should produce to get the behaviour you want.</p>
+</blockquote>
+<p>Now, if you look back at my Suave example, you might be wondering whether this is a library (we call a function)
+or a framework (we specify a function that is called). In fact, the above example demonstrates both aspects.
+As I'll say later, this instance of "framework" structure is not actually a bad thing (see the sections
+on callbacks and <code>async</code> below).</p>
+<h3>Frameworks shape how you code</h3>
+<p>The next problem with frameworks is that they control the structure of your code. The typical example of
+this is when you are using a framework that requires you to inherit from some abstract base class and
+implement specific methods. For example the <a href="https://msdn.microsoft.com/en-us/library/microsoft.xna.framework.game_members.aspx">Game class in the XNA Framework</a>
+looks something like this (I know that XNA is dead, but the pattern is used in other similar frameworks):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">class</span> Game {
+  <span class="k">abstract</span> <span class="k">void</span> Initialize();
+  <span class="k">abstract</span> <span class="k">void</span> Draw(DrawingContext ctx);
+  <span class="k">abstract</span> <span class="k">void</span> Update();
+}
+</code></pre></td></tr></table>
+<p>In <code>Initialize</code>, you are supposed to load any resources that your game might need; <code>Update</code> is called
+repeatedly to calculate the next state and <code>Draw</code> is called when the screen needs to be updated. The
+interface is pretty much designed to an imperative programming model, so you'll end up writing something
+like the next snippet. Here, we're writing a silly Mario game where Mario just slowly walks to the right:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs54', 82)" onmouseover="showTip(event, 'fs54', 82)" class="t">MyGame</span>() <span class="o">=</span>
+  <span class="k">inherit</span> <span onmouseout="hideTip(event, 'fs55', 83)" onmouseover="showTip(event, 'fs55', 83)" class="t">Xna</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs56', 84)" onmouseover="showTip(event, 'fs56', 84)" class="t">Game</span>()
+  <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs57', 85)" onmouseover="showTip(event, 'fs57', 85)" class="v">x</span> <span class="o">=</span> <span class="n">0</span>
+  <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs58', 86)" onmouseover="showTip(event, 'fs58', 86)" class="v">mario</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs37', 87)" onmouseover="showTip(event, 'fs37', 87)" class="p">None</span>
+
+  <span class="k">override</span> <span onmouseout="hideTip(event, 'fs59', 88)" onmouseover="showTip(event, 'fs59', 88)" class="i">this</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs60', 89)" onmouseover="showTip(event, 'fs60', 89)" class="f">Initialize</span>() <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs58', 90)" onmouseover="showTip(event, 'fs58', 90)" class="v">mario</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs36', 91)" onmouseover="showTip(event, 'fs36', 91)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs5', 92)" onmouseover="showTip(event, 'fs5', 92)" class="t">Image</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs61', 93)" onmouseover="showTip(event, 'fs61', 93)" class="f">Load</span>(<span class="s">&quot;mario.png&quot;</span>))
+  <span class="k">override</span> <span onmouseout="hideTip(event, 'fs59', 94)" onmouseover="showTip(event, 'fs59', 94)" class="i">this</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 95)" onmouseover="showTip(event, 'fs62', 95)" class="f">Update</span>() <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs57', 96)" onmouseover="showTip(event, 'fs57', 96)" class="v">x</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs57', 97)" onmouseover="showTip(event, 'fs57', 97)" class="v">x</span> <span class="o">+</span> <span class="n">1</span>
+  <span class="k">override</span> <span onmouseout="hideTip(event, 'fs59', 98)" onmouseover="showTip(event, 'fs59', 98)" class="i">this</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs63', 99)" onmouseover="showTip(event, 'fs63', 99)" class="f">Draw</span>(<span onmouseout="hideTip(event, 'fs64', 100)" onmouseover="showTip(event, 'fs64', 100)" class="i">ctx</span>) <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs58', 101)" onmouseover="showTip(event, 'fs58', 101)" class="v">mario</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs65', 102)" onmouseover="showTip(event, 'fs65', 102)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs66', 103)" onmouseover="showTip(event, 'fs66', 103)" class="f">iter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs67', 104)" onmouseover="showTip(event, 'fs67', 104)" class="i">mario</span> <span class="k">-&gt;</span>
+      <span onmouseout="hideTip(event, 'fs64', 105)" onmouseover="showTip(event, 'fs64', 105)" class="i">ctx</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs68', 106)" onmouseover="showTip(event, 'fs68', 106)" class="f">Draw</span>(<span onmouseout="hideTip(event, 'fs57', 107)" onmouseover="showTip(event, 'fs57', 107)" class="v">x</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fs67', 108)" onmouseover="showTip(event, 'fs67', 108)" class="i">mario</span>))
+</code></pre></td>
+</tr>
+</table>
+<p>The structure of the framework does not make it particularly easy to write the code in a nice way. Here,
+I just did the most direct possible implementation. The mutable field <code>x</code> represent Mario's location and
+<code>mario</code> is an <code>option&lt;Image&gt;</code> value for storing the resource.</p>
+<p>You might say that this would be nicer in C# (e.g. I had to use <code>option</code> value because all F# fields have
+to be initialized), but that is only true if you ignore all checking. The fact that we use <code>option</code> value
+is actually making the code safer (because we cannot accidentally use <code>mario</code> in <code>Draw</code> if it was not
+initialized). Or does the framework <em>guaratnee</em> that <code>Initialize</code> will be called before <code>Draw</code>? Well, how
+are we supposed to know that?</p>
+<h2>How to avoid framework smells</h2>
+<p>I hope I convinced you that you should avoid building <em>frameworks</em> and create <em>libraries</em> instead. But I
+did not give any concrete tips how to do that. In the rest of the article, I look at a couple of concrete
+points.</p>
+<h3>Support interactive exploration</h3>
+<p>Even if you're not writing your library in F#, you should use F# Interactive to be able to call it
+interactively! F# is not just <a href="http://fsprojects.github.io/ProjectScaffold/writing-docs.html">great for documenting your library</a>,
+but writing an interactive script is a great way to make sure that your library is easy to call (if you're
+on the .NET platform, the other option is <a href="http://www.linqpad.net/">LINQPad</a>).</p>
+<p>To give two examples of what I mean, the following snippet shows how you can use the <a href="http://tpetricek.github.io/FSharp.Formatting/">F# Formatting
+library</a> to turn a folder with documentation containing
+F# Script files and Markdown documents into HTML, or how to process a single file:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;FSharp.Literate.dll&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs3', 109)" onmouseover="showTip(event, 'fs3', 109)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs69', 110)" onmouseover="showTip(event, 'fs69', 110)" class="i">Literate</span>
+
+<span class="c">// Process an entire folder</span>
+<span onmouseout="hideTip(event, 'fs70', 111)" onmouseover="showTip(event, 'fs70', 111)" class="t">Literate</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs71', 112)" onmouseover="showTip(event, 'fs71', 112)" class="f">ProcessDirectory</span>(<span class="s">&quot;C:/demo/docs&quot;</span>)
+
+<span class="c">// Process two individual documents</span>
+<span onmouseout="hideTip(event, 'fs70', 113)" onmouseover="showTip(event, 'fs70', 113)" class="t">Literate</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs72', 114)" onmouseover="showTip(event, 'fs72', 114)" class="f">ProcessMarkdown</span>(<span class="s">&quot;C:/demo/docs/sample.md&quot;</span>)
+<span onmouseout="hideTip(event, 'fs70', 115)" onmouseover="showTip(event, 'fs70', 115)" class="t">Literate</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 116)" onmouseover="showTip(event, 'fs73', 116)" class="f">ProcessScriptFile</span>(<span class="s">&quot;C:/demo/docs/sample.fsx&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The idea is that you just need to reference the library, open the namespace and find the <code>Literate</code>
+type as the entry-point. Once you have that, you can use "." and see what is available!</p>
+<p>I think all good libraries should support this kind of usage. As another example, let's look at
+<a href="http://funscript.info/">FunScript</a>, which translates F# code to JavaScript. Typically, you'd use
+this as part of some web framework, but it works just fine without that too. The following generates
+JavaScript for simple async loop that increments the number in the page <code>&lt;title&gt;</code> every second:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;FunScript.dll&quot;</span>
+<span class="prep">#r</span> <span class="s">&quot;FunScript.TypeScript.Binding.lib.dll&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs74', 117)" onmouseover="showTip(event, 'fs74', 117)" class="i">FunScript</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs74', 118)" onmouseover="showTip(event, 'fs74', 118)" class="i">FunScript</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs75', 119)" onmouseover="showTip(event, 'fs75', 119)" class="i">TypeScript</span>
+
+<span onmouseout="hideTip(event, 'fs76', 120)" onmouseover="showTip(event, 'fs76', 120)" class="t">Compiler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 121)" onmouseover="showTip(event, 'fs77', 121)" class="f">compile</span> 
+  &lt;@@ <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs78', 122)" onmouseover="showTip(event, 'fs78', 122)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs79', 123)" onmouseover="showTip(event, 'fs79', 123)" class="i">n</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs80', 124)" onmouseover="showTip(event, 'fs80', 124)" class="t">Async</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs19', 125)" onmouseover="showTip(event, 'fs19', 125)" class="t">unit</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs45', 126)" onmouseover="showTip(event, 'fs45', 126)" class="i">async</span> {
+        <span onmouseout="hideTip(event, 'fs81', 127)" onmouseover="showTip(event, 'fs81', 127)" class="i">Globals</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs82', 128)" onmouseover="showTip(event, 'fs82', 128)" class="i">window</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs83', 129)" onmouseover="showTip(event, 'fs83', 129)" class="i">document</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs84', 130)" onmouseover="showTip(event, 'fs84', 130)" class="i">title</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs8', 131)" onmouseover="showTip(event, 'fs8', 131)" class="f">string</span> <span onmouseout="hideTip(event, 'fs79', 132)" onmouseover="showTip(event, 'fs79', 132)" class="i">n</span>       
+        <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs80', 133)" onmouseover="showTip(event, 'fs80', 133)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs85', 134)" onmouseover="showTip(event, 'fs85', 134)" class="f">Sleep</span>(<span class="n">1000</span>)
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs78', 135)" onmouseover="showTip(event, 'fs78', 135)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs79', 136)" onmouseover="showTip(event, 'fs79', 136)" class="i">n</span> <span class="o">+</span> <span class="n">1</span>) }
+      <span onmouseout="hideTip(event, 'fs78', 137)" onmouseover="showTip(event, 'fs78', 137)" class="i">loop</span> <span class="n">0</span> @@&gt;
+</code></pre></td>
+</tr>
+</table>
+<p>Again, we just reference the library (this time, we also reference bindings for DOM) and then we
+call one function - the <code>compile</code> function takes an F# quotation. Once you discover it, you can
+experiment with what kind of things it can handle! The above demo shows a nice support for the
+F# <code>async { .. }</code> and for bindings that let you access the DOM.</p>
+<h3>Use only simple callbacks</h3>
+<p>When I talked about frameworks in the theoretical side note above, I said that framework is,
+in principle, anything that accepts a function as an argument. So, am I saying that you should not
+use higher-order functions? Of course not!</p>
+<p>Compare the following two simple snippets - the first one uses the standard list processing
+functions and the second one reads some input (using the first function), validates it and
+then processes it (using the second function):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Standard list-processing functions</span>
+[ <span class="n">1</span> <span class="o">..</span> <span class="n">10</span> ]
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs86', 138)" onmouseover="showTip(event, 'fs86', 138)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs87', 139)" onmouseover="showTip(event, 'fs87', 139)" class="f">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs79', 140)" onmouseover="showTip(event, 'fs79', 140)" class="i">n</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 141)" onmouseover="showTip(event, 'fs79', 141)" class="i">n</span><span class="o">%</span><span class="n">3</span> <span class="o">=</span> <span class="n">0</span>)
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs86', 142)" onmouseover="showTip(event, 'fs86', 142)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs88', 143)" onmouseover="showTip(event, 'fs88', 143)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs79', 144)" onmouseover="showTip(event, 'fs79', 144)" class="i">n</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 145)" onmouseover="showTip(event, 'fs79', 145)" class="i">n</span><span class="o">*</span><span class="n">10</span>)
+
+<span class="c">// Calls the first function to read input, validates </span>
+<span class="c">// it and then calls second function to process it</span>
+<span onmouseout="hideTip(event, 'fs32', 146)" onmouseover="showTip(event, 'fs32', 146)" class="f">readAndProcess</span>
+  (<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs89', 147)" onmouseover="showTip(event, 'fs89', 147)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs90', 148)" onmouseover="showTip(event, 'fs90', 148)" class="f">ReadAllText</span>(<span class="s">&quot;C:/demo.txt&quot;</span>))
+  (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs7', 149)" onmouseover="showTip(event, 'fs7', 149)" class="i">s</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs7', 150)" onmouseover="showTip(event, 'fs7', 150)" class="i">s</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs91', 151)" onmouseover="showTip(event, 'fs91', 151)" class="f">ToUpper</span>())
+</code></pre></td>
+</tr>
+</table>
+<p>There are two differences between the first and second example. In case of list functions, you
+always specify just a single function as an argument. Furthermore, the functions should never
+be stateful.</p>
+<p>In the second case, we are specifying two functions. To me, this is a sign that the function may
+be more complicated than it needs to be. Secondly, <code>readAndProcess</code> requires us to return <code>string</code>
+state from the first function and then take <code>string</code> as the input of the second function. This is
+another potential problem. What if we needed to pass some other state from the first function to
+the second one?</p>
+<p>I'm obviously looking at a simplified case here, but let's look what might be going on inside
+<code>readAndProcess</code>. The function might be handling some exceptions and checking that the input
+is valid before calling the second argument:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 152)" onmouseover="showTip(event, 'fs32', 152)" class="f">readAndProcess</span> <span onmouseout="hideTip(event, 'fs33', 153)" onmouseover="showTip(event, 'fs33', 153)" class="f">readInput</span> <span onmouseout="hideTip(event, 'fs34', 154)" onmouseover="showTip(event, 'fs34', 154)" class="f">processInput</span> <span class="o">=</span>
+  <span class="k">try</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs35', 155)" onmouseover="showTip(event, 'fs35', 155)" class="i">input</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs33', 156)" onmouseover="showTip(event, 'fs33', 156)" class="f">readInput</span>()
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs35', 157)" onmouseover="showTip(event, 'fs35', 157)" class="i">input</span> <span class="o">=</span> <span class="k">null</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'fs35', 158)" onmouseover="showTip(event, 'fs35', 158)" class="i">input</span> <span class="o">=</span> <span class="s">&quot;&quot;</span> <span class="k">then</span> <span onmouseout="hideTip(event, 'fs37', 159)" onmouseover="showTip(event, 'fs37', 159)" class="p">None</span>
+    <span class="k">else</span> <span onmouseout="hideTip(event, 'fs36', 160)" onmouseover="showTip(event, 'fs36', 160)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs34', 161)" onmouseover="showTip(event, 'fs34', 161)" class="f">processInput</span> <span onmouseout="hideTip(event, 'fs35', 162)" onmouseover="showTip(event, 'fs35', 162)" class="i">input</span>)
+  <span class="k">with</span> <span class="o">:?</span> <span onmouseout="hideTip(event, 'fs1', 163)" onmouseover="showTip(event, 'fs1', 163)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 164)" onmouseover="showTip(event, 'fs2', 164)" class="i">IO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs38', 165)" onmouseover="showTip(event, 'fs38', 165)" class="t">IOException</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs37', 166)" onmouseover="showTip(event, 'fs37', 166)" class="p">None</span>
+</code></pre></td>
+</tr>
+</table>
+<p>How can we improve this abstraction? First of all, the function really serves two purposes. First,
+it handles exceptions (in a silly way, but this is a toy sample). Second, it validates the input.
+We can split it into two functions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs92', 167)" onmouseover="showTip(event, 'fs92', 167)" class="f">ignoreIOErrors</span> <span onmouseout="hideTip(event, 'fs93', 168)" onmouseover="showTip(event, 'fs93', 168)" class="f">f</span> <span class="o">=</span>
+  <span class="k">try</span> <span onmouseout="hideTip(event, 'fs36', 169)" onmouseover="showTip(event, 'fs36', 169)" class="p">Some</span> (<span onmouseout="hideTip(event, 'fs93', 170)" onmouseover="showTip(event, 'fs93', 170)" class="f">f</span>())
+  <span class="k">with</span> <span class="o">:?</span> <span onmouseout="hideTip(event, 'fs1', 171)" onmouseover="showTip(event, 'fs1', 171)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 172)" onmouseover="showTip(event, 'fs2', 172)" class="i">IO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs38', 173)" onmouseover="showTip(event, 'fs38', 173)" class="t">IOException</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs37', 174)" onmouseover="showTip(event, 'fs37', 174)" class="p">None</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs94', 175)" onmouseover="showTip(event, 'fs94', 175)" class="f">validateInput</span> <span onmouseout="hideTip(event, 'fs35', 176)" onmouseover="showTip(event, 'fs35', 176)" class="i">input</span> <span class="o">=</span> 
+  <span class="k">if</span> <span onmouseout="hideTip(event, 'fs35', 177)" onmouseover="showTip(event, 'fs35', 177)" class="i">input</span> <span class="o">=</span> <span class="k">null</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'fs35', 178)" onmouseover="showTip(event, 'fs35', 178)" class="i">input</span> <span class="o">=</span> <span class="s">&quot;&quot;</span> <span class="k">then</span> <span onmouseout="hideTip(event, 'fs37', 179)" onmouseover="showTip(event, 'fs37', 179)" class="p">None</span> <span class="k">else</span> <span onmouseout="hideTip(event, 'fs36', 180)" onmouseover="showTip(event, 'fs36', 180)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs35', 181)" onmouseover="showTip(event, 'fs35', 181)" class="i">input</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Now, <code>validateInput</code> became just an ordinary function that returns <code>Some</code> if the input was valid.
+The <code>ignoreIOErrors</code> function still takes a function as an argument - in this case, it makes sense,
+because exception handling is a typical example of the <a href="http://blog.enfranchisedmind.com/2007/07/the-hole-in-the-middle-pattern/">Hole in the Middle pattern</a>.
+Using the new functions, we can write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs92', 182)" onmouseover="showTip(event, 'fs92', 182)" class="f">ignoreIOErrors</span> (<span class="k">fun</span> () <span class="k">-&gt;</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs35', 183)" onmouseover="showTip(event, 'fs35', 183)" class="i">input</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs89', 184)" onmouseover="showTip(event, 'fs89', 184)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs90', 185)" onmouseover="showTip(event, 'fs90', 185)" class="f">ReadAllText</span>(<span class="s">&quot;C:/demo.txt&quot;</span>)
+  <span onmouseout="hideTip(event, 'fs94', 186)" onmouseover="showTip(event, 'fs94', 186)" class="f">validateInput</span> <span onmouseout="hideTip(event, 'fs35', 187)" onmouseover="showTip(event, 'fs35', 187)" class="i">input</span> 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs65', 188)" onmouseover="showTip(event, 'fs65', 188)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs95', 189)" onmouseover="showTip(event, 'fs95', 189)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs96', 190)" onmouseover="showTip(event, 'fs96', 190)" class="i">valid</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs96', 191)" onmouseover="showTip(event, 'fs96', 191)" class="i">valid</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs91', 192)" onmouseover="showTip(event, 'fs91', 192)" class="f">ToUpper</span>() ))
+</code></pre></td>
+</tr>
+</table>
+<p>If you try, you can still fit this on 3 lines, but the code is a bit longer and a bit more explicit.
+However, I think that is actually a benefit, because you can see what is going on (and you can start
+by calling <code>validateInput</code> interactively!) Also, if you like the <code>readAndProcess</code> function better, that's
+fine - you can easily define it using the two above functions (but not the other way round!) So, your
+library can provide <em>multiple levels of abstraction</em> as <a href="http://tomasp.net/blog/2015/library-layers/">discussed in my earlier article</a>.
+But providing only the higher-level abstraction would be limiting.</p>
+<p>To summarize, passing functions as arguments is not necessarily wrong, but be careful.
+If a function takes more than one function as an argument, it might not be the best low-level
+abstraction. If the functions passed as arguments need to share and pass around some state,
+then you should definitely provide an alternative (in case the "default" state passing is
+not what the caller needs).</p>
+<h3>Inverting callbacks with events and async</h3>
+<p>When discussing how frameworks shape your code, I used a simple game engine as an example.
+What could be done differently so that we do not need to use mutable fields and implement
+a specific class? In F#, we can use <em>asynchronous workflows</em> and <em>event-based</em> programming
+model instead.</p>
+<p>This is more tricky for languages that do not have anything similar to computation
+expressions (or <a href="http://tomasp.net/blog/csharp-async.aspx/">iterators that can be used to fake this</a>),
+but C# supports <code>await</code>, F# has computation expressions, Haskell has the <code>do</code> notation and in
+Python you can probably misuse generators.</p>
+<p>The idea is that rather than writing virtual methods that need to be implemented, we'll expose
+events that are triggered when the operation needs to be done. So, the interface for our <code>Game</code>
+might look like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs97', 193)" onmouseover="showTip(event, 'fs97', 193)" class="t">Game</span> <span class="o">=</span> 
+  <span class="k">member</span> <span class="i">Update</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs98', 194)" onmouseover="showTip(event, 'fs98', 194)" class="i">IEvent</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs19', 195)" onmouseover="showTip(event, 'fs19', 195)" class="i">unit</span><span class="o">&gt;</span>
+  <span class="k">member</span> <span class="i">Draw</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs98', 196)" onmouseover="showTip(event, 'fs98', 196)" class="i">IEvent</span><span class="o">&lt;</span><span class="i">DrawingContext</span><span class="o">&gt;</span>
+  <span class="k">member</span> <span class="i">IsRunning</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs99', 197)" onmouseover="showTip(event, 'fs99', 197)" class="i">bool</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Using F# async, we can now write the code differently. Going back to the original idea of frameworks vs.
+libraries, we can write it so that we are in control what is going on! The following first initializes
+the resources and the <code>Game</code> object and then it implements a loop (using recursive <code>async</code> blocks) that
+waits for either <code>Update</code> or <code>Draw</code> event using the <a href="https://github.com/tpetricek/FSharp.AsyncExtensions">AwaitObservable</a>
+method:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Initialize game and resources</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs100', 198)" onmouseover="showTip(event, 'fs100', 198)" class="i">game</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs101', 199)" onmouseover="showTip(event, 'fs101', 199)" class="t">Inverted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs102', 200)" onmouseover="showTip(event, 'fs102', 200)" class="t">Game</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs103', 201)" onmouseover="showTip(event, 'fs103', 201)" class="i">mario</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 202)" onmouseover="showTip(event, 'fs5', 202)" class="t">Image</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs61', 203)" onmouseover="showTip(event, 'fs61', 203)" class="f">Load</span>(<span class="s">&quot;mario.png&quot;</span>)
+
+<span class="c">// Recursive loop that runs until the end of the game</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs104', 204)" onmouseover="showTip(event, 'fs104', 204)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs12', 205)" onmouseover="showTip(event, 'fs12', 205)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs45', 206)" onmouseover="showTip(event, 'fs45', 206)" class="i">async</span> {
+  <span class="k">if</span> <span onmouseout="hideTip(event, 'fs100', 207)" onmouseover="showTip(event, 'fs100', 207)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs105', 208)" onmouseover="showTip(event, 'fs105', 208)" class="i">IsRunning</span> <span class="k">then</span>
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs106', 209)" onmouseover="showTip(event, 'fs106', 209)" class="i">evt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs80', 210)" onmouseover="showTip(event, 'fs80', 210)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs107', 211)" onmouseover="showTip(event, 'fs107', 211)" class="f">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fs100', 212)" onmouseover="showTip(event, 'fs100', 212)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs108', 213)" onmouseover="showTip(event, 'fs108', 213)" class="i">Update</span>, <span onmouseout="hideTip(event, 'fs100', 214)" onmouseover="showTip(event, 'fs100', 214)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs109', 215)" onmouseover="showTip(event, 'fs109', 215)" class="i">Draw</span>) 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs106', 216)" onmouseover="showTip(event, 'fs106', 216)" class="i">evt</span> <span class="k">with</span> 
+    | <span onmouseout="hideTip(event, 'fs110', 217)" onmouseover="showTip(event, 'fs110', 217)" class="p">Choice1Of2</span>() <span class="k">-&gt;</span> 
+        <span class="c">// Handle the &#39;Update&#39; event</span>
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs104', 218)" onmouseover="showTip(event, 'fs104', 218)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs12', 219)" onmouseover="showTip(event, 'fs12', 219)" class="i">x</span> <span class="o">+</span> <span class="n">1</span>)
+    | <span onmouseout="hideTip(event, 'fs111', 220)" onmouseover="showTip(event, 'fs111', 220)" class="p">Choice2Of2</span>(<span onmouseout="hideTip(event, 'fs64', 221)" onmouseover="showTip(event, 'fs64', 221)" class="i">ctx</span>) <span class="k">-&gt;</span> 
+        <span class="c">// Handle the &#39;Draw&#39; event</span>
+        <span onmouseout="hideTip(event, 'fs64', 222)" onmouseover="showTip(event, 'fs64', 222)" class="i">ctx</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs68', 223)" onmouseover="showTip(event, 'fs68', 223)" class="f">Draw</span>(<span onmouseout="hideTip(event, 'fs12', 224)" onmouseover="showTip(event, 'fs12', 224)" class="i">x</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fs103', 225)" onmouseover="showTip(event, 'fs103', 225)" class="i">mario</span>) 
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs104', 226)" onmouseover="showTip(event, 'fs104', 226)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs12', 227)" onmouseover="showTip(event, 'fs12', 227)" class="i">x</span> }
+
+<span class="c">// Start the Game with x=0</span>
+<span onmouseout="hideTip(event, 'fs104', 228)" onmouseover="showTip(event, 'fs104', 228)" class="f">loop</span> <span class="n">0</span>  
+</code></pre></td>
+</tr>
+</table>
+<p>We cannot be fully in control, because we don't know when the system calls us
+to update the game state and when it calls us to redraw the screen. But we can be
+in control when it comes to initializing the resources, checking when the game is
+running and waiting for one or the other event.</p>
+<p>Using <code>async { .. }</code> is the key here. We can use <code>AwaitObservable</code> to say "resume
+the computation when either <code>Update</code> or <code>Draw</code> is required". When the event happens,
+we preform the required action (update state on line 12 or draw Mario on line 15)
+and then continue. The nice thing is that you can easily extend this into a more
+complex logic - for a nice example, see <a href="http://trelford.com/blog/post/FractalZoom.aspx">Phil Trelford's Fractal Zoom</a>.
+The other option with similar properties would be to use <a href="http://www.developerfusion.com/article/139804/an-introduction-to-f-agents/">F# agents</a>,
+which give you similar control over the logic.</p>
+<p>So, we are now in control, but have we really gained much? If you're new to F#,
+then you'll no doubt find the above code confusing. The main thing is that, by reversing
+the control, we can now easily write our own abstractions, which leads to the last point...</p>
+<h3>Use multiple levels of abstraction</h3>
+<p>As discussed in the <a href="http://tomasp.net/blog/2015/library-layers/">previous blog post</a>, a
+library should provide multiple layers of abstraction. The <code>Game</code> type that I used
+in the previous snippet is a low-level abstraction - it is useful if you want to build
+something more sophisticated and it gives you all the control you need. But most of
+the time, you may actually want to write the game just as a pair of "draw" and "update"
+functions.</p>
+<p>This can easily be done, because we can just take the previous code snippet and extract
+several parts into arguments:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs112', 229)" onmouseover="showTip(event, 'fs112', 229)" class="f">startGame</span> <span onmouseout="hideTip(event, 'fs113', 230)" onmouseover="showTip(event, 'fs113', 230)" class="f">draw</span> <span onmouseout="hideTip(event, 'fs114', 231)" onmouseover="showTip(event, 'fs114', 231)" class="f">update</span> <span onmouseout="hideTip(event, 'fs115', 232)" onmouseover="showTip(event, 'fs115', 232)" class="i">init</span> <span class="o">=</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs116', 233)" onmouseover="showTip(event, 'fs116', 233)" class="i">game</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs101', 234)" onmouseover="showTip(event, 'fs101', 234)" class="t">Inverted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs102', 235)" onmouseover="showTip(event, 'fs102', 235)" class="t">Game</span>()
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs117', 236)" onmouseover="showTip(event, 'fs117', 236)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs118', 237)" onmouseover="showTip(event, 'fs118', 237)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs45', 238)" onmouseover="showTip(event, 'fs45', 238)" class="i">async</span> {
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs116', 239)" onmouseover="showTip(event, 'fs116', 239)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs105', 240)" onmouseover="showTip(event, 'fs105', 240)" class="i">IsRunning</span> <span class="k">then</span>
+      <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs106', 241)" onmouseover="showTip(event, 'fs106', 241)" class="i">evt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs80', 242)" onmouseover="showTip(event, 'fs80', 242)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs107', 243)" onmouseover="showTip(event, 'fs107', 243)" class="f">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fs116', 244)" onmouseover="showTip(event, 'fs116', 244)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs108', 245)" onmouseover="showTip(event, 'fs108', 245)" class="i">Update</span>, <span onmouseout="hideTip(event, 'fs116', 246)" onmouseover="showTip(event, 'fs116', 246)" class="i">game</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs109', 247)" onmouseover="showTip(event, 'fs109', 247)" class="i">Draw</span>) 
+      <span class="k">match</span> <span onmouseout="hideTip(event, 'fs106', 248)" onmouseover="showTip(event, 'fs106', 248)" class="i">evt</span> <span class="k">with</span> 
+      | <span onmouseout="hideTip(event, 'fs110', 249)" onmouseover="showTip(event, 'fs110', 249)" class="p">Choice1Of2</span>() <span class="k">-&gt;</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs117', 250)" onmouseover="showTip(event, 'fs117', 250)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs114', 251)" onmouseover="showTip(event, 'fs114', 251)" class="f">update</span> <span onmouseout="hideTip(event, 'fs118', 252)" onmouseover="showTip(event, 'fs118', 252)" class="i">x</span>)
+      | <span onmouseout="hideTip(event, 'fs111', 253)" onmouseover="showTip(event, 'fs111', 253)" class="p">Choice2Of2</span>(<span onmouseout="hideTip(event, 'fs64', 254)" onmouseover="showTip(event, 'fs64', 254)" class="i">ctx</span>) <span class="k">-&gt;</span> 
+          <span onmouseout="hideTip(event, 'fs113', 255)" onmouseover="showTip(event, 'fs113', 255)" class="f">draw</span> <span onmouseout="hideTip(event, 'fs118', 256)" onmouseover="showTip(event, 'fs118', 256)" class="i">x</span> <span onmouseout="hideTip(event, 'fs64', 257)" onmouseover="showTip(event, 'fs64', 257)" class="i">ctx</span>
+          <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs117', 258)" onmouseover="showTip(event, 'fs117', 258)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs118', 259)" onmouseover="showTip(event, 'fs118', 259)" class="i">x</span> }
+  <span onmouseout="hideTip(event, 'fs117', 260)" onmouseover="showTip(event, 'fs117', 260)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs115', 261)" onmouseover="showTip(event, 'fs115', 261)" class="i">init</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>startGame</code> abstraction takes two functions as arguments together with an initial state.
+The <code>update</code> function updates the state and the <code>draw</code> function draws the state using the
+specified <code>DrawingContext</code>. Using these, we can now write our Mario sample in just 4 lines:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs103', 262)" onmouseover="showTip(event, 'fs103', 262)" class="i">mario</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 263)" onmouseover="showTip(event, 'fs5', 263)" class="t">Image</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs61', 264)" onmouseover="showTip(event, 'fs61', 264)" class="f">Load</span>(<span class="s">&quot;mario.png&quot;</span>)
+<span class="n">0</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs112', 265)" onmouseover="showTip(event, 'fs112', 265)" class="f">startGame</span> 
+  (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs12', 266)" onmouseover="showTip(event, 'fs12', 266)" class="i">x</span> <span onmouseout="hideTip(event, 'fs64', 267)" onmouseover="showTip(event, 'fs64', 267)" class="i">ctx</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs64', 268)" onmouseover="showTip(event, 'fs64', 268)" class="i">ctx</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs68', 269)" onmouseover="showTip(event, 'fs68', 269)" class="f">Draw</span>(<span onmouseout="hideTip(event, 'fs12', 270)" onmouseover="showTip(event, 'fs12', 270)" class="i">x</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fs103', 271)" onmouseover="showTip(event, 'fs103', 271)" class="i">mario</span>))
+  (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs12', 272)" onmouseover="showTip(event, 'fs12', 272)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs12', 273)" onmouseover="showTip(event, 'fs12', 273)" class="i">x</span> <span class="o">+</span> <span class="n">1</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>If you read the whole blog post, then you may be wondering whether I'm contradicting myself here!
+Didn't I previously write that higher-order functions that take multiple functions (especially
+when they share state) are evil frameworks? You're right, I said that! But let me clarify this:</p>
+<p><em>It is fine to have easy-to-use operation that takes a couple of other functions as a
+high-level abstraction, but there should be a simple and more explicit alternative!</em></p>
+<p>You can take the above 4 lines, look at the definition of <code>startGame</code> and turn them into the
+14 lines of code we've seen earlier (excluding comments). So, you should be able to <em>get the control</em>
+by taking one (not very deep) step under the cover. This is in contrast with building a fragile
+scaffolding on top of a poorly designed library that is sometimes needed if you want to write
+elegant code.</p>
+<h3>Design composable libraries</h3>
+<p>As I mentioned before, one of the main reasons why you should design libraries rather than
+frameworks is that libraries can be composed. If you are in control, you can choose which libraries
+to use for which part of a problem. This might not always be easy, but with libraries, you at least
+have a chance!</p>
+<p>I think there are no general rules on how to design libraries that compose well - perhaps one
+important point is that your types need to expose all important information that other libraries
+(for similar purpose) would need if they wanted to create a similar data structure.</p>
+<p>A good example here is <a href="https://www.nuget.org/packages/FsLab">FsLab</a>, which is a package that
+brings together a number of data-science libraries for F# (including <a href="http://bluemountaincapital.github.io/Deedle">Deedle</a>,
+<a href="http://numerics.mathdotnet.com/">Math.NET Numerics</a> and others). The FsLab package comes with
+a single script that links a number of other libraries together (you can <a href="https://github.com/tpetricek/FsLab/blob/2c1d81d0502f03331c21242e2cef9386d0928990/src/FsLab.fsx#L82">see the source code
+here</a>).</p>
+<p>Two simple examples from the file are functions for converting from matrix to frame (<code>Matrix.toFrame</code>)
+and the other way round (<code>Frame.toMatrix</code>):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">module</span> <span class="t">Matrix</span> <span class="o">=</span>
+  <span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fs119', 274)" onmouseover="showTip(event, 'fs119', 274)" class="f">toFrame</span> <span onmouseout="hideTip(event, 'fs120', 275)" onmouseover="showTip(event, 'fs120', 275)" class="i">matrix</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs120', 276)" onmouseover="showTip(event, 'fs120', 276)" class="i">matrix</span> <span class="o">|&gt;</span> <span class="i">Matrix</span><span class="o">.</span><span class="i">toArray2</span> <span class="o">|&gt;</span> <span class="i">Frame</span><span class="o">.</span><span class="i">ofArray2D</span>
+
+<span class="k">module</span> <span onmouseout="hideTip(event, 'fs121', 277)" onmouseover="showTip(event, 'fs121', 277)" class="t">Frame</span> <span class="o">=</span>
+  <span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fs122', 278)" onmouseover="showTip(event, 'fs122', 278)" class="f">toMatrix</span> <span onmouseout="hideTip(event, 'fs123', 279)" onmouseover="showTip(event, 'fs123', 279)" class="i">frame</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs123', 280)" onmouseover="showTip(event, 'fs123', 280)" class="i">frame</span> <span class="o">|&gt;</span> <span class="i">Frame</span><span class="o">.</span><span class="i">toArray2D</span> <span class="o">|&gt;</span> <span class="i">DenseMatrix</span><span class="o">.</span><span class="i">ofArray2</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The solution here is quite simple, because both Deedle frame and Math.NET matrices can be converted
+to/from a 2D array and so we just need to go from one to the other through an array. This looks very
+simple, but I think that's the point - no matter what your library does, you should give the user all
+the power they need to combine your library with others (or replace some parts of it, if they don't
+like them!)</p>
+<h1>Summary</h1>
+<p>In this article, I looked at a number of functional library design principles. This is a second
+article in this mini-series - the <a href="http://tomasp.net/blog/2015/library-layers">first one</a> contains
+a longer introduction with a list of principles and then discusses <em>layers of abstraction</em>. In this
+article, I talked about <em>composability</em> and <em>avoiding callbacks</em>. The two are closely related, because
+heavily relying on callbacks breaks composability. I also related these two terms to libraries and
+frameworks, because frameworks are, by design, non-composable.</p>
+<p>To end on a lighter note, you can find frameworks not just in software, but also in ordinary life.
+If you buy package holidays, you're buying a framework - they transport you to some place, put you
+in a hotel, feed you and your activities have to fit into the shape provided by the framework (say,
+go into the pool and swim there). If you travel independently, you are composing libraries. You have
+to book your flights, find your accommodation and arrange your program (all using different libraries).
+It is more work, but you are in control - and you can arrange things exactly the way you need.</p>
+<p>With traveling, I can see why some people prefer package holidays, but in software development,
+there is no excuse for building frameworks!</p>
+
+
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.IO</div>
+<div class="tip" id="fs3">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs4">Multiple items<br />namespace FSharp.Control<br /><br />--------------------<br />namespace Microsoft.FSharp.Control</div>
+<div class="tip" id="fs5">Multiple items<br />type Image =<br />&#160;&#160;new : unit -&gt; Image<br />&#160;&#160;static member Load : s:string -&gt; Image<br /><br />Full name: Library-frameworks.Image<br /><br />--------------------<br />new : unit -&gt; Image</div>
+<div class="tip" id="fs6">static member Image.Load : s:string -&gt; Image<br /><br />Full name: Library-frameworks.Image.Load</div>
+<div class="tip" id="fs7">val s : string</div>
+<div class="tip" id="fs8">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs9">type DrawingContext =<br />&#160;&#160;member Draw : x:int * y:int * img:Image -&gt; unit<br /><br />Full name: Library-frameworks.DrawingContext</div>
+<div class="tip" id="fs10">val this : DrawingContext</div>
+<div class="tip" id="fs11">member DrawingContext.Draw : x:int * y:int * img:Image -&gt; unit<br /><br />Full name: Library-frameworks.DrawingContext.Draw</div>
+<div class="tip" id="fs12">val x : int</div>
+<div class="tip" id="fs13">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs14">val y : int</div>
+<div class="tip" id="fs15">val img : Image</div>
+<div class="tip" id="fs16">Multiple items<br />type Game =<br />&#160;&#160;new : unit -&gt; Game<br />&#160;&#160;member Draw : IEvent&lt;DrawingContext&gt;<br />&#160;&#160;member IsRunning : bool<br />&#160;&#160;member Update : IEvent&lt;unit&gt;<br /><br />Full name: Library-frameworks.Inverted.Game<br /><br />--------------------<br />new : unit -&gt; Game</div>
+<div class="tip" id="fs17">val evtUpdate : Event&lt;unit&gt;</div>
+<div class="tip" id="fs18">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;T&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs19">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit</div>
+<div class="tip" id="fs20">val evtDraw : Event&lt;DrawingContext&gt;</div>
+<div class="tip" id="fs21">val x : Game</div>
+<div class="tip" id="fs22">member Game.Update : IEvent&lt;unit&gt;<br /><br />Full name: Library-frameworks.Inverted.Game.Update</div>
+<div class="tip" id="fs23">property Event.Publish: IEvent&lt;unit&gt;</div>
+<div class="tip" id="fs24">member Game.Draw : IEvent&lt;DrawingContext&gt;<br /><br />Full name: Library-frameworks.Inverted.Game.Draw</div>
+<div class="tip" id="fs25">property Event.Publish: IEvent&lt;DrawingContext&gt;</div>
+<div class="tip" id="fs26">member Game.IsRunning : bool<br /><br />Full name: Library-frameworks.Inverted.Game.IsRunning</div>
+<div class="tip" id="fs27">Multiple items<br />type AbstractClassAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; AbstractClassAttribute<br /><br />Full name: Microsoft.FSharp.Core.AbstractClassAttribute<br /><br />--------------------<br />new : unit -&gt; AbstractClassAttribute</div>
+<div class="tip" id="fs28">Multiple items<br />type Game =<br />&#160;&#160;new : unit -&gt; Game<br />&#160;&#160;abstract member Draw : DrawingContext -&gt; unit<br />&#160;&#160;abstract member Initialize : unit -&gt; unit<br />&#160;&#160;abstract member Update : unit -&gt; unit<br /><br />Full name: Library-frameworks.Xna.Game<br /><br />--------------------<br />new : unit -&gt; Game</div>
+<div class="tip" id="fs29">abstract member Game.Initialize : unit -&gt; unit<br /><br />Full name: Library-frameworks.Xna.Game.Initialize</div>
+<div class="tip" id="fs30">abstract member Game.Draw : DrawingContext -&gt; unit<br /><br />Full name: Library-frameworks.Xna.Game.Draw</div>
+<div class="tip" id="fs31">abstract member Game.Update : unit -&gt; unit<br /><br />Full name: Library-frameworks.Xna.Game.Update</div>
+<div class="tip" id="fs32">val readAndProcess : readInput:(unit -&gt; string) -&gt; processInput:(string -&gt; &#39;a) -&gt; &#39;a option<br /><br />Full name: Library-frameworks.readAndProcess</div>
+<div class="tip" id="fs33">val readInput : (unit -&gt; string)</div>
+<div class="tip" id="fs34">val processInput : (string -&gt; &#39;a)</div>
+<div class="tip" id="fs35">val input : string</div>
+<div class="tip" id="fs36">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs37">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs38">Multiple items<br />type IOException =<br />&#160;&#160;inherit SystemException<br />&#160;&#160;new : unit -&gt; IOException + 3 overloads<br /><br />Full name: System.IO.IOException<br /><br />--------------------<br />IOException() : unit<br />IOException(message: string) : unit<br />IOException(message: string, hresult: int) : unit<br />IOException(message: string, innerException: exn) : unit</div>
+<div class="tip" id="fs39">namespace Suave</div>
+<div class="tip" id="fs40">module Web<br /><br />from Suave</div>
+<div class="tip" id="fs41">module Http<br /><br />from Suave</div>
+<div class="tip" id="fs42">val startWebServer : config:Suave.Types.SuaveConfig -&gt; webpart:Suave.Types.WebPart -&gt; unit<br /><br />Full name: Suave.Web.startWebServer</div>
+<div class="tip" id="fs43">val defaultConfig : Suave.Types.SuaveConfig<br /><br />Full name: Suave.Web.defaultConfig</div>
+<div class="tip" id="fs44">val ctx : Suave.Types.HttpContext</div>
+<div class="tip" id="fs45">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="fs46">val whoOpt : string option</div>
+<div class="tip" id="fs47">Suave.Types.HttpContext.request: Suave.Types.HttpRequest</div>
+<div class="tip" id="fs48">member Suave.Types.HttpRequest.queryParam : k:string -&gt; string option</div>
+<div class="tip" id="fs49">val message : string</div>
+<div class="tip" id="fs50">val sprintf : format:Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf</div>
+<div class="tip" id="fs51">val defaultArg : arg:&#39;T option -&gt; defaultValue:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.defaultArg</div>
+<div class="tip" id="fs52">module Successful<br /><br />from Suave.Http</div>
+<div class="tip" id="fs53">val OK : a:string -&gt; Suave.Types.WebPart<br /><br />Full name: Suave.Http.Successful.OK</div>
+<div class="tip" id="fs54">Multiple items<br />type MyGame =<br />&#160;&#160;inherit Game<br />&#160;&#160;new : unit -&gt; MyGame<br />&#160;&#160;override Draw : ctx:DrawingContext -&gt; unit<br />&#160;&#160;override Initialize : unit -&gt; unit<br />&#160;&#160;override Update : unit -&gt; unit<br /><br />Full name: Library-frameworks.MyGame<br /><br />--------------------<br />new : unit -&gt; MyGame</div>
+<div class="tip" id="fs55">module Xna<br /><br />from Library-frameworks</div>
+<div class="tip" id="fs56">Multiple items<br />type Game =<br />&#160;&#160;new : unit -&gt; Game<br />&#160;&#160;abstract member Draw : DrawingContext -&gt; unit<br />&#160;&#160;abstract member Initialize : unit -&gt; unit<br />&#160;&#160;abstract member Update : unit -&gt; unit<br /><br />Full name: Library-frameworks.Xna.Game<br /><br />--------------------<br />new : unit -&gt; Xna.Game</div>
+<div class="tip" id="fs57">val mutable x : int</div>
+<div class="tip" id="fs58">val mutable mario : Image option</div>
+<div class="tip" id="fs59">val this : MyGame</div>
+<div class="tip" id="fs60">override MyGame.Initialize : unit -&gt; unit<br /><br />Full name: Library-frameworks.MyGame.Initialize</div>
+<div class="tip" id="fs61">static member Image.Load : s:string -&gt; Image</div>
+<div class="tip" id="fs62">override MyGame.Update : unit -&gt; unit<br /><br />Full name: Library-frameworks.MyGame.Update</div>
+<div class="tip" id="fs63">override MyGame.Draw : ctx:DrawingContext -&gt; unit<br /><br />Full name: Library-frameworks.MyGame.Draw</div>
+<div class="tip" id="fs64">val ctx : DrawingContext</div>
+<div class="tip" id="fs65">module Option<br /><br />from Microsoft.FSharp.Core</div>
+<div class="tip" id="fs66">val iter : action:(&#39;T -&gt; unit) -&gt; option:&#39;T option -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Option.iter</div>
+<div class="tip" id="fs67">val mario : Image</div>
+<div class="tip" id="fs68">member DrawingContext.Draw : x:int * y:int * img:Image -&gt; unit</div>
+<div class="tip" id="fs69">namespace FSharp.Literate</div>
+<div class="tip" id="fs70">type Literate =<br />&#160;&#160;private new : unit -&gt; Literate<br />&#160;&#160;static member FormatLiterateNodes : doc:LiterateDocument * ?format:OutputKind * ?prefix:string * ?lineNumbers:bool * ?generateAnchors:bool -&gt; LiterateDocument<br />&#160;&#160;static member ParseMarkdownFile : path:string * ?formatAgent:CodeFormatAgent * ?compilerOptions:string * ?definedSymbols:#seq&lt;string&gt; * ?references:bool * ?fsiEvaluator:IFsiEvaluator -&gt; LiterateDocument<br />&#160;&#160;static member ParseMarkdownString : content:string * ?path:string * ?formatAgent:CodeFormatAgent * ?compilerOptions:string * ?definedSymbols:#seq&lt;string&gt; * ?references:bool * ?fsiEvaluator:IFsiEvaluator -&gt; LiterateDocument<br />&#160;&#160;static member ParseScriptFile : path:string * ?formatAgent:CodeFormatAgent * ?compilerOptions:string * ?definedSymbols:#seq&lt;string&gt; * ?references:bool * ?fsiEvaluator:IFsiEvaluator -&gt; LiterateDocument<br />&#160;&#160;static member ParseScriptString : content:string * ?path:string * ?formatAgent:CodeFormatAgent * ?compilerOptions:string * ?definedSymbols:#seq&lt;string&gt; * ?references:bool * ?fsiEvaluator:IFsiEvaluator -&gt; LiterateDocument<br />&#160;&#160;static member ProcessDirectory : inputDirectory:string * ?templateFile:string * ?outputDirectory:string * ?format:OutputKind * ?formatAgent:CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?fsiEvaluator:IFsiEvaluator * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list * ?processRecursive:bool -&gt; unit<br />&#160;&#160;static member ProcessMarkdown : input:string * ?templateFile:string * ?output:string * ?format:OutputKind * ?formatAgent:CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list -&gt; unit<br />&#160;&#160;static member ProcessScriptFile : input:string * ?templateFile:string * ?output:string * ?format:OutputKind * ?formatAgent:CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?fsiEvaluator:IFsiEvaluator * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list -&gt; unit<br />&#160;&#160;static member WriteHtml : doc:LiterateDocument * ?prefix:string * ?lineNumbers:bool * ?generateAnchors:bool -&gt; string<br />&#160;&#160;...<br /><br />Full name: FSharp.Literate.Literate</div>
+<div class="tip" id="fs71">static member Literate.ProcessDirectory : inputDirectory:string * ?templateFile:string * ?outputDirectory:string * ?format:OutputKind * ?formatAgent:FSharp.CodeFormat.CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?fsiEvaluator:IFsiEvaluator * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list * ?processRecursive:bool -&gt; unit</div>
+<div class="tip" id="fs72">static member Literate.ProcessMarkdown : input:string * ?templateFile:string * ?output:string * ?format:OutputKind * ?formatAgent:FSharp.CodeFormat.CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list -&gt; unit</div>
+<div class="tip" id="fs73">static member Literate.ProcessScriptFile : input:string * ?templateFile:string * ?output:string * ?format:OutputKind * ?formatAgent:FSharp.CodeFormat.CodeFormatAgent * ?prefix:string * ?compilerOptions:string * ?lineNumbers:bool * ?references:bool * ?fsiEvaluator:IFsiEvaluator * ?replacements:(string * string) list * ?includeSource:bool * ?layoutRoots:string list * ?generateAnchors:bool * ?assemblyReferences:string list -&gt; unit</div>
+<div class="tip" id="fs74">namespace FunScript</div>
+<div class="tip" id="fs75">namespace FunScript.TypeScript</div>
+<div class="tip" id="fs76">module Compiler<br /><br />from FunScript</div>
+<div class="tip" id="fs77">val compile : expr:Quotations.Expr -&gt; string<br /><br />Full name: FunScript.Compiler.compile</div>
+<div class="tip" id="fs78">val loop : (int -&gt; Async&lt;unit&gt;)</div>
+<div class="tip" id="fs79">val n : int</div>
+<div class="tip" id="fs80">Multiple items<br />type Async<br />static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)<br />static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)<br />static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />static member AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member CancelDefaultToken : unit -&gt; unit<br />static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg:&#39;Arg1 * beginAction:(&#39;Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * beginAction:(&#39;Arg1 * &#39;Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * arg3:&#39;Arg3 * beginAction:(&#39;Arg1 * &#39;Arg2 * &#39;Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromContinuations : callback:((&#39;T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member Ignore : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;unit&gt;<br />static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />static member Parallel : computations:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;&#39;T []&gt;<br />static member RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T<br />static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;&#39;T&gt;<br />static member StartChild : computation:Async&lt;&#39;T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;<br />static member StartChildAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions -&gt; Async&lt;Task&lt;&#39;T&gt;&gt;<br />static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartWithContinuations : computation:Async&lt;&#39;T&gt; * continuation:(&#39;T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />static member TryCancelled : computation:Async&lt;&#39;T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member CancellationToken : Async&lt;CancellationToken&gt;<br />static member DefaultCancellationToken : CancellationToken<br /><br />Full name: Microsoft.FSharp.Control.Async<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;</div>
+<div class="tip" id="fs81">type Globals<br /><br />Full name: FunScript.TypeScript.Globals</div>
+<div class="tip" id="fs82">property Globals.window: Window</div>
+<div class="tip" id="fs83">property Window.document: Document</div>
+<div class="tip" id="fs84">property Document.title: string</div>
+<div class="tip" id="fs85">static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs86">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs87">val filter : predicate:(&#39;T -&gt; bool) -&gt; list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.filter</div>
+<div class="tip" id="fs88">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; list:&#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="fs89">type File =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;inherit Blob<br />&#160;&#160;end<br /><br />Full name: FunScript.TypeScript.File</div>
+<div class="tip" id="fs90">File.ReadAllText(path: string) : string<br />File.ReadAllText(path: string, encoding: System.Text.Encoding) : string</div>
+<div class="tip" id="fs91">System.String.ToUpper() : string<br />System.String.ToUpper(culture: System.Globalization.CultureInfo) : string</div>
+<div class="tip" id="fs92">val ignoreIOErrors : f:(unit -&gt; &#39;a) -&gt; &#39;a option<br /><br />Full name: Library-frameworks.ignoreIOErrors</div>
+<div class="tip" id="fs93">val f : (unit -&gt; &#39;a)</div>
+<div class="tip" id="fs94">val validateInput : input:string -&gt; string option<br /><br />Full name: Library-frameworks.validateInput</div>
+<div class="tip" id="fs95">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; option:&#39;T option -&gt; &#39;U option<br /><br />Full name: Microsoft.FSharp.Core.Option.map</div>
+<div class="tip" id="fs96">val valid : string</div>
+<div class="tip" id="fs97">type Game<br /><br />Full name: libraryframeworks.Game</div>
+<div class="tip" id="fs98">type IEvent&lt;&#39;T&gt; = IEvent&lt;Handler&lt;&#39;T&gt;,&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.IEvent&lt;_&gt;</div>
+<div class="tip" id="fs99">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs100">val game : Inverted.Game<br /><br />Full name: Library-frameworks.game</div>
+<div class="tip" id="fs101">module Inverted<br /><br />from Library-frameworks</div>
+<div class="tip" id="fs102">Multiple items<br />type Game =<br />&#160;&#160;new : unit -&gt; Game<br />&#160;&#160;member Draw : IEvent&lt;DrawingContext&gt;<br />&#160;&#160;member IsRunning : bool<br />&#160;&#160;member Update : IEvent&lt;unit&gt;<br /><br />Full name: Library-frameworks.Inverted.Game<br /><br />--------------------<br />new : unit -&gt; Inverted.Game</div>
+<div class="tip" id="fs103">val mario : Image<br /><br />Full name: Library-frameworks.mario</div>
+<div class="tip" id="fs104">val loop : x:int -&gt; Async&lt;unit&gt;<br /><br />Full name: Library-frameworks.loop</div>
+<div class="tip" id="fs105">property Inverted.Game.IsRunning: bool</div>
+<div class="tip" id="fs106">val evt : Choice&lt;unit,DrawingContext&gt;</div>
+<div class="tip" id="fs107">static member Async.AwaitObservable : ev1:System.IObservable&lt;&#39;T1&gt; -&gt; Async&lt;&#39;T1&gt;<br /><em><br /><br />&#160;Creates an asynchronous workflow that will be resumed when the <br />&#160;specified observables produces a value. The workflow will return <br />&#160;the value produced by the observable.</em><br />static member Async.AwaitObservable : ev1:System.IObservable&lt;&#39;T1&gt; * ev2:System.IObservable&lt;&#39;T2&gt; -&gt; Async&lt;Choice&lt;&#39;T1,&#39;T2&gt;&gt;<br /><em><br /><br />&#160;Creates an asynchronous workflow that will be resumed when the <br />&#160;first of the specified two observables produces a value. The <br />&#160;workflow will return a Choice value that can be used to identify<br />&#160;the observable that produced the value.</em><br />static member Async.AwaitObservable : ev1:System.IObservable&lt;&#39;T1&gt; * ev2:System.IObservable&lt;&#39;T2&gt; * ev3:System.IObservable&lt;&#39;T3&gt; -&gt; Async&lt;Choice&lt;&#39;T1,&#39;T2,&#39;T3&gt;&gt;<br /><em><br /><br />&#160;Creates an asynchronous workflow that will be resumed when the <br />&#160;first of the specified three observables produces a value. The <br />&#160;workflow will return a Choice value that can be used to identify<br />&#160;the observable that produced the value.</em><br />static member Async.AwaitObservable : ev1:System.IObservable&lt;&#39;T1&gt; * ev2:System.IObservable&lt;&#39;T2&gt; * ev3:System.IObservable&lt;&#39;T3&gt; * ev4:System.IObservable&lt;&#39;T4&gt; -&gt; Async&lt;Choice&lt;&#39;T1,&#39;T2,&#39;T3,&#39;T4&gt;&gt;<br /><em><br /><br />&#160;Creates an asynchronous workflow that will be resumed when the <br />&#160;first of the specified four observables produces a value. The <br />&#160;workflow will return a Choice value that can be used to identify<br />&#160;the observable that produced the value.</em></div>
+<div class="tip" id="fs108">property Inverted.Game.Update: IEvent&lt;unit&gt;</div>
+<div class="tip" id="fs109">property Inverted.Game.Draw: IEvent&lt;DrawingContext&gt;</div>
+<div class="tip" id="fs110">union case Choice.Choice1Of2: &#39;T1 -&gt; Choice&lt;&#39;T1,&#39;T2&gt;</div>
+<div class="tip" id="fs111">union case Choice.Choice2Of2: &#39;T2 -&gt; Choice&lt;&#39;T1,&#39;T2&gt;</div>
+<div class="tip" id="fs112">val startGame : draw:(&#39;a -&gt; DrawingContext -&gt; unit) -&gt; update:(&#39;a -&gt; &#39;a) -&gt; init:&#39;a -&gt; Async&lt;unit&gt;<br /><br />Full name: Library-frameworks.startGame</div>
+<div class="tip" id="fs113">val draw : (&#39;a -&gt; DrawingContext -&gt; unit)</div>
+<div class="tip" id="fs114">val update : (&#39;a -&gt; &#39;a)</div>
+<div class="tip" id="fs115">val init : &#39;a</div>
+<div class="tip" id="fs116">val game : Inverted.Game</div>
+<div class="tip" id="fs117">val loop : (&#39;a -&gt; Async&lt;unit&gt;)</div>
+<div class="tip" id="fs118">val x : &#39;a</div>
+<div class="tip" id="fs119">val toFrame : matrix:&#39;a -&gt; &#39;b<br /><br />Full name: Library-frameworks.Matrix.toFrame</div>
+<div class="tip" id="fs120">val matrix : &#39;a</div>
+<div class="tip" id="fs121">module Frame<br /><br />from Library-frameworks</div>
+<div class="tip" id="fs122">val toMatrix : frame:&#39;a -&gt; &#39;b<br /><br />Full name: Library-frameworks.Frame.toMatrix</div>
+<div class="tip" id="fs123">val frame : &#39;a</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2flibrary-frameworks%2f&amp;text=Library+patterns%3a+Why+frameworks+are+evilvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2015%2flibrary-frameworks%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2flibrary-frameworks%2f&title=Library+patterns%3a+Why+frameworks+are+evil">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Library%20patterns%3a%20Why%20frameworks%20are%20evil&body=%20This%20article%20continues%20my%20mini-series%20on%20functional%20library%20design.%20Previously%2c%20I%20discussed%20why%20your%20library%20should%20provide%20multiple%20levels%20of%20abstraction.%20Today%2c%20we%20look%20at%20composability%20and%20avoiding%20callbacks.%20These%20two%20often%20go%20together%20-%20frameworks%20are%20based%20on%20callbacks%20and%20are%20not%20composable%2c%20while%20good%20libraries%20avoid%20callbacks%20and%20compose%20well.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2015%2flibrary-frameworks%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 3 March 2015, 4:13 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/open-source/">open source</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

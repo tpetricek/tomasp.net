@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Comparing date range handling in C# and F# - Tomas Petricek</title>
+
+  <meta name="description" content=" I was recently working on some code for handling data ranges and I wrote initial version in C#. Later, I realized that I needed an F# version, so I went through the process of rewriting a simple function from C# to F#. This blog post compares the two versions." />
+  <meta name="keywords" content="f#, c#, deedle, linq, functional programming, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Comparing date range handling in C# and F#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2015/restricting-ranges/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2015/restricting-ranges/card.png" />
+  <meta property="og:description" content=" I was recently working on some code for handling data ranges and I wrote initial version in C#. Later, I realized that I needed an F# version, so I went through the process of rewriting a simple function from C# to F#. This blog post compares the two versions." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Comparing date range handling in C# and F#" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2015/restricting-ranges/card.png" />
+  <meta name="twitter:description" content=" I was recently working on some code for handling data ranges and I wrote initial version in C#. Later, I realized that I needed an F# version, so I went through the process of rewriting a simple function from C# to F#. This blog post compares the two versions." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Comparing date range handling in C# and F#",
+    "headline": "Comparing date range handling in C# and F#",
+  	"description": " I was recently working on some code for handling data ranges and I wrote initial version in C#. Later, I realized that I needed an F# version, so I went through the process of rewriting a simple function from C# to F#. This blog post compares the two versions.",
+  	"url": "http://tomasp.net/blog/2015/restricting-ranges/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2015-04-22T16:55:20.5498839+01:00",
+  	"datePublished": "2015-04-22T16:55:20.5498839+01:00",
+    "dateModified": "2015-04-22T16:55:20.5498839+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2015/restricting-ranges/",
+  	"image": "http://tomasp.net/blog/2015/restricting-ranges/card.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2015/restricting-ranges/card.png",
+  	"keywords": ["f#", "c#", "deedle", "linq", "functional programming",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Comparing date range handling in C# and F#</h1>
+<p>I was recently working on some code for handling date ranges in
+<a href="http://github.com/blueMountainCapital/Deedle">Deedle</a>. Although Deedle is written in F#,
+I also wrote some internal integration code in C#. After doing that, I realized that the
+code I wrote is actually reusable and should be a part of Deedle itself and so I went through
+the process of rewriting a simple function from (fairly functional) C# to F#. This is a small
+(and by no means representative!) example, but I think it nicely shows some of the reasons why
+I like F#, so I thought I'd share it.</p>
+<h2>The problem</h2>
+<p>One thing that we are adding to Deedle is a "BigDeedle" implementation of internal data
+structures. The idea is that you can load very big frames and series without actually loading
+all data into memory.</p>
+<p>When you perform slicing on a large series and then merge some of the parts of the series
+(say, years 2010, 2012 and 2014), you end up with a series that combines a
+couple of chunks. If you then restrict the series (say, from June 2012 to June 2014), you
+need to restrict the ranges of the chunks:</p>
+<img src="drawing.png" alt="Demonstration" style="margin:15px 0px 15px 25px" />
+<p>As the diagram shows, this is just a matter of iterating over the chunks, keeping those
+in the range, dropping those outside of the range and restrictingthe boundaries of the other
+chunks. So, let's start with the C# version I wrote.</p>
+<h2>Restricting ranges in C#</h2>
+<p>To keep the sample self-contained, I'll also include a simple definition of a <code>Date</code> type
+that I was using in my experiments. This is not the key part, but it is worth showing. A
+date is essentially an integer - a number of days since the beginning of the universe (or
+some other important milestone):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="c">/// &lt;summary&gt;</span>
+<span class="c">/// A date as a number of days since the beginning</span>
+<span class="c">/// &lt;/summary&gt;</span>
+<span class="k">class</span> Date {
+  <span class="k">public</span> <span class="k">int</span> Offset { get; set; }
+  <span class="k">public</span> <span class="k">static</span> <span class="k">bool</span> <span class="k">operator</span> <span class="o">&lt;</span><span class="o">=</span>(Date d<span class="n">1</span>, Date d<span class="n">2</span>) { <span class="k">return</span> d<span class="n">1</span>.Offset <span class="o">&lt;</span><span class="o">=</span> d<span class="n">2</span>.Offset; }
+  <span class="k">public</span> <span class="k">static</span> <span class="k">bool</span> <span class="k">operator</span> <span class="o">&gt;</span><span class="o">=</span>(Date d<span class="n">1</span>, Date d<span class="n">2</span>) { <span class="k">return</span> d<span class="n">1</span>.Offset <span class="o">&gt;</span><span class="o">=</span> d<span class="n">2</span>.Offset; }
+  <span class="k">public</span> <span class="k">static</span> <span class="k">bool</span> <span class="k">operator</span> <span class="o">&lt;</span>(Date d<span class="n">1</span>, Date d<span class="n">2</span>) { <span class="k">return</span> d<span class="n">1</span>.Offset <span class="o">&lt;</span> d<span class="n">2</span>.Offset; }
+  <span class="k">public</span> <span class="k">static</span> <span class="k">bool</span> <span class="k">operator</span> <span class="o">&gt;</span>(Date d<span class="n">1</span>, Date d<span class="n">2</span>) { <span class="k">return</span> d<span class="n">1</span>.Offset <span class="o">&gt;</span> d<span class="n">2</span>.Offset; }
+}
+<span class="c">/// &lt;summary&gt;</span>
+<span class="c">/// An array of ranges represented as date pairs</span>
+<span class="c">/// &lt;/summary&gt;</span>
+<span class="k">class</span> Ranges {
+  <span class="k">public</span> Tuple&lt;Date, Date&gt;[] Ranges { get; set; }
+}
+</code></pre></td></tr></table>
+<p>The <code>Date</code> type defines a couple of custom operators so that we can compare dates (I only defined
+those that I needed). The <code>Ranges</code> type is the simplest possible wrapper over an array of <code>Date</code>
+pairs. The type is internal, so I was just using tuples to save some typing.</p>
+<p>Next, let's have a look at the <code>RestrictRanges</code> function. This takes <code>Ranges</code> together with
+lower and upper bound of the restriction. It then iterates over the ranges using <code>SelectMany</code>
+and returns the range unmodified (if it is within the restriction), skips it (if it is outside)
+or adjusts its lower and upper bounds:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="c">/// &lt;summary&gt;</span>
+<span class="c">/// Restrict the specified collection of ranges </span>
+<span class="c">/// according to the provided restriction range</span>
+<span class="c">/// &lt;/summary&gt;</span>
+<span class="k">static</span> Ranges RestrictRanges(Ranges ranges, Date loRestr, Date hiRestr)
+{
+  <span class="k">var</span> newRanges <span class="o">=</span> ranges.Ranges.SelectMany(range <span class="o">=</span><span class="o">&gt;</span>
+  {
+    <span class="k">if</span> (range.Item<span class="n">1</span> <span class="o">&gt;</span><span class="o">=</span> loRestr <span class="o">&amp;</span><span class="o">&amp;</span> range.Item<span class="n">2</span> <span class="o">&lt;</span><span class="o">=</span> hiRestr)
+      <span class="k">return</span> <span class="k">new</span>[] { range };
+    <span class="k">else</span> <span class="k">if</span> (range.Item<span class="n">2</span> <span class="o">&lt;</span> loRestr <span class="o">|</span><span class="o">|</span> range.Item<span class="n">1</span> <span class="o">&gt;</span> hiRestr)
+      <span class="k">return</span> <span class="k">new</span> Tuple&lt;Date, Date&gt;[<span class="n">0</span>];
+    <span class="k">else</span>
+      <span class="k">return</span> <span class="k">new</span>[] { Tuple.Create
+          ( range.Item<span class="n">1</span> <span class="o">&gt;</span> loRestr <span class="o">?</span> range.Item<span class="n">1</span> <span class="o">:</span> loRestr, 
+            range.Item<span class="n">2</span> <span class="o">&lt;</span> hiRestr <span class="o">?</span> range.Item<span class="n">2</span> <span class="o">:</span> hiRestr ) };
+  }).ToArray();
+  <span class="k">return</span> <span class="k">new</span> Ranges { Ranges <span class="o">=</span> newRanges };
+}
+</code></pre></td></tr></table>
+<p>This is fairly simple and readable piece of code. We might be able to make it a bit nicer if we
+used <em>iterators</em>, but that would require a separate method (because we are returning <code>Ranges</code>
+and not <code>IEnumerable&lt;T&gt;</code> here). We could also use a named type rather than tuple (to replace
+<code>Item1</code> and <code>Item2</code> with <code>Lower</code> and <code>Upper</code>), which would make it a bit more readable, but it
+wouldn't change the structure. Before discussing the code further, let's look at the F# version.</p>
+<h2>Restricting ranges in F#</h2>
+<p>As with the C# version, we need to start with type definitions. This is not really the important
+part, but I wanted to have a self-contained sample for the blog, so I'm including those too:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// A date as a number of days since the beginning</span>
+<span class="k">type</span> <span class="t">Date</span> <span class="o">=</span> { <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">Offset</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="t">int</span> }
+<span class="c">/// An array of ranges represented as date pairs</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">Ranges</span> <span class="o">=</span> { <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">Ranges</span> <span class="o">:</span> (<span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="t">Date</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">Date</span>)[] }
+</code></pre></td>
+</tr>
+</table>
+<p>If we're happy to use a simple F# record, then this is all we need. For records, the compiler
+automatically provides structural equality and structural comparison. This means that we can
+write <code>{ Offset = 123 } &lt;= { Offset = 125 }</code> straight away and the result is <code>true</code>. We can also
+omit the <code>&lt;summary&gt;</code> tag in the comment (F# adds it automatically).</p>
+<p>This is not really the main thing though. In practice, I would use records for simple types that
+do not have complex internal logic - and so I might start with the above <code>Date</code> record, but later
+turn it into something that is closer to the C# type with explicit definitions. Nevertheless, it
+is nice that we can write simple record in the first step and F# gets all the defaults right
+(makes it immutable, adds equality and comparison).</p>
+<p>The more interesting thing is the <code>restrictRanges</code> function. We follow <em>exactly</em> the same logic
+as before (even using <code>Array.collect</code> which is an equivalent of <code>SelectMany</code>):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Restrict the specified collection of ranges </span>
+<span class="c">/// according to the provided restriction range</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="f">restrictRanges</span> (<span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="i">loRestr</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="t">Date</span>, <span onmouseout="hideTip(event, 'fs8', 10)" onmouseover="showTip(event, 'fs8', 10)" class="i">hiRestr</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs5', 11)" onmouseover="showTip(event, 'fs5', 11)" class="t">Date</span>) <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="i">ranges</span> <span class="o">=</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="i">newRanges</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs9', 14)" onmouseover="showTip(event, 'fs9', 14)" class="i">ranges</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 15)" onmouseover="showTip(event, 'fs11', 15)" class="i">Ranges</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs12', 16)" onmouseover="showTip(event, 'fs12', 16)" class="t">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 17)" onmouseover="showTip(event, 'fs13', 17)" class="f">collect</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs14', 18)" onmouseover="showTip(event, 'fs14', 18)" class="i">lo</span>, <span onmouseout="hideTip(event, 'fs15', 19)" onmouseover="showTip(event, 'fs15', 19)" class="i">hi</span>) <span class="k">-&gt;</span>
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs14', 20)" onmouseover="showTip(event, 'fs14', 20)" class="i">lo</span> <span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 21)" onmouseover="showTip(event, 'fs7', 21)" class="i">loRestr</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">hi</span> <span class="o">&lt;=</span> <span onmouseout="hideTip(event, 'fs8', 23)" onmouseover="showTip(event, 'fs8', 23)" class="i">hiRestr</span> <span class="k">then</span> [| <span onmouseout="hideTip(event, 'fs14', 24)" onmouseover="showTip(event, 'fs14', 24)" class="i">lo</span>, <span onmouseout="hideTip(event, 'fs15', 25)" onmouseover="showTip(event, 'fs15', 25)" class="i">hi</span> |]
+        <span class="k">elif</span> <span onmouseout="hideTip(event, 'fs15', 26)" onmouseover="showTip(event, 'fs15', 26)" class="i">hi</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs7', 27)" onmouseover="showTip(event, 'fs7', 27)" class="i">loRestr</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'fs14', 28)" onmouseover="showTip(event, 'fs14', 28)" class="i">lo</span> <span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs8', 29)" onmouseover="showTip(event, 'fs8', 29)" class="i">hiRestr</span> <span class="k">then</span> [| |]
+        <span class="k">else</span> [| <span onmouseout="hideTip(event, 'fs16', 30)" onmouseover="showTip(event, 'fs16', 30)" class="f">max</span> <span onmouseout="hideTip(event, 'fs14', 31)" onmouseover="showTip(event, 'fs14', 31)" class="i">lo</span> <span onmouseout="hideTip(event, 'fs7', 32)" onmouseover="showTip(event, 'fs7', 32)" class="i">loRestr</span>, <span onmouseout="hideTip(event, 'fs17', 33)" onmouseover="showTip(event, 'fs17', 33)" class="f">min</span> <span onmouseout="hideTip(event, 'fs15', 34)" onmouseover="showTip(event, 'fs15', 34)" class="i">hi</span> <span onmouseout="hideTip(event, 'fs8', 35)" onmouseover="showTip(event, 'fs8', 35)" class="i">hiRestr</span> |] )
+  { <span onmouseout="hideTip(event, 'fs3', 36)" onmouseover="showTip(event, 'fs3', 36)" class="i">Ranges</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 37)" onmouseover="showTip(event, 'fs10', 37)" class="i">newRanges</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>Alternatively, we could use sequence expressions (which I prefer in this case) and rewrite replace
+the <code>Array.collect</code> function with the <code>[| .. |]</code> block, which gives us:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Restrict the specified collection of ranges </span>
+<span class="c">/// according to the provided restriction range</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs18', 38)" onmouseover="showTip(event, 'fs18', 38)" class="f">restrictRangesArrExpr</span> (<span onmouseout="hideTip(event, 'fs7', 39)" onmouseover="showTip(event, 'fs7', 39)" class="i">loRestr</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs5', 40)" onmouseover="showTip(event, 'fs5', 40)" class="t">Date</span>, <span onmouseout="hideTip(event, 'fs8', 41)" onmouseover="showTip(event, 'fs8', 41)" class="i">hiRestr</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs5', 42)" onmouseover="showTip(event, 'fs5', 42)" class="t">Date</span>) <span onmouseout="hideTip(event, 'fs9', 43)" onmouseover="showTip(event, 'fs9', 43)" class="i">ranges</span> <span class="o">=</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 44)" onmouseover="showTip(event, 'fs10', 44)" class="i">newRanges</span> <span class="o">=</span> 
+    [| <span class="k">for</span> <span onmouseout="hideTip(event, 'fs14', 45)" onmouseover="showTip(event, 'fs14', 45)" class="i">lo</span>, <span onmouseout="hideTip(event, 'fs15', 46)" onmouseover="showTip(event, 'fs15', 46)" class="i">hi</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs9', 47)" onmouseover="showTip(event, 'fs9', 47)" class="i">ranges</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 48)" onmouseover="showTip(event, 'fs11', 48)" class="i">Ranges</span> <span class="k">do</span>
+        <span class="k">if</span> <span class="i">lo</span> <span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 49)" onmouseover="showTip(event, 'fs7', 49)" class="i">loRestr</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'fs15', 50)" onmouseover="showTip(event, 'fs15', 50)" class="i">hi</span> <span class="o">&lt;=</span> <span onmouseout="hideTip(event, 'fs8', 51)" onmouseover="showTip(event, 'fs8', 51)" class="i">hiRestr</span> <span class="k">then</span> <span class="k">yield</span> <span class="i">lo</span>, <span onmouseout="hideTip(event, 'fs15', 52)" onmouseover="showTip(event, 'fs15', 52)" class="i">hi</span>
+        <span class="k">elif</span> <span onmouseout="hideTip(event, 'fs15', 53)" onmouseover="showTip(event, 'fs15', 53)" class="i">hi</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs7', 54)" onmouseover="showTip(event, 'fs7', 54)" class="i">loRestr</span> <span class="o">||</span> <span class="i">lo</span> <span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs8', 55)" onmouseover="showTip(event, 'fs8', 55)" class="i">hiRestr</span> <span class="k">then</span> ()
+        <span class="k">else</span> <span class="k">yield</span> <span onmouseout="hideTip(event, 'fs16', 56)" onmouseover="showTip(event, 'fs16', 56)" class="f">max</span> <span class="i">lo</span> <span onmouseout="hideTip(event, 'fs7', 57)" onmouseover="showTip(event, 'fs7', 57)" class="i">loRestr</span>, <span onmouseout="hideTip(event, 'fs17', 58)" onmouseover="showTip(event, 'fs17', 58)" class="f">min</span> <span onmouseout="hideTip(event, 'fs15', 59)" onmouseover="showTip(event, 'fs15', 59)" class="i">hi</span> <span onmouseout="hideTip(event, 'fs8', 60)" onmouseover="showTip(event, 'fs8', 60)" class="i">hiRestr</span> |]
+  { <span onmouseout="hideTip(event, 'fs3', 61)" onmouseover="showTip(event, 'fs3', 61)" class="i">Ranges</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 62)" onmouseover="showTip(event, 'fs10', 62)" class="i">newRanges</span> }
+</code></pre></td>
+</tr>
+</table>
+<h2>Comparing the two versions</h2>
+<p>It is certainly a matter of taste, but I was quite surprised by how different the F# version
+looks - both versions implement the same logic and both use functional programming style, but
+there are a few little details that (in my opinion) make the F# version nicer.</p>
+<ul>
+<li>
+<p>Pattern matching on tuples really helps here. We can just write <code>(lo, hi)</code> as the function
+parameter and then use the two variables rather than accessing the items using
+<code>range.Item1</code> and <code>range.Item2</code> (or, if we had a named type <code>range.Lower</code> and <code>range.Upper</code>).
+As we are using the variables locally (on just 4 lines of code), I think the additional
+verbosity is not really helping readablity in this case.</p>
+</li>
+<li>
+<p>Type inference and array literals mean that we can just write <code>[| |]</code> to return an empty
+array. This is quite a simplification from <code>new Tuple&lt;Date, Date&gt;[0]</code>, which is what we
+had to write before. This is even easier with sequence expressions, where we just do nothing
+using <code>()</code> and use <code>yield</code> in other branches.</p>
+</li>
+<li>
+<p>The fact that we can use <code>Array.collect</code> rather than using <code>SelectMany</code> on <code>IEnumerable&lt;T&gt;</code>
+is a nice little detail too - we do not have to explicitly convert the result to array using
+<code>ToArray</code>.</p>
+</li>
+<li>
+<p>Finally, the <code>max</code> and <code>min</code> functions in F# are <a href="http://tomasp.net/blog/fsharp-generic-numeric.aspx/">generic numerical
+functions</a>, which means that they work
+on any type that supports comparison. They are also <code>inline</code> and so they are fast and do not
+require boxing (which would be the case if you wrote a function like this in C# - probably a
+reason why <code>Math.Max</code> does not have a generic overload...).</p>
+</li>
+</ul>
+<p>For me, the interesting thing about this comparison is that it is not looking at any big ideas.
+It is comparing two functions written in the same style, using pretty much the same code. But
+even then, the using F# gives us a couple of little benefits that make the code (I think) nicer.</p>
+<p>There is no fundamental reason why C# could not do any of these in a future version. In fact, I
+think that pattern matching on tuples gets mentioned quite often. But this were just 4 "little
+things" that I found in one 7-line function...</p>
+<p>It might also be the case that I'm more used to writing and reading F# - this is, of course, true -
+but if we look at what we deleted, I think it was mostly noise: things like <code>new [] { .. }</code>,
+<code>Tuple&lt;Date, Date&gt;</code>, <code>range.Item1 &gt; loRestr ? .. : ..</code>, <code>ToArray()</code>, <code>.Item1</code> and <code>.Item2</code> are
+all about the implementation details and not about the function logic.</p>
+
+
+<div class="tip" id="fs1">Date.Offset: int</div>
+<div class="tip" id="fs2">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs3">type Ranges =<br />&#160;&#160;{Ranges: (Date * Date) [];}<br /><br />Full name: Restricting-ranges.Ranges<br /><em><br /><br />&#160;An array of ranges represented as date pairs</em></div>
+<div class="tip" id="fs4">Multiple items<br />Ranges.Ranges: (Date * Date) []<br /><br />--------------------<br />type Ranges =<br />&#160;&#160;{Ranges: (Date * Date) [];}<br /><br />Full name: Restricting-ranges.Ranges<br /><em><br /><br />&#160;An array of ranges represented as date pairs</em></div>
+<div class="tip" id="fs5">type Date =<br />&#160;&#160;{Offset: int;}<br /><br />Full name: Restricting-ranges.Date<br /><em><br /><br />&#160;A date as a number of days since the beginning</em></div>
+<div class="tip" id="fs6">val restrictRanges : loRestr:Date * hiRestr:Date -&gt; ranges:Ranges -&gt; Ranges<br /><br />Full name: Restricting-ranges.restrictRanges<br /><em><br /><br />&#160;Restrict the specified collection of ranges <br />&#160;according to the provided restriction range</em></div>
+<div class="tip" id="fs7">val loRestr : Date</div>
+<div class="tip" id="fs8">val hiRestr : Date</div>
+<div class="tip" id="fs9">val ranges : Ranges</div>
+<div class="tip" id="fs10">val newRanges : (Date * Date) []</div>
+<div class="tip" id="fs11">Ranges.Ranges: (Date * Date) []</div>
+<div class="tip" id="fs12">module Array<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs13">val collect : mapping:(&#39;T -&gt; &#39;U []) -&gt; array:&#39;T [] -&gt; &#39;U []<br /><br />Full name: Microsoft.FSharp.Collections.Array.collect</div>
+<div class="tip" id="fs14">val lo : Date</div>
+<div class="tip" id="fs15">val hi : Date</div>
+<div class="tip" id="fs16">val max : e1:&#39;T -&gt; e2:&#39;T -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.max</div>
+<div class="tip" id="fs17">val min : e1:&#39;T -&gt; e2:&#39;T -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.min</div>
+<div class="tip" id="fs18">val restrictRangesArrExpr : loRestr:Date * hiRestr:Date -&gt; ranges:Ranges -&gt; Ranges<br /><br />Full name: Restricting-ranges.restrictRangesArrExpr<br /><em><br /><br />&#160;Restrict the specified collection of ranges <br />&#160;according to the provided restriction range</em></div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2frestricting-ranges%2f&amp;text=Comparing+date+range+handling+in+C%23+and+F%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2015%2frestricting-ranges%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2frestricting-ranges%2f&title=Comparing+date+range+handling+in+C%23+and+F%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Comparing%20date%20range%20handling%20in%20C%23%20and%20F%23&body=%20I%20was%20recently%20working%20on%20some%20code%20for%20handling%20data%20ranges%20and%20I%20wrote%20initial%20version%20in%20C%23.%20Later%2c%20I%20realized%20that%20I%20needed%20an%20F%23%20version%2c%20so%20I%20went%20through%20the%20process%20of%20rewriting%20a%20simple%20function%20from%20C%23%20to%20F%23.%20This%20blog%20post%20compares%20the%20two%20versions.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2015%2frestricting-ranges%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 22 April 2015, 4:55 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/deedle/">deedle</a>, <a
+          href="/blog/tag/linq/">linq</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

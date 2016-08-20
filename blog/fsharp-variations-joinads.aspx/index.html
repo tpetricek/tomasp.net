@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Variations in F#: Research compiler with Joinads and more! - Tomas Petricek</title>
+
+  <meta name="description" content=" Joinads are a research extension of the F# language. They simplify conrurrent programming with tasks, reactive programming with events, but can be also used for other types of computations. This article introduces the extension, which is now available, based on the open-source source-drop of F#." />
+  <meta name="keywords" content="research, f#, joinads, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Variations in F#: Research compiler with Joinads and more!" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-variations-joinads.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Joinads are a research extension of the F# language. They simplify conrurrent programming with tasks, reactive programming with events, but can be also used for other types of computations. This article introduces the extension, which is now available, based on the open-source source-drop of F#." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Variations in F#: Research compiler with Joinads and more!" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Joinads are a research extension of the F# language. They simplify conrurrent programming with tasks, reactive programming with events, but can be also used for other types of computations. This article introduces the extension, which is now available, based on the open-source source-drop of F#." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Variations in F#: Research compiler with Joinads and more!",
+    "headline": "Variations in F#: Research compiler with Joinads and more!",
+  	"description": " Joinads are a research extension of the F# language. They simplify conrurrent programming with tasks, reactive programming with events, but can be also used for other types of computations. This article introduces the extension, which is now available, based on the open-source source-drop of F#.",
+  	"url": "http://tomasp.net/blog/fsharp-variations-joinads.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2011-03-25T00:04:08.0000000",
+  	"datePublished": "2011-03-25T00:04:08.0000000",
+    "dateModified": "2011-03-25T00:04:08.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-variations-joinads.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["research", "f#", "joinads",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Variations in F#: Research compiler with Joinads and more!</h1>
+<p>In this article, I'll write about an experimental extension for F# that I call 
+  <em>joinads</em>. If you're following my blog, you may have seen an 
+  <a href="http://tomasp.net/blog/match-bang-paper.aspx">academic paper</a> [<a href="#jofshl">1</a>] that
+  I wrote about it some time ago. Anyway, the motivation for the extension
+  is that there are many useful programming models for reactive, concurrent and parallel programming 
+  that would deserve some syntactic support in the programming language.</p>
+
+<p>For example, when programming with <em>futures</em> (the <code>Task&lt;T&gt;</code> type), 
+  you may want to implement logical "or" operator for tasks that returns <code>true</code>
+  immediately when the first task completes returning <code>true</code>. When programming with 
+  <em>events</em> (the <code>IObservable&lt;T&gt;</code> type),
+  we'd like to wait for the event that happens first. Finally, when programming using <em>agents</em>,
+  we sometimes need to wait only for certain types of messages. All of these problems can
+  be solved, but require the use of (sometimes fairly complicated) functions. Joinads make
+  it possible to solve them directly using the <code>match!</code> syntax. For example, here
+  is the "or" operator for tasks:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'jofs1', 1)" onmouseover="showTip(event, 'jofs1', 1)" class="i">future</span> {
+<span class="l">2: </span>  <span class="k">match!</span> <span onmouseout="hideTip(event, 'jofs2', 2)" onmouseover="showTip(event, 'jofs2', 2)" class="i">after</span> <span class="n">100</span> <span class="k">true</span>, <span onmouseout="hideTip(event, 'jofs2', 3)" onmouseover="showTip(event, 'jofs2', 3)" class="i">after</span> <span class="n">1000</span> <span class="k">false</span> <span class="k">with</span>
+<span class="l">3: </span>  | <span class="o">!</span><span class="k">true</span>, _ <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span>
+<span class="l">4: </span>  | _, <span class="o">!</span><span class="k">true</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span>
+<span class="l">5: </span>  | <span class="o">!</span><span onmouseout="hideTip(event, 'jofs3', 4)" onmouseover="showTip(event, 'jofs3', 4)" class="i">a</span>, <span class="o">!</span><span onmouseout="hideTip(event, 'jofs4', 5)" onmouseover="showTip(event, 'jofs4', 5)" class="i">b</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'jofs3', 6)" onmouseover="showTip(event, 'jofs3', 6)" class="i">a</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'jofs4', 7)" onmouseover="showTip(event, 'jofs4', 7)" class="i">b</span> }</pre>
+
+<p>I'll write more about this example (and the implementation) in a later article. This article
+  focuses on the compiler extension itself. I created a first implementation of the idea above during
+  my <a href="http://tomasp.net/blog/internship-match-bang.aspx">internship with Don Syme at MSR Cambridge</a>,
+  but then changed it quite a bit when writing the academic paper mentioned above. However, I never released
+  the source code.
+</p>
+<p>Thanks to the <a href="http://blogs.msdn.com/b/dsyme/archive/2010/11/04/announcing-the-f-compiler-library-source-code-drop.aspx">open-source release of F#</a> it is now 
+  quite easy to modify the F# compiler and make the modifications available, so I decided I should 
+  finally release my F# extensions. I also recently <a href="http://tomasp.net/blog/idioms-in-linq.aspx">blogged</a>
+  <a href="http://tomasp.net/blog/formlets-in-linq.aspx">about</a> [<a href="#jofshl">3</a>, <a href="#jofshl">4</a>] encoding <em>idioms</em> (also called
+  <em>applicative functors</em>) in C#. I was wondering how to do that in F# and so I also created a simple
+  extension computations based on this abstraction. The support for <em>idioms</em> is just an experiment, but it could 
+  be useful, for example, for programming with formlets. You'll find more about it at the end of the 
+  article.
+</p>
+<p>You can find the <a href="https://github.com/tpetricek/FSharp.Extensions">source code on my GitHub</a> 
+  (there is also a link compiled binaries at the end of the article).
+  The source code is cloned from an F# Mono repository, which means that it should build on Linux and 
+  MacOS too. </p>
+
+<h3>Table of contents</h3>
+<ul>
+  <li><a href="#fsjol1">Creating a simple joinad</a></li>
+  <li><a href="#fsjol2">Translation of joinads</a></li>
+  <li><a href="#fsjol3">Creating a simple idiom</a></li>
+  <li><a href="#fsjol4">Translation of idioms</a></li>
+  <li><a href="#fsjol5">Summary &amp; downloads</a></li>
+</ul>
+
+<p><em>NOTE: This extension is just a research project. As far as I know, there are currently no plans to include it in 
+  some future version of the F# compiler. If you like it, download it, play with it and write about it
+  (and send requests to support the idea to the F# team :-)).</em></p>
+
+<h2>Creating a simple joinad<a name="fsjol1">&#160;</a></h2>
+<p>The version implemented in the prototype is slightly different to the one described in <a type="external" href="http://tomasp.net/blog/match-bang-paper.aspx">my earlier paper</a>,
+  but the principle is the same. If you want to use the <code>match!</code> construct for 
+  working with your computations, you need to extend the computation builder type with 
+  a few members. The members have quite straightforward type signature, and so it shouldn't be 
+  difficult to implement them. </p>
+
+<p>In this article, I implement a computation builder for working with F# <code>option&lt;'T&gt;</code>
+  type. This is a slightly oversimplified example. We can use <code>match!</code> to write patterns
+  that specify that a monadic value should contain a certain actual value. When working with options,
+  this means the same thing as matching the monadic (option) value against <code>Some</code>. However,
+  the example demonstrates the idea and I'll write about more exciting examples in the future.</p>
+
+<h3>Implementing Maybe builder</h3>
+<p>To implement computation builder that supports the <code>match!</code> construct, we create a
+  usual F# computation builder with the standard members that are used by F# today (you need at least
+  <code>Bind</code>, <code>Return</code> and <code>Delay</code>) and then add three additional members.
+  The additional members are <code>Fail</code>, <code>Choose</code> and <code>Merge</code>. Take a look 
+  at the implementation and we'll discuss them later (if you place the mouse pointer over the identifier,
+  you'll see the type, which is quite useful for understanding the operations): </p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'jofs5', 8)" onmouseover="showTip(event, 'jofs5', 8)" class="i">MaybeBuilder</span>() <span class="o">=</span>
+<span class="l"> 2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Standard</span><span class="c"> </span><span class="c">monadic</span><span class="c"> </span><span class="c">&#39;bind&#39;,</span><span class="c"> </span><span class="c">&#39;return&#39;</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">&#39;zero&#39;</span>
+<span class="l"> 3: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 9)" onmouseover="showTip(event, 'jofs6', 9)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs7', 10)" onmouseover="showTip(event, 'jofs7', 10)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'jofs8', 11)" onmouseover="showTip(event, 'jofs8', 11)" class="i">v</span>, <span onmouseout="hideTip(event, 'jofs9', 12)" onmouseover="showTip(event, 'jofs9', 12)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs10', 13)" onmouseover="showTip(event, 'jofs10', 13)" class="i">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs11', 14)" onmouseover="showTip(event, 'jofs11', 14)" class="i">bind</span> <span onmouseout="hideTip(event, 'jofs9', 15)" onmouseover="showTip(event, 'jofs9', 15)" class="i">f</span> <span onmouseout="hideTip(event, 'jofs8', 16)" onmouseover="showTip(event, 'jofs8', 16)" class="i">v</span>
+<span class="l"> 4: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 17)" onmouseover="showTip(event, 'jofs6', 17)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs12', 18)" onmouseover="showTip(event, 'jofs12', 18)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs13', 19)" onmouseover="showTip(event, 'jofs13', 19)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs14', 20)" onmouseover="showTip(event, 'jofs14', 20)" class="i">Some</span> <span onmouseout="hideTip(event, 'jofs13', 21)" onmouseover="showTip(event, 'jofs13', 21)" class="i">a</span>
+<span class="l"> 5: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 22)" onmouseover="showTip(event, 'jofs6', 22)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs15', 23)" onmouseover="showTip(event, 'jofs15', 23)" class="i">ReturnFrom</span>(<span onmouseout="hideTip(event, 'jofs16', 24)" onmouseover="showTip(event, 'jofs16', 24)" class="i">o</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs16', 25)" onmouseover="showTip(event, 'jofs16', 25)" class="i">o</span>
+<span class="l"> 6: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 26)" onmouseover="showTip(event, 'jofs6', 26)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs17', 27)" onmouseover="showTip(event, 'jofs17', 27)" class="i">Fail</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs18', 28)" onmouseover="showTip(event, 'jofs18', 28)" class="i">None</span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Combine</span><span class="c"> </span><span class="c">two</span><span class="c"> </span><span class="c">options</span><span class="c"> </span><span class="c">into</span><span class="c"> </span><span class="c">option</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">tuple</span><span class="c"> </span>
+<span class="l"> 9: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 29)" onmouseover="showTip(event, 'jofs6', 29)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs19', 30)" onmouseover="showTip(event, 'jofs19', 30)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'jofs20', 31)" onmouseover="showTip(event, 'jofs20', 31)" class="i">v1</span>, <span onmouseout="hideTip(event, 'jofs21', 32)" onmouseover="showTip(event, 'jofs21', 32)" class="i">v2</span>) <span class="o">=</span> 
+<span class="l">10: </span>    <span class="k">match</span> <span onmouseout="hideTip(event, 'jofs20', 33)" onmouseover="showTip(event, 'jofs20', 33)" class="i">v1</span>, <span onmouseout="hideTip(event, 'jofs21', 34)" onmouseover="showTip(event, 'jofs21', 34)" class="i">v2</span> <span class="k">with</span>
+<span class="l">11: </span>    | <span onmouseout="hideTip(event, 'jofs14', 35)" onmouseover="showTip(event, 'jofs14', 35)" class="i">Some</span> <span onmouseout="hideTip(event, 'jofs22', 36)" onmouseover="showTip(event, 'jofs22', 36)" class="i">a</span>, <span onmouseout="hideTip(event, 'jofs14', 37)" onmouseover="showTip(event, 'jofs14', 37)" class="i">Some</span> <span onmouseout="hideTip(event, 'jofs23', 38)" onmouseover="showTip(event, 'jofs23', 38)" class="i">b</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs14', 39)" onmouseover="showTip(event, 'jofs14', 39)" class="i">Some</span> (<span onmouseout="hideTip(event, 'jofs22', 40)" onmouseover="showTip(event, 'jofs22', 40)" class="i">a</span>, <span onmouseout="hideTip(event, 'jofs23', 41)" onmouseover="showTip(event, 'jofs23', 41)" class="i">b</span>)
+<span class="l">12: </span>    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs18', 42)" onmouseover="showTip(event, 'jofs18', 42)" class="i">None</span>
+<span class="l">13: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Return</span><span class="c"> </span><span class="c">first</span><span class="c"> </span><span class="c">option</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">contains</span><span class="c"> </span><span class="c">value</span>
+<span class="l">14: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 43)" onmouseover="showTip(event, 'jofs6', 43)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs24', 44)" onmouseover="showTip(event, 'jofs24', 44)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'jofs25', 45)" onmouseover="showTip(event, 'jofs25', 45)" class="i">v1</span>, <span onmouseout="hideTip(event, 'jofs26', 46)" onmouseover="showTip(event, 'jofs26', 46)" class="i">v2</span>) <span class="o">=</span> 
+<span class="l">15: </span>    <span class="k">match</span> <span onmouseout="hideTip(event, 'jofs25', 47)" onmouseover="showTip(event, 'jofs25', 47)" class="i">v1</span> <span class="k">with</span> 
+<span class="l">16: </span>    | <span onmouseout="hideTip(event, 'jofs14', 48)" onmouseover="showTip(event, 'jofs14', 48)" class="i">Some</span>(<span onmouseout="hideTip(event, 'jofs27', 49)" onmouseover="showTip(event, 'jofs27', 49)" class="i">v1</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs14', 50)" onmouseover="showTip(event, 'jofs14', 50)" class="i">Some</span>(<span onmouseout="hideTip(event, 'jofs27', 51)" onmouseover="showTip(event, 'jofs27', 51)" class="i">v1</span>) 
+<span class="l">17: </span>    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs26', 52)" onmouseover="showTip(event, 'jofs26', 52)" class="i">v2</span>
+<span class="l">18: </span>
+<span class="l">19: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Creating</span><span class="c"> </span><span class="c">&amp;</span><span class="c"> </span><span class="c">executing</span><span class="c"> </span><span class="c">delayed</span><span class="c"> </span><span class="c">computations</span>
+<span class="l">20: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 53)" onmouseover="showTip(event, 'jofs6', 53)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs28', 54)" onmouseover="showTip(event, 'jofs28', 54)" class="i">Delay</span>(<span onmouseout="hideTip(event, 'jofs29', 55)" onmouseover="showTip(event, 'jofs29', 55)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs29', 56)" onmouseover="showTip(event, 'jofs29', 56)" class="i">f</span>
+<span class="l">21: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs6', 57)" onmouseover="showTip(event, 'jofs6', 57)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs30', 58)" onmouseover="showTip(event, 'jofs30', 58)" class="i">Run</span>(<span onmouseout="hideTip(event, 'jofs31', 59)" onmouseover="showTip(event, 'jofs31', 59)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs31', 60)" onmouseover="showTip(event, 'jofs31', 60)" class="i">f</span>()
+<span class="l">22: </span>
+<span class="l">23: </span><span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">an</span><span class="c"> </span><span class="c">instance</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">builder</span>
+<span class="l">24: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs32', 61)" onmouseover="showTip(event, 'jofs32', 61)" class="i">maybe</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'jofs5', 62)" onmouseover="showTip(event, 'jofs5', 62)" class="i">MaybeBuilder</span>()</pre>
+
+<p>The computation builder implements most of the operations in the usual way. The 
+  <code>Delay</code> operation can be implemented in two ways. For computations that can wrap a function
+  <code>unit -> 'T</code> into the computation value <code>M&lt;'T&gt;</code> (without running it), we 
+  coudl wrap the function in <code>Delay</code> and don't include <code>Run</code>. I'm using another
+  approach which is to return the function passed to <code>Delay</code> as it is (as a function) and
+  add <code>Run</code> member that runs the function.</p>
+
+<p>The interesting members needed for the <code>match!</code> construct are:</p>
+
+<ul>
+<li style="margin-bottom:10px">The <code>Fail</code> operation creates a computation that never produces any value.
+  For options, this is the <code>None</code> value. (This is quite similar to the <code>mzero</code>
+  operation that exists in <code>MonadPlus</code> type class in Haskell)</li>
+
+<li style="margin-bottom:10px">The <code>Merge</code> operation has a type <code>M&lt;'T&gt; -&gt; M&lt;'U&gt; -&gt; M&lt;'T * 'U&gt;</code>. 
+  It takes two computations and returns a single computation that contains a tuple with 
+  the values. If any of the options passed as arguments is <code>None</code>, the result will also
+  be <code>None</code>. If both of the options are <code>Some</code>, then we can get both 
+  values and return a tuple wrapped in <code>Some</code>. For some computations including 
+  options, this operation can be implemented using <code>Bind</code> and <code>Return</code>. 
+  However, this doesn't work for <em>all</em> computation.</li>
+
+<li>Finally, the <code>Choose</code> operation has a type <code>M&lt;'T&gt; -&gt; M&lt;'T&gt; -&gt; M&lt;'T&gt;</code>.
+  The intuitive explanation of the operation is that it should return the "first available value"
+  and prefer values from the first argument. For options this means that if the first argument 
+  is <code>Some</code>, we return its value (wrapped in <code>Some</code>). Otherwise, we return
+  the value of the second argument. The operation returns <code>None</code> only if both of the
+  arguments are <code>None</code>.</li>
+</ul>
+
+<p>Now that we have a computation builder <code>maybe</code>, let's write some interesting 
+  computation. We look how the example looks using the <code>match!</code> syntactic sugar
+  and then explain how the translation works...</p>
+
+<h3>Implementing three-valued logic</h3>
+<p>As a simple example, we look how to implement the logical "or" operation for a <a href="http://en.wikipedia.org/wiki/Ternary_logic">three-valued logic</a>.
+  As the name suggests, the logic works with three values (<em>true</em>, <em>false</em> and <em>unknown</em>). 
+  We can represent values of the three-valued logic using <code>option&lt;bool&gt;</code> and take
+  <code>None</code> to represent the <em>unknown</em> value.
+</p>
+<p>The <em>unknown</em> value means that the value may be either <em>true</em> or <em>false</em>, but
+  we don't know which one. The "or" operator reflects this interpretation - for example, when we
+  write <em>false "or" unknown</em>, the result is <em>unknown</em> (it may be either <code>true</code>
+  or <code>false</code> depending on the second value). The following snippet uses <code>match!</code>
+  to implement the "or" operator as defined in the <a href="http://en.wikipedia.org/wiki/Ternary_logic#Kleene_logic">Kleene logic</a>:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Logical</span><span class="c"> </span><span class="c">&#39;or&#39;</span><span class="c"> </span><span class="c">operator</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">ternary</span><span class="c"> </span><span class="c">(Kleene)</span><span class="c"> </span><span class="c">logic</span>
+<span class="l"> 2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs33', 63)" onmouseover="showTip(event, 'jofs33', 63)" class="i">kleeneOr</span> <span onmouseout="hideTip(event, 'jofs34', 64)" onmouseover="showTip(event, 'jofs34', 64)" class="i">a</span> <span onmouseout="hideTip(event, 'jofs35', 65)" onmouseover="showTip(event, 'jofs35', 65)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs32', 66)" onmouseover="showTip(event, 'jofs32', 66)" class="i">maybe</span> {
+<span class="l"> 3: </span>  <span class="k">match!</span> <span onmouseout="hideTip(event, 'jofs34', 67)" onmouseover="showTip(event, 'jofs34', 67)" class="i">a</span>, <span onmouseout="hideTip(event, 'jofs35', 68)" onmouseover="showTip(event, 'jofs35', 68)" class="i">b</span> <span class="k">with</span>
+<span class="l"> 4: </span>  | <span class="o">!</span><span class="k">true</span>, _ <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span>
+<span class="l"> 5: </span>  | _, <span class="o">!</span><span class="k">true</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span> 
+<span class="l"> 6: </span>  | <span class="o">!</span><span onmouseout="hideTip(event, 'jofs3', 69)" onmouseover="showTip(event, 'jofs3', 69)" class="i">a</span>, <span class="o">!</span><span onmouseout="hideTip(event, 'jofs4', 70)" onmouseover="showTip(event, 'jofs4', 70)" class="i">b</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'jofs3', 71)" onmouseover="showTip(event, 'jofs3', 71)" class="i">a</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'jofs4', 72)" onmouseover="showTip(event, 'jofs4', 72)" class="i">b</span> }
+<span class="l"> 7: </span>
+<span class="l"> 8: </span><span class="c">//</span><span class="c"> </span><span class="c">Print</span><span class="c"> </span><span class="c">truth</span><span class="c"> </span><span class="c">table</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">ternary</span><span class="c"> </span><span class="c">operator</span>
+<span class="l"> 9: </span><span class="k">for</span> <span onmouseout="hideTip(event, 'jofs34', 73)" onmouseover="showTip(event, 'jofs34', 73)" class="i">a</span> <span class="k">in</span> [<span onmouseout="hideTip(event, 'jofs14', 74)" onmouseover="showTip(event, 'jofs14', 74)" class="i">Some</span> <span class="k">true</span>; <span onmouseout="hideTip(event, 'jofs18', 75)" onmouseover="showTip(event, 'jofs18', 75)" class="i">None</span>; <span onmouseout="hideTip(event, 'jofs14', 76)" onmouseover="showTip(event, 'jofs14', 76)" class="i">Some</span> <span class="k">false</span>] <span class="k">do</span>
+<span class="l">10: </span>  <span class="k">for</span> <span onmouseout="hideTip(event, 'jofs35', 77)" onmouseover="showTip(event, 'jofs35', 77)" class="i">b</span> <span class="k">in</span> [<span onmouseout="hideTip(event, 'jofs14', 78)" onmouseover="showTip(event, 'jofs14', 78)" class="i">Some</span> <span class="k">true</span>; <span onmouseout="hideTip(event, 'jofs18', 79)" onmouseover="showTip(event, 'jofs18', 79)" class="i">None</span>; <span onmouseout="hideTip(event, 'jofs14', 80)" onmouseover="showTip(event, 'jofs14', 80)" class="i">Some</span> <span class="k">false</span>] <span class="k">do</span>
+<span class="l">11: </span>    <span onmouseout="hideTip(event, 'jofs36', 81)" onmouseover="showTip(event, 'jofs36', 81)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">A</span><span class="s"> </span><span class="s">or</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s"> </span><span class="s">=</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'jofs34', 82)" onmouseover="showTip(event, 'jofs34', 82)" class="i">a</span> <span onmouseout="hideTip(event, 'jofs35', 83)" onmouseover="showTip(event, 'jofs35', 83)" class="i">b</span> (<span onmouseout="hideTip(event, 'jofs33', 84)" onmouseover="showTip(event, 'jofs33', 84)" class="i">kleeneOr</span> <span onmouseout="hideTip(event, 'jofs34', 85)" onmouseover="showTip(event, 'jofs34', 85)" class="i">a</span> <span onmouseout="hideTip(event, 'jofs35', 86)" onmouseover="showTip(event, 'jofs35', 86)" class="i">b</span>)</pre>
+
+<p>I believe that the example is quite easy to read. When using <code>match!</code>, the patterns we write in 
+  clauses can be of two forms. The form <code>!&lt;pat&gt;</code> (<em>binding pattern</em>) means
+  that the computation must produce a value and the value should match the usual F# pattern <code>&lt;pat&gt;</code>.
+  In case of options, <code>!true</code> essentially means that the value should be <code>Some(true)</code>.
+  The form <code>_</code> (<em>ignore pattern</em>) specifies that we don't care about the value (there
+  may or may not be some value). For options, this means the same thing as underscore (<em>wildcard pattern</em>)
+  used in the standard <code>match</code> construct.</p>
+<p>The first two clauses encode the situation when one of the values is <code>true</code>. In that case,
+  we immediately know that the result of the "or" operation is also true. The last case handles the
+  case when both values are known - in that case, we simply use the standard logical or. In all remaining 
+  cases that are not covered by any of the patterns, the result is unknown.</p>
+<p>When using joinads to work with option values, we don't get any interesting benefits. The true 
+  power of the construct is that it can be used for working with other interesting types of 
+  computations. This is possible, because <code>match!</code> is just a syntactic sugar that
+  is translated to the primitives of the computation builder...</p>
+
+<h2>Translation of joinads<a name="fsjol2">&#160;</a></h2>
+<p>The desugaring of <code>match!</code> is slightly more sophisticated than the desugaring
+  of <code>let!</code> and other standard constructs. The idea is that we combine all inputs for
+  a clause (horizontally) using the <code>Merge</code> operation. Then we select the first matching
+  clause (vertically) using the <code>Choose</code> operation. A pattern matching failure is 
+  represented using the <code>Fail</code> operation. The above example will be translated to the
+  following code:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">//</span><span class="c"> </span><span class="c">Translation</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">individual</span><span class="c"> </span><span class="c">clauses</span><span class="c"> </span><span class="c">-</span><span class="c"> </span><span class="c">inputs</span><span class="c"> </span><span class="c">are</span><span class="c"> </span><span class="c">combined</span><span class="c"> </span>
+<span class="l"> 2: </span><span class="c">//</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">&#39;Merge&#39;</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">body</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">wrapped</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">&#39;Delay&#39;</span>
+<span class="l"> 3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs37', 87)" onmouseover="showTip(event, 'jofs37', 87)" class="i">cl1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs32', 88)" onmouseover="showTip(event, 'jofs32', 88)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs38', 89)" onmouseover="showTip(event, 'jofs38', 89)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'jofs39', 90)" onmouseover="showTip(event, 'jofs39', 90)" class="i">a</span>, <span class="k">function</span> 
+<span class="l"> 4: </span>  | <span class="k">true</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 91)" onmouseover="showTip(event, 'jofs32', 91)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 92)" onmouseover="showTip(event, 'jofs40', 92)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs32', 93)" onmouseover="showTip(event, 'jofs32', 93)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs41', 94)" onmouseover="showTip(event, 'jofs41', 94)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 95)" onmouseover="showTip(event, 'jofs32', 95)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 96)" onmouseover="showTip(event, 'jofs40', 96)" class="i">Return</span>(<span class="k">true</span>)))
+<span class="l"> 5: </span>  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 97)" onmouseover="showTip(event, 'jofs32', 97)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs42', 98)" onmouseover="showTip(event, 'jofs42', 98)" class="i">Fail</span>() )
+<span class="l"> 6: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs43', 99)" onmouseover="showTip(event, 'jofs43', 99)" class="i">cl2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs32', 100)" onmouseover="showTip(event, 'jofs32', 100)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs38', 101)" onmouseover="showTip(event, 'jofs38', 101)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'jofs44', 102)" onmouseover="showTip(event, 'jofs44', 102)" class="i">b</span>, <span class="k">function</span> 
+<span class="l"> 7: </span>  | <span class="k">true</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 103)" onmouseover="showTip(event, 'jofs32', 103)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 104)" onmouseover="showTip(event, 'jofs40', 104)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs32', 105)" onmouseover="showTip(event, 'jofs32', 105)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs41', 106)" onmouseover="showTip(event, 'jofs41', 106)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 107)" onmouseover="showTip(event, 'jofs32', 107)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 108)" onmouseover="showTip(event, 'jofs40', 108)" class="i">Return</span>(<span class="k">true</span>)))
+<span class="l"> 8: </span>  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 109)" onmouseover="showTip(event, 'jofs32', 109)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs42', 110)" onmouseover="showTip(event, 'jofs42', 110)" class="i">Fail</span>() )
+<span class="l"> 9: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs45', 111)" onmouseover="showTip(event, 'jofs45', 111)" class="i">cl3</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs32', 112)" onmouseover="showTip(event, 'jofs32', 112)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs38', 113)" onmouseover="showTip(event, 'jofs38', 113)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'jofs32', 114)" onmouseover="showTip(event, 'jofs32', 114)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs46', 115)" onmouseover="showTip(event, 'jofs46', 115)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'jofs39', 116)" onmouseover="showTip(event, 'jofs39', 116)" class="i">a</span>, <span onmouseout="hideTip(event, 'jofs44', 117)" onmouseover="showTip(event, 'jofs44', 117)" class="i">b</span>), <span class="k">fun</span> (<span onmouseout="hideTip(event, 'jofs3', 118)" onmouseover="showTip(event, 'jofs3', 118)" class="i">a</span>, <span onmouseout="hideTip(event, 'jofs4', 119)" onmouseover="showTip(event, 'jofs4', 119)" class="i">b</span>) <span class="k">-&gt;</span> 
+<span class="l">10: </span>  <span onmouseout="hideTip(event, 'jofs32', 120)" onmouseover="showTip(event, 'jofs32', 120)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 121)" onmouseover="showTip(event, 'jofs40', 121)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs32', 122)" onmouseover="showTip(event, 'jofs32', 122)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs41', 123)" onmouseover="showTip(event, 'jofs41', 123)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs32', 124)" onmouseover="showTip(event, 'jofs32', 124)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs40', 125)" onmouseover="showTip(event, 'jofs40', 125)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs3', 1180)" onmouseover="showTip(event, 'jofs3', 1180)" class="i">a</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'jofs4', 1190)" onmouseover="showTip(event, 'jofs4', 1190)" class="i">b</span>))))
+<span class="l">11: </span>
+<span class="l">12: </span><span class="c">//</span><span class="c"> </span><span class="c">Clauses</span><span class="c"> </span><span class="c">are</span><span class="c"> </span><span class="c">combined</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">&#39;Choose&#39;</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">selected</span>
+<span class="l">13: </span><span class="c">//</span><span class="c"> </span><span class="c">delayed</span><span class="c"> </span><span class="c">clause</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">then</span><span class="c"> </span><span class="c">evaluated</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">&#39;Run&#39;</span>
+<span class="l">14: </span><span onmouseout="hideTip(event, 'jofs32', 126)" onmouseover="showTip(event, 'jofs32', 126)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs38', 127)" onmouseover="showTip(event, 'jofs38', 127)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'jofs32', 128)" onmouseover="showTip(event, 'jofs32', 128)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs47', 129)" onmouseover="showTip(event, 'jofs47', 129)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'jofs32', 130)" onmouseover="showTip(event, 'jofs32', 130)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs47', 131)" onmouseover="showTip(event, 'jofs47', 131)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'jofs37', 132)" onmouseover="showTip(event, 'jofs37', 132)" class="i">cl1</span>, <span onmouseout="hideTip(event, 'jofs43', 133)" onmouseover="showTip(event, 'jofs43', 133)" class="i">cl2</span>), <span onmouseout="hideTip(event, 'jofs45', 134)" onmouseover="showTip(event, 'jofs45', 134)" class="i">cl3</span>), <span class="k">fun</span> <span onmouseout="hideTip(event, 'jofs48', 135)" onmouseover="showTip(event, 'jofs48', 135)" class="i">r</span> <span class="k">-&gt;</span> 
+<span class="l">15: </span>  <span onmouseout="hideTip(event, 'jofs32', 136)" onmouseover="showTip(event, 'jofs32', 136)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs49', 137)" onmouseover="showTip(event, 'jofs49', 137)" class="i">Run</span>(<span onmouseout="hideTip(event, 'jofs48', 138)" onmouseover="showTip(event, 'jofs48', 138)" class="i">r</span>))</pre>
+
+<p>When translating joinads, the modified F# compiler works in two steps:</p>
+<ul>
+  <li style="margin-bottom:10px">Every clause is translated into a separate computation of
+    type <code>M&lt;M&lt;'T&gt;&gt;</code> (or <code>M&lt;unit -&gt; M&lt;'T&gt;&gt;</code> when
+    using <code>Delay</code> that returns a function as in this example). The inner computation represents the body 
+    to be executed when the clause is selected. To create this computation, the compiler first
+    merges are inputs that appear in <em>binding patterns</em> using <code>Merge</code>. Then
+    it uses <code>Bind</code> to transform the input into either <code>Return</code> (containing
+    a delayed body when the value matches a pattern) or <code>Fail</code> (when the produced
+    value doesn't match).</li>
+  <li>After translating the clauses, the compiler constructs an expression that 
+    selects the first clause that contains or produces body (the terminology is intentionally
+    vaugue, because the meaning depends on the type of computation). This is done by combining
+    all clauses in the top-to-bottom order using <code>Choose</code>. The result is a computation
+    <code>M&lt;M&lt;'T&gt;&gt;</code> (or <code>M&lt;unit -&gt; M&lt;'T&gt;&gt;</code> for 
+    delayed functions), so we need to unwrap the body. This is done by passing the overall result
+    as an argument to <code>Bind</code>. In the continuation, we apply the <code>Run</code> operation, 
+    which can unwrap the delayed computation (for computations that are delayed by design, the 
+    <code>Run</code> operation isn't required).</li>
+</ul>
+<p>The best way to understand how the translation works is to experiment with it. If you're 
+  interested in joinads, you can either build the compiler from <a href="https://github.com/tpetricek/FSharp.Extensions">sources on GitHub</a> (the changes
+  are commented, so you can find more information there too) or you can download binaries
+  at the end of the article.</p>
+
+<p>As mentioned in the introduction, when implementing <em>joinads</em>, I did one additional
+  change in the F# compiler that allows us to use with <em>idioms</em> (<em>applicative functors</em>).
+  The next section presents a basic example.</p>
+
+<h2>Creating a simple idiom<a name="fsjol3">&#160;</a></h2>
+<p>Just like monads (and joinads), idioms (also called applicative functors) are abstract computations
+  that are encoded in terms of several primitive operations. You can find more information
+  about them in the <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.pdf">article</a> [<a href="#jofshl">2</a>]
+  by Conor McBride and Ross Paterson. Idioms are weaker than monads, which means that every 
+  monad is also an idiom. If you have <code>Bind</code> and <code>Return</code>, you can implement
+  operations required by idiom. The opposite is not true - it is not possible to define
+  <code>Bind</code> in terms of operations provided by idioms.</p>
+
+<p>To support writing idioms in the computation expression syntax, we need to take something out.
+  This is opposed to adding new, more powerful, syntax (the <code>match!</code> construct) for 
+  joinads. I wrote more about this in my <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous</a>
+  <a href="http://tomasp.net/blog/formlets-in-linq.aspx">articles</a> [<a href="#jofshl">3</a>, <a href="#jofshl">4</a>] 
+  about idioms in C#. Using idioms, we cannot write computations where binding 
+  (e.g. using <code>let!</code>) depends on value of an earlier binding. This essentially means
+  that we have to specify all values bound using <code>let!</code> at once. The binding can then
+  be followed by some computation that eventually returns a value.</p>
+
+<p>The syntactic support that I implemented in computation expressions is quite different
+  to the <em>bracket notation</em> used in the original paper. I think I expect the F# extension
+  to be also used differently. The original paper talks more about function applications with 
+  some hidden effects. The F# extension I implemented is more suitable for computations modeled
+  as idioms. A good example of this could be <em>formlets</em> (see the original <a href="http://groups.inf.ed.ac.uk/links/formlets/">research
+  paper</a> [<a href="#jofshl">5</a>], <a href="http://bugsquash.blogspot.com/2011/01/simple-implementation-of-formlets-in-f.html">F# implementation</a> by Mauricio Scheffer
+  or the <a href="http://www.websharper.com/docs/WorkingWithFormlets.aspx">version in WebSharper</a>). 
+  Formlets describe structure of a web page together with code that is executed after the
+  server receives form values back from the client. Here is an example:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs78', 210)" onmouseover="showTip(event, 'jofs78', 210)" class="i">registration</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs79', 211)" onmouseover="showTip(event, 'jofs79', 211)" class="i">formlet</span> {
+<span class="l">2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Binding</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">specifies</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">form</span><span class="c"> </span><span class="c">components</span>
+<span class="l">3: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'jofs80', 212)" onmouseover="showTip(event, 'jofs80', 212)" class="i">name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs81', 213)" onmouseover="showTip(event, 'jofs81', 213)" class="i">Formlets</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs82', 214)" onmouseover="showTip(event, 'jofs82', 214)" class="i">textbox</span>
+<span class="l">4: </span>  <span class="k">and</span> <span onmouseout="hideTip(event, 'jofs83', 215)" onmouseover="showTip(event, 'jofs83', 215)" class="i">age</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs81', 216)" onmouseover="showTip(event, 'jofs81', 216)" class="i">Formlets</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs82', 217)" onmouseover="showTip(event, 'jofs82', 217)" class="i">textbox</span>
+<span class="l">5: </span>  <span class="k">and</span> <span onmouseout="hideTip(event, 'jofs84', 218)" onmouseover="showTip(event, 'jofs84', 218)" class="i">birthday</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs81', 219)" onmouseover="showTip(event, 'jofs81', 219)" class="i">Formlets</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs85', 220)" onmouseover="showTip(event, 'jofs85', 220)" class="i">dateSelector</span>
+<span class="l">6: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Calculation</span><span class="c"> </span><span class="c">with</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">values</span>
+<span class="l">7: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'jofs86', 221)" onmouseover="showTip(event, 'jofs86', 221)" class="i">age</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs87', 222)" onmouseover="showTip(event, 'jofs87', 222)" class="i">int</span> <span onmouseout="hideTip(event, 'jofs86', 223)" onmouseover="showTip(event, 'jofs86', 223)" class="i">age</span>
+<span class="l">8: </span>  <span class="k">return</span> <span onmouseout="hideTip(event, 'jofs88', 224)" onmouseover="showTip(event, 'jofs88', 224)" class="i">Person</span>(<span onmouseout="hideTip(event, 'jofs80', 225)" onmouseover="showTip(event, 'jofs80', 225)" class="i">name</span>, <span onmouseout="hideTip(event, 'jofs86', 226)" onmouseover="showTip(event, 'jofs86', 226)" class="i">age</span>, <span onmouseout="hideTip(event, 'jofs84', 227)" onmouseover="showTip(event, 'jofs84', 227)" class="i">birthday</span>) }</pre>
+
+<p>The F# extension for idioms allows you to write multiple bindings (at the beginning of 
+  a computation) using <code>let!</code> ... <code>and</code>. You can write as many <code>and</code>
+  keywords to specify multiple bindings as you wish. After you finish binding, you're not allowed
+  to use <code>let!</code> again and you need to finish with <code>return</code>. </p>
+
+<p>As I mentioned, this is really just an experiment that I implemented while working on joinads
+  (because it was quite easy). If you find it useful (or not useful) for some interesting purpose,
+  I'd be happy to hear from you. To add some details about how the extension works, let's look 
+  at a simplistic example...</p>
+
+<h3>Implementing ZipList builder</h3>
+<p>Perhaps the simplest example of idiom is ZipList. It allows us to apply some operations to 
+  elements pulled from lists in parallel. If we have operation <code>f</code> and lists 
+  <code>[1;2;3]</code> and <code>[a;b;c]</code>, we can use ZipList to get
+  <code>[f (1, a); f (2, b); f (3, c)]</code>. This is not something that you could easily
+  implement using a monad. But when we can bind all lists at once, we can combine them using
+  the <code>zip</code> operation and then iterate over the elements. The following snippet
+  shows the computation builder that defines ZipList idiom:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'jofs50', 139)" onmouseover="showTip(event, 'jofs50', 139)" class="i">ZipList</span>() <span class="o">=</span> 
+<span class="l"> 2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Unit</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">ZipList</span><span class="c"> </span><span class="c">idiom</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">infinite</span><span class="c"> </span><span class="c">sequence</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">values</span>
+<span class="l"> 3: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs51', 140)" onmouseover="showTip(event, 'jofs51', 140)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs52', 141)" onmouseover="showTip(event, 'jofs52', 141)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs53', 142)" onmouseover="showTip(event, 'jofs53', 142)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs54', 143)" onmouseover="showTip(event, 'jofs54', 143)" class="i">seq</span> { <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> <span class="k">yield</span> <span onmouseout="hideTip(event, 'jofs53', 144)" onmouseover="showTip(event, 'jofs53', 144)" class="i">a</span> }
+<span class="l"> 4: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Standard</span><span class="c"> </span><span class="c">projection</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">sequences</span>
+<span class="l"> 5: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs51', 145)" onmouseover="showTip(event, 'jofs51', 145)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs55', 146)" onmouseover="showTip(event, 'jofs55', 146)" class="i">Select</span>(<span onmouseout="hideTip(event, 'jofs56', 147)" onmouseover="showTip(event, 'jofs56', 147)" class="i">v</span>, <span onmouseout="hideTip(event, 'jofs57', 148)" onmouseover="showTip(event, 'jofs57', 148)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs58', 149)" onmouseover="showTip(event, 'jofs58', 149)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs59', 150)" onmouseover="showTip(event, 'jofs59', 150)" class="i">map</span> <span onmouseout="hideTip(event, 'jofs57', 151)" onmouseover="showTip(event, 'jofs57', 151)" class="i">f</span> <span onmouseout="hideTip(event, 'jofs56', 152)" onmouseover="showTip(event, 'jofs56', 152)" class="i">v</span>
+<span class="l"> 6: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Zip</span><span class="c"> </span><span class="c">values</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">two</span><span class="c"> </span><span class="c">(possibly</span><span class="c"> </span><span class="c">infinite)</span><span class="c"> </span><span class="c">sequences</span>
+<span class="l"> 7: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'jofs51', 153)" onmouseover="showTip(event, 'jofs51', 153)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs60', 154)" onmouseover="showTip(event, 'jofs60', 154)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'jofs61', 155)" onmouseover="showTip(event, 'jofs61', 155)" class="i">u</span>, <span onmouseout="hideTip(event, 'jofs62', 156)" onmouseover="showTip(event, 'jofs62', 156)" class="i">v</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs58', 157)" onmouseover="showTip(event, 'jofs58', 157)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs63', 158)" onmouseover="showTip(event, 'jofs63', 158)" class="i">zip</span> <span onmouseout="hideTip(event, 'jofs61', 159)" onmouseover="showTip(event, 'jofs61', 159)" class="i">u</span> <span onmouseout="hideTip(event, 'jofs62', 160)" onmouseover="showTip(event, 'jofs62', 160)" class="i">v</span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span><span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">instance</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">builder</span>
+<span class="l">10: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'jofs64', 161)" onmouseover="showTip(event, 'jofs64', 161)" class="i">zip</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs50', 162)" onmouseover="showTip(event, 'jofs50', 162)" class="i">ZipList</span>()</pre>
+
+<p>The <code>Return</code> operation has the same type as the <code>Return</code> operation from 
+  monads. The implementation for ZipLists creates an infinite sequence that repeatedly returns the
+  same value. The <code>Select</code> operation implements a projection (look at the type signature).
+  This operation is weaker than <code>Bind</code> for monads. It only allows us to transform values
+  into new values, but we cannot construct and return new <code>M&lt;'T&gt;</code> value inside
+  <code>Select</code>. Finally, the <code>Merge</code> operation is the same <code>Merge</code>
+  that is required for joinads (which is quite interesting!) For the ZipList idiom, the operation
+  zips the two sequences given as arguments.</p>  
+
+<p>To demonstrate how the translation works, let's take a look at transposing matrices. 
+  The following implementation is quite naive and inefficient, but it is probably the simplest
+  example I could use.</p>
+
+<h3>Transposing matrices with idioms</h3>
+<p>I already explained the matrix transposition algorithm using idioms <a href="http://tomasp.net/blog/idioms-in-linq.aspx">in my last C# article</a>.
+  If the matrix transposition function gets a matrix with zero rows, it generates an infinite sequence of empty 
+  sequences (which can be done using <code>Return</code>). Otherwise, it takes the first row and
+  "zips" it with the transposed sub-matrix that starts from the second row. The zipping can be
+  written using our new <code>let!</code> .. <code>and</code> syntax:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'jofs65', 163)" onmouseover="showTip(event, 'jofs65', 163)" class="i">transpose</span> (<span onmouseout="hideTip(event, 'jofs66', 164)" onmouseover="showTip(event, 'jofs66', 164)" class="i">matrix</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs64', 165)" onmouseover="showTip(event, 'jofs64', 165)" class="i">zip</span> {
+<span class="l"> 2: </span>  <span class="k">if</span> <span onmouseout="hideTip(event, 'jofs58', 166)" onmouseover="showTip(event, 'jofs58', 166)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs67', 167)" onmouseover="showTip(event, 'jofs67', 167)" class="i">length</span> <span onmouseout="hideTip(event, 'jofs66', 168)" onmouseover="showTip(event, 'jofs66', 168)" class="i">matrix</span> <span class="o">=</span> <span class="n">0</span> <span class="k">then</span> 
+<span class="l"> 3: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Generate</span><span class="c"> </span><span class="c">infinite</span><span class="c"> </span><span class="c">sequence</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">empty</span><span class="c"> </span><span class="c">lists</span>
+<span class="l"> 4: </span>    <span class="k">return</span> <span onmouseout="hideTip(event, 'jofs58', 169)" onmouseover="showTip(event, 'jofs58', 169)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs68', 170)" onmouseover="showTip(event, 'jofs68', 170)" class="i">empty</span>
+<span class="l"> 5: </span>  <span class="k">else</span> 
+<span class="l"> 6: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Zip</span><span class="c"> </span><span class="c">elements</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">first</span><span class="c"> </span><span class="c">row</span><span class="c"> </span><span class="c">with</span><span class="c"> </span><span class="c">rows</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">recursively</span><span class="c"> </span>
+<span class="l"> 7: </span>    <span class="c">//</span><span class="c"> </span><span class="c">transposed</span><span class="c"> </span><span class="c">sub-matrix</span><span class="c"> </span><span class="c">starting</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">second</span><span class="c"> </span><span class="c">row</span>
+<span class="l"> 8: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'jofs69', 171)" onmouseover="showTip(event, 'jofs69', 171)" class="i">xs</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs58', 172)" onmouseover="showTip(event, 'jofs58', 172)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs70', 173)" onmouseover="showTip(event, 'jofs70', 173)" class="i">head</span> <span onmouseout="hideTip(event, 'jofs66', 174)" onmouseover="showTip(event, 'jofs66', 174)" class="i">matrix</span>
+<span class="l"> 9: </span>    <span class="k">and</span> <span onmouseout="hideTip(event, 'jofs71', 175)" onmouseover="showTip(event, 'jofs71', 175)" class="i">xss</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'jofs65', 176)" onmouseover="showTip(event, 'jofs65', 176)" class="i">transpose</span> (<span onmouseout="hideTip(event, 'jofs58', 177)" onmouseover="showTip(event, 'jofs58', 177)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs72', 178)" onmouseover="showTip(event, 'jofs72', 178)" class="i">skip</span> <span class="n">1</span> <span onmouseout="hideTip(event, 'jofs66', 179)" onmouseover="showTip(event, 'jofs66', 179)" class="i">matrix</span>)
+<span class="l">10: </span>    <span class="k">return</span> <span onmouseout="hideTip(event, 'jofs58', 180)" onmouseover="showTip(event, 'jofs58', 180)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs73', 181)" onmouseover="showTip(event, 'jofs73', 181)" class="i">concat</span> [ <span onmouseout="hideTip(event, 'jofs54', 182)" onmouseover="showTip(event, 'jofs54', 182)" class="i">seq</span> [ <span class="i">xs</span> ]; <span class="i">xss</span> ] }
+<span class="l">11: </span>
+<span class="l">12: </span><span class="c">//</span><span class="c"> </span><span class="c">Gives:</span><span class="c"> </span><span class="c">[</span><span class="c"> </span><span class="c">[</span><span class="c"> </span><span class="c">1;</span><span class="c"> </span><span class="c">4];</span><span class="c"> </span><span class="c">[2;</span><span class="c"> </span><span class="c">5];</span><span class="c"> </span><span class="c">[3;</span><span class="c"> </span><span class="c">6]</span><span class="c"> </span><span class="c">]</span>
+<span class="l">13: </span><span onmouseout="hideTip(event, 'jofs65', 183)" onmouseover="showTip(event, 'jofs65', 183)" class="i">transpose</span> [ [ <span class="n">1</span>; <span class="n">2</span>; <span class="n">3</span>]; [ <span class="n">4</span>; <span class="n">5</span>; <span class="n">6</span> ] ]</pre>
+
+<p>I said earlier that an idiom computation needs to start with <code>let!</code> This wasn't 
+  quite precise - if we write something like the example above, the compiler will treat it as 
+  two separate computations (one in the <code>then</code> branch and the other in the
+  <code>else</code> branch). The first computation is quite simple and calls just <code>return</code>.
+  The second computation is more interesting. It parallelly binds items from the first row and
+  items from the transposed sub-matrix and prepends the elements to the front. (The transposition
+  needs to be lazy, so I'm using <code>seq&lt;'T&gt;</code> which doesn't support nice 
+  <code>::</code> operation). </p>
+
+<p>One thing that's worth mentioning is that the <code>return</code> keyword in the second branch
+  doesn't correspond to the <code>Return</code> operation. You'll see how this is actually
+  compiled in the next section. I'm not sure whether this is a problem or not - if you have any
+  feelings about this, please leave a comment. A possible alternative would be to use the
+  <code>yield</code> keyword in the first case (and define the <code>Yield</code> operation 
+  instead).</p>
+
+<h2>Translation of idioms<a name="fsjol4">&#160;</a></h2>
+<p>The interesting part of the translation is when we write some computation that starts with
+  <code>let!</code> .. <code>and</code> and eventually ends with <code>return</code>. In that case,
+  the translator combines all inputs using the <code>Merge</code> operation and transforms the
+  rest of the computation into a function that can be passed as argument to <code>Select</code>:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'jofs74', 184)" onmouseover="showTip(event, 'jofs74', 184)" class="i">transpose</span> (<span onmouseout="hideTip(event, 'jofs66', 185)" onmouseover="showTip(event, 'jofs66', 185)" class="i">matrix</span>) <span class="o">=</span> 
+<span class="l"> 2: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Two</span><span class="c"> </span><span class="c">branches</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">&#39;if&#39;</span><span class="c"> </span><span class="c">are</span><span class="c"> </span><span class="c">translated</span><span class="c"> </span><span class="c">separately</span>
+<span class="l"> 3: </span>  <span class="k">if</span> <span onmouseout="hideTip(event, 'jofs58', 186)" onmouseover="showTip(event, 'jofs58', 186)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs67', 187)" onmouseover="showTip(event, 'jofs67', 187)" class="i">length</span> <span onmouseout="hideTip(event, 'jofs66', 188)" onmouseover="showTip(event, 'jofs66', 188)" class="i">matrix</span> <span class="o">=</span> <span class="n">0</span> <span class="k">then</span> 
+<span class="l"> 4: </span>    <span onmouseout="hideTip(event, 'jofs64', 189)" onmouseover="showTip(event, 'jofs64', 189)" class="i">zip</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs75', 190)" onmouseover="showTip(event, 'jofs75', 190)" class="i">Return</span>(<span onmouseout="hideTip(event, 'jofs58', 191)" onmouseover="showTip(event, 'jofs58', 191)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs68', 192)" onmouseover="showTip(event, 'jofs68', 192)" class="i">empty</span>)
+<span class="l"> 5: </span>  <span class="k">else</span> 
+<span class="l"> 6: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Combine</span><span class="c"> </span><span class="c">inputs</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">&#39;Merge&#39;</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">then</span><span class="c"> </span><span class="c">use</span><span class="c"> </span>
+<span class="l"> 7: </span>    <span class="c">//</span><span class="c"> </span><span class="c">&#39;Select&#39;</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">implement</span><span class="c"> </span><span class="c">projection</span>
+<span class="l"> 8: </span>    <span onmouseout="hideTip(event, 'jofs64', 193)" onmouseover="showTip(event, 'jofs64', 193)" class="i">zip</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs76', 194)" onmouseover="showTip(event, 'jofs76', 194)" class="i">Select</span>
+<span class="l"> 9: </span>      ( <span onmouseout="hideTip(event, 'jofs64', 195)" onmouseover="showTip(event, 'jofs64', 195)" class="i">zip</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs77', 196)" onmouseover="showTip(event, 'jofs77', 196)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'jofs58', 197)" onmouseover="showTip(event, 'jofs58', 197)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs70', 198)" onmouseover="showTip(event, 'jofs70', 198)" class="i">head</span> <span onmouseout="hideTip(event, 'jofs66', 199)" onmouseover="showTip(event, 'jofs66', 199)" class="i">matrix</span>, <span onmouseout="hideTip(event, 'jofs74', 200)" onmouseover="showTip(event, 'jofs74', 200)" class="i">transpose</span> (<span onmouseout="hideTip(event, 'jofs58', 201)" onmouseover="showTip(event, 'jofs58', 201)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs72', 202)" onmouseover="showTip(event, 'jofs72', 202)" class="i">skip</span> <span class="n">1</span> <span onmouseout="hideTip(event, 'jofs66', 203)" onmouseover="showTip(event, 'jofs66', 203)" class="i">matrix</span>)),
+<span class="l">10: </span>        <span class="k">fun</span> (<span onmouseout="hideTip(event, 'jofs69', 204)" onmouseover="showTip(event, 'jofs69', 204)" class="i">xs</span>, <span onmouseout="hideTip(event, 'jofs71', 205)" onmouseover="showTip(event, 'jofs71', 205)" class="i">xss</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'jofs58', 206)" onmouseover="showTip(event, 'jofs58', 206)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'jofs73', 207)" onmouseover="showTip(event, 'jofs73', 207)" class="i">concat</span> [ <span onmouseout="hideTip(event, 'jofs54', 208)" onmouseover="showTip(event, 'jofs54', 208)" class="i">seq</span> [ <span class="i">xs</span> ]; <span onmouseout="hideTip(event, 'jofs71', 209)" onmouseover="showTip(event, 'jofs71', 209)" class="i">xss</span> ])</pre>
+
+<p>As you can see, the two expressions that were used as inputs for <code>let!</code> and <code>and</code>
+  are now combined using <code>Merge</code>. This also demonstrates that the second one cannot depend
+  on the value of the first one. The lambda function passed to <code>Select</code> extracts
+  individual elements of the tuple using pattern that is created from the patterns used in the 
+  binding so that the correct variables are in scope.</p>
+
+
+<h2>Summary &amp; Downloads<a name="fsjol5">&#160;</a></h2>
+<p>This article presents two extensions to F# computation expressions. This is just a
+  research extension and there are currently no plans to include any of this in some future version
+  of F#, but you can download the modified F# compiler and F# interactive below and explore
+  the modified source on GitHub. If you create some interesting computation that uses the 
+  extension, please let me know in the comments!</p>
+
+<p>The modified version of F# computation expressions allows you to encode two new types
+  of computations. The first is <em>joinads</em>, which I presented some time ago in a
+  <a type="external" href="http://tomasp.net/blog/match-bang-paper.aspx">workshop paper at PADL</a>.
+  It adds a<code>match!</code> construct, which can be used for programming with futures, events
+  and other concurrent &amp; reactive abstractions.</p>
+<p>The second extension adds support for <em>idioms</em>.  It is used when the computation 
+  builder defines <code>Select</code>, <code>Merge</code> and <code>Return</code>. 
+  These operations are not expressive enough to support general <code>let!</code> binding,
+  but you can write code using restricted <code>let!</code> .. <code>and</code> syntax that
+  requires specifying all inputs at once. The syntax should be useful for example for 
+  writing code based on <em>formlets</em>.</p>
+
+<h3>Downloads &amp; Source code</h3>
+<ul>
+  <li style="margin-bottom:10px"><a href="http://tomasp.net/articles/fsharp-joinads/fsharp-joinads.zip">Download the F# compiler and F# interactive binaries</a> (ZIP) - 
+    To use modified <code>fsi.exe</code> in Visual Studio, go to "Options" - "Tools" and specify
+    the path in "F# interactive path" under "F# Tools" (Unfortunately, I don't think there is a way to use the
+    modified version for Visual Studio IntelliSense)</li>
+  <li style="margin-bottom:10px">The <a href="https://github.com/tpetricek/Fsharp.Extensions">source code for the F# extension</a> can 
+    be found on GitHub and should compile on Windows, Mac as well as Linux. It should be also possible
+    to use it for MonoDevelop IntelliSense, but I haven't tried that yet.</li>
+  <li>The sample joinads and idioms defined in this article are available on my <a href="https://github.com/tpetricek/Documents/tree/master/Blog%202011/Joinads">Blog &amp; Documents GitHub</a>. The samples can be executed using the modified F# Interactive.</li>
+</ul>
+
+<h2>References</h2>
+<ul>
+  <li>[1] <a type="external" href="http://tomasp.net/blog/match-bang-paper.aspx">Joinads: A retargetable control-flow construct for reactive, parallel and concurrent programming</a> - Tomas Petricek, Don Syme</li>
+  <li>[2] <a type="external" href="http://www.soi.city.ac.uk/~ross/papers/Applicative.pdf">Applicative programming with effects</a> - Conro McBride, Ross Paterson</li>
+  <li>[3] <a type="external" href="http://tomasp.net/blog/idioms-in-linq.aspx">Beyond the Monad fashion (I.): Writing idioms in LINQ</a> - Tomas Petricek's blog</li>
+  <li>[4] <a type="external" href="http://tomasp.net/blog/formlets-in-linq.aspx">Beyond the Monad fashion (II.): Creating web forms with LINQ</a> - Tomas Petricek's blog</li>
+  <li>[5] <a type="external" href="http://groups.inf.ed.ac.uk/links/formlets/">The essence of form abstraction</a> - Ezra Cooper, Sam Lindley, Philip Wadler, and Jeremy Yallop</li>
+</ul>
+
+<a name="jofshl"></a>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="jofs1">val future : FutureBuilder<br /><br />Full name: JoinadsDemo.future<br /></div>
+<div class="tip" id="jofs2">val after : int -&gt; &#39;a -&gt; Task&lt;&#39;a&gt;<br /><br />Full name: JoinadsDemo.after<br /></div>
+<div class="tip" id="jofs3">val a : bool<br /><br />&#160;&#160;type: bool<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;bool&gt;<br />&#160;&#160;implements: IEquatable&lt;bool&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="jofs4">val b : bool<br /><br />&#160;&#160;type: bool<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;bool&gt;<br />&#160;&#160;implements: IEquatable&lt;bool&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="jofs5">type MaybeBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; MaybeBuilder<br />&#160;&#160;&#160;&#160;member Bind : v:&#39;i option * f:(&#39;i -&gt; &#39;j option) -&gt; &#39;j option<br />&#160;&#160;&#160;&#160;member Choose : v1:&#39;c option * v2:&#39;c option -&gt; &#39;c option<br />&#160;&#160;&#160;&#160;member Delay : f:&#39;b -&gt; &#39;b<br />&#160;&#160;&#160;&#160;member Fail : unit -&gt; &#39;f option<br />&#160;&#160;&#160;&#160;member Merge : v1:&#39;d option * v2:&#39;e option -&gt; (&#39;d * &#39;e) option<br />&#160;&#160;&#160;&#160;member Return : a:&#39;h -&gt; &#39;h option<br />&#160;&#160;&#160;&#160;member ReturnFrom : o:&#39;g -&gt; &#39;g<br />&#160;&#160;&#160;&#160;member Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br />&#160;&#160;end<br /><br />Full name: JoinadsDemo.MaybeBuilder<br /></div>
+<div class="tip" id="jofs6">val x : MaybeBuilder<br /></div>
+<div class="tip" id="jofs7">member MaybeBuilder.Bind : v:&#39;i option * f:(&#39;i -&gt; &#39;j option) -&gt; &#39;j option<br /><br />Full name: JoinadsDemo.MaybeBuilder.Bind<br /></div>
+<div class="tip" id="jofs8">val v : &#39;i option<br /><br />&#160;&#160;type: &#39;i option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;&#39;i&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs9">val f : (&#39;i -&gt; &#39;j option)<br /></div>
+<div class="tip" id="jofs10">module Option<br /><br />from Microsoft.FSharp.Core<br /></div>
+<div class="tip" id="jofs11">val bind : (&#39;T -&gt; &#39;U option) -&gt; &#39;T option -&gt; &#39;U option<br /><br />Full name: Microsoft.FSharp.Core.Option.bind<br /></div>
+<div class="tip" id="jofs12">member MaybeBuilder.Return : a:&#39;h -&gt; &#39;h option<br /><br />Full name: JoinadsDemo.MaybeBuilder.Return<br /></div>
+<div class="tip" id="jofs13">val a : &#39;h<br /></div>
+<div class="tip" id="jofs14">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="jofs15">member MaybeBuilder.ReturnFrom : o:&#39;g -&gt; &#39;g<br /><br />Full name: JoinadsDemo.MaybeBuilder.ReturnFrom<br /></div>
+<div class="tip" id="jofs16">val o : &#39;g<br /></div>
+<div class="tip" id="jofs17">member MaybeBuilder.Fail : unit -&gt; &#39;f option<br /><br />Full name: JoinadsDemo.MaybeBuilder.Fail<br /></div>
+<div class="tip" id="jofs18">union case Option.None: Option&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="jofs19">member MaybeBuilder.Merge : v1:&#39;d option * v2:&#39;e option -&gt; (&#39;d * &#39;e) option<br /><br />Full name: JoinadsDemo.MaybeBuilder.Merge<br /></div>
+<div class="tip" id="jofs20">val v1 : &#39;d option<br /><br />&#160;&#160;type: &#39;d option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;&#39;d&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs21">val v2 : &#39;e option<br /><br />&#160;&#160;type: &#39;e option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;&#39;e&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs22">val a : &#39;d<br /></div>
+<div class="tip" id="jofs23">val b : &#39;e<br /></div>
+<div class="tip" id="jofs24">member MaybeBuilder.Choose : v1:&#39;c option * v2:&#39;c option -&gt; &#39;c option<br /><br />Full name: JoinadsDemo.MaybeBuilder.Choose<br /></div>
+<div class="tip" id="jofs25">val v1 : &#39;c option<br /><br />&#160;&#160;type: &#39;c option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;&#39;c&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs26">val v2 : &#39;c option<br /><br />&#160;&#160;type: &#39;c option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;&#39;c&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs27">val v1 : &#39;c<br /></div>
+<div class="tip" id="jofs28">member MaybeBuilder.Delay : f:&#39;b -&gt; &#39;b<br /><br />Full name: JoinadsDemo.MaybeBuilder.Delay<br /></div>
+<div class="tip" id="jofs29">val f : &#39;b<br /></div>
+<div class="tip" id="jofs30">member MaybeBuilder.Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br /><br />Full name: JoinadsDemo.MaybeBuilder.Run<br /></div>
+<div class="tip" id="jofs31">val f : (unit -&gt; &#39;a)<br /></div>
+<div class="tip" id="jofs32">val maybe : MaybeBuilder<br /><br />Full name: JoinadsDemo.maybe<br /></div>
+<div class="tip" id="jofs33">val kleeneOr : bool option -&gt; bool option -&gt; bool option<br /><br />Full name: JoinadsDemo.kleeneOr
+<br /><br /><em>Logical &#39;or&#39; operator for ternary (Kleene) logic</em><br /></div>
+<div class="tip" id="jofs34">val a : bool option<br /><br />&#160;&#160;type: bool option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;bool&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs35">val b : bool option<br /><br />&#160;&#160;type: bool option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;bool&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs36">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn<br /></div>
+<div class="tip" id="jofs37">val cl1 : (unit -&gt; bool option) option<br /><br />Full name: JoinadsDemo.cl1<br /><br />&#160;&#160;type: (unit -&gt; bool option) option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;(unit -&gt; bool option)&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs38">member MaybeBuilder.Bind : v:&#39;i option * f:(&#39;i -&gt; &#39;j option) -&gt; &#39;j option<br /></div>
+<div class="tip" id="jofs39">val a : bool option<br /><br />Full name: JoinadsDemo.a<br /><br />&#160;&#160;type: bool option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;bool&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs40">member MaybeBuilder.Return : a:&#39;h -&gt; &#39;h option<br /></div>
+<div class="tip" id="jofs41">member MaybeBuilder.Delay : f:&#39;b -&gt; &#39;b<br /></div>
+<div class="tip" id="jofs42">member MaybeBuilder.Fail : unit -&gt; &#39;f option<br /></div>
+<div class="tip" id="jofs43">val cl2 : (unit -&gt; bool option) option<br /><br />Full name: JoinadsDemo.cl2<br /><br />&#160;&#160;type: (unit -&gt; bool option) option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;(unit -&gt; bool option)&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs44">val b : bool option<br /><br />Full name: JoinadsDemo.b<br /><br />&#160;&#160;type: bool option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;bool&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs45">val cl3 : (unit -&gt; bool option) option<br /><br />Full name: JoinadsDemo.cl3<br /><br />&#160;&#160;type: (unit -&gt; bool option) option<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Option&lt;(unit -&gt; bool option)&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs46">member MaybeBuilder.Merge : v1:&#39;d option * v2:&#39;e option -&gt; (&#39;d * &#39;e) option<br /></div>
+<div class="tip" id="jofs47">member MaybeBuilder.Choose : v1:&#39;c option * v2:&#39;c option -&gt; &#39;c option<br /></div>
+<div class="tip" id="jofs48">val r : (unit -&gt; bool option)<br /></div>
+<div class="tip" id="jofs49">member MaybeBuilder.Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br /></div>
+<div class="tip" id="jofs50">type ZipList =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; ZipList<br />&#160;&#160;&#160;&#160;member Merge : u:seq&lt;&#39;a&gt; * v:seq&lt;&#39;b&gt; -&gt; seq&lt;&#39;a * &#39;b&gt;<br />&#160;&#160;&#160;&#160;member Return : a:&#39;e -&gt; seq&lt;&#39;e&gt;<br />&#160;&#160;&#160;&#160;member Select : v:seq&lt;&#39;c&gt; * f:(&#39;c -&gt; &#39;d) -&gt; seq&lt;&#39;d&gt;<br />&#160;&#160;end<br /><br />Full name: JoinadsDemo.ZipList<br /></div>
+<div class="tip" id="jofs51">val x : ZipList<br /></div>
+<div class="tip" id="jofs52">member ZipList.Return : a:&#39;e -&gt; seq&lt;&#39;e&gt;<br /><br />Full name: JoinadsDemo.ZipList.Return<br /></div>
+<div class="tip" id="jofs53">val a : &#39;e<br /></div>
+<div class="tip" id="jofs54">Multiple items
+<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq
+<br /><br />--------------------<br />
+<br />type seq&lt;&#39;T&gt; = Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs55">member ZipList.Select : v:seq&lt;&#39;c&gt; * f:(&#39;c -&gt; &#39;d) -&gt; seq&lt;&#39;d&gt;<br /><br />Full name: JoinadsDemo.ZipList.Select<br /></div>
+<div class="tip" id="jofs56">val v : seq&lt;&#39;c&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;c&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs57">val f : (&#39;c -&gt; &#39;d)<br /></div>
+<div class="tip" id="jofs58">module Seq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="jofs59">val map : (&#39;T -&gt; &#39;U) -&gt; seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map<br /></div>
+<div class="tip" id="jofs60">member ZipList.Merge : u:seq&lt;&#39;a&gt; * v:seq&lt;&#39;b&gt; -&gt; seq&lt;&#39;a * &#39;b&gt;<br /><br />Full name: JoinadsDemo.ZipList.Merge<br /></div>
+<div class="tip" id="jofs61">val u : seq&lt;&#39;a&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;a&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs62">val v : seq&lt;&#39;b&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;b&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs63">val zip : seq&lt;&#39;T1&gt; -&gt; seq&lt;&#39;T2&gt; -&gt; seq&lt;&#39;T1 * &#39;T2&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.zip<br /></div>
+<div class="tip" id="jofs64">val zip : ZipList<br /><br />Full name: JoinadsDemo.zip<br /></div>
+<div class="tip" id="jofs65">val transpose : seq&lt;#seq&lt;&#39;b&gt;&gt; -&gt; seq&lt;seq&lt;&#39;b&gt;&gt;<br /><br />Full name: JoinadsDemo.transpose<br /></div>
+<div class="tip" id="jofs66">val matrix : seq&lt;#seq&lt;&#39;b&gt;&gt;<br /><br />&#160;&#160;type: seq&lt;#seq&lt;&#39;b&gt;&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs67">val length : seq&lt;&#39;T&gt; -&gt; int<br /><br />Full name: Microsoft.FSharp.Collections.Seq.length<br /></div>
+<div class="tip" id="jofs68">val empty&lt;&#39;T&gt; : seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.empty<br /></div>
+<div class="tip" id="jofs69">val xs : &#39;b<br /></div>
+<div class="tip" id="jofs70">val head : seq&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Collections.Seq.head<br /></div>
+<div class="tip" id="jofs71">val xss : seq&lt;&#39;b&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;b&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="jofs72">val skip : int -&gt; seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.skip<br /></div>
+<div class="tip" id="jofs73">val concat : seq&lt;#seq&lt;&#39;T&gt;&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.concat<br /></div>
+<div class="tip" id="jofs74">val transpose : (seq&lt;#seq&lt;&#39;b&gt;&gt; -&gt; seq&lt;seq&lt;&#39;b&gt;&gt;)<br /></div>
+<div class="tip" id="jofs75">member ZipList.Return : a:&#39;e -&gt; seq&lt;&#39;e&gt;<br /></div>
+<div class="tip" id="jofs76">member ZipList.Select : v:seq&lt;&#39;c&gt; * f:(&#39;c -&gt; &#39;d) -&gt; seq&lt;&#39;d&gt;<br /></div>
+<div class="tip" id="jofs77">member ZipList.Merge : u:seq&lt;&#39;a&gt; * v:seq&lt;&#39;b&gt; -&gt; seq&lt;&#39;a * &#39;b&gt;<br /></div>
+<div class="tip" id="jofs78">val registration : Formlet&lt;Person&gt;<br /><br />&#160;&#160;type: Formlet&lt;Person&gt;<br />&#160;&#160;implements: IEquatable&lt;Formlet&lt;Person&gt;&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Formlet&lt;Person&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs79">val formlet : FormletBuilder<br /></div>
+<div class="tip" id="jofs80">val name : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="jofs81">module Formlets<br /><br />from JoinadsDemo<br /></div>
+<div class="tip" id="jofs82">val textbox : Formlet&lt;string&gt;<br /><br />Full name: JoinadsDemo.Formlets.textbox<br /><br />&#160;&#160;type: Formlet&lt;string&gt;<br />&#160;&#160;implements: IEquatable&lt;Formlet&lt;string&gt;&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Formlet&lt;string&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs83">val age : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="jofs84">val birthday : DateTime<br /><br />&#160;&#160;type: DateTime<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;implements: IComparable&lt;DateTime&gt;<br />&#160;&#160;implements: IEquatable&lt;DateTime&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="jofs85">val dateSelector : Formlet&lt;DateTime&gt;<br /><br />Full name: JoinadsDemo.Formlets.dateSelector<br /><br />&#160;&#160;type: Formlet&lt;DateTime&gt;<br />&#160;&#160;implements: IEquatable&lt;Formlet&lt;DateTime&gt;&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Formlet&lt;DateTime&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="jofs86">val age : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="jofs87">Multiple items
+<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int
+<br /><br />--------------------<br />
+<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: IEquatable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: ValueType<br />
+<br /><br />--------------------<br />
+<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="jofs88">type Person =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : name:string * age:int * birthday:DateTime -&gt; Person<br />&#160;&#160;end<br /><br />Full name: JoinadsDemo.Person<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-variations-joinads.aspx%2f&amp;text=Variations+in+F%23%3a+Research+compiler+with+Joinads+and+more!via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-variations-joinads.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-variations-joinads.aspx%2f&title=Variations+in+F%23%3a+Research+compiler+with+Joinads+and+more!">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Variations%20in%20F%23%3a%20Research%20compiler%20with%20Joinads%20and%20more!&body=%20Joinads%20are%20a%20research%20extension%20of%20the%20F%23%20language.%20They%20simplify%20conrurrent%20programming%20with%20tasks%2c%20reactive%20programming%20with%20events%2c%20but%20can%20be%20also%20used%20for%20other%20types%20of%20computations.%20This%20article%20introduces%20the%20extension%2c%20which%20is%20now%20available%2c%20based%20on%20the%20open-source%20source-drop%20of%20F%23.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-variations-joinads.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Friday, 25 March 2011, 12:04 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/joinads/">joinads</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

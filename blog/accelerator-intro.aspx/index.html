@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Accelerator and F# (I.): Introduction and calculating PI - Tomas Petricek</title>
+
+  <meta name="description" content=" This article shows how to write F# programs that run in parallel as shader programs on GPU or on multi-core CPU using Microsoft Research Accelerator project." />
+  <meta name="keywords" content="functional, academic, meta-programming, accelerator, f#, math and numerics, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Accelerator and F# (I.): Introduction and calculating PI" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/accelerator-intro.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article shows how to write F# programs that run in parallel as shader programs on GPU or on multi-core CPU using Microsoft Research Accelerator project." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Accelerator and F# (I.): Introduction and calculating PI" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article shows how to write F# programs that run in parallel as shader programs on GPU or on multi-core CPU using Microsoft Research Accelerator project." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Accelerator and F# (I.): Introduction and calculating PI",
+    "headline": "Accelerator and F# (I.): Introduction and calculating PI",
+  	"description": " This article shows how to write F# programs that run in parallel as shader programs on GPU or on multi-core CPU using Microsoft Research Accelerator project.",
+  	"url": "http://tomasp.net/blog/accelerator-intro.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2009-12-21T03:21:03.0000000",
+  	"datePublished": "2009-12-21T03:21:03.0000000",
+    "dateModified": "2009-12-21T03:21:03.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/accelerator-intro.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "academic", "meta-programming", "accelerator", "f#", "math and numerics",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Accelerator and F# (I.): Introduction and calculating PI</h1>
+<img src="/articles/accelerator-intro/montecarlo.png" alt="Calculating Pi using Monte-Carlo" style="float:left; margin:10px" />
+<p>I already wrote about two projects that I worked on during an internship at
+  MSR back in 2007 (<a href="http://tomasp.net/blog/aspnet-in-fsharp.aspx" type="external">ASP.NET support in F#</a> and
+  <a href="http://tomasp.net/blog/fswebtools-intro.aspx" type="external">F# WebTools</a>).
+  Even though this was more than 2 years ago (and I did one more internship at MSR in the meantime),
+  I still have one more project that I never published on the web. The folks from the F# team
+  reminded me of this project recently, so I thought I could finally publish it. The project 
+  used Microsoft Research Accelerator [<a href="#accelfsh1links">1</a>, <a href="#accelfsh1links">2</a>], 
+  which is a C# library for developing array-based computations and executing them on a GPU. 
+  More recently, the Accelerator team at MSR published Accelerator v2 [<a href="#accelfsh1links">3</a>],
+  which was a good motivation to update my original project...</p>
+  
+<p>In this article, we'll look at the simplest way of using Accelerator from F#. Accelerator
+  provides a managed interface that can be naturally used from both C# and F#. We can use
+  a mix of method calls and overloaded operators to describe a computation. In F#, we'll also 
+  define our additional custom operators to make the code a bit nicer. After we introduce
+  Accelerator using a simple C# demo, we'll look how to calculate an approximate value of
+  the PI number using a Monte-Carlo method.</p>
+<p>This article is the first one from a series about using Accelerator from F#. The list
+  of articles may change, but here is a list of articles that I'm currently planning to write:</p>
+<ul>
+  <li><strong>Accelerator and F# (I.): Introduction and calculating PI</strong></li>
+  <li><a href="/blog/accelerator-life-game.aspx">Accelerator and F# (II.): The Game of Life on GPU</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-dataparallel.aspx">Accelerator and F# (III.): Data-parallel programs using F# quotations</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-quotations.aspx">Accelerator and F# (IV.): Composing computations with quotations</a></li></ul>  
+
+<h2>Introducing Accelerator</h2>  
+<p>Accelerator v2 is implemented in native code, but ships with a managed wrapper that 
+  allows us to use it elegantly from C# and other managed languages as well. The library
+  exposes various types that can be used for creating data-parallel computations that 
+  process 1D or 2D arrays of data. In this article, we'll work with <code>FloatParallelArray</code>,
+  which represents a computation that returns a 1D array of floats (<code>float[]</code> in C#).</p>
+<p>Accelerator provides overloaded operators for point-wise operations with arrays,
+  so you can for example write <code>res = nums1 * nums2</code> which represents a point-wise
+  multiplication of two arrays (<code>res[i] = nums1[i] * nums2[i]</code> for each <code>i</code>). 
+  Aside from overloaded operators, we can use other operations with arrays that are available
+  as static methods in the <code>ParallelArrays</code> class. For example the <code>Shift</code>
+  method moves elements of the array to the left or to the right. Shifting elements of an array
+  <code>[1; 2; 3; 4]</code> to the right by 1 will result in <code>[1; 1; 2; 3]</code> (the first
+  element is left unchanged).</p>
+<p>When writing code that calculates with the <code>FloatParallelArray</code> type, it is 
+  important to realize, that we're not actually running any computations yet! The type 
+  <em>represents</em> a computation and doesn't perform it. This means that when you write
+  a computation that adds some arrays and performs a few other operations, Accelerator only
+  remembers what do you want to do with the data. The computation is executed later
+  when we create a <em>target</em> that knows how to perform the operations. If you're 
+  familiar with LINQ to SQL, you already know this idea - writing calculation with the
+  <code>FloatParallelArray</code> type is just like writing a LINQ query. Executing the
+  computation later corresponds to running the LINQ query as a SQL code. The two 
+  available targets allow us to run the code on a multi-core CPU (only on 64bit) and on 
+  a GPU using DirectX 9 (in this case, the code is translated to shader code).</p>
+
+<p>Enough with theory for now and let's look at some actual example. I'll start with a very 
+  brief code that shows how to use Accelerator in C# and then we'll look at some more interesting
+  F# code. Assume we have an array of <code>float</code> values named <code>nums</code>. 
+  The following example builds a computation that calculates an average value of an element 
+  and two its neighbors for each element in the array:</p>
+<pre lang="csharp">
+var input = new FloatParallelArray(nums);
+var sum = 
+  ParallelArrays.Shift(input, 1) + input + 
+  ParallelArrays.Shift(input, -1);
+var output = sum / 3.0f;
+</pre>
+<p>We start by creating a new <code>FloatParallelArray</code> instance that stores the
+  input data for the program (this represents a constant computation). Then we write a 
+  calculation that adds three arrays - the input array and the input array shifted 
+  by 1 both to the left and to the right. Finally, on the last line, we divide the 
+  array by 3. This is also a point-wise operation, so it actually divides each element
+  of the array by 3. Now that we have a <code>FloatParallelArray</code> named <code>output</code>,
+  which represents the computation, we can run it using GPU:</p>
+<pre lang="csharp">
+var target = new DX9Target();
+var res = target.ToArray1D(output);
+</pre>
+<p>The code to run the computation is quite simple. We first initialize a <em>target</em>.
+  We're using <code>DX9Target</code>, which executes computations using GPU. If we wanted
+  to run the operation using multi-core CPU, we could use <code>X64MulticoreTarget</code>
+  (but note that this works only on x64). If you run the code, you'll get results like this:</p>
+<pre>
+7, 5, 5, 1, 5, 1, 0, 7, 6, 5
+6, 6, 4, 4, 2, 2, 3, 4, 6, 5
+</pre>
+<p>If you know a little bit about F#, you probably wouldn't have any troubles 
+  using Accelerator from F#. Since F# is a fully-compatible managed language, 
+  we can use any .NET libraries in a very similar way as in C#. However, we 
+  can use a couple of tricks to make the F# code nicer and more readable than the 
+  corresponding C# version...</p>
+
+<h2>Calculating PI in F#</h2>
+<p>Before we look at the calculation itself, we'll write a few lines of code
+  that will make the rest of program nicer. This will be shared with the
+  upcoming articles in the series and in principle, we could encapsulate
+  the functionality in an F# library. However, I'll make the code as simple
+  as possible and just write it again in each project.</p>
+
+<h3>Using Accelerator from F#</h3>
+<p>First of all, we'll need to add reference to the <code>Microsoft.Accelerator.dll</code>
+  assembly. This is just a managed wrapper for a native library that also needs to 
+  be copied to the output directory. You'll need to find an appropriate version of
+  native <code>Accelerator.dll</code> in the Accelerator installation directory 
+  (either x86 or x64 version) and copy it to <code>bin/Debug</code> in your project.
+  Then we can start by writing a couple of helpers:
+</p>
+<pre lang="fsharp">
+open Microsoft.ParallelArrays
+
+type PA = Microsoft.ParallelArrays.ParallelArrays
+type FPA = Microsoft.ParallelArrays.FloatParallelArray
+
+// Initialization of constant 2D arrays
+let gridSize = 4096
+let shape = [| gridSize; gridSize; |]
+let zero, one = new FPA(0.0f, shape), new FPA(1.0f, shape)
+</pre>
+<p>We start by opening the namespace that contains all the Accelerator functionality.
+  To make the code a little bit more succinct, we also define two type aliases. The
+  <code>FPA</code> type represents a computation that returns an array of floats when
+  executed. The <code>PA</code> type represents the static class which contains 
+  operations for working with these computations.</p>
+<p>Next, we specify the size of the array we'll use during the computation - we'll
+  work with 2D arrays of the size 4096x4096. Under the cover, this will be used
+  as a size of a texture on the GPU that's used to perform the computation using
+  shaders. Even though we could work with one-dimensional arrays as well, using
+  2D arrays is a good idea, because it can be easier processed on the GPU.</p>  
+<p>We'll also create two simple <code>FPA</code> instances that represent 
+  constant computations. The first one contains zeros and the second one contains
+  ones. The second parameter of the constructor specifies the size of the array
+  we're creating (using an array of integers with two elements). Since many of the
+  operations that Accelerator can perform are point-wise, we'll need the two
+  constants (<code>zero</code> and <code>one</code>) when encoding the algorithm.</p>
+<p>As the last thing before looking at the actual computation, we'll also write
+  three functions that wrap functionality that's available using static methods 
+  in C# (we could of course use static methods directly, but using functions 
+  will lead to a more idiomatic F# code):</p>  
+<pre lang="fsharp">
+// Calculating with 2D float arrays 
+let sqrt (a:FPA) = PA.Sqrt(a)
+let sum (a:FPA) = PA.Sum(a)
+let select (cond:FPA) (a:FPA) (b:FPA) = PA.Select(cond,a,b)
+</pre>
+<p>The <code>sqrt</code> function is a point-wise operation that calculates
+  square roots of all elements of the array. <code>sum</code> is a little bit more
+  interesting - it adds all numbers from the source array and returns an array that
+  contains just a single element, which is the sum (for example sum of <code>[1; 2; 3; 4]</code>
+  will be an array <code>[10]</code>).</p>
+<p>The most interesting operation is probably the <code>select</code> function.
+  Just like others, it is a point-wise operation. It takes three arrays of floats 
+  and expects arrays of the same size. It compares the value of the first array (<code>cond</code>)
+  with zero. If the value is greater than or equal to zero, it returns a value from 
+  the first array (<code>a</code>), otherwise it returns value from <code>b</code>
+  For a one-dimensional array, this corresponds to the following C# code:
+  <code>res[i] = cond[i]&gt;=0 ? a[i] : b[i]</code> (for each index <code>i</code>).
+  Now, let's finally move on to the PI number calculation...</p>
+
+<h3>Calculating PI using Monte Carlo</h3>
+<p>We'll implement the PI calculation using a <a href="http://en.wikipedia.org/wiki/Monte_Carlo_method" type="external">Monte 
+  Carlo</a> method. The idea of the algorithm is that we'll generate a large number of 
+  random points in a square and then count how many of them are inside a circle inscribed
+  in the square. You can get a better idea by looking at the image at the beginning
+  of the article - the image shows a circle inside a window and a large number of 
+  randomly generated points. Points inside the circle are in green and other points
+  are in red. We'll need to count the fraction of points that are inside the circle.</p>
+<p>To start, we'll need to generate a large number of random points. We'll generate 
+  two 2D arrays with random values to represent X and Y coordinates of points. This can 
+  be done using <code>Array2D.init</code> function, which initializes an array 
+  using the function that calculates an element value (in our example, the function
+  is called <code>generator</code>):</p>  
+<pre lang="fsharp">
+let rnd = new Random()
+let generator x y = float32(rnd.NextDouble())
+
+let px = new FPA(Array2D.init gridSize gridSize generator)
+let py = new FPA(Array2D.init gridSize gridSize generator)
+</pre>
+<p>Once we have .NET arrays with random values, we use them to create
+  constant computations represented as the <code>FloatParallelArray</code> type
+  from Accelerator. Next, we'll write a function that takes a <em>target</em>
+  (an object that knows how to evaluate <code>FloatParallelArray</code> computations)
+  and calculates an approximate value of PI using our random points:</p>
+
+<pre lang="fsharp">
+let calculatePi (target:Target) =
+  // Calculate distances of points from the center
+  let pxc, pyc = (px - 0.5f) * 2.0f, (py - 0.5f) * 2.0f
+  let distances = sqrt ((pxc * pxc) + (pyc * pyc))
+
+  // Count points with distance less than one
+  let inCircle = select (one - distances) one zero
+  let count = sum(inCircle)
+
+  // Evaluate the count and calculate PI
+  let result = target.ToArray1D(count)
+  result.[0] / (float32(gridSize * gridSize) / 4.0f)
+</pre>
+
+<p>The first two blocks of code work with the <code>FPA</code> type, which
+  means that we're just composing a computation, which we'll execute later.
+  We start by adjusting the random values a little bit. The numbers are
+  in range 0 to +1, so we subtract 0.5 and multiply the values by 2, to get
+  arrays with values in range -1 to +1. Next, we create a new array that
+  represents distances of points from the point (0, 0). Note that each 
+  <code>i, j</code> coordinate in the 2D array represents a single point.</p>
+
+<p>Once we have the <code>distances</code> value, we want to count the 
+  number of points that are inside the circle - this means points with
+  distance less than or equal to 1. This can be implemented using a trick.
+  We subtract <code>distances</code> from <code>one</code> and get an array
+  with value larger than or equal to 0 when the point is inside the circle.  
+  Then we use the <code>select</code> function to get 1 for points inside
+  the circle and 0 for all other points (as a reminder - this use of
+  the  <code>select</code> function corresponds to the following C# code:
+  <code>(one - distances)[i] >= 0 ? one[i] : zero[i]</code>). If we
+  then sum all values inside the 2D array, we'll get the count of points
+  for which the result was 1 (meaning points inside the circle).</p>  
+
+<p>As the last step, we need to calculate PI from the number of points
+  inside the circle and the total number of points inside the square. The result
+  of summing is stored in an array, because Accelerator works with arrays.
+  However, it contains only one element, so we get the value using <code>result.[0]</code>.
+  Then we divide it by the total number of points and also by 4, because our 
+  square was of size 2 by 2 (values ranging from -1 to +1). And that's our
+  value of PI! The last step is to actually run the computation using
+  Accelerator:</p>
+
+<pre lang="fsharp">
+let dxTarget = new DX9Target()
+let pi = calculatePi(dxTarget)  
+printfn "Approximate PI value: %f" pi
+</pre>
+
+<p>As you can see, running the calculation is now pretty simple. We created an
+  instance of <code>DX9Target</code> to run the computation on GPU and passed it 
+  to our function that does all the work. Alternatively, we could also use <code>X64MulticoreTarget</code>
+  to run the computation in parallel on a multi-core CPU.</p>
+
+<h2>Summary</h2>
+<p>This article was a brief introduction of a very interesting Accelerator library
+  and a demonstration of using this library from F# in the simples possible way.
+  We've seen how to use the <code>FloatParallelArray</code>, which is a core type 
+  representing a computation in Accelerator and we've implemented a PI calculation
+  using it. In the next article of this series we'll look at one more example - a 
+  famous Conway's Game of Life. Later, we'll also look how to run "usual" F# code
+  (meaning, code that doesn't use <code>FloatParallelArray</code> explicitly) with
+  Accelerator using F# quotations.</p>
+
+<h2>Downloads and References<a name="accelfsh1links">&#160;</a></h2>  
+<ul>
+  <li><a href="/articles/accelerator-intro/accelerator-intro.zip">Download the PI calculation sample</a> (ZIP, 5.5kB)</li>
+</ul>
+<ul>
+  <li>[1] <a type="external" href="http://research.microsoft.com/pubs/70250/tr-2005-184.pdf">Accelerator: Using Data Parallelism to Program GPUs for General-Purpose Uses</a> - Microsoft Research</li>
+  <li>[2] <a type="external" href="http://research.microsoft.com/en-us/projects/Accelerator/">Accelerator Project Homepage</a> - Microsoft Research</li>
+  <li>[3] <a type="external" href="http://connect.microsoft.com/acceleratorv2">Microsoft Research Accelerator v2</a> - Microsoft Connect</li>
+  <li>[4] <a href="http://en.wikipedia.org/wiki/Monte_Carlo_method" type="external">Monte Carlo method</a> - Wikipedia.org</li>
+  <li>[5] <a type="external" href="http://blogs.msdn.com/satnam_singh/archive/2009/12/15/gpgpu-and-x64-multicore-programming-with-accelerator-from-f.aspx">GPGPU and x64 Multicore Programming with Accelerator from F#</a> - Satnam Singh's blog at MSDN</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-intro.aspx%2f&amp;text=Accelerator+and+F%23+(I.)%3a+Introduction+and+calculating+PIvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-intro.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2faccelerator-intro.aspx%2f&title=Accelerator+and+F%23+(I.)%3a+Introduction+and+calculating+PI">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Accelerator%20and%20F%23%20(I.)%3a%20Introduction%20and%20calculating%20PI&body=%20This%20article%20shows%20how%20to%20write%20F%23%20programs%20that%20run%20in%20parallel%20as%20shader%20programs%20on%20GPU%20or%20on%20multi-core%20CPU%20using%20Microsoft%20Research%20Accelerator%20project.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2faccelerator-intro.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 21 December 2009, 3:21 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/accelerator/">accelerator</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/math-and-numerics/">math and numerics</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

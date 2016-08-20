@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Dynamic Lookup in F# - Tomas Petricek</title>
+
+  <meta name="description" content=" Dynamic languages allow you to represent a member using a symbol or a string and to use this symbol to work with the member. In this article I'll show how to do same thing in statically-typed way in F#." />
+  <meta name="keywords" content="meta-programming, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Dynamic Lookup in F#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-dynamic-lookup.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Dynamic languages allow you to represent a member using a symbol or a string and to use this symbol to work with the member. In this article I'll show how to do same thing in statically-typed way in F#." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Dynamic Lookup in F#" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Dynamic languages allow you to represent a member using a symbol or a string and to use this symbol to work with the member. In this article I'll show how to do same thing in statically-typed way in F#." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Dynamic Lookup in F#",
+    "headline": "Dynamic Lookup in F#",
+  	"description": " Dynamic languages allow you to represent a member using a symbol or a string and to use this symbol to work with the member. In this article I'll show how to do same thing in statically-typed way in F#.",
+  	"url": "http://tomasp.net/blog/fsharp-dynamic-lookup.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2008-06-04T01:50:08.0000000",
+  	"datePublished": "2008-06-04T01:50:08.0000000",
+    "dateModified": "2008-06-04T01:50:08.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-dynamic-lookup.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["meta-programming", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Dynamic Lookup in F#</h1>
+<p>Many people view <em>dynamic</em> and <em>statically-typed</em> languages as two distinct groups (and 
+  this is often a reason for never-ending discussions). In this article, I'll try to show one interesting
+  example, which demonstrates that these two groups are not in fact that distinct and that you can implement
+  a common <em>dynamic</em> language feature in F#, which is undoubtedly <em>statically-typed</em>.
+  The feature that I'm talking about is dynamic invoke using a symbolic representation of the member
+  (this is something that can be done using <em>symbols</em> in Ruby, but I'll shortly explain what exactly I mean).</p>  
+<p>I intentionally wrote <em>statically-typed</em> and <em>dynamic</em> instead of <em>dynamically-typed</em>.
+  In my understanding <em>dynamic</em> is a broader term while <em>dynamically-typed</em> and 
+  <em>statically-typed</em> are of course two distinct groups. On the other side <em>dynamic</em> refers
+  to language features that are usually available in <em>dynamically-typed</em> languages, just because
+  it is easy to support them in a nice way. This doesn't mean that having a <em>dynamic</em> feature in
+  a <em>statically-typed</em> language would be impossible - it is just more difficult to implement it in 
+  a way that would be similarly elegant.
+</p>
+  
+<h2>Dynamic Lookup</h2>
+<p>This article is motivated by an interesting <a href="http://cs.hubfs.net/forums/thread/5986.aspx">question</a> [<a href="#dynfslinks">1</a>], which 
+  was recently raised at hubFS.
+  The question was, whether it is possible to read a value of a member of an F# record 
+  by using a name of that member. Indeed, this is something that you would expect to see in 
+  any dynamic language. As already mentioned, you can do similar things in Ruby using symbols (which are often explained
+  as "something like a string", but more suitable exactly for this kind of situation) and in
+  many other dynamic languages, you can do this just using strings. Basically, this means that
+  you have some representation of a member (that can be for example given as an argument to a method)
+  and which you can use to access the member value, but also for other manipulations with the member.
+  In this article I'll use <em>dynamic invoke</em> as a name for this feature.</p>
+<p>In statically-typed languages (such as F# or C#) this isn't directly supported, because the language 
+  wants to guarantee that it will not be possible to write a code that attempts to access a class member 
+  that doesn't exist. Clearly, this error can occur quite easily when using dynamic lookup in a dynamically-typed language.
+  On .NET platform, we can of course use .NET reflection mechanism, but this solution alone isn't very elegant
+  and the resulting code is not very safe (e.g. a method accepts <code>MemberInfo</code> as an argument,
+  but there is no guarantee that the <code>MemberInfo</code> will represent a member from a specified class).
+  Here, I'll show how to do similar thing in a much safer way in F#.
+ </p>  
+
+<h3>What exactly do we want?</h3>
+<p>In this article, I'll look at slightly more interesting problem than the original question - instead of discussing
+  how to get a value of the field, I'll show how to create a function that will return the value
+  when it is given a value of the specified record type. This is practically more useful solution, 
+  because it allows us to write the code in a more efficient way, however I'll not discuss 
+  efficiency issues in this article. I'll shortly explain what this means, but let's first look
+  at the F# record type that I'll use as an example:</p>
+<pre lang="fsharp">
+type SampleRec = { Str : string; Num : int }
+</pre>
+<p>As you can see, the record type is very simplistic and serves just to show important aspects of the 
+  problem. The only important thing is that it has two fields of different types, because we'll later 
+  want to write a solution that will be as type-safe as possible. </p>
+  
+<p>Now, let's look what kind of code would we like to write using this dynamic lookup. We might for 
+  example want to create two functions - one for reading the string field and second for reading the 
+  number field. We don't know how to do this yet, so I'll just demonstrate the idea using pseudo-code.
+  I'm using a non-existing construct `RecordType.Field` to denote some description of the field 
+  that can be used programmatically. Ruby users would surely call this <em>symbol</em>, .NET programmers
+  can see it as a <code>MemberInfo</code> from <code>System.Reflection</code>, though I'll shortly
+  show why using simply <code>MemberInfo</code> isn't a good solution here:
+</p>
+<pre lang="fsharp">
+// Get a pair of functions for reading 'Str' and 'Num' fields
+let readStrField = getValueReader `SampleRec.Str`
+let readNumField = getValueReader `SampleRec.Num`
+
+// Create a value of the record...
+let rc = { Str = "Hello world!"; Num = 42 }
+
+// Read 'Str' and 'Num' field using the dynamically created functions
+let s, n = readStrField rc, readNumField rc
+</pre>
+<h3>What is it good for?</h3>
+<p>
+  Of course, the code presented here is just an example with no big practical usefulness, but it 
+  should demonstrate the idea how to implement a typical dynamic language feature in a statically typed 
+  language. As we'll see later, it is possible to implement it with a surprising static type safety. In a real-world 
+  application, you would use this approach for a same purpose as in dynamic languages. That is for meta-programming. 
+  This may be for example for inserting some additional run-time checking, adding logging features or for manipulating 
+  with the data represented by the record in some non-standard way (e.g. storing them in a database). This 
+  can be nicely used together with .NET attributes that can annotate the record type and specify additional 
+  properties of the values.</p>
+<h3>When we don't need this?</h3>  
+<p>If we didn't want to use this feature for meta-programming (e.g. together with .NET attributes) and 
+  simply wanted to wrap an access to a field of the record in a code that does some additional processing, 
+  then we can do this simply using F# functions:</p>
+<pre lang="fsharp">
+let readNumField = getValueReader (fun (rc:SampleRec) -&gt; rc.Num)
+let n = readNumField rc
+</pre>
+<p>Let's say that we want to write <code>getValueReader</code> that adds logging to the code.
+  This means that the returned function (<code>readNumField</code>) writes the value to a console window when 
+  it is called and the value of the record is accessed. In this case, the <code>getValueReader</code> 
+  function which adds additional processing to the given "field reader" (a function which reads the field) can 
+  be implemented in a following way:</p>
+<pre lang="fsharp">
+let getValueReader f =
+  // Returns a function that takes the record as an argument..
+  (fun rc -&gt; 
+     // .. reads the value of the field using 'f' ..
+     let value = f rc
+     // .. prints the value on a console and returns it
+     printfn "%A" value
+     value)
+</pre>
+<p>This is very useful solution to a simpler kind of problem where meta-programming is not involved, but when
+  you want to read the .NET attributes associated with the field and generate wrapping code depending on these
+  attributes, simple functions are not powerful enough. This is because it isn't possible to inspect
+  the internal structure of the function - it is just an arbitrary compiled code and for meta-programming
+  we need to know something about the internal structure of the code. In case of record fields, we want to
+  know what the name of the record field is as well as what .NET attributes are associated with it and so on.</p>
+
+<h2>Statically-typed Dynamic Lookup</h2>
+<p>Now that I explained why you might be interested in writing something like that, let's get back to the
+  original pseudo-code. Here is a shorter version of the code (which reads just the <code>Str</code> field
+  of the record):</p>
+<pre lang="fsharp">
+let readStrField = getValueReader `SampleRec.Str`
+let s = readStrField rc
+</pre>
+<p>Before we turn this into a real code, let's look at the types. Dynamic lookup is a feature known from
+  dynamically typed languages, but I'm now showing how to use it in F#, so types will be quite important for us.
+  In particular, we want to know what is the type of the member description (or simply a <em>symbol</em>) written
+  in a backquotes. Our initial idea may be that it is simply some representation of the member (let's call it for 
+  example <code>DynamicMember</code>). This would unfortunately mean that we don't know anything about type of the 
+  member represented by the symbol. We don't know the type of the F# record whose member is represented by the symbol
+  (in this example <code>SampleRec</code>) and we also don't know the type of the record field (in this case 
+  <code>string</code>). This means that the <code>getValueReader</code> would have the following type signature:</p>
+<pre lang="fsharp">
+getValueReader : DynamicMember -&gt; (obj -&gt; obj)
+</pre>
+<p>This isn't very satisfying, because we would have a function that takes an object and returns an object. This
+  isn't really a code that we want to write in a statically-typed language, because we're losing all the checking 
+  guaranteed by the F# type checking. So, what we'd ideally want to is to include additional information in the
+  type of the symbol. This can be done in F# by using type parameters. Our representation of symbol should have two
+  type parameters that can carry a type of the F# record type (in which the field belongs) and the type of the field. 
+  Using this better version of symbol, we could write the following <code>getValueReader</code> function:</p>
+<pre lang="fsharp">
+getValueReader : DynamicMember&lt;'recordT, 'fieldT&gt; -&gt; ('recordT -&gt; 'fieldT)
+</pre>
+<p>Using this representation of symbols (that represent the field of the record), we can get surprising type 
+  safety. You can see that the returned function (of type <code>'recordT -&gt; 'fieldT</code>) is fully typed.
+  Its argument is a record, in which the symbol belongs and the result of the function has same type as the record field,
+  so this is exactly the type that we want to get for a function that reads the field of the record!
+  Using this representation, the type system can guarantee that we will use the dynamically constructed 
+  function returned by <code>getValueReader</code> only in the correct ways.</p>
+  
+<p>The question that remains to be answered is: How can we get this representation of symbols in F# language?
+  There is no direct language support for this, but we can use F# quotations. The following output from the
+  F# interactive console shows that we can use specifc quotation syntax (I'll explain it shortly) to get
+  a value that contains all the necessary type information and we can use it to define the <code>DynamicMember</code>
+  type which was used in the previous examples:</p>
+<pre lang="fsharp">
+// Using F# quotations mechanism...
+&gt; let dynMem = &lt;@@ (_ : SampleRec).Str @@&gt;
+val dynMem : Expr&lt;SampleRec&gt; -&gt; Expr&lt;string&gt;
+
+// Now we can define the DynamicMember type from the previous example:
+&gt; type DynamicMember&lt;'a, 'b&gt; = Expr&lt;'a&gt; -&gt; Expr&lt;'b&gt;
+</pre>
+<p>Let's now look at the quoted expression that we used to create our symbol representation. The simplest form
+  is <code>&lt;@@ _.Str @@&gt;</code>, but in the previous example, I added type annotation, because otherwise the 
+  F# compiler wouldn't know what is the type of the record that is used in the expression. The whole expression is
+  enclosed in a quotation (<code>&lt;@@ ... @@&gt;</code> operator), which means that it will return some representation
+  of the F# code enclosed in the operator. Quotations are somewhat similar to C# 3.0 expression trees and I already 
+  discussed them on this blog [<a href="#dynfslinks">2</a>, <a href="#dynfslinks">3</a>]. The underscore symbol represents
+  a hole in the quotation. A hole is simply something that can be filled in later, so if we create a hole, the 
+  returned quotation is actually a function. The function takes a quotation to be filled in the hole and returns a quotation
+  with the hole replaced by the argument. Let me demonstrate this using a short script from the F# interactive:</p>
+<pre lang="fsharp">
+// Import necessary F# namespaces for quotations
+&gt; #light;;
+&gt; open Microsoft.FSharp.Quotations;;
+&gt; open Microsoft.FSharp.Quotations.Typed;;
+
+// Declare a quotation with a hole - returns a function 
+&gt; let expr = &lt;@@ 2 * _ @@&gt;;;
+val expr : (Expr&lt;int&gt; -&gt; Expr&lt;int&gt;)
+
+// Fill in a quotation of '2 + 3' into a hole 
+&gt; let filled = expr &lt;@@ 2 + 3 @@&gt;;;
+val filled : Expr&lt;int&gt;
+
+// The result is a quoation of '2 * (3 + 4)'
+&gt; filled;;
+val it : Expr&lt;int&gt; = &lt;@@
+  (App (App op_Multiply (Int32 2))
+     (App (App op_Addition (Int32 3)) (Int32 4))) @@&gt;
+</pre>  
+<p>Using quotations for representing symbols is quite powerful trick. The quotation can be analyzed using F# reflection
+  library, so we can access all the internals. Moreover, when we use typed quotations (<code>&lt;@@ ... @@&gt;</code> operator)
+  with hole as in the previous example, we get all the necessary type information to write a function with a fully
+  type safe signature. </p>
+  
+<h3>Implementation Internals</h3>
+<p>As a last thing in this article, I'll show you how to implement a code that simply returns a function that reads the
+  value without any additional processing. In a real world, you would of course add some additional mechanism depending
+  on the record field, but this isn't the point of this article. Let's first rewrite the example in pseudo-code from the 
+  beginning of the article into a real F# code that uses symbols in a way introduced in this article:</p>
+
+<pre lang="fsharp">
+let readStrField = getValueReader &lt;@@ (_ : SampleRec).Str @@&gt;   
+let readNumField = getValueReader &lt;@@ (_ : SampleRec).Num @@&gt;   
+
+let rc = { Str = "Hello world!"; Num = 42 }
+let s, n = readStrField rc, readNumField rc
+printfn "Extracted: %s, %d" v1 v2
+</pre>
+<p>This is of course syntactically a bit more complicated, because F# doesn't support symbols directly as other languages, 
+  but it is still very concise code, which is useable in practice. The function <code>getValueReader</code>, which is used
+  here takes a symbol represented using quotation as an argument, so it has the following type (the first version uses
+  the type synonym declared earlier in the article and the second shows the internal representation using quotations):</p>
+<pre lang="fsharp">
+getValueReader : (DynamicMember&lt;'recordT, 'fieldT&gt;) -&gt; ('recordT -&gt; 'fieldT)
+getValueReader : (Expr&lt;'recordT&gt; -&gt; Expr&lt;'fieldT&gt;)  -&gt; ('recordT -&gt; 'fieldT)
+</pre>
+<p>Let's now look at the implementation of the <code>getValueReader</code>function:</p>
+<pre lang="fsharp">
+#light
+
+open System
+open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Quotations.Typed
+open Microsoft.FSharp.Quotations.Raw
+
+let getValueReader (prop:DynamicMember&lt;'recdT, 'fieldT&gt;) = 
+  // Get the information about the record type
+  let rcTy = typeof&lt;'recdT&gt;
+  // Fill in the hole using 'dummy' quotation, so that
+  // we can examine its internal structure
+  let expr = prop (Typed.of_raw (MkHole rcTy))
+  
+  // Match the quotation representing the symbol
+  match expr.Raw with
+  | RecdGet (ty, nm, expr) -&gt;
+      // It represents reading of the F# record field..
+      // .. get a function that reads the record field using F# reflection
+      let rdr = Reflection.Value.GetRecordFieldReader (ty, nm)
+      
+      // we're not adding any additional processing, so we just
+      // simply add type conversion to the correct types &amp; return it
+      ((box &gt;&gt; rdr &gt;&gt; unbox) : 'recdT -&gt; 'fieldT)
+  | _ -&gt; 
+      // Quotation doesn't represent symbol - this is an error
+      failwith "Invalid expression - not reading record field!"
+</pre>
+<p>First, we need to get the internal representation of the quotation. Since the argument (quotation with a hole) is a function, 
+  we first need to apply it to some argument, so that we can access the code represented by the quotation. It is not important
+  what will be inserted in place of the hole in the quotation, so we just create an untyped quotation that represents another
+  hole and fill it in place of the original hole (this is just a trick that turns a function of type <code>Expr&lt;'a&gt; -&gt; Expr&lt;'b&gt;</code>
+  into a quotation of type <code>Expr&lt;'b&gt;</code>, but it doesn't change the internal value in any way).</p>
+<p>Anyway, the rest of the code is more interesting - it first uses pattern matching and the particularly the pattern <code>RecdGet</code>
+  to test whether the quotation represents a code that reads an F# record field. If yes, it uses F# reflection (<code>GetRecordFieldReader</code>)
+  to get a function which reads the F# record field. This function isn't however strongly typed, so the type of <code>rdr</code> is 
+  <code>obj -&gt; obj</code>. As a last step, we use the type information that we obtained from the statically-typed representation 
+  of the symbol to convert this function into a strongly typed function of type <code>'recdT -&gt; 'fieldT</code>.</p>
+<p>In a real-world code that adds some functionality using meta-programming, you would do modifications in two parts of the code. 
+  First, you would use the structures obtained using pattern matching and F# reflection to discover more information about the
+  record type. The most usual case that I can think of is reading .NET attributes associated with the record type or with the members of the record,
+  however there are probably many other useful uses. Second thing that you would modify is a code that returns the function - here we
+  simply obtained a function for reading the field, but the point of meta-programming is to do something more interesting here. The key
+  idea however is that the code can return a statically-typed function, which makes the code that uses this form of dynamic meta-programming
+  statically type-safe.</p>  
+  
+<h2>Summary</h2>
+<p>In this article we've seen that a feature that is usually present in <em>dynamic</em> languages can be very nicely 
+  used in <em>statically-typed</em> F# as well. We've seen that using F# quotations, we can work with a representation of record field, 
+  which is in many ways similar to symbols known from Ruby (and similar features in other dynamic languages). Even though it is 
+  possible to achieve similar things by using strings using .NET reflection, the solution that I demonstrated here as one important
+  advantage - the code that we write is statically type-safe, which makes the code more robust.</p>
+<p>In general, you could implement similar feature in C# 3.0 using lambda expressions (treated as an 
+  expression tree - that is you'd have to specify that it has a type <code>Expression&lt;Func&lt;...&gt;&gt;</code>),
+  however in C#, it much more depends on the particular problem that you want to solve. The code that would represent the symbol would be
+  <code>(SampleRec rc) => rc.Str</code> and its type would be <code>Expression&lt;Func&lt;SampleRec, string&gt;&gt;</code>.
+  Nevertheless, this is would be a topic for another article...
+  </p>
+
+<h2>References<a name="dynfslinks"></a></h2>
+<ul>
+  <li>[1] <a href="http://cs.hubfs.net/forums/thread/5986.aspx" type="external">Record field names as function parameters </a> - Forums at hubFS</li>
+  <li>[2] <a href="http://tomasp.net/blog/fsharp-quotation-samples.aspx" type="external">F# Quotations Samples on CodePlex</a> - TomasP.Net</li>
+  <li>[3] <a href="http://tomasp.net/blog/fsharp-iv-lang.aspx" type="external">F# Overview (IV.) - Language Oriented Programming</a> - TomasP.Net</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-dynamic-lookup.aspx%2f&amp;text=Dynamic+Lookup+in+F%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-dynamic-lookup.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-dynamic-lookup.aspx%2f&title=Dynamic+Lookup+in+F%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Dynamic%20Lookup%20in%20F%23&body=%20Dynamic%20languages%20allow%20you%20to%20represent%20a%20member%20using%20a%20symbol%20or%20a%20string%20and%20to%20use%20this%20symbol%20to%20work%20with%20the%20member.%20In%20this%20article%20I%27ll%20show%20how%20to%20do%20same%20thing%20in%20statically-typed%20way%20in%20F%23.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-dynamic-lookup.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 4 June 2008, 1:50 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

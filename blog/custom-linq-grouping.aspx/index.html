@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Using custom grouping operators in LINQ - Tomas Petricek</title>
+
+  <meta name="description" content=" In LINQ, we can group data using the \"group by\" clause. However, there are other potentially useful implementations of grouping. For example, we may want to group only adjacent elements or group ascending or descending parts of the data. This article shows how to use custom behavior when grouping data using \"group by\" in LINQ query." />
+  <meta name="keywords" content="academic, c#, parallel, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Using custom grouping operators in LINQ" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/custom-linq-grouping.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In LINQ, we can group data using the \"group by\" clause. However, there are other potentially useful implementations of grouping. For example, we may want to group only adjacent elements or group ascending or descending parts of the data. This article shows how to use custom behavior when grouping data using \"group by\" in LINQ query." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Using custom grouping operators in LINQ" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In LINQ, we can group data using the \"group by\" clause. However, there are other potentially useful implementations of grouping. For example, we may want to group only adjacent elements or group ascending or descending parts of the data. This article shows how to use custom behavior when grouping data using \"group by\" in LINQ query." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Using custom grouping operators in LINQ",
+    "headline": "Using custom grouping operators in LINQ",
+  	"description": " In LINQ, we can group data using the \"group by\" clause. However, there are other potentially useful implementations of grouping. For example, we may want to group only adjacent elements or group ascending or descending parts of the data. This article shows how to use custom behavior when grouping data using \"group by\" in LINQ query.",
+  	"url": "http://tomasp.net/blog/custom-linq-grouping.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2010-02-07T20:13:32.0000000",
+  	"datePublished": "2010-02-07T20:13:32.0000000",
+    "dateModified": "2010-02-07T20:13:32.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/custom-linq-grouping.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["academic", "c#", "parallel",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Using custom grouping operators in LINQ</h1>
+<p>You can use LINQ to write queries that perform grouping of data using <code>group by</code>
+  or ordering of data using <code>orderby</code> clause. LINQ provides the default
+  (and the most common) implementation of both of the operations, but sometimes you 
+  may need a slightly different behavior when grouping or ordering data (this article
+  is motivated by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  which needs to do exactly that for grouping).</p>
+  
+<p>Let's look at a simple example, which shows when we may need a different behavior when 
+  grouping data. For example, we may have the following list of stock trades
+  containing a name of a stock and the price of the trade (stored for example as a list
+  of <code>TradeInfo</code> classes with properties <code>Name</code> and <code>Price</code>):</p>  
+<pre lang="csharp">
+{ { Name = "MSFT", Price = 80.00 },
+  { Name = "MSFT", Price = 70.00 },
+  { Name = "GOOG", Price = 100.00 },
+  { Name = "GOOG", Price = 200.00 },
+  { Name = "GOOG", Price = 300.00 },
+  { Name = "MSFT", Price = 30.00 },
+  { Name = "MSFT", Price = 20.00 } }</pre>  
+<p>Now, we may want to group adjacent trades into a single summary record which will contain
+  the name of the stock (which is same for all trades in each group), the number of trades 
+  in the group and an average price in the group. The desired results are:</p>
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+<p>The operation that we want to do is very similar to <code>group by</code> in LINQ, but 
+  it doesn't do quite the same thing! If we used <code>group by</code>, we would get only 
+  two groups as the result. However, as I wrote earlier, we want to group only 
+  <em>adjacent trades</em>. You could write your own extension method to do this,
+  but then you need to leave the elegant LINQ query syntax. In this article, I'll show
+  you how to get the desired results using a simple LINQ query with a <code>group by</code>
+  clause...</p>
+
+<h2>Customizing LINQ queries</h2>
+<p>Let's start by looking how we can customize the meaning of LINQ queries. In fact, you may have already
+  seen this - for example the <code>AsParallel</code> method from PLINQ does exactly that. 
+  Anyway, when you write a LINQ query, it is translated by the C# compiler to a sequence of 
+  method calls. The following query groups trades using the standard <code>GroupBy</code>
+  operation provided by LINQ (so the result will be only two groups):
+  </p>
+<pre lang="csharp">
+var agg = 
+  from t in trades
+  group t by t.Name into g
+  select new { Name = g.Key, Count = g.Count(), 
+               AvgPrice = g.Average(t => t.Price) };
+</pre>
+<p>Following the rules described in C# specification or using Reflector, we can see what the
+  compiler does with the above query. The use of <code>group by</code> clause is translated in 
+  a call to <code>GroupBy</code> (an argument is a lambda expression that selects the key we're using for
+  grouping) and the use of <code>select</code> is translated into a call to <code>Select</code>
+  method (an argument is lambda expression returning the anonymous type):</p>
+<pre lang="csharp">
+var agg = 
+  trades.GroupBy(t => t.Name).Select(g =>
+    new { Name = g.Key, Count = g.Count(), 
+          AvgPrice = g.Average(t => t.Price) });
+</pre>
+<p>This translation is done without checking whether the methods actually exist and what their type
+  is. In this example, the type of <code>trades</code> is <code>IEnumerable&lt;TradeInfo&gt;</code>.
+  When compiling the call to <code>GroupBy</code>, the compiler will first look for instance methods
+  of the interface. It doesn't provide any <code>GroupBy</code> method, so it will try finding
+  some extension method and it will use <code>Enumerable.GroupBy</code>, which is an extension
+  method for the <code>IEnumerable&lt;T&gt;</code> type.</p>
+<p>Now, what can we do if we want to use a different <code>GroupBy</code> method? We need to 
+  instruct the compiler to select a different extension method. We can implement a very simple
+  method <code>WithAdjacentGrouping</code> which takes <code>IEnumerable&lt;T&gt;</code> and
+  returns some other interface (we'll call it <code>IAdjacentGrouping&lt;T&gt;</code>). The
+  implementation of the inteface is just a wrapper of <code>IEnumerable&lt;T&gt;</code>, but
+  it means that C# compiler will use a <em>different type</em> when searching for the
+  <code>GroupBy</code> method:</p>
+
+<pre lang="csharp">
+var agg = 
+  trades.WithAdjacentGrouping()
+        .GroupBy(...).Select(...);
+</pre>
+<p>We'll provide our own implementation of the <code>GroupBy</code> method, which groups
+  only adjacent elements of the input sequence. The method will take an argument of type
+  <code>IAdjacentGrouping&lt;T&gt;</code>, so when the compiler analyzes the code above,
+  it will use our method instead of the standard one, which is available in the core
+  libraries (LINQ to Objects). And of course, this will also work with the LINQ query
+  syntax, because that is simply translated to method calls. We'll look at some nice
+  queries shortly, but let's first implement the required interface and <code>GroupBy</code> 
+  method.</p>
+
+<h2>Implementing adjacent grouping</h2>
+<p>To implement all the machinery that allows us to use custom <code>GroupBy</code> method,
+  we need to declare the <code>IAdjacentGrouping&lt;T&gt;</code> interface (including a 
+  concrete class implementing it) and we'll also need a class which implements the 
+  <code>IGrouping&lt;T&gt;</code> interface (which represents a group of elements with
+  a <code>Key</code>). Once that's done, we'll need two extension methods - our customized
+  <code>GroupBy</code> and a method that instructs the compiler to use it (<code>WithAdjacentGrouping</code>).</p>
+
+<h3>Interfaces and classes</h3>
+<p>Let's start with the <code>IAdjacentGrouping&lt;T&gt;</code> interface. We inherit it from
+  <code>IEnumerable&lt;T&gt;</code>, which means that all other LINQ query operators (other than
+  <code>group by</code>) will use the standard implementation. This will have some unfortunate
+  consequences. All LINQ query operators return <code>IEnumerable&lt;T&gt;</code>, so if we use
+  any other LINQ operator before our <code>GroupBy</code>, the query will "not remember" 
+  our non-standard grouping. This can be solved by providing our own implementations of other
+  operators (and we'll discuss this in details later). Other than inheriting from <code>IEnumerable&lt;T&gt;</code>
+  our new interface will not have any members, because we need it only to carry
+  type information through the query: </p>
+<pre lang="csharp">
+interface IAdjacentGrouping&lt;T&gt; : IEnumerable&lt;T&gt; { 
+} 
+
+class WrappedAdjacentGrouping&lt;T&gt; : IAdjacentGrouping&lt;T&gt; { 
+  public IEnumerable&lt;T&gt; Wrapped { get; set; } 
+  
+  public IEnumerator&lt;T&gt; GetEnumerator() {  
+    return Wrapped.GetEnumerator();  
+  } 
+  IEnumerator IEnumerable.GetEnumerator() {
+    return (IEnumerator)GetEnumerator();
+  } 
+}
+</pre>
+<p>The class <code>WrappedAdjacentGrouping&lt;T&gt;</code> is a simple implementation of our
+  new interface. It wraps an <code>IEnumerable&lt;T&gt;</code> value and delegates all 
+  operations to the wrapped type, so this is pretty uninteresting boilerplate code.</p>
+<p>We'll need one more trivial class. A typical grouping operation takes a list of elements 
+  and returns a list of lists (that is, a list of groups where each group consists of 
+  one or more inidividual elements). In LINQ, this is usually done by returning a value
+  of type <code>IEnumerable&lt;IGrouping&lt;TKey, T&gt;&gt;</code>. The 
+  <code>IGrouping&lt;TKey, T&gt;</code> type is just like <code>IEnumerable&lt;T&gt;</code> 
+  with one additional feature - it has a property <code>Key</code>, which returns the 
+  key used to identify the group (in our earlier example, the key would be the name
+  of the stock such as <code>GOOG</code> or <code>MSFT</code>). Since 
+  <code>IGrouping&lt;TKey, T&gt;</code> is an interface and .NET libraries don't provide
+  any simple implementation of the interface, we'll need to write our own:</p>
+<pre lang="csharp">
+class Grouping&lt;K, T&gt; : IGrouping&lt;K, T&gt; {
+  public K Key { get; set; }
+  public IEnumerable&lt;T&gt; Elements;
+
+  public IEnumerator&lt;T&gt; GetEnumerator() {
+    return Elements.GetEnumerator();
+  }
+  IEnumerator IEnumerable.GetEnumerator() {
+    return (IEnumerator)GetEnumerator();
+  }
+}
+</pre>
+<p>The class stores elements of the group in a property <code>Elements</code>, which will be
+  usually accessed via the <code>IEnumerable&lt;T&gt;</code> interface (both generic and 
+  non-generic <code>GetEnumerator</code> methods just delegate the operation to the wrapped
+  collection). The class also has a property <code>Key</code> with a getter (required by the
+  interface) and setter (so that we can use it easily). Now that we have all the boilerplate
+  code, let's look at more interesting things. In the next section, we'll implement our
+  custom grouping.</p>
+
+<h3>Implementing custom grouping</h3>
+<p>Our custom <code>GroupBy</code> method has exactly the same type signature as the
+  <code>GroupBy</code> method provided by LINQ (with the only exception that it takes
+  the <code>IAdjacentGrouping&lt;T&gt;</code> as the first argument). It implements the behavior discussed
+  in the introduction. Instead of grouping <em>all elements</em> into groups based on 
+  the returned keys, it groups all <em>adjacent elements</em> with the same key from the 
+  input collection.</p>
+<p>The implementation of this functionality is the only lengthy piece of code in this article.
+  We'll need to store a collection of elements in the current group (grouped so far) with
+  a key of the current group. Each time we move to the next element, we'll check if it has the 
+  same key as the current group or not. If the key didn't change, we'll just add the element
+  to the current group and continue. If the key changes, we'll return the previous group
+  and start a new one. We also need to deal specially with the first element:
+</p>  
+<pre lang="csharp">
+public static IEnumerable&lt;IGrouping&lt;K, T&gt;&gt; GroupBy&lt;T, K&gt;
+    (this IAdjacentGrouping&lt;T&gt; source, Func&lt;T, K&gt; keySelector) where K : IComparable { 
+  // Remembers elements of the current group
+  List&lt;T&gt; elementsSoFar = new List&lt;T&gt;(); 
+  IEnumerator&lt;T&gt; en = source.GetEnumerator(); 
+  
+  // Read the first element (we need an initial key value)
+  if (en.MoveNext()) { 
+    K lastKey = keySelector(en.Current); 
+    do {  
+      // Test whether current element starts a new group
+      K newKey = keySelector(en.Current); 
+      if (newKey.CompareTo(lastKey) != 0) 
+      {  
+        // Yield the previous group and start next one
+        yield return new Grouping&lt;K, T&gt; 
+          { Elements = elementsSoFar, Key = lastKey };
+        lastKey = newKey;
+        elementsSoFar = new List&lt;T&gt;(); 
+      } 
+      
+      // Add element to the current group
+      elementsSoFar.Add(en.Current); 
+    } 
+    while (en.MoveNext()); 
+    
+    // Yield the last group of sequence
+    yield return new Grouping&lt;K, T&gt; 
+      { Elements = elementsSoFar, Key = lastKey }; 
+  }
+} 
+</pre>
+<p>We're using the <code>IEnumerator&lt;T&gt;</code> to iterate over the source elements,
+  because this allows us to call the <code>MoveNext</code> once before we start looping 
+  (to get the key of the first element, which is also the key of the first group). Once
+  we initialize the <code>lastKey</code> variable, we start looping until the source 
+  is exhausted. Note that our method has a generic constraint saying that the key
+  should be <code>IComparable</code>. This allows us to compare keys (and decide whether to
+  start a new group or not) using the <code>CompareTo</code> method.</p>
+<p>The last thing we need to do is to implement the <code>WithAdjacentGrouping</code> method,
+  which instructs the compiler to use our <code>GroupBy</code>. As discussed earlier, the method
+  will change the type of the collection from <code>IEnumerable&lt;T&gt;</code> to our 
+  type <code>IAdjacentGrouping&lt;T&gt;</code>, so that the compiler will prefer our
+  <code>GroupBy</code> method (because it is an extension method directly for the 
+  <code>IAdjacentGrouping&lt;T&gt;</code> type):</p>
+<pre lang="csharp">
+public static IAdjacentGrouping&lt;T&gt; WithAdjacentGrouping&lt;T&gt;(this IEnumerable&lt;T&gt; e) { 
+  return new WrappedAdjacentGrouping&lt;T&gt; { Wrapped = e }; 
+} 
+</pre>
+<p>The extension method is trivial. It simply returns our concrete implementation of the interface, 
+  which wraps an <code>IEnumerable&lt;T&gt;</code>. This was the last missing piece that
+  we needed to implement, before we could use our grouping operation in LINQ queries, so let's
+  look at a couple of examples showing how this can be used.</p>
+
+
+<h2>Grouping trades and other examples</h2>
+<p>First of all, let's look at the example, which I presented as a motivation at the beginning
+  of this article. We can use our new extension method <code>WithAdjacentGrouping</code> to change
+  the meaning of a <code>group by</code> clause in a query. When we use the extension method,
+  the query will group only adjacent elements, which is exactly what we wanted: </p>
+  
+<pre lang="csharp">
+var groups =
+  from t in trades.WithAdjacentGrouping()
+  group t by t.Name into g
+  select new {
+    Name = g.Key, Count = g.Count(),
+    AvgPrice = g.Average(t => t.Price) };
+</pre>
+<p>The query uses the value specified in the <code>by</code> clause to decide whether
+  to start a new group or whether an element belongs to the current group. This means
+  that it will start a new group each time the <code>t.Name</code> value changes. When
+  that happens, it will use the <code>select</code> clause to generate aggregate
+  information about the group. In this case, we return the number of elements and
+  an average price in the group. If you run the query with the input data from the
+  beginning of the article, you'll get the following result:</p>
+
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+
+<p>I'm sure you can imagine other situations when this grouping technique would be useful.
+  It also seems to be useful when processing Open XML documents as mentioned by
+  <a href="http://blogs.msdn.com/ericwhite/archive/2008/04/21/the-groupadjacent-extension-method.aspx" type="external">Eric White</a>
+  (who shows how to implement this behavior using an ordinary extension method).
+  However, we'll look at one more interesting aspect of this implementation of grouping - 
+  the fact that it can work with <em>infinite sequences</em>.</p>
+
+
+<h3>Grouping prime numbers</h3>
+<p>An infinite sequence is an <code>IEnumerator&lt;T&gt;</code> that always returns
+  <code>true</code> when you call its <code>MoveNext</code> method. They do not represent
+  elements of a collection (because an infinite collection wouldn't fit in a memory!), but
+  we can easily generate them in C# using the <code>yield return</code> keyword.</p>
+<p>The usual implementation of <code>GroupBy</code> cannot work on infinite sequences,
+  because it needs to see all elements of the sequence, before it can give any result 
+  (we can't return any group early, because there may still be some element that belongs
+  to that group in the rest of the sequence). However, our implementation which groups 
+  only adjacent elements return a group immediately when the key calculated for the 
+  current element changes. This means that it needs to see only a limited number of
+  elements before returning the next group.</p>
+<p>Let's look at an example that shows how we can use this property in practice. 
+  The following code shows how to generate an infinite <code>IEnumerable&lt;long&gt;</code>
+  value, which will contain prime numbers (it is still somehow limited, because we're
+  using <code>long</code>, but we could use for example the new <code>BigInteger</code> from .NET 4.0): </p>
+<pre lang="csharp">
+static bool IsPrime(long n) {
+  long max = (long)Math.Sqrt(n);
+  for (long i = 2; i &lt;= max; i++)
+    if (n % i == 0) return false;
+  return true;
+}
+static IEnumerable&lt;long&gt; Primes() {
+  for (long n = 0; true; n++)
+    if (IsPrime(n)) yield return n;
+}
+</pre>
+<p>Now, let's say that we want to count the number of primes in groups of 100000 numbers.
+  It is a well known fact that for intervals of the same length (in our case, 100000) the
+  number of primes will be larger for smaller numbers (e.g. interval from 0 to 100000) 
+  and smaller once we move to larger numbers (e.g. interval from 500000 to 600000). 
+  We can verify this fact using the following query:
+</p>
+<pre lang="csharp">
+var primeGroups =
+  from n in Primes().WithAdjacentGrouping()
+  group n by (n / 100000) into g
+  select g.Count();
+</pre>
+<p>If you take first 10 results of the query (for example using <code>Take(10)</code>),
+  it will give the following numbers:</p>
+<pre lang="csharp">9594, 8392, 8013, 7863, 7678, 7560, 7445, 7408, 7323, 7224</pre>
+<p>If you wanted to take all results of the query (e.g. using just <code>foreach</code>),
+  it would continue printing results forever (and get slower and slower, because testing
+  whether a large number is prime can take quite long). If you forget to add the 
+  <code>WithAdjacentGrouping</code> method and run the code using the ordinary 
+  <code>GroupBy</code> method, it will never print any result (because the standard 
+  <code>GroupBy</code> operator tries to read <em>all</em> numbers from the infinite sequence). 
+  </p>
+
+<h3>Ascending and descending groups</h3>
+<p>So far, we have been using <code>group by</code> to group adjacent elements with the same key.
+  The standard LINQ implementation gives us <code>group by</code> which groups all elements
+  using the given key. However, we can imagine other ways to group elements. For example,
+  you could create groups of values for which the value of the key is ascending or descending. 
+  This can be used for example to simply show trends in a sequence of data. </p>
+<p>Let's say we have a sequence (ordered by time) which contains stock prices (of a single
+  stock) or for example currency exchange rate. The data may look like this:</p>  
+<pre lang="csharp">
+{ { Price = 80.00, Time = 8:00 },
+  { Price = 70.00, Time = 9:00 },
+  { Price = 50.00, Time = 10:00 },
+  { Price = 55.00, Time = 11:00 },
+  { Price = 60.00, Time = 12:00 },
+  { Price = 75.00, Time = 13:00 },
+  { Price = 65.00, Time = 14:00 } }</pre>  
+<p>Now, you can see that there is a descending sequence from 8:00 to 10:00, then we have
+  an ascending sequence from 10:00 to 13:00 and finally, there is a short descending sequence
+  from 13:00 to 14:00. If we want to simply visualize these trends, we would like to
+  aggregate these three groups into the following result:</p>
+<pre lang="csharp">
+{ { Difference = -30.00, Interval = 2:00 },
+  { Difference = +25.00, Interval = 3:00 },
+  { Difference = -10.00, Interval = 1:00 } }</pre>  
+<p>This operation is quite similar to the one which motivated this article, but it 
+  is different. We cannot implement it using our <code>WithAdjacentGrouping</code> method. 
+  However, after reading this article, you'd be able to follow the pattern and define your
+  own extension method (for example <code>WithTendencyGrouping</code>) and your own
+  custom implementation of <code>GroupBy</code>, which implements the behavior we just
+  described. Then you could write the following code:</p>
+<pre lang="csharp">
+var trens = 
+  from s in stocks.WithTendencyGrouping()
+  group s by s.Price into g
+  select new {  
+    Difference = g.Last().Price - g.First().Price,
+    Interval = g.Last().Time - g.First().Time };
+</pre>
+<p>With an appropriate custom implementation of <code>GroupBy</code> method, this code would
+  give the results we've seen earlier. As you can see, the <code>group by</code> clause 
+  can be customized to perform various useful tasks. </p>
+
+<h2>Summary</h2>
+<p>In this article, we discussed two alternative implementations of the <code>GroupBy</code>
+  operator (in addition to the standard implementation provided by LINQ). We've seen that
+  we can change the meaning of LINQ query syntax to use our own implementation of 
+  <code>GroupBy</code>. Then we can write readable and elegant LINQ queries to group
+  data in a non-standard way (for example by grouping adjacent elements with the same 
+  value of the key). You could use the techniques discussed in this article to customize 
+  other clauses of LINQ queries (for example the <code>orderby</code> clause). </p>
+
+<p>We didn't discuss one important thing. Once you use other operator in the LINQ query
+  (for example <code>where</code>), the compiler "forgets" that we wanted to use custom
+  <code>GroupBy</code> method. This happens because it selects the standard <code>Where</code>
+  method and gives it our wrapped sequence of type <code>IAdjacentGrouping&lt;T&gt;</code>.
+  However, the <code>Where</code> method returns the result of type <code>IEnumerable&lt;T&gt;</code>,
+  so if the compiler needs to invoke <code>GroupBy</code> on the result, it will pick a standard
+  overload. This problem can be easily solved by providing our own implementations for 
+  all the standard LINQ query operators. For example, we would implement a <code>Where</code> method,
+  which returns the result as <code>IAdjacentGrouping&lt;T&gt;</code>. The implementations of these
+  methods would be quite easy (because they just wrap standard methods), but it would
+  make the code rather lengthfy, so I didn't include them in the article.
+</p>
+
+<p>Finally, this article has been inspired by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  and by a paper by Philip Wadler and Simon Peyton Jones about <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/list-comp/list-comp.pdf" type="external">Haskell comprehensions</a> 
+  (Haskell comprehensions were one of the motivations for LINQ). The paper adds support for <code>order</code> and <code>group</code>
+  to the comprehension syntax (LINQ was one of the motivations of the paper). In Haskell, you can 
+  provide your own function directly in the syntax. Here is a Haskell version of our original
+  example with grouping stock trades: 
+</p>
+<pre lang="csharp">
+[ (the stock, length stock, average price)
+| (stock, price) &lt;- trades
+, group by stock using groupRun ]</pre>
+<p>The important thing about the example that it uses <code>using</code> clause which allows you to 
+  specify your own grouping function. In this case, the grouping function is <code>groupRun</code>,
+  which implements the same functionality as our custom <code>GroupBy</code> grouping adjacent elements.
+  The paper also states that in LINQ, it isn't possible to provide custom grouping (or ordering)
+  function. I believe that this article shows that this isn't quite true - you can do similar thing
+  in LINQ. However, there are many limitaions in LINQ. In particular, we can specify one grouping
+  function for the whole query and cannot change it for each <code>group by</code> clause.</p>
+
+<h2>Downloads &amp; References</h2>
+<ul>
+  <li><a href="/articles/custom-linq-grouping/source.zip">Download the example source code</a></li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">Can I use LINQ to retrieve only “on change” values?</a> - Question at StackOverflow</li>
+  <li>[2] <a href="http://blogs.msdn.com/ericwhite/archive/2008/04/21/the-groupadjacent-extension-method.aspx" type="external">The GroupAdjacent extension method</a> - Eric White's blog</li>
+  <li>[3] <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/list-comp/list-comp.pdf" type="external">Comprehensive Comprehensions: Comprehensions with ‘Order by’ and ‘Group by’</a> - Philip Wadler, Simon Peyton Jones</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fcustom-linq-grouping.aspx%2f&amp;text=Using+custom+grouping+operators+in+LINQvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fcustom-linq-grouping.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fcustom-linq-grouping.aspx%2f&title=Using+custom+grouping+operators+in+LINQ">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Using%20custom%20grouping%20operators%20in%20LINQ&body=%20In%20LINQ%2c%20we%20can%20group%20data%20using%20the%20%5c%22group%20by%5c%22%20clause.%20However%2c%20there%20are%20other%20potentially%20useful%20implementations%20of%20grouping.%20For%20example%2c%20we%20may%20want%20to%20group%20only%20adjacent%20elements%20or%20group%20ascending%20or%20descending%20parts%20of%20the%20data.%20This%20article%20shows%20how%20to%20use%20custom%20behavior%20when%20grouping%20data%20using%20%5c%22group%20by%5c%22%20in%20LINQ%20query.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fcustom-linq-grouping.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Sunday, 7 February 2010, 8:13 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/parallel/">parallel</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

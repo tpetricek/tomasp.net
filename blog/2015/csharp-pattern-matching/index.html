@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Pattern matching in action using C# 6 - Tomas Petricek</title>
+
+  <meta name="description" content=" The new release of the C# language migth seem as a minor version, but in fact, it contains a hidden gem. In fact, it contains awesome support for pattern matching - but for some reason, this is concealed under the name 'exception filters'." />
+  <meta name="keywords" content="c#, fun, functional programming, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Pattern matching in action using C# 6" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2015/csharp-pattern-matching/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png" />
+  <meta property="og:description" content=" The new release of the C# language migth seem as a minor version, but in fact, it contains a hidden gem. In fact, it contains awesome support for pattern matching - but for some reason, this is concealed under the name 'exception filters'." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Pattern matching in action using C# 6" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png" />
+  <meta name="twitter:description" content=" The new release of the C# language migth seem as a minor version, but in fact, it contains a hidden gem. In fact, it contains awesome support for pattern matching - but for some reason, this is concealed under the name 'exception filters'." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Pattern matching in action using C# 6",
+    "headline": "Pattern matching in action using C# 6",
+  	"description": " The new release of the C# language migth seem as a minor version, but in fact, it contains a hidden gem. In fact, it contains awesome support for pattern matching - but for some reason, this is concealed under the name 'exception filters'.",
+  	"url": "http://tomasp.net/blog/2015/csharp-pattern-matching/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2015-04-01T11:41:49.5611652+01:00",
+  	"datePublished": "2015-04-01T11:41:49.5611652+01:00",
+    "dateModified": "2015-04-01T11:41:49.5611652+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2015/csharp-pattern-matching/",
+  	"image": "http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png",
+  	"keywords": ["c#", "fun", "functional programming",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Pattern matching in action using C# 6</h1>
+<img src="http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png" style="float:right;margin:20px" />
+<p>On year ago, on this very day, <a href="http://tomasp.net/blog/2014/csharp-6-released/index.html">I wrote about the open-sourcing of C#
+6.0</a>. Thanks to a very special
+information leak, I learned about this about a week before Microsoft officially announced
+it. However, my information were slightly incorrect - rather then releasing the <a href="https://github.com/Microsoft/visualfsharp/">much
+improved version of the language</a>, Microsoft
+continued working on language version internally called "Small C#", which is now available
+as "C# 6" in the <a href="https://www.visualstudio.com/en-us/news/vs2015-vs.aspx">Visual Studio 2015 preview</a>.</p>
+<p>It is my understanding that, with this release, Microsoft is secretly testing the reaction of the
+developer audience to some of the amazing features that F# developers loved and used for
+the last 7 years and that are coming to C# <em>very soon</em>. To avoid shock, these are however
+carefuly hidden!</p>
+<p>In this blog post, I'm going to show you <em>pattern matching</em> which is probably the most useful
+hidden C# feature and its improvements in C# 6. For reasons that elude me, pattern matching in
+C# 6 is called <em>exception filters</em> and has some unfortunate restrictions. But we can still
+use it to write nice functional code!</p>
+<blockquote>
+<p><strong>UPDATE:</strong> In case you are reading this article later than on the day when it was
+published, let me just point out that this was released on 1 April 2015. Keep that
+in mind before putting the code in production. Have fun ;-).</p>
+</blockquote>
+<h2>Formatting simple math expressions with F#</h2>
+<p>For easier understanding, I'll first introduce the idea of pattern matching using F#.
+I'll use a fairly standard functional programming example - formatting and
+evaluation of simple algebraic expression. We want to work with expressions like <span class="math">\(x * (1 + 2)\)</span>,
+so we'll need variables, constants, addition and multiplication. In F#, we can define a
+discriminated union to model the four cases:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="t">Expression</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="p">Variable</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="t">string</span>
+  | <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="p">Constant</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="t">int</span>
+  | <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="p">Add</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="t">Expression</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="t">Expression</span>
+  | <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="p">Mul</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 9)" onmouseover="showTip(event, 'fs6', 9)" class="t">Expression</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs6', 10)" onmouseover="showTip(event, 'fs6', 10)" class="t">Expression</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This says that an <code>Expression</code> can be one of four different cases. If it is a variable, it
+contains the name (as a <code>string</code>), if it is addition, it contains two sub-expressions and so on.</p>
+<p>Now, writing formatting is quite easy, because we can write a recursive function <code>format</code> that
+takes an expression and uses the <code>match</code> construct to handle the different cases:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="f">format</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="i">e</span> <span class="o">=</span> 
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs9', 13)" onmouseover="showTip(event, 'fs9', 13)" class="i">e</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'fs1', 14)" onmouseover="showTip(event, 'fs1', 14)" class="p">Variable</span> <span onmouseout="hideTip(event, 'fs10', 15)" onmouseover="showTip(event, 'fs10', 15)" class="i">s</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="i">s</span>
+  | <span onmouseout="hideTip(event, 'fs3', 17)" onmouseover="showTip(event, 'fs3', 17)" class="p">Constant</span> <span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="i">n</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs2', 19)" onmouseover="showTip(event, 'fs2', 19)" class="f">string</span> <span onmouseout="hideTip(event, 'fs11', 20)" onmouseover="showTip(event, 'fs11', 20)" class="i">n</span>
+  | <span onmouseout="hideTip(event, 'fs5', 21)" onmouseover="showTip(event, 'fs5', 21)" class="p">Add</span>(<span onmouseout="hideTip(event, 'fs12', 22)" onmouseover="showTip(event, 'fs12', 22)" class="i">l</span>, <span onmouseout="hideTip(event, 'fs13', 23)" onmouseover="showTip(event, 'fs13', 23)" class="i">r</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 24)" onmouseover="showTip(event, 'fs14', 24)" class="f">sprintf</span> <span class="s">&quot;(</span><span class="pf">%s</span><span class="s"> + </span><span class="pf">%s</span><span class="s">)&quot;</span> (<span onmouseout="hideTip(event, 'fs8', 25)" onmouseover="showTip(event, 'fs8', 25)" class="f">format</span> <span onmouseout="hideTip(event, 'fs12', 26)" onmouseover="showTip(event, 'fs12', 26)" class="i">l</span>) (<span onmouseout="hideTip(event, 'fs8', 27)" onmouseover="showTip(event, 'fs8', 27)" class="f">format</span> <span onmouseout="hideTip(event, 'fs13', 28)" onmouseover="showTip(event, 'fs13', 28)" class="i">r</span>)
+  | <span onmouseout="hideTip(event, 'fs7', 29)" onmouseover="showTip(event, 'fs7', 29)" class="p">Mul</span>(<span onmouseout="hideTip(event, 'fs12', 30)" onmouseover="showTip(event, 'fs12', 30)" class="i">l</span>, <span onmouseout="hideTip(event, 'fs13', 31)" onmouseover="showTip(event, 'fs13', 31)" class="i">r</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 32)" onmouseover="showTip(event, 'fs14', 32)" class="f">sprintf</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s">*</span><span class="pf">%s</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fs8', 33)" onmouseover="showTip(event, 'fs8', 33)" class="f">format</span> <span onmouseout="hideTip(event, 'fs12', 34)" onmouseover="showTip(event, 'fs12', 34)" class="i">l</span>) (<span onmouseout="hideTip(event, 'fs8', 35)" onmouseover="showTip(event, 'fs8', 35)" class="f">format</span> <span onmouseout="hideTip(event, 'fs13', 36)" onmouseover="showTip(event, 'fs13', 36)" class="i">r</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The code is quite straightforward. When we get a variable, we just return its name. When we get
+a constant, we turn the number to a string and return it. Addition and multiplication is
+a little more interesting - we call <code>format</code> recursively on the two sub-expressions and then
+build a composed string.</p>
+<h2>Defining discriminated unions in C#</h2>
+<p>Unfortunately, C# does not give us a simple way to define custom discriminated union types
+(you can send a pull request from <a href="https://github.com/Microsoft/visualfsharp/">this repo</a>
+to <a href="https://github.com/dotnet/roslyn/">this repo</a>, although you might get labelled as troll).
+However, there is <em>one</em> discriminated union hiding in C#!</p>
+<p>To find it, we need a bit of programming language theory (which has nothing to do with monads,
+by the way). The <a href="http://books.google.cz/books/about/Types_and_Programming_Languages.html?id=ti6zoAC9Ph8C&amp;redir_esc=y">Types and Programming Languages</a>
+book (page 177) says the following about ML exceptions:</p>
+<blockquote>
+<p>The same idea can be refined to leave room for user-defined exceptions
+by taking <span class="math">\(T_{exn}\)</span> to be an <em>extensible variant type</em>. ML adopts this
+idea, providing a single extensible variant type called <code>exn</code>.</p>
+</blockquote>
+<p>So, interestingly, you can see ML (and F#) exceptions as <em>a single discriminated union</em> and
+custom exceptions as cases of this union! If we stretch the idea a bit, we can use it and
+extend the <em>only</em> discriminated union that is available in C# by defining our expressions
+as custom exceptions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">class</span> Variable <span class="o">:</span> Exception {
+  <span class="k">public</span> <span class="k">string</span> Name { get; set; } 
+}
+<span class="k">public</span> <span class="k">class</span> Constant <span class="o">:</span> Exception {
+  <span class="k">public</span> <span class="k">int</span> Value { get; set; } 
+}
+<span class="k">public</span> <span class="k">class</span> Add <span class="o">:</span> Exception {
+  <span class="k">public</span> Exception Left { get; set; }
+  <span class="k">public</span> Exception Right { get; set; } 
+}
+<span class="k">public</span> <span class="k">class</span> Multiply <span class="o">:</span> Exception {
+  <span class="k">public</span> Exception Left { get; set; }
+  <span class="k">public</span> Exception Right { get; set; } 
+}
+</code></pre></td></tr></table>
+<p>This is a bit tedious, but I'm pretty sure that Resharper can (with some nice plugin) generate
+this for you from the original F# code. If you are a Clean Coder, be sure to split this definition
+across 4 different files.</p>
+<h2>Formatting math expressions in C#</h2>
+<p>Now we have our discriminated union, so let's have a look how we can rewrite the expression
+formatting code in C#. The amazing thing about this first example is that it does not even
+need C# 6 - which means you can adopt this technique today! But because I want to be cooler
+and show off my cutting edge coding skills, I'll also use <em>string interpolation</em> from C# 6.</p>
+<p>The idea is quite simple, we get the expression as an argument of type <code>Exception</code>, we
+<code>throw</code> it and we use the limited form of pattern matching provided by C# <code>catch</code> construct:</p>
+<pre lang="csharp"><span class="k">public</span> <span class="k">static</span> <span class="k">string</span> Format(Exception e) {
+  <span class="k">try</span> { <span class="k">throw</span> e; }
+  <span class="k">catch</span> (Constant n) { <span class="k">return</span> n.Value.ToString(); }
+  <span class="k">catch</span> (Variable v) { <span class="k">return</span> v.Name; }
+  <span class="k">catch</span> (Add a) { <span class="k">return</span> <span class="s">$"({</span>Format(a.Left)<span class="s">} + {</span>Format(a.Right)<span class="s">})"</span>; }
+  <span class="k">catch</span> (Multiply a) { <span class="k">return</span> <span class="s">$"{</span>Format(a.Left)<span class="s">} * {</span>Format(a.Right)<span class="s">}"</span>; }
+}</pre>
+<p>This amazing technique is actually quite close to what you can do with F#. Each <code>catch</code> clause
+corresponds to one clause of the <code>match</code> construct in F#. Another nice thing is that this not
+just checks that the value has the right type, say <code>Multiply</code>, but it also type casts the input
+to the right type <em>for free</em> - so in the body, we can access <code>a.Left</code> and <code>a.Right</code> directly.</p>
+<p>Now, there are some limitations - because the <code>Exception</code> discriminated union is <em>open</em>, the
+C# compiler cannot do exhaustiveness checks. That is, F# will warn you if you forget a case but
+C# will not. For completeness let's see how this works using a sample input:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">var</span> expr <span class="o">=</span> <span class="k">new</span> Multiply {
+  Left <span class="o">=</span> <span class="k">new</span> Variable { Name <span class="o">=</span> <span class="s">"x"</span> },
+  Right <span class="o">=</span> <span class="k">new</span> Add {
+    Left <span class="o">=</span> <span class="k">new</span> Constant { Value <span class="o">=</span> <span class="n">1</span> },
+    Right <span class="o">=</span> <span class="k">new</span> Constant { Value <span class="o">=</span> <span class="n">2</span> } }
+};
+Console.WriteLine(Format(expr));
+</code></pre></td></tr></table>
+<p>To run this, you do not even need C# 6, so you can try it right now - and you should see that the code
+not only <em>does not throw an exception</em> but gives the correct result which is <code>"x * (1 + 2)"</code>.</p>
+<h2>Evaluating expressions with exception filters</h2>
+<p>As I mentioned, pattern matching is significantly improved in C# 6 thanks to <em>exception filters</em>.
+To demonstrate this feature, I'll extend our example with a simple expression evaluator. In
+addition to an expression, the method also takes a dictionary that defines values for the
+variables in the expression.</p>
+<p>When evaluating <code>Variable</code>, we need to distinguish two different cases - if the variable is
+in the dictionary, we just return its value. Otherwise, we report an error. This can be done
+elegantly with exception filters:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">static</span> <span class="k">int</span> Evaluate(Exception e, IDictionary&lt;<span class="k">string</span>, <span class="k">int</span>&gt; vars) {
+  <span class="k">int</span> res;
+  <span class="k">try</span> { <span class="k">throw</span> e; }
+  <span class="k">catch</span> (Constant n) { <span class="k">return</span> n.Value; }
+  <span class="k">catch</span> (Variable v) when (vars.TryGetValue(v.Name, <span class="k">out</span> res)) { <span class="k">return</span> res; }
+  <span class="k">catch</span> (Variable _) { <span class="k">throw</span> <span class="k">new</span> ArgumentException(<span class="s">"Variable not found!"</span>); }
+  <span class="k">catch</span> (Add a) { <span class="k">return</span> Evaluate(a.Left, vars) <span class="o">+</span> Evaluate(a.Right, vars); }
+  <span class="k">catch</span> (Multiply a) { <span class="k">return</span> Evaluate(a.Left, vars) <span class="o">+</span> Evaluate(a.Right, vars); }
+}
+</code></pre></td></tr></table>
+<p>As you can see, exception filters give us some more of the pattern matching power from F#.
+Here, we can use two <em>patterns</em> <code>(Variable v) when (...)</code> handles the case when a variable
+value is defined in the dictionary <code>vars</code> and the pattern <code>(Variable _)</code> is used to handle
+all remaining cases.</p>
+<p>To test this, we can call the <code>Evaluate</code> function as follows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Console</span><span class="o">.</span><span class="i">WriteLine</span>(<span class="i">Evaluate</span>(<span class="i">expr</span>, 
+  <span class="k">new</span> <span class="i">Dictionary</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs2', 37)" onmouseover="showTip(event, 'fs2', 37)" class="i">string</span>, <span onmouseout="hideTip(event, 'fs4', 38)" onmouseover="showTip(event, 'fs4', 38)" class="i">int</span><span class="o">&gt;</span> { { <span class="s">&quot;x&quot;</span>, <span class="n">4</span> } }));
+</code></pre></td>
+</tr>
+</table>
+<p>To run this, you'll actually need a version of C# that supports exception filters - either
+Visual Studio 2015 preview, or latest build <a href="https://github.com/dotnet/roslyn/">of Roslyn</a>.
+If you run it, you'll get 12 as the result, as expected.</p>
+<h2>Summary</h2>
+<p>Pattern matching is one of the most useful concepts in F# and functional programming,
+because it lets you express complex logic in a very clear way with just a few lines of
+code. Unfortunately, the full power of pattern matching is not yet available in C#.</p>
+<p>As a C# developer, you have basically two options.</p>
+<ul>
+<li>
+<p>One option is to learn <a href="http://fsharp.org/">F#</a>, which supports pattern matching and
+many other useful concepts. There is a <a href="http://fsharp.org/about/learning.html">lot of great learning material</a>,
+learning F# is quite fun and there is <a href="https://twitter.com/search?q=%23fsharp">a lively community on Twitter</a>
+that will help you.</p>
+</li>
+<li>
+<p>The other option is to use some of the less well explored corners of the C# language.
+It turns out that there is already <em>some</em> nice support for pattern matching in C# and
+C# 6 goes even further with <em>exception filters</em>. There is one little limitation, which
+is that it only works on <em>exceptions</em>.</p>
+</li>
+</ul>
+<p>Why support pattern matching <em>only</em> on exceptions?
+Don't ask me! It seems a bit silly to me too - if I was in charge of C# language
+design, I would obviously add pattern matching on the JSON.NET <a href="http://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_Linq_JContainer.htm">JContainer
+classes</a>,
+because that would be useful <em>at least for some things</em>.</p>
+
+
+<div class="tip" id="fs1">union case Expression.Variable: string -&gt; Expression</div>
+<div class="tip" id="fs2">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs3">union case Expression.Constant: int -&gt; Expression</div>
+<div class="tip" id="fs4">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs5">union case Expression.Add: Expression * Expression -&gt; Expression</div>
+<div class="tip" id="fs6">type Expression =<br />&#160;&#160;| Variable of string<br />&#160;&#160;| Constant of int<br />&#160;&#160;| Add of Expression * Expression<br />&#160;&#160;| Mul of Expression * Expression<br /><br />Full name: Csharp-pattern-matching.Expression</div>
+<div class="tip" id="fs7">union case Expression.Mul: Expression * Expression -&gt; Expression</div>
+<div class="tip" id="fs8">val format : e:Expression -&gt; string<br /><br />Full name: Csharp-pattern-matching.format</div>
+<div class="tip" id="fs9">val e : Expression</div>
+<div class="tip" id="fs10">val s : string</div>
+<div class="tip" id="fs11">val n : int</div>
+<div class="tip" id="fs12">val l : Expression</div>
+<div class="tip" id="fs13">val r : Expression</div>
+<div class="tip" id="fs14">val sprintf : format:Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fcsharp-pattern-matching%2f&amp;text=Pattern+matching+in+action+using+C%23+6via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fcsharp-pattern-matching%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fcsharp-pattern-matching%2f&title=Pattern+matching+in+action+using+C%23+6">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Pattern%20matching%20in%20action%20using%20C%23%206&body=%20The%20new%20release%20of%20the%20C%23%20language%20migth%20seem%20as%20a%20minor%20version%2c%20but%20in%20fact%2c%20it%20contains%20a%20hidden%20gem.%20In%20fact%2c%20it%20contains%20awesome%20support%20for%20pattern%20matching%20-%20but%20for%20some%20reason%2c%20this%20is%20concealed%20under%20the%20name%20%27exception%20filters%27.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2015%2fcsharp-pattern-matching%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 1 April 2015, 11:41 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/fun/">fun</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

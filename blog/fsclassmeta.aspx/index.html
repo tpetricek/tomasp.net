@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# metaprogramming and classes - Tomas Petricek</title>
+
+  <meta name="description" content=" This article presents prototype that makes it possible to use F# metaprogramming to analyse and translate classes written in special way." />
+  <meta name="keywords" content="meta-programming, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# metaprogramming and classes" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsclassmeta.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article presents prototype that makes it possible to use F# metaprogramming to analyse and translate classes written in special way." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# metaprogramming and classes" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article presents prototype that makes it possible to use F# metaprogramming to analyse and translate classes written in special way." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# metaprogramming and classes",
+    "headline": "F# metaprogramming and classes",
+  	"description": " This article presents prototype that makes it possible to use F# metaprogramming to analyse and translate classes written in special way.",
+  	"url": "http://tomasp.net/blog/fsclassmeta.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2006-10-14T01:36:10.0000000",
+  	"datePublished": "2006-10-14T01:36:10.0000000",
+    "dateModified": "2006-10-14T01:36:10.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsclassmeta.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["meta-programming", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>F# metaprogramming and classes</h1>
+
+
+
+
+<h2>Introduction</h2>
+<p>F# quotations allows you to easily write programs that manipulate with data representation
+  of program source code. If you're not familiar with quotations I recommend reading my 
+  previous article [<a href="#fsclassmeta-links">1</a>] that contains short introduction
+  to this topic first. Quotations can be used for example for translating subset of the F# language to 
+  another code representation or another language.</p>
+  
+<p>To get the quotation data of the expression you can either use <code>&lt;@@ .. @@&gt;</code> 
+  operator or <code>resolveTopDef</code> function. In the first case the code written
+  between the "<code>&lt;@@</code>" and "<code>@@&gt;</code>" is converted to data during the compilation.
+  The <code>resolveTopDef</code> function allows you to get quotation data of top-level 
+  definition (function) from compiled library at runtime (you have to use <code>--quotation-data</code> 
+  command line switch while compiling the library). I mentioned that quotations can be used to represent 
+  only subset of the F# language. Currently, one of the quotation limitations is that it's not possible to 
+  enclose the whole class in the quotation operators. It is also not possible to get the representation 
+  of the whole class at runtime nor the representation of class members (for example methods). </p>
+
+<h2>Class quotations</h2>
+
+<p>In one my project I wanted to be able to translate the class written in F# to another language,
+  so I wanted to make this possible. This option will be probably implemented in the future versions
+  of F#, so it will be possible to do this using more elegant method, but if you want to experiment
+  with quotations and use classes, you can use my solution to implement the prototype.</p>
+
+<p>In the prototype I implemented, you have to write the class and one module that contains 
+  the actual code for the methods. This makes it possible to get the structure of the class using
+  standard .NET reflection classes and to extract quotation data for the class members using
+  F# <code>resolveTopDef</code> function. Of course, you can't create instance of module, but for metaprogramming
+  we only need to be able to get the quoted code and unless you want to use the class from code, you can leave
+  the implementation of the class methods empty.</p>
+
+<p>First I had to design the data structures for representing the class. If I were adding this feature to the F# 
+  metaprogramming, I would probably extended the <code>expr</code> data type to make this possible in
+  consistent way. However I didn't want to modify the F# source code, so I designed the following types
+  that are similar to the <code>expr</code> type (I reversed the order of type declarations, so it 
+  is easier to understand):</p>
+<pre>
+<span class="c">/// Structure that contains information about class -
+/// consists of name, name of base class and members</span><br />
+<span class="k">type</span> classInfo = {
+  name:string;
+  baseName:string option;
+  members:classMember list;
+};;
+
+<span class="c">/// Member of the class 
+/// For working with this type use cmfCtor, cmfMethod, cmfField, cmfProp..</span><br />
+<span class="k">type</span> classMember;;
+
+<span class="c">/// Type for working with class members
+/// Query function tests whether member is of specified type
+/// Make function creates member</span><br />
+<span class="k">type</span> 'a classMemberFamily <span class="k">with</span><br />
+  <span class="k">member</span> Query : classMember -&gt; 'a option
+  <span class="k">member</span> Make : 'a -&gt; classMember
+<span class="k">end</span>;;
+
+<span class="c">/// Constructor declaration 
+/// - parameter should be lambda expression</span><br />
+<span class="k">val</span> cmfCtor : (expr) classMemberFamily;;
+	
+<span class="c">/// Method delcaration
+/// - method name, expression (should be lambda) and return type
+///   (types of parameters are stored in lambda expression)</span><br />
+<span class="k">val</span> cmfMethod : (string*expr*Type option) classMemberFamily;;
+	
+<span class="c">/// Field declaration
+/// - field name, type and init expression</span><br />
+<span class="k">val</span> cmfField : (string*Type*expr option) classMemberFamily;;
+	
+<span class="c">/// Property declaration
+/// - property name, getter and setter (both should be lambda expr) and type</span><br />
+<span class="k">val</span> cmfProp : (string*expr*expr*Type) classMemberFamily;;
+</pre>
+
+<p>This representation is still very limited - for example it isn't possible to represent
+  polymorphic methods. In the previous code, the <code>classMember</code> can be used to 
+  represent any member (similarly to the F# <code>expr</code> that can represent any expression).
+  The <code>cmf[Something]</code> values are equivalent to the 
+  <code>ef[Something]</code> from F# quotation library and allows you to work with
+  <code>classMember</code> type.</p>
+  
+<p>The following example shows how to write simple class with module that can be used for extracting 
+  the quotation data:</p>
+<pre>
+#light
+
+<span class="c">// Module with implementation of methods</span><br />
+<span class="k">module</span> Person_Meta = <span class="k">begin</span>
+  <span class="c">// Simulates field of the class</span>
+  <span class="k">let</span> name = <span class="k">ref</span> ""
+  
+  <span class="c">// Represents constructor</span>
+  <span class="k">let</span> ctor (n) =
+    name := n
+    
+  <span class="c">// Represents method</span>
+  <span class="k">let</span> Say (pre:string) =
+    let s = pre^", my name is "^(!name)^"." in
+    print_string s
+  
+  <span class="c">// Represents property  </span>
+  <span class="k">let</span> get_Name () =
+    (!name)
+  <span class="k">let</span> set_Name (value) =
+    name:=value
+<span class="k">end</span>
+ <br /><br /> 
+<span class="c">// The real class
+// Members are just a placeholders and the quotations
+// are extracted from the previous module</span><br />
+<span class="k">type</span> Person = <span class="k">class </span><br />
+  <span class="k">val mutable</span> name : string;
+  <span class="k">new</span>((n:string)) = { name = ""; }
+  <span class="k">member</span> this.Say(pre:string) = ()
+  <span class="k">member</span> this.Name with get() = "" <span class="k">and</span> set((v:string)) = ()
+<span class="k">end</span>
+</pre>  
+
+<p>In the last code sample, I'll show how the functions I wrote can be used for working 
+  with the previous piece of code. To get the representation that I mentioned earlier of
+  the class <code>Person</code>, you can use function <code>getClassFromType</code>. This function
+  extracts structure of the class (from the class itself) and quoted code from the module
+  with the <code>_Meta</code> suffix. The following example is quite simple. It prints
+  basic class information (name and base name) and then iterates through all the members and
+  prints all available information for every member. For printing the <code>expr</code> type
+  (which represents the quoted code) I used <code>printf</code> function with the <code>output_any</code> formatter.</p>
+
+<pre>
+#light
+<span class="k">do</span><br />
+  <span class="c">// Get the class info for class 'Person'</span><br />
+  <span class="k">let</span> clsInfo = getClassFromType ((typeof() : Person typ).result)
+  
+  <span class="c">// Print name and optional base name</span>
+  Console.WriteLine(<span class="s">"Class '{0}':"</span>, clsInfo.name)
+  <span class="k">if</span> (clsInfo.baseName &lt;&gt; None) <span class="k">then</span>
+    Console.WriteLine(<span class="s">" base: {0}"</span>, clsInfo.baseName)
+  
+  <span class="c">// Iterate through class members</span>
+  clsInfo.members |&gt; List.iter ( <span class="k">fun</span> m -&gt;
+      <span class="k">match</span> cmfMethod.Query m <span class="k">with</span>
+        | Some (name, expr, ret) -&gt;
+            Method <span class="s">"printf ( %s : %a ) = "</span> name output_any ret
+        | _ -&gt;
+      <span class="k">match</span> cmfField.Query m <span class="k">with</span>
+        | Some (name, typ, init) -&gt;
+            printf <span class="s">"Field ( %s : %a) "</span> name output_any typ
+        | _ -&gt;
+      <span class="k">match</span> cmfProp.Query m <span class="k">with</span>
+        | Some (name, getter, setter, typ) -&gt;
+            printf <span class="s">"Property ( %s : %a )\n"</span> name output_any typ
+            printf <span class="s">"get = %a\n"</span> output_any getter
+            printf <span class="s">"set = %a\n\n"</span> output_any setter
+        | _ -&gt;
+      <span class="k">match</span> cmfCtor.Query m <span class="k">with</span>
+        | Some (expr) -&gt;
+            printf <span class="s">"Ctor = %a\n\n"</span> output_any expr
+        | _ -&gt;
+            failwith <span class="s">"Error!"</span>
+    ) 
+</pre>
+
+<h2>Conclusion</h2>
+<p>The aim of this article isn't to present fully working solution, but to suggest a few enhancements
+  to the F# metaprogramming that I think would be useful. You can use the source code attached to this 
+  article to find (and experiment with) some interesting use cases of metaprogramming that require working 
+  with classes, for example translating classes written in F# to another language. The biggest limitation
+  of the solution I presented is, that you have to write every implementation twice - it occurs in the
+  body of the class and in the module used for metaprogramming too (however the code looks very similar).
+  If you want to translate F# code, you don't need to implement methods/properties of the real class, but
+  if the program creates instances of the class at runtime (and uses the quoted code to perform some analysis etc.),
+  you'll need to write both implementations.</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://www.tomasp.net/articles/fsclassmeta/source.zip">Download the source code and examples</a> (6.77kB)</li>
+  <li><a href="http://www.tomasp.net/articles/fsclassmeta/article.pdf">Download the article</a> (pdf, 204kB)</li>
+</ul>
+
+<h2>Links and references<a name="fsclassmeta-links"></a></h2>
+<ul>
+  <li>[1] <a href="http://cs.hubfs.net/blogs/tomasp/archive/2006/07/07/413.aspx">F# - Simple quotations transformation</a>
+    [<a href="http://cs.hubfs.net/blogs/tomasp/archive/2006/07/07/413.aspx" target="_blank">^</a>] - My F# Notes</li>  
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsclassmeta.aspx%2f&amp;text=F%23+metaprogramming+and+classesvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsclassmeta.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsclassmeta.aspx%2f&title=F%23+metaprogramming+and+classes">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20metaprogramming%20and%20classes&body=%20This%20article%20presents%20prototype%20that%20makes%20it%20possible%20to%20use%20F%23%20metaprogramming%20to%20analyse%20and%20translate%20classes%20written%20in%20special%20way.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsclassmeta.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Saturday, 14 October 2006, 1:36 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

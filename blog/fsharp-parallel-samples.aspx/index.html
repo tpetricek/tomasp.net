@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Parallel Programming in F# (I.): Introducing the samples - Tomas Petricek</title>
+
+  <meta name="description" content=" In this article series, I'll introduce the F# version of samples for the Parallel Programming with Microsoft .NET book written by the patterns &amp;amp" />
+  <meta name="keywords" content="functional, parallel, asynchronous, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Parallel Programming in F# (I.): Introducing the samples" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-parallel-samples.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In this article series, I'll introduce the F# version of samples for the Parallel Programming with Microsoft .NET book written by the patterns &amp;amp" />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Parallel Programming in F# (I.): Introducing the samples" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In this article series, I'll introduce the F# version of samples for the Parallel Programming with Microsoft .NET book written by the patterns &amp;amp" />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Parallel Programming in F# (I.): Introducing the samples",
+    "headline": "Parallel Programming in F# (I.): Introducing the samples",
+  	"description": " In this article series, I'll introduce the F# version of samples for the Parallel Programming with Microsoft .NET book written by the patterns &amp;amp",
+  	"url": "http://tomasp.net/blog/fsharp-parallel-samples.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2010-09-06T10:00:00.0000000",
+  	"datePublished": "2010-09-06T10:00:00.0000000",
+    "dateModified": "2010-09-06T10:00:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-parallel-samples.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "parallel", "asynchronous", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Parallel Programming in F# (I.): Introducing the samples</h1>
+<img src="http://tomasp.net/articles/fsharp-parallel-samples/book.png" style="float:right;margin:20px;"/>
+<p><a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> is a 
+  guide written by the patterns &amp; practices group at Microsoft. It introduces .NET programmers to
+  patterns for including parallelism in their applications (using support for parallel programming in
+  .NET 4.0). It introduces techniques such as parallel loops, parallel tasks, data aggregation and so on.
+  The book includes numerous samples in C# and Visual Basic that can be easily copied and adapted 
+  to match your needs.</p>
+
+<p>As part of a contracting work for the F# team, I developed an F# version of the samples, which is 
+  now available on the <a href="http://parallelpatterns.codeplex.com/" type="external">book web site</a>.
+  You can get it by downloading <a href="http://parallelpatterns.codeplex.com/releases/view/50473">F# code samples</a> (ZIP) from the 1.0 release, or you can download the <a href="http://parallelpatterns.codeplex.com/SourceControl/list/changesets" 
+  type="external">latest version of the source code</a> directly. The F# version of the
+  code is mostly a direct translation of the C# versions, but there are a few interesting places that
+  are worth discussing. In particular, some of the samples use the <code>PSeq</code> module from F#
+  PowerPack and I also added a version of one example that uses F# asynchronous workflows.</p>
+
+<p>In this article series, I'll look at several interesting examples from the F# version of the source code.
+  We'll look how to use PLINQ and Tasks (which are available in .NET 4.0) from F# (Part II.) including some advanced topics such 
+  as the Map-Reduce algorithm (Part III.). We'll also look at a larger example built using tasks and an alternative 
+  implementation using asynchronous workflows (Part IV.) Here are links to the individual articles:</p>
+
+<ul>
+  <li><strong>Parallel Programming in F# (I.): Introducing the samples</strong></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-plinq.aspx">Parallel Programming in F# (II.): Using PLINQ and Tasks</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-aggregate.aspx">Parallel Programming in F# (III.): Aggregating data</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx">Parallel Programming in F# (IV.): Financial dashboard example</a></li>
+</ul>
+
+<h2>Structure of F# samples</h2>
+<p>In this article, we'll briefly look at the general structure of F# versions of the samples.
+  In the C# version, there is usually a source file that contains both implementation of the 
+  examples and the <code>Main</code> method. In F#, I split the file into two - one file contains
+  the examples (e.g. "Examples.fs") and another file runs them (e.g. "Program.fs"). This makes
+  it possible to add a script file (e.g. "Script.fsx") that allows you to run the samples
+  easily in F# Interactive.</p>
+
+<h3>Code file</h3>
+<p>In this section, we'll briefly look at one example of the main source file that runs
+  examples as a standalone program. For example, the "Program.fs" file from the "BasicTaskSamples"
+  project in Chapter 3 looks as follows:</p>
+<pre>
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'tippintr1', 1)" onmouseover="showTip(event, 'tippintr1', 1)" class="i">main</span>() <span class="o">=</span>
+<span class="l"> 2: </span>    <span onmouseout="hideTip(event, 'tippintr2', 2)" onmouseover="showTip(event, 'tippintr2', 2)" class="i">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr3', 3)" onmouseover="showTip(event, 'tippintr3', 3)" class="i">WriteLine</span>(<span class="s">&quot;</span><span class="s">Basic</span><span class="s"> </span><span class="s">Parallel</span><span class="s"> </span><span class="s">Tasks</span><span class="s"> </span><span class="s">Samples</span><span class="s">\n</span><span class="s">&quot;</span>)
+<span class="l"> 3: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Run</span><span class="c"> </span><span class="c">several</span><span class="c"> </span><span class="c">samples</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">measure</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">time</span><span class="c"> </span><span class="c">taken</span>
+<span class="l"> 4: </span>    <span onmouseout="hideTip(event, 'tippintr4', 4)" onmouseover="showTip(event, 'tippintr4', 4)" class="i">SampleUtilities</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr5', 5)" onmouseover="showTip(event, 'tippintr5', 5)" class="i">TimedAction</span> <span class="s">&quot;</span><span class="s">2</span><span class="s"> </span><span class="s">steps</span><span class="s">,</span><span class="s"> </span><span class="s">sequential</span><span class="s">&quot;</span> (<span class="k">fun</span> () <span class="k">-&gt;</span>
+<span class="l"> 5: </span>        <span onmouseout="hideTip(event, 'tippintr6', 6)" onmouseover="showTip(event, 'tippintr6', 6)" class="i">Chapter3Sample01Sequential</span>() )
+<span class="l"> 6: </span>    <span onmouseout="hideTip(event, 'tippintr4', 7)" onmouseover="showTip(event, 'tippintr4', 7)" class="i">SampleUtilities</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr5', 8)" onmouseover="showTip(event, 'tippintr5', 8)" class="i">TimedAction</span> <span class="s">&quot;</span><span class="s">2</span><span class="s"> </span><span class="s">steps</span><span class="s">,</span><span class="s"> </span><span class="s">parallel</span><span class="s"> </span><span class="s">invoke</span><span class="s">&quot;</span> (<span class="k">fun</span> () <span class="k">-&gt;</span>
+<span class="l"> 7: </span>        <span onmouseout="hideTip(event, 'tippintr7', 9)" onmouseover="showTip(event, 'tippintr7', 9)" class="i">Chapter3Sample01ParallelInvoke</span>() )
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">(Other</span><span class="c"> </span><span class="c">samples</span><span class="c"> </span><span class="c">omitted)</span>
+<span class="l"> 9: </span>
+<span class="l">10: </span><span class="c">//</span><span class="c"> </span><span class="c">Run</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">main</span><span class="c"> </span><span class="c">testing</span><span class="c"> </span><span class="c">program</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">pool</span>
+<span class="l">11: </span><span class="k">do</span> <span onmouseout="hideTip(event, 'tippintr8', 10)" onmouseover="showTip(event, 'tippintr8', 10)" class="i">Task</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr9', 11)" onmouseover="showTip(event, 'tippintr9', 11)" class="i">Factory</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr10', 12)" onmouseover="showTip(event, 'tippintr10', 12)" class="i">StartNew</span>(<span onmouseout="hideTip(event, 'tippintr1', 13)" onmouseover="showTip(event, 'tippintr1', 13)" class="i">main</span>)<span class="o">.</span><span class="i">Wait</span>()
+</pre>
+
+
+<p>The sample uses <code>SampleUtilities</code> module (which is defined in the "Utilities" project)
+  to measure the time of an operation. In this case, the <code>main</code> function simply runs 
+  all the examples in the project. Some examples provide more options for configuration - you can 
+  adjust various constants in the program code or provide them as command line arguments. 
+  However, in F# it is more comfortable to run the sample from F# Interactive and adjust the 
+  sample configuration directly in the script file...</p>
+
+<h3>Script files</h3>
+<p>To demonstrate a typical script file that can be used to run samples in F# Interactive, 
+  we'll look at "Script.fsx" from the "BasicParallelLoops" project in Chapter 2. Every script
+  file first needs to load several references and then loads files that implement the examples:</p>
+<pre lang="fsharp">
+&gt; #r @@"..\..\Utilities\bin\Release\Utilities.dll"
+  #load @@"..\..\PSeq.fs"
+  #load "ParallelForExample.fs";;
+</pre>
+<p>The first <code>#r</code> directive loads the "Utilities" project, which contains various
+  helper functions that are used by most of the samples (e.g. calculations, simulation of CPU and I/O
+  bound tasks). Next, we load the <code>PSeq</code> module from a file that is distributed as part
+  of the release. This is a local version copied from the latest version of <a href="http://fsharppowerpack.codeplex.com/" type="external">F# PowerPack</a>.
+  The release uses a local copy to make it easier to use the samples (you don't need to install PowerPack)
+  and also because the local copy contains several minor improvements; for example the <code>mapReduce</code>
+  function that we'll use in part III. of this series.</p>
+
+<p>In the next step, we open necessary namespaces and create a configuration for running the samples
+  (in this case, configuration is a simple record that is passed to the example). In F# Interactive we 
+  can also use built-in support for time measurement, so we turn it on using <code>#time "on"</code>:</p>
+
+<pre lang="fsharp">
+&gt; open System
+  open Microsoft.Practices.ParallelGuideSamples.BasicParallelLoops.Examples;;
+
+&gt; let opts = { LoopBodyComplexity = 10000; NumberOfSteps = 10000 }
+      VerifyResult = false; SimulateInternalError = false };;
+val opts : ExampleOptions = { (...) }
+
+&gt; #time "on";;
+--&gt; Timing now on
+</pre>
+
+<p>Now we have everything we need to run the samples. Thanks to the interactive environment
+  it is quite easy to run the samples that you're interested in as well as to go back to the
+  configuration, change some properties of the sample and re-run it. The following example compares sequential version of a sample with a parallel version using the <code>PSeq</code> module (which we'll discuss in part II. of the series).</p>
+
+<pre lang="fsharp">
+&gt; let results = Chapter2.Example01 opts;; // Sequential 'for'
+Real: 00:00:00.986, CPU: 00:00:00.998, GC gen0: 0, gen1: 0, gen2: 0
+val results : float [] =
+  [|0.0; 250025000.0; 500050000.0; (...) |]
+
+&gt; let results = Chapter2.Example04 opts;; // Parallel using F# PSeq
+Real: 00:00:00.543, CPU: 00:00:00.998, GC gen0: 0, gen1: 0, gen2: 0
+val results : float [] =
+  [|0.0; 250025000.0; 500050000.0; (...) |]
+</pre>
+
+<h2>Additional Information</h2>
+<p>Below are links to the book homepage at CodePlex, F# PowerPack project which is used in some of the 
+  examples, blogs by authors of Parallel Programming with .NET and other resources that you may find interesting.</p>
+<ul>
+  <li><a type="external" href="http://parallelpatterns.codeplex.com/">Parallel Programming with Microsoft .NET</a> - Book homepage at CodePlex</li>
+  <li><a type="external" href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> - Project homepage at CodePlex</li>
+  <li><a type="external" href="http://www.ademiller.com/blogs/tech/">Ade Miller: #2782</a> - Blog by one of the authors</li>
+  <li><a type="external" href="http://blogs.msdn.com/toub/">Stephen Toub: .NET, MSDN Magazine, and other Adventures in Life</a> - Blog by one of the authors</li>
+  <li><a type="external" href="http://blogs.msdn.com/b/pfxteam/">Parallel Programming with .NET</a> - Team Blog</li>
+</ul>
+
+
+
+<div class="tip" id="tippintr1">val main : unit -&gt; unit<br /><br />Full name: Program.main<br /></div>
+<div class="tip" id="tippintr2">type Console =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member BackgroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member Beep : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member Beep : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member BufferHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member BufferWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member CapsLock : bool<br />&#160;&#160;&#160;&#160;static member Clear : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member CursorLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorSize : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorTop : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorVisible : bool with get, set<br />&#160;&#160;&#160;&#160;static member Error : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member ForegroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member In : System.IO.TextReader<br />&#160;&#160;&#160;&#160;static member InputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member KeyAvailable : bool<br />&#160;&#160;&#160;&#160;static member LargestWindowHeight : int<br />&#160;&#160;&#160;&#160;static member LargestWindowWidth : int<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int * char * System.ConsoleColor * System.ConsoleColor -&gt; unit<br />&#160;&#160;&#160;&#160;static member NumberLock : bool<br />&#160;&#160;&#160;&#160;static member OpenStandardError : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardError : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member Out : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member OutputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member Read : unit -&gt; int<br />&#160;&#160;&#160;&#160;static member ReadKey : unit -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadKey : bool -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadLine : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member ResetColor : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetBufferSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetCursorPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetError : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetIn : System.IO.TextReader -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetOut : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Title : string with get, set<br />&#160;&#160;&#160;&#160;static member TreatControlCAsInput : bool with get, set<br />&#160;&#160;&#160;&#160;static member WindowHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowTop : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member Write : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Console<br /></div>
+<div class="tip" id="tippintr3">Multiple overloads
+<br />Console.WriteLine() : unit
+<br />Console.WriteLine(value: string) : unit
+<br />Console.WriteLine(value: obj) : unit
+<br />Console.WriteLine(value: uint64) : unit
+<br />Console.WriteLine(value: int64) : unit
+<br />Console.WriteLine(value: uint32) : unit
+<br />Console.WriteLine(value: int) : unit
+<br />Console.WriteLine(value: float32) : unit
+<br />Console.WriteLine(value: float) : unit
+<br />Console.WriteLine(value: decimal) : unit
+<br />&#160;&#160;&#160;<em>(+9 other overloads)</em><br /></div>
+<div class="tip" id="tippintr4">module SampleUtilities<br /><br />from Microsoft.Practices.ParallelGuideSamples.Utilities<br /></div>
+<div class="tip" id="tippintr5">val TimedAction : string -&gt; (unit -&gt; 'a) -&gt; 'a<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.Utilities.SampleUtilities.TimedAction<br /></div>
+<div class="tip" id="tippintr6">val Chapter3Sample01Sequential : unit -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.BasicParallelTasks.Examples.Chapter3Sample01Sequential
+<br /><em><br /><br />&#160;Execute two operations sequentially</em><br /></div>
+<div class="tip" id="tippintr7">val Chapter3Sample01ParallelInvoke : unit -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.BasicParallelTasks.Examples.Chapter3Sample01ParallelInvoke
+<br /><em><br /><br />&#160;Execute operations in parallel using Parallel.Invoke</em><br /></div>
+<div class="tip" id="tippintr8">Multiple items
+<br />type Task&lt;'TResult&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member Result : 'TResult with get, set<br />&#160;&#160;&#160;&#160;static member Factory : System.Threading.Tasks.TaskFactory&lt;'TResult&gt;<br />&#160;&#160;end<br /><br />Full name: System.Threading.Tasks.Task&lt;_&gt;<br /><br />&#160;&#160;type: Task&lt;'TResult&gt;<br />&#160;&#160;implements: Threading.IThreadPoolWorkItem<br />&#160;&#160;implements: IAsyncResult<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: Task<br />
+<br /><br />--------------------<br />
+<br />type Task =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : System.Action -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member AsyncState : obj<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member CreationOptions : System.Threading.Tasks.TaskCreationOptions<br />&#160;&#160;&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Exception : System.AggregateException<br />&#160;&#160;&#160;&#160;member Id : int<br />&#160;&#160;&#160;&#160;member IsCanceled : bool<br />&#160;&#160;&#160;&#160;member IsCompleted : bool<br />&#160;&#160;&#160;&#160;member IsFaulted : bool<br />&#160;&#160;&#160;&#160;member RunSynchronously : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member RunSynchronously : System.Threading.Tasks.TaskScheduler -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : System.Threading.Tasks.TaskScheduler -&gt; unit<br />&#160;&#160;&#160;&#160;member Status : System.Threading.Tasks.TaskStatus<br />&#160;&#160;&#160;&#160;member Wait : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Wait : System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;member Wait : System.Threading.CancellationToken -&gt; unit<br />&#160;&#160;&#160;&#160;member Wait : int -&gt; bool<br />&#160;&#160;&#160;&#160;member Wait : int * System.Threading.CancellationToken -&gt; bool<br />&#160;&#160;&#160;&#160;static member CurrentId : System.Nullable&lt;int&gt;<br />&#160;&#160;&#160;&#160;static member Factory : System.Threading.Tasks.TaskFactory<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * System.Threading.CancellationToken -&gt; unit<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * int * System.Threading.CancellationToken -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * System.TimeSpan -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * System.Threading.CancellationToken -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * int -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * int * System.Threading.CancellationToken -&gt; int<br />&#160;&#160;end<br /><br />Full name: System.Threading.Tasks.Task<br /><br />&#160;&#160;type: Task<br />&#160;&#160;implements: Threading.IThreadPoolWorkItem<br />&#160;&#160;implements: IAsyncResult<br />&#160;&#160;implements: IDisposable<br /></div>
+<div class="tip" id="tippintr9">Multiple items
+<br />property Task.Factory: TaskFactory
+<br /><br />--------------------<br />
+<br />property Task.Factory: TaskFactory&lt;'TResult&gt;<br /></div>
+<div class="tip" id="tippintr10">Multiple items
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(action: Action) : Task
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(action: Action&lt;obj&gt;, state: obj) : Task
+<br />TaskFactory.StartNew(action: Action, creationOptions: TaskCreationOptions) : Task
+<br />TaskFactory.StartNew(action: Action, cancellationToken: Threading.CancellationToken) : Task
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />&#160;&#160;&#160;<em>(+6 other overloads)</em><br />--------------------<br />
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;'TResult&gt;<br /></div>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-parallel-samples.aspx%2f&amp;text=Parallel+Programming+in+F%23+(I.)%3a+Introducing+the+samplesvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-parallel-samples.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-parallel-samples.aspx%2f&title=Parallel+Programming+in+F%23+(I.)%3a+Introducing+the+samples">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Parallel%20Programming%20in%20F%23%20(I.)%3a%20Introducing%20the%20samples&body=%20In%20this%20article%20series%2c%20I%27ll%20introduce%20the%20F%23%20version%20of%20samples%20for%20the%20Parallel%20Programming%20with%20Microsoft%20.NET%20book%20written%20by%20the%20patterns%20%26amp%3bamp%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-parallel-samples.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Monday, 6 September 2010, 10:00 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/parallel/">parallel</a>, <a
+          href="/blog/tag/asynchronous/">asynchronous</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

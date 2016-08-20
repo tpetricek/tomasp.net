@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Writing custom F# LINQ query builder - Tomas Petricek</title>
+
+  <meta name="description" content=" F# 3.0 provides full support for writing LINQ-style queries and the syntax can be used with SQL databases and many other standard data sources. But you can also write your own querying computation. This blog post shows a minimal example that shows how to parse F# queries and translate them to other querying language (like SQL)." />
+  <meta name="keywords" content="f#, functional programming, linq, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Writing custom F# LINQ query builder" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2015/query-translation/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2015/query-translation/img.png" />
+  <meta property="og:description" content=" F# 3.0 provides full support for writing LINQ-style queries and the syntax can be used with SQL databases and many other standard data sources. But you can also write your own querying computation. This blog post shows a minimal example that shows how to parse F# queries and translate them to other querying language (like SQL)." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Writing custom F# LINQ query builder" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2015/query-translation/img.png" />
+  <meta name="twitter:description" content=" F# 3.0 provides full support for writing LINQ-style queries and the syntax can be used with SQL databases and many other standard data sources. But you can also write your own querying computation. This blog post shows a minimal example that shows how to parse F# queries and translate them to other querying language (like SQL)." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Writing custom F# LINQ query builder",
+    "headline": "Writing custom F# LINQ query builder",
+  	"description": " F# 3.0 provides full support for writing LINQ-style queries and the syntax can be used with SQL databases and many other standard data sources. But you can also write your own querying computation. This blog post shows a minimal example that shows how to parse F# queries and translate them to other querying language (like SQL).",
+  	"url": "http://tomasp.net/blog/2015/query-translation/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2015-04-07T13:41:29.5465755+01:00",
+  	"datePublished": "2015-04-07T13:41:29.5465755+01:00",
+    "dateModified": "2015-04-07T13:41:29.5465755+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2015/query-translation/",
+  	"image": "http://tomasp.net/blog/2015/query-translation/img.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2015/query-translation/img.png",
+  	"keywords": ["f#", "functional programming", "linq",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Writing custom F# LINQ query builder</h1>
+<p>One of the attendees of my <a href="http://www.fsharpworks.com/workshops/finance.html">virtual F# in Finance course</a>,
+<a href="https://twitter.com/stuart_j_davies">Stuart</a> recently asked me a pretty advanced question about writing custom queries with F#, because he was
+interested in writing a nicer querying library for Amazon DynamoDB (his <a href="https://github.com/stuartjdavies/FSharp.Cloud.AWS/blob/master/FSharp.Cloud.AWS/DynamoDB.fs">project is here</a>).</p>
+<blockquote>
+<p>This article is also available in Japanese, thanks to <a href="https://github.com/yukitos">Yukitoshi Suzuki</a>!<br />
+<a href="https://github.com/yukitos/notes/blob/master/FSharp.Blogs/Writing_custom_FSharp_LINQ_query_builder.md">独自のF# LINQクエリビルダーを作成する</a></p>
+</blockquote>
+<p>I realized that I don't really know about any good resource about doing this, so I wrote a little sample
+that shows how you can do this. The idea is that we want to be able to write something like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">query</span> { 
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">p</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">DynamoDB</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">People</span> <span class="k">do</span>
+  <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="k">where</span> (<span onmouseout="hideTip(event, 'fs2', 6)" onmouseover="showTip(event, 'fs2', 6)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="i">Age</span> <span class="o">&gt;</span> <span class="n">10</span>)
+  <span onmouseout="hideTip(event, 'fs5', 8)" onmouseover="showTip(event, 'fs5', 8)" class="k">where</span> (<span onmouseout="hideTip(event, 'fs2', 9)" onmouseover="showTip(event, 'fs2', 9)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 10)" onmouseover="showTip(event, 'fs7', 10)" class="i">Name</span> <span class="o">=</span> <span class="s">&quot;Tomas&quot;</span>)
+  <span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="k">select</span> (<span onmouseout="hideTip(event, 'fs2', 12)" onmouseover="showTip(event, 'fs2', 12)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 13)" onmouseover="showTip(event, 'fs6', 13)" class="i">Age</span>, <span onmouseout="hideTip(event, 'fs2', 14)" onmouseover="showTip(event, 'fs2', 14)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 15)" onmouseover="showTip(event, 'fs7', 15)" class="i">Name</span>) }
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>DynamoDB</code> could even be a type generated by a type provider (with all the tables available in Dynamo DB).
+Now, the above example uses the built-in <code>query</code> builder, which is extensible, but, as far as I know, you have to
+use LINQ expression trees to support it. In this article, I'm going to use an alternative approach with custom
+builder (so you would write <code>dynamo { ... }</code> instead of <code>query { ... }</code>).</p>
+<p>I wanted to write a minimal example showing how to do this, so this blog post is going to be mostly code
+(unlike my other chatty articles!), but it should give you (and Stuart :-)) some idea how to do this.
+I was quite intrigued by the idea of having a nice query language for DynamoDB, so I'm hoping that this
+blog post can help move the project forward!</p>
+<h2>Defining types and computation builder</h2>
+<p>First of all, we need to define types that model the database and the query builder that lets us
+write something like <code>query { ... }</code>. In this blog post, I'll call the builder <code>simpleq</code>. These
+could contain some more code, but they do not need to contain <em>any</em> implmentation - we will never
+actually execute any of these methods! Instead, we'll capture F# <em>quotation</em> of the query and then
+translate that to a simple data structure that describes the query.</p>
+<p>So, we define <code>Query&lt;'T&gt;</code> which represents a query that returns values of type <code>'T</code> (but it never
+actually does anything). We define a sample type <code>Person</code> and a type  <code>DB</code> representing the database:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs9', 16)" onmouseover="showTip(event, 'fs9', 16)" class="i">Microsoft</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 17)" onmouseover="showTip(event, 'fs10', 17)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="i">Quotations</span>
+
+<span class="c">/// Represents a query (but it is never executed!)</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="p">NA</span>
+
+<span class="c">/// Sample type that would be ideally imported from database</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="t">Person</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">Name</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs17', 24)" onmouseover="showTip(event, 'fs17', 24)" class="i">Age</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs18', 25)" onmouseover="showTip(event, 'fs18', 25)" class="t">int</span> }
+
+<span class="c">/// Models a database with one &#39;People&#39; table</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs19', 26)" onmouseover="showTip(event, 'fs19', 26)" class="t">DB</span> <span class="o">=</span> 
+  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fs20', 27)" onmouseover="showTip(event, 'fs20', 27)" class="i">People</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs12', 28)" onmouseover="showTip(event, 'fs12', 28)" class="t">Query</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs14', 29)" onmouseover="showTip(event, 'fs14', 29)" class="t">Person</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 30)" onmouseover="showTip(event, 'fs13', 30)" class="p">NA</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Next, we'll define a computation builder that defines what operations we're allowed
+to perform in the query. This is an object with some specially named members (and also
+marked with attributes) that the compiler understands. When we then write something
+like the query in the introduction, the compiler translates the query into calls to the
+computation builder operations.</p>
+<p>If we were not using quotation to translate the query, then the computation builder
+would actually contain implementation of the transformations. But in our case, the
+implementation is going to be empty.</p>
+<p>The builder defines <code>For</code> and <code>Yield</code>, which are required for any query. Then we also
+define <code>Quote</code> operation which instructs the compiler to capture a quotation (so that
+we do not have to write those explicitly using <code>&lt;@@ .. @@&gt;</code>, which is ugly!)
+The remaining three operations (discussed below) define custom operations that can appear
+in the query:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Defines a query builder which lets us write queries containing</span>
+<span class="c">/// &#39;for&#39;, &#39;where&#39;, &#39;selectAttr&#39; and &#39;selectCount&#39; operations.</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs21', 31)" onmouseover="showTip(event, 'fs21', 31)" class="t">SimpleQueryBuilder</span>() <span class="o">=</span> 
+  <span class="c">/// &#39;For&#39; and &#39;Yield&#39; enables the &#39;for x in xs do ..&#39; syntax</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 32)" onmouseover="showTip(event, 'fs22', 32)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 33)" onmouseover="showTip(event, 'fs23', 33)" class="f">For</span>(<span onmouseout="hideTip(event, 'fs24', 34)" onmouseover="showTip(event, 'fs24', 34)" class="i">tz</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs12', 35)" onmouseover="showTip(event, 'fs12', 35)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>, <span onmouseout="hideTip(event, 'fs25', 36)" onmouseover="showTip(event, 'fs25', 36)" class="f">f</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs12', 37)" onmouseover="showTip(event, 'fs12', 37)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">R</span><span class="o">&gt;</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs12', 38)" onmouseover="showTip(event, 'fs12', 38)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">R</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 39)" onmouseover="showTip(event, 'fs13', 39)" class="p">NA</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 40)" onmouseover="showTip(event, 'fs22', 40)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 41)" onmouseover="showTip(event, 'fs26', 41)" class="f">Yield</span>(<span onmouseout="hideTip(event, 'fs27', 42)" onmouseover="showTip(event, 'fs27', 42)" class="i">v</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs12', 43)" onmouseover="showTip(event, 'fs12', 43)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 44)" onmouseover="showTip(event, 'fs13', 44)" class="p">NA</span>
+
+  <span class="c">/// Instructs the compiler to capture quotation of the query</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 45)" onmouseover="showTip(event, 'fs22', 45)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 46)" onmouseover="showTip(event, 'fs28', 46)" class="f">Quote</span>(<span onmouseout="hideTip(event, 'fs29', 47)" onmouseover="showTip(event, 'fs29', 47)" class="i">e</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs30', 48)" onmouseover="showTip(event, 'fs30', 48)" class="t">Expr</span><span class="o">&lt;</span>_<span class="o">&gt;</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs29', 49)" onmouseover="showTip(event, 'fs29', 49)" class="i">e</span>
+
+  <span class="c">/// Represents filtering of the source using specified condition</span>
+  [&lt;<span onmouseout="hideTip(event, 'fs31', 50)" onmouseover="showTip(event, 'fs31', 50)" class="t">CustomOperation</span>(<span class="s">&quot;where&quot;</span>, <span class="i">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span>)&gt;]
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 51)" onmouseover="showTip(event, 'fs22', 51)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs32', 52)" onmouseover="showTip(event, 'fs32', 52)" class="f">Where</span>
+    ( <span onmouseout="hideTip(event, 'fs33', 53)" onmouseover="showTip(event, 'fs33', 53)" class="i">source</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs12', 54)" onmouseover="showTip(event, 'fs12', 54)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>, 
+      [&lt;<span onmouseout="hideTip(event, 'fs34', 55)" onmouseover="showTip(event, 'fs34', 55)" class="t">ProjectionParameter</span>&gt;] <span onmouseout="hideTip(event, 'fs35', 56)" onmouseover="showTip(event, 'fs35', 56)" class="f">f</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs36', 57)" onmouseover="showTip(event, 'fs36', 57)" class="t">bool</span> ) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs12', 58)" onmouseover="showTip(event, 'fs12', 58)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 59)" onmouseover="showTip(event, 'fs13', 59)" class="p">NA</span>
+
+  <span class="c">/// Represents projection where we select specified properties</span>
+  [&lt;<span onmouseout="hideTip(event, 'fs31', 60)" onmouseover="showTip(event, 'fs31', 60)" class="t">CustomOperation</span>(<span class="s">&quot;selectAttrs&quot;</span>)&gt;]
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 61)" onmouseover="showTip(event, 'fs22', 61)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 62)" onmouseover="showTip(event, 'fs37', 62)" class="f">SelectAttrs</span>
+    ( <span onmouseout="hideTip(event, 'fs33', 63)" onmouseover="showTip(event, 'fs33', 63)" class="i">source</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs12', 64)" onmouseover="showTip(event, 'fs12', 64)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>, 
+      [&lt;<span onmouseout="hideTip(event, 'fs34', 65)" onmouseover="showTip(event, 'fs34', 65)" class="t">ProjectionParameter</span>&gt;] <span onmouseout="hideTip(event, 'fs38', 66)" onmouseover="showTip(event, 'fs38', 66)" class="f">f</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">R</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs12', 67)" onmouseover="showTip(event, 'fs12', 67)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">R</span><span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 68)" onmouseover="showTip(event, 'fs13', 68)" class="p">NA</span>
+
+  <span class="c">/// Represents projection where we get the count of values</span>
+  [&lt;<span onmouseout="hideTip(event, 'fs31', 69)" onmouseover="showTip(event, 'fs31', 69)" class="t">CustomOperation</span>(<span class="s">&quot;selectCount&quot;</span>)&gt;]
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs22', 70)" onmouseover="showTip(event, 'fs22', 70)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs39', 71)" onmouseover="showTip(event, 'fs39', 71)" class="f">SelectCount</span>(<span onmouseout="hideTip(event, 'fs33', 72)" onmouseover="showTip(event, 'fs33', 72)" class="i">source</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs12', 73)" onmouseover="showTip(event, 'fs12', 73)" class="t">Query</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs18', 74)" onmouseover="showTip(event, 'fs18', 74)" class="t">int</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs40', 75)" onmouseover="showTip(event, 'fs40', 75)" class="f">failwith</span> <span class="s">&quot;Never executed&quot;</span>
+
+<span class="c">/// Global instance of the computation builder</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs41', 76)" onmouseover="showTip(event, 'fs41', 76)" class="i">simpleq</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs21', 77)" onmouseover="showTip(event, 'fs21', 77)" class="t">SimpleQueryBuilder</span>()
+</code></pre></td>
+</tr>
+</table>
+<p>Aside from <code>Yield</code> and <code>For</code>, which are required and boilerplate operations,
+there are three custom operations marked with the <code>CustomOperation</code> attribute.
+You can add any number of those you need. There are a few interesting things:</p>
+<ul>
+<li>
+<p>the <code>where</code> operation transforms <code>Query&lt;'T&gt;</code> into <code>Query&lt;'T&gt;</code> and so
+it is marked with <code>MaintainsVariableSpace=true</code> (which basically means that
+it does not change the type of values that query produces - it only filters them).</p>
+</li>
+<li>
+<p>The <code>selectAttrs</code> operation takes a projection as an argument - to write this
+nicely in the query as <code>selectAttrs (p.Name, p.Age)</code>, we need to add the
+<code>ProjectionParameter</code> attribute.</p>
+</li>
+<li>
+<p>The <code>selectCount</code> operation is simpler and has no additional parameters
+(but you can add any parameter you need, e.g. the standard <code>take</code> operation
+takes an integer and you'd write <code>take 10</code>).</p>
+</li>
+</ul>
+<p>The snippet ends with a definition of a value <code>simpleq</code> - this is an instance
+of the query builder that is used when we write <code>simpleq { .. }</code>, so let's now
+look at a sample query we can write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs42', 78)" onmouseover="showTip(event, 'fs42', 78)" class="i">q</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs41', 79)" onmouseover="showTip(event, 'fs41', 79)" class="i">simpleq</span> { 
+    <span class="k">for</span> <span onmouseout="hideTip(event, 'fs43', 80)" onmouseover="showTip(event, 'fs43', 80)" class="i">p</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs19', 81)" onmouseover="showTip(event, 'fs19', 81)" class="t">DB</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs44', 82)" onmouseover="showTip(event, 'fs44', 82)" class="i">People</span> <span class="k">do</span>
+    <span onmouseout="hideTip(event, 'fs45', 83)" onmouseover="showTip(event, 'fs45', 83)" class="k">where</span> (<span onmouseout="hideTip(event, 'fs43', 84)" onmouseover="showTip(event, 'fs43', 84)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 85)" onmouseover="showTip(event, 'fs17', 85)" class="i">Age</span> <span class="o">&gt;</span> <span class="n">10</span>)
+    <span onmouseout="hideTip(event, 'fs45', 86)" onmouseover="showTip(event, 'fs45', 86)" class="k">where</span> (<span onmouseout="hideTip(event, 'fs43', 87)" onmouseover="showTip(event, 'fs43', 87)" class="i">p</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs15', 88)" onmouseover="showTip(event, 'fs15', 88)" class="i">Name</span> <span class="o">=</span> <span class="s">&quot;Tomas&quot;</span>)
+    <span onmouseout="hideTip(event, 'fs46', 89)" onmouseover="showTip(event, 'fs46', 89)" class="k">selectCount</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>Because we added the <code>Quote</code> operation, the type of <code>q</code> is <code>Expr&lt;int&gt;</code> which means
+that it is an expression. Now, in a real example, you'd also add <code>Run</code> operation of type
+<code>Expr&lt;'T&gt; -&gt; 'T</code> that would evaluate the query. Here, we'll just look at the translation
+(and I won't discuss how to do the evaluation).</p>
+<h2>Defining the query model</h2>
+<p>Before looking at the query translation, let's have a look at the information we want
+to extract from the sample query. We want to build a value of the following <code>Query</code> type
+which describes what kind of operations are performed:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Defines a single condition of the form</span>
+<span class="c">/// p.&lt;Property&gt; &lt;op&gt; &lt;Constant&gt;</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs47', 90)" onmouseover="showTip(event, 'fs47', 90)" class="t">QueryCondition</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'fs48', 91)" onmouseover="showTip(event, 'fs48', 91)" class="i">Property</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs16', 92)" onmouseover="showTip(event, 'fs16', 92)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs49', 93)" onmouseover="showTip(event, 'fs49', 93)" class="i">Operator</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs16', 94)" onmouseover="showTip(event, 'fs16', 94)" class="t">string</span> 
+    <span onmouseout="hideTip(event, 'fs50', 95)" onmouseover="showTip(event, 'fs50', 95)" class="i">Constant</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs51', 96)" onmouseover="showTip(event, 'fs51', 96)" class="t">obj</span> }
+
+<span class="c">/// Specifies what kind of projection happens at the </span>
+<span class="c">/// end of query (count or list of projected attributes)</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs52', 97)" onmouseover="showTip(event, 'fs52', 97)" class="t">QueryProjection</span> <span class="o">=</span>
+  | <span onmouseout="hideTip(event, 'fs53', 98)" onmouseover="showTip(event, 'fs53', 98)" class="p">SelectAttributes</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs16', 99)" onmouseover="showTip(event, 'fs16', 99)" class="t">string</span> <span onmouseout="hideTip(event, 'fs54', 100)" onmouseover="showTip(event, 'fs54', 100)" class="t">list</span>
+  | <span onmouseout="hideTip(event, 'fs55', 101)" onmouseover="showTip(event, 'fs55', 101)" class="p">SelectCount</span>
+
+<span class="c">/// A query consits of source (table) name, a list of</span>
+<span class="c">/// filters specified using `where` and an optional </span>
+<span class="c">/// projection at the end.</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs56', 102)" onmouseover="showTip(event, 'fs56', 102)" class="t">Query</span> <span class="o">=</span> 
+  { <span onmouseout="hideTip(event, 'fs57', 103)" onmouseover="showTip(event, 'fs57', 103)" class="i">Source</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs16', 104)" onmouseover="showTip(event, 'fs16', 104)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs58', 105)" onmouseover="showTip(event, 'fs58', 105)" class="i">Where</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs47', 106)" onmouseover="showTip(event, 'fs47', 106)" class="t">QueryCondition</span> <span onmouseout="hideTip(event, 'fs54', 107)" onmouseover="showTip(event, 'fs54', 107)" class="t">list</span>
+    <span onmouseout="hideTip(event, 'fs59', 108)" onmouseover="showTip(event, 'fs59', 108)" class="i">Select</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs52', 109)" onmouseover="showTip(event, 'fs52', 109)" class="t">QueryProjection</span> <span onmouseout="hideTip(event, 'fs60', 110)" onmouseover="showTip(event, 'fs60', 110)" class="t">option</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>The domain model pretty much speaks for itself! We can write one or more <code>where</code> clauses.
+In this example, we'll recognize only very limited forms of conditions - you have to write
+property on the left, operator and a constant. The <code>select</code> clause at the end is optional
+(you don't have to write it in the query) so the <code>Select</code> property in <code>Query</code> is marked with
+<code>option</code> too.</p>
+<h2>Translating queries using quotations</h2>
+<p>Now we're getting to the most interesting bit of this blog post - how can we take the
+quotation that represents the query (the <code>q</code> value) and turn it into a <code>Query</code> value
+which models our query. If you're going through this in F# interactive, you can type
+<code>q</code> in the FSI and see what the query looks like. It takes some time to understand how
+to read this, but you might see something like:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Call</span> (<span onmouseout="hideTip(event, 'fs61', 111)" onmouseover="showTip(event, 'fs61', 111)" class="i">Some</span> (<span class="i">Value</span> (<span class="i">FSI_0080</span><span class="o">+</span><span class="i">QueryBuilder</span>)), <span class="i">SelectCount</span>,
+  [<span class="i">Call</span> (<span onmouseout="hideTip(event, 'fs61', 112)" onmouseover="showTip(event, 'fs61', 112)" class="i">Some</span> (<span class="i">Value</span> (<span class="i">FSI_0080</span><span class="o">+</span><span class="i">QueryBuilder</span>)), <span class="i">Where</span>,
+    [<span class="i">Call</span> (<span onmouseout="hideTip(event, 'fs61', 113)" onmouseover="showTip(event, 'fs61', 113)" class="i">Some</span> (<span class="i">Value</span> (<span class="i">FSI_0080</span><span class="o">+</span><span class="i">QueryBuilder</span>)), <span class="i">For</span>,
+      [<span class="i">PropertyGet</span> (<span onmouseout="hideTip(event, 'fs62', 114)" onmouseover="showTip(event, 'fs62', 114)" class="i">None</span>, <span class="i">People</span>, []), (<span class="o">..</span><span class="o">.</span>) ]),
+    <span class="i">Lambda</span> (<span class="i">p</span>,
+      <span class="i">Call</span> (<span onmouseout="hideTip(event, 'fs62', 115)" onmouseover="showTip(event, 'fs62', 115)" class="i">None</span>, <span class="i">op_GreaterThan</span>,
+        [<span class="i">PropertyGet</span> (<span onmouseout="hideTip(event, 'fs61', 116)" onmouseover="showTip(event, 'fs61', 116)" class="i">Some</span> (<span class="i">p</span>), <span class="i">Age</span>, []), <span class="i">Value</span> (<span class="n">10</span>)]))])])
+</code></pre></td>
+</tr>
+</table>
+<p>With a bit of effort, you can see the operations that the query calls (in this example,
+I left just <code>where (p.Age &gt; 10)</code> in the query. The operations in the output appear in
+a reverse order - so our query ends with a call to <code>SelectCount</code>. Before that, it calls
+<code>where</code> (with a lambda that you can see on the last three lines as an argument). Finally,
+the input is <code>People</code> property on line 4.</p>
+<h3>Translating the query</h3>
+<p>The key part of the whole sample is the following <code>translateQuery</code> function. It takes
+a quotation and checks for calls to one of the supported operations. The function returns
+a <code>Query</code> value representing the query and it builds the result gradually as it (recursively)
+walks over the query.</p>
+<p>The <code>For</code> operation is where everything starts, because this specifies the source. The
+projection and filtering operations first call <code>translateQuery</code> recursively (on the
+nested part of the expression) and then add more information to the <code>Query</code> record:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs9', 187)" onmouseover="showTip(event, 'fs9', 187)" class="i">Microsoft</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 188)" onmouseover="showTip(event, 'fs10', 188)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 189)" onmouseover="showTip(event, 'fs11', 189)" class="i">Quotations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs92', 190)" onmouseover="showTip(event, 'fs92', 190)" class="i">Patterns</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs9', 191)" onmouseover="showTip(event, 'fs9', 191)" class="i">Microsoft</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 192)" onmouseover="showTip(event, 'fs10', 192)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 193)" onmouseover="showTip(event, 'fs11', 193)" class="i">Quotations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs93', 194)" onmouseover="showTip(event, 'fs93', 194)" class="i">DerivedPatterns</span>
+
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs94', 195)" onmouseover="showTip(event, 'fs94', 195)" class="f">translateQuery</span> <span onmouseout="hideTip(event, 'fs85', 196)" onmouseover="showTip(event, 'fs85', 196)" class="i">e</span> <span class="o">=</span> 
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs85', 197)" onmouseover="showTip(event, 'fs85', 197)" class="i">e</span> <span class="k">with</span>
+  <span class="c">// simpleq.SelectAttrs(&lt;source&gt;, fun p -&gt; p.Name, p.Age)</span>
+  | <span onmouseout="hideTip(event, 'fs95', 198)" onmouseover="showTip(event, 'fs95', 198)" class="p">SpecificCall</span> &lt;@@ <span onmouseout="hideTip(event, 'fs41', 199)" onmouseover="showTip(event, 'fs41', 199)" class="i">simpleq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs96', 200)" onmouseover="showTip(event, 'fs96', 200)" class="f">SelectAttrs</span> @@&gt; 
+        (<span onmouseout="hideTip(event, 'fs97', 201)" onmouseover="showTip(event, 'fs97', 201)" class="i">builder</span>, [<span onmouseout="hideTip(event, 'fs98', 202)" onmouseover="showTip(event, 'fs98', 202)" class="i">tTyp</span>; <span onmouseout="hideTip(event, 'fs99', 203)" onmouseover="showTip(event, 'fs99', 203)" class="i">rTyp</span>], [<span onmouseout="hideTip(event, 'fs100', 204)" onmouseover="showTip(event, 'fs100', 204)" class="i">source</span>; <span onmouseout="hideTip(event, 'fs101', 205)" onmouseover="showTip(event, 'fs101', 205)" class="i">proj</span>]) <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs102', 206)" onmouseover="showTip(event, 'fs102', 206)" class="i">q</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs94', 207)" onmouseover="showTip(event, 'fs94', 207)" class="f">translateQuery</span> <span onmouseout="hideTip(event, 'fs100', 208)" onmouseover="showTip(event, 'fs100', 208)" class="i">source</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs103', 209)" onmouseover="showTip(event, 'fs103', 209)" class="i">s</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs86', 210)" onmouseover="showTip(event, 'fs86', 210)" class="f">translateProjection</span> <span onmouseout="hideTip(event, 'fs101', 211)" onmouseover="showTip(event, 'fs101', 211)" class="i">proj</span>
+      { <span onmouseout="hideTip(event, 'fs102', 212)" onmouseover="showTip(event, 'fs102', 212)" class="i">q</span> <span class="k">with</span> <span class="i">Select</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs61', 213)" onmouseover="showTip(event, 'fs61', 213)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs53', 214)" onmouseover="showTip(event, 'fs53', 214)" class="p">SelectAttributes</span> <span onmouseout="hideTip(event, 'fs103', 215)" onmouseover="showTip(event, 'fs103', 215)" class="i">s</span>) }
+  
+  <span class="c">// simpleq.SelectCount(&lt;source&gt;)</span>
+  | <span onmouseout="hideTip(event, 'fs95', 216)" onmouseover="showTip(event, 'fs95', 216)" class="p">SpecificCall</span> &lt;@@ <span onmouseout="hideTip(event, 'fs41', 217)" onmouseover="showTip(event, 'fs41', 217)" class="i">simpleq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs104', 218)" onmouseover="showTip(event, 'fs104', 218)" class="f">SelectCount</span> @@&gt; 
+        (<span onmouseout="hideTip(event, 'fs97', 219)" onmouseover="showTip(event, 'fs97', 219)" class="i">builder</span>, [<span onmouseout="hideTip(event, 'fs98', 220)" onmouseover="showTip(event, 'fs98', 220)" class="i">tTyp</span>], [<span onmouseout="hideTip(event, 'fs100', 221)" onmouseover="showTip(event, 'fs100', 221)" class="i">source</span>]) <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs102', 222)" onmouseover="showTip(event, 'fs102', 222)" class="i">q</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs94', 223)" onmouseover="showTip(event, 'fs94', 223)" class="f">translateQuery</span> <span onmouseout="hideTip(event, 'fs100', 224)" onmouseover="showTip(event, 'fs100', 224)" class="i">source</span>
+      { <span onmouseout="hideTip(event, 'fs102', 225)" onmouseover="showTip(event, 'fs102', 225)" class="i">q</span> <span class="k">with</span> <span class="i">Select</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs61', 226)" onmouseover="showTip(event, 'fs61', 226)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs55', 227)" onmouseover="showTip(event, 'fs55', 227)" class="p">SelectCount</span> }
+
+  <span class="c">// simpleq.Where(&lt;source&gt;, fun p -&gt; p.Age &gt; 10)</span>
+  | <span onmouseout="hideTip(event, 'fs95', 228)" onmouseover="showTip(event, 'fs95', 228)" class="p">SpecificCall</span> &lt;@@ <span onmouseout="hideTip(event, 'fs41', 229)" onmouseover="showTip(event, 'fs41', 229)" class="i">simpleq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs105', 230)" onmouseover="showTip(event, 'fs105', 230)" class="f">Where</span> @@&gt; 
+        (<span onmouseout="hideTip(event, 'fs97', 231)" onmouseover="showTip(event, 'fs97', 231)" class="i">builder</span>, [<span onmouseout="hideTip(event, 'fs98', 232)" onmouseover="showTip(event, 'fs98', 232)" class="i">tTyp</span>], [<span onmouseout="hideTip(event, 'fs100', 233)" onmouseover="showTip(event, 'fs100', 233)" class="i">source</span>; <span onmouseout="hideTip(event, 'fs106', 234)" onmouseover="showTip(event, 'fs106', 234)" class="i">cond</span>]) <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs102', 235)" onmouseover="showTip(event, 'fs102', 235)" class="i">q</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs94', 236)" onmouseover="showTip(event, 'fs94', 236)" class="f">translateQuery</span> <span onmouseout="hideTip(event, 'fs100', 237)" onmouseover="showTip(event, 'fs100', 237)" class="i">source</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs107', 238)" onmouseover="showTip(event, 'fs107', 238)" class="i">w</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs63', 239)" onmouseover="showTip(event, 'fs63', 239)" class="f">translateWhere</span> <span onmouseout="hideTip(event, 'fs106', 240)" onmouseover="showTip(event, 'fs106', 240)" class="i">cond</span>
+      { <span onmouseout="hideTip(event, 'fs102', 241)" onmouseover="showTip(event, 'fs102', 241)" class="i">q</span> <span class="k">with</span> <span class="i">Where</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs107', 242)" onmouseover="showTip(event, 'fs107', 242)" class="i">w</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs102', 243)" onmouseover="showTip(event, 'fs102', 243)" class="i">q</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 244)" onmouseover="showTip(event, 'fs58', 244)" class="i">Where</span> }
+
+  <span class="c">// simpleq.For(DB.People, &lt;...&gt;)</span>
+  | <span onmouseout="hideTip(event, 'fs95', 245)" onmouseover="showTip(event, 'fs95', 245)" class="p">SpecificCall</span> &lt;@@ <span onmouseout="hideTip(event, 'fs41', 246)" onmouseover="showTip(event, 'fs41', 246)" class="i">simpleq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs108', 247)" onmouseover="showTip(event, 'fs108', 247)" class="f">For</span> @@&gt; 
+        (<span onmouseout="hideTip(event, 'fs97', 248)" onmouseover="showTip(event, 'fs97', 248)" class="i">builder</span>, [<span onmouseout="hideTip(event, 'fs98', 249)" onmouseover="showTip(event, 'fs98', 249)" class="i">tTyp</span>; <span onmouseout="hideTip(event, 'fs99', 250)" onmouseover="showTip(event, 'fs99', 250)" class="i">rTyp</span>], [<span onmouseout="hideTip(event, 'fs100', 251)" onmouseover="showTip(event, 'fs100', 251)" class="i">source</span>; <span onmouseout="hideTip(event, 'fs109', 252)" onmouseover="showTip(event, 'fs109', 252)" class="i">body</span>]) <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs110', 253)" onmouseover="showTip(event, 'fs110', 253)" class="i">source</span> <span class="o">=</span> 
+        <span class="c">// Extract the table name from &#39;DB.People&#39;</span>
+        <span class="k">match</span> <span onmouseout="hideTip(event, 'fs110', 254)" onmouseover="showTip(event, 'fs110', 254)" class="i">source</span> <span class="k">with</span>
+        | <span onmouseout="hideTip(event, 'fs70', 255)" onmouseover="showTip(event, 'fs70', 255)" class="p">PropertyGet</span>(<span onmouseout="hideTip(event, 'fs62', 256)" onmouseover="showTip(event, 'fs62', 256)" class="p">None</span>, <span onmouseout="hideTip(event, 'fs73', 257)" onmouseover="showTip(event, 'fs73', 257)" class="i">prop</span>, []) <span class="k">when</span> 
+            <span onmouseout="hideTip(event, 'fs73', 258)" onmouseover="showTip(event, 'fs73', 258)" class="i">prop</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs111', 259)" onmouseover="showTip(event, 'fs111', 259)" class="i">DeclaringType</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs112', 260)" onmouseover="showTip(event, 'fs112', 260)" class="i">typeof</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs19', 261)" onmouseover="showTip(event, 'fs19', 261)" class="t">DB</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs73', 262)" onmouseover="showTip(event, 'fs73', 262)" class="i">prop</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 263)" onmouseover="showTip(event, 'fs77', 263)" class="i">Name</span>
+        | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs40', 264)" onmouseover="showTip(event, 'fs40', 264)" class="f">failwith</span> <span class="s">&quot;Only sources of the form &#39;DB.&lt;Prop&gt;&#39; are supported!&quot;</span>
+      { <span class="i">Source</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs110', 265)" onmouseover="showTip(event, 'fs110', 265)" class="i">source</span>; <span class="i">Where</span> <span class="o">=</span> []; <span class="i">Select</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs62', 266)" onmouseover="showTip(event, 'fs62', 266)" class="p">None</span> }
+
+  <span class="c">// This should never happen</span>
+  | <span onmouseout="hideTip(event, 'fs85', 267)" onmouseover="showTip(event, 'fs85', 267)" class="i">e</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs81', 268)" onmouseover="showTip(event, 'fs81', 268)" class="f">failwithf</span> <span class="s">&quot;Unsupported query operation: </span><span class="pf">%A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs85', 269)" onmouseover="showTip(event, 'fs85', 269)" class="i">e</span>
+</code></pre></td>
+</tr>
+</table>
+<p>If you are new to quotations and active patterns, then there is quite a lot of going on here.
+Here is a summary of the important things:</p>
+<ul>
+<li>
+<p>The <code>translateQuery</code> function is recursive. All of the operations except for <code>For</code>
+contain nested query (of the same format) as one of the arguments. In the comments,
+this is indicated by the <code>&lt;source&gt;</code> parameter. So, we always recursively process
+<code>&lt;source&gt;</code> and then extract information from the other parameter.</p>
+</li>
+<li>
+<p>The pattern <code>SpecificCall &lt;@@ ... @@&gt;</code> is a way of checking that the quotation
+represents piece of code that calls the specified operation. When it matches,
+it produces a tuple with <code>(builder, [..], args)</code> where the last element are the
+arguments of the method called (the other are instance and type arguments, but
+we ignore those).</p>
+</li>
+</ul>
+<p>Now, I omitted the definitions of <code>translateWhere</code> and <code>translateProjection</code> functions,
+so let's look at those next. These will be a bit simpler, but they'll use additional
+quotation patterns.</p>
+<h3>Translating where clauses</h3>
+<p>The <code>translateWhere</code> function is parsing a function of the form <code>fun p -&gt; p.Prop &lt;op&gt; &lt;Value&gt;</code>.
+In quotations, we can use <code>Lambda</code> pattern to look for function and <code>Call</code> for a call to an
+operator. We check that this is call to an operator by making sure that the name of the method
+called starts with <code>op_</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs63', 117)" onmouseover="showTip(event, 'fs63', 117)" class="f">translateWhere</span> <span class="o">=</span> <span class="k">function</span>
+  | <span onmouseout="hideTip(event, 'fs64', 118)" onmouseover="showTip(event, 'fs64', 118)" class="p">Lambda</span>(<span onmouseout="hideTip(event, 'fs65', 119)" onmouseover="showTip(event, 'fs65', 119)" class="i">var1</span>, <span onmouseout="hideTip(event, 'fs66', 120)" onmouseover="showTip(event, 'fs66', 120)" class="p">Call</span> (<span onmouseout="hideTip(event, 'fs62', 121)" onmouseover="showTip(event, 'fs62', 121)" class="p">None</span>, <span onmouseout="hideTip(event, 'fs67', 122)" onmouseover="showTip(event, 'fs67', 122)" class="i">op</span>, [<span onmouseout="hideTip(event, 'fs68', 123)" onmouseover="showTip(event, 'fs68', 123)" class="i">left</span>; <span onmouseout="hideTip(event, 'fs69', 124)" onmouseover="showTip(event, 'fs69', 124)" class="i">right</span>])) <span class="k">-&gt;</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs68', 125)" onmouseover="showTip(event, 'fs68', 125)" class="i">left</span>, <span onmouseout="hideTip(event, 'fs69', 126)" onmouseover="showTip(event, 'fs69', 126)" class="i">right</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs70', 127)" onmouseover="showTip(event, 'fs70', 127)" class="p">PropertyGet</span>(<span onmouseout="hideTip(event, 'fs61', 128)" onmouseover="showTip(event, 'fs61', 128)" class="p">Some</span> (<span onmouseout="hideTip(event, 'fs71', 129)" onmouseover="showTip(event, 'fs71', 129)" class="p">Var</span> <span onmouseout="hideTip(event, 'fs72', 130)" onmouseover="showTip(event, 'fs72', 130)" class="i">var2</span>), <span onmouseout="hideTip(event, 'fs73', 131)" onmouseover="showTip(event, 'fs73', 131)" class="i">prop</span>, []), <span onmouseout="hideTip(event, 'fs74', 132)" onmouseover="showTip(event, 'fs74', 132)" class="p">Value</span>(<span onmouseout="hideTip(event, 'fs75', 133)" onmouseover="showTip(event, 'fs75', 133)" class="i">value</span>, _) <span class="k">when</span> 
+        <span onmouseout="hideTip(event, 'fs65', 134)" onmouseover="showTip(event, 'fs65', 134)" class="i">var1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 135)" onmouseover="showTip(event, 'fs76', 135)" class="i">Name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs72', 136)" onmouseover="showTip(event, 'fs72', 136)" class="i">var2</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 137)" onmouseover="showTip(event, 'fs76', 137)" class="i">Name</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'fs67', 138)" onmouseover="showTip(event, 'fs67', 138)" class="i">op</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 139)" onmouseover="showTip(event, 'fs77', 139)" class="i">Name</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs78', 140)" onmouseover="showTip(event, 'fs78', 140)" class="f">StartsWith</span>(<span class="s">&quot;op_&quot;</span>) <span class="k">-&gt;</span>
+        <span class="c">// We got &#39;where&#39; that we understand. Build QueryCondition!</span>
+        { <span class="i">Property</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs73', 141)" onmouseover="showTip(event, 'fs73', 141)" class="i">prop</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 142)" onmouseover="showTip(event, 'fs77', 142)" class="i">Name</span>
+          <span class="i">Operator</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs67', 143)" onmouseover="showTip(event, 'fs67', 143)" class="i">op</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 144)" onmouseover="showTip(event, 'fs77', 144)" class="i">Name</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs79', 145)" onmouseover="showTip(event, 'fs79', 145)" class="f">Substring</span>(<span class="n">3</span>)
+          <span class="i">Constant</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs75', 146)" onmouseover="showTip(event, 'fs75', 146)" class="i">value</span> }
+    | <span onmouseout="hideTip(event, 'fs80', 147)" onmouseover="showTip(event, 'fs80', 147)" class="i">e</span> <span class="k">-&gt;</span> 
+      <span class="c">// &#39;where&#39; with not supported format</span>
+      <span class="c">// (this can happen so report more useful error)</span>
+      <span onmouseout="hideTip(event, 'fs81', 148)" onmouseover="showTip(event, 'fs81', 148)" class="f">failwithf</span> 
+        <span class="s">&quot;</span><span class="pf">%s</span><span class="s"></span><span class="e">\n</span><span class="s">Got: </span><span class="pf">%A</span><span class="s">&quot;</span> 
+        ( <span class="s">&quot;Only expressions of the form &quot;</span> <span class="o">+</span>
+          <span class="s">&quot;&#39;p.Prop &lt;op&gt; &lt;value&gt;&#39; are supported!&quot;</span>) <span onmouseout="hideTip(event, 'fs80', 149)" onmouseover="showTip(event, 'fs80', 149)" class="i">e</span>
+
+  <span class="c">// This should not happen - the parameter is always lambda!</span>
+  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs40', 150)" onmouseover="showTip(event, 'fs40', 150)" class="f">failwith</span> <span class="s">&quot;Expected lambda expression&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>THe function looks for a fairly complex pattern that represents the valid syntax that can appear
+after the <code>where</code> clause. Note that the compiler automatically turns <code>where &lt;cond&gt;</code> into a call
+<code>simplq.Where(..., fun p -&gt; &lt;cond&gt;)</code>, so it adds a lambda function that we have to decompose.</p>
+<h3>Translating select clauses</h3>
+<p>Translation of the select clauses is quite similar. Again, we look for a lambda function
+and then transform the body into a list of properties that should be returned by the
+projection.</p>
+<p>This time, we look for two kinds of body expressions. When you write <code>select p.Name</code>, this
+is represented as a function containing property access as the body. We turn this into a
+singleton list. When you write <code>select (p.Name, p.Age)</code>, we get a <em>tuple</em> and we turn this
+into a list of names corresponding to the elements returned by the tuple:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Translate property access (may be in a tuple or not)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs82', 151)" onmouseover="showTip(event, 'fs82', 151)" class="f">translatePropGet</span> <span onmouseout="hideTip(event, 'fs83', 152)" onmouseover="showTip(event, 'fs83', 152)" class="i">varName</span> <span class="o">=</span> <span class="k">function</span>
+  | <span onmouseout="hideTip(event, 'fs70', 153)" onmouseover="showTip(event, 'fs70', 153)" class="p">PropertyGet</span>(<span onmouseout="hideTip(event, 'fs61', 154)" onmouseover="showTip(event, 'fs61', 154)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs71', 155)" onmouseover="showTip(event, 'fs71', 155)" class="p">Var</span> <span onmouseout="hideTip(event, 'fs84', 156)" onmouseover="showTip(event, 'fs84', 156)" class="i">v</span>), <span onmouseout="hideTip(event, 'fs73', 157)" onmouseover="showTip(event, 'fs73', 157)" class="i">prop</span>, []) 
+      <span class="c">// The body is simple projection</span>
+      <span class="k">when</span> <span onmouseout="hideTip(event, 'fs84', 158)" onmouseover="showTip(event, 'fs84', 158)" class="i">v</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 159)" onmouseover="showTip(event, 'fs76', 159)" class="i">Name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs83', 160)" onmouseover="showTip(event, 'fs83', 160)" class="i">varName</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs73', 161)" onmouseover="showTip(event, 'fs73', 161)" class="i">prop</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 162)" onmouseover="showTip(event, 'fs77', 162)" class="i">Name</span>
+  | <span onmouseout="hideTip(event, 'fs85', 163)" onmouseover="showTip(event, 'fs85', 163)" class="i">e</span> <span class="k">-&gt;</span> 
+    <span class="c">// Too complex expression in projection</span>
+    <span onmouseout="hideTip(event, 'fs81', 164)" onmouseover="showTip(event, 'fs81', 164)" class="f">failwithf</span> 
+      <span class="s">&quot;</span><span class="pf">%s</span><span class="s"></span><span class="e">\n</span><span class="s">Got: </span><span class="pf">%A</span><span class="s">&quot;</span> 
+      ( <span class="s">&quot;Only expressions of the form &quot;</span> <span class="o">+</span> 
+        <span class="s">&quot;&#39;p.Prop&#39; are supported!&quot;</span> ) <span onmouseout="hideTip(event, 'fs85', 165)" onmouseover="showTip(event, 'fs85', 165)" class="i">e</span>
+
+<span class="c">/// Translate projection - this handles both of the forms </span>
+<span class="c">/// (with or without tuple) and calls `translatePropGet`</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs86', 166)" onmouseover="showTip(event, 'fs86', 166)" class="f">translateProjection</span> <span onmouseout="hideTip(event, 'fs85', 167)" onmouseover="showTip(event, 'fs85', 167)" class="i">e</span> <span class="o">=</span>
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs85', 168)" onmouseover="showTip(event, 'fs85', 168)" class="i">e</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'fs64', 169)" onmouseover="showTip(event, 'fs64', 169)" class="p">Lambda</span>(<span onmouseout="hideTip(event, 'fs65', 170)" onmouseover="showTip(event, 'fs65', 170)" class="i">var1</span>, <span onmouseout="hideTip(event, 'fs87', 171)" onmouseover="showTip(event, 'fs87', 171)" class="p">NewTuple</span> <span onmouseout="hideTip(event, 'fs88', 172)" onmouseover="showTip(event, 'fs88', 172)" class="i">args</span>) <span class="k">-&gt;</span> 
+      <span class="c">// Translate all tuple items</span>
+      <span onmouseout="hideTip(event, 'fs89', 173)" onmouseover="showTip(event, 'fs89', 173)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs90', 174)" onmouseover="showTip(event, 'fs90', 174)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs82', 175)" onmouseover="showTip(event, 'fs82', 175)" class="f">translatePropGet</span> <span onmouseout="hideTip(event, 'fs65', 176)" onmouseover="showTip(event, 'fs65', 176)" class="i">var1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 177)" onmouseover="showTip(event, 'fs76', 177)" class="i">Name</span>) <span onmouseout="hideTip(event, 'fs88', 178)" onmouseover="showTip(event, 'fs88', 178)" class="i">args</span>
+  | <span onmouseout="hideTip(event, 'fs64', 179)" onmouseover="showTip(event, 'fs64', 179)" class="p">Lambda</span>(<span onmouseout="hideTip(event, 'fs65', 180)" onmouseover="showTip(event, 'fs65', 180)" class="i">var1</span>, <span onmouseout="hideTip(event, 'fs91', 181)" onmouseover="showTip(event, 'fs91', 181)" class="i">arg</span>) <span class="k">-&gt;</span> 
+      <span class="c">// There is just one body expression</span>
+      [<span onmouseout="hideTip(event, 'fs82', 182)" onmouseover="showTip(event, 'fs82', 182)" class="f">translatePropGet</span> <span onmouseout="hideTip(event, 'fs65', 183)" onmouseover="showTip(event, 'fs65', 183)" class="i">var1</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 184)" onmouseover="showTip(event, 'fs76', 184)" class="i">Name</span> <span onmouseout="hideTip(event, 'fs91', 185)" onmouseover="showTip(event, 'fs91', 185)" class="i">arg</span>]
+  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs40', 186)" onmouseover="showTip(event, 'fs40', 186)" class="f">failwith</span> <span class="s">&quot;Expected lambda expression&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So, now that we have all the definitions, you can see how this works. Try
+calling <code>translateQuery</code> function on the sample <code>q</code> query that we wrote earlier:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs42', 270)" onmouseover="showTip(event, 'fs42', 270)" class="i">q</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs94', 271)" onmouseover="showTip(event, 'fs94', 271)" class="f">translateQuery</span>
+</code></pre></td>
+</tr>
+</table>
+<p>If you do this, you should see a nice <code>Query</code> value that represents the information you
+need about the query. For a query with just one <code>where</code> clause, I got the following:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">{ <span class="i">Source</span> <span class="o">=</span> <span class="s">&quot;People&quot;</span>
+  <span class="i">Where</span> <span class="o">=</span> 
+    [ { <span class="i">Property</span> <span class="o">=</span> <span class="s">&quot;Age&quot;</span>
+        <span class="i">Operator</span> <span class="o">=</span> <span class="s">&quot;GreaterThan&quot;</span>
+        <span class="i">Constant</span> <span class="o">=</span> <span class="n">10</span> }]
+  <span class="i">Select</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs61', 272)" onmouseover="showTip(event, 'fs61', 272)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs55', 273)" onmouseover="showTip(event, 'fs55', 273)" class="p">SelectCount</span>}
+</code></pre></td>
+</tr>
+</table>
+<h2>Summary</h2>
+<p>In this blog post, I wrote a minimal example that shows how you can implement a custom
+query computations for querying data sources like Amazon DynamoDB. This is not the easiest
+thing you can do with F#, but if you compare this with writing a translator for LINQ
+expression trees, then it actually does not look so bad - active patterns and pattern
+matching are super valuable language features here!</p>
+<p>One thing I have not done in this article is to add support for evaluating the queries.
+To do this, you'd need to add <code>Run</code> operation to the query builder, which takes <code>Expr&lt;'T&gt;</code>,
+extracts the <code>Query</code> value from the expression (we have this bit) and then produces a
+value of type <code>'T</code> by actually sending database request (this is what you'd need to add).
+Aside from that, I think this minimal example shows all the important tricks!</p>
+
+
+<div class="tip" id="fs1">val query : Linq.QueryBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.query</div>
+<div class="tip" id="fs2">val p : People</div>
+<div class="tip" id="fs3">type DynamoDB =<br />&#160;&#160;static member People : seq&lt;People&gt;<br /><br />Full name: Query-translation.DynamoDB</div>
+<div class="tip" id="fs4">property DynamoDB.People: seq&lt;People&gt;</div>
+<div class="tip" id="fs5">custom operation: where (bool)<br /><br />Calls Linq.QueryBuilder.Where </div>
+<div class="tip" id="fs6">People.Age: int</div>
+<div class="tip" id="fs7">People.Name: string</div>
+<div class="tip" id="fs8">custom operation: select (&#39;Result)<br /><br />Calls Linq.QueryBuilder.Select </div>
+<div class="tip" id="fs9">namespace Microsoft</div>
+<div class="tip" id="fs10">namespace Microsoft.FSharp</div>
+<div class="tip" id="fs11">namespace Microsoft.FSharp.Quotations</div>
+<div class="tip" id="fs12">type Query&lt;&#39;T&gt; = | NA<br /><br />Full name: Query-translation.Query&lt;_&gt;<br /><em><br /><br />&#160;Represents a query (but it is never executed!)</em></div>
+<div class="tip" id="fs13">union case Query.NA: Query&lt;&#39;T&gt;</div>
+<div class="tip" id="fs14">type Person =<br />&#160;&#160;{Name: string;<br />&#160;&#160;&#160;Age: int;}<br /><br />Full name: Query-translation.Person<br /><em><br /><br />&#160;Sample type that would be ideally imported from database</em></div>
+<div class="tip" id="fs15">Person.Name: string</div>
+<div class="tip" id="fs16">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs17">Person.Age: int</div>
+<div class="tip" id="fs18">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs19">type DB =<br />&#160;&#160;static member People : Query&lt;Person&gt;<br /><br />Full name: Query-translation.DB<br /><em><br /><br />&#160;Models a database with one &#39;People&#39; table</em></div>
+<div class="tip" id="fs20">Multiple items<br />static member DB.People : Query&lt;Person&gt;<br /><br />Full name: Query-translation.DB.People<br /><br />--------------------<br />type People =<br />&#160;&#160;{Name: string;<br />&#160;&#160;&#160;Age: int;}<br /><br />Full name: Query-translation.People</div>
+<div class="tip" id="fs21">Multiple items<br />type SimpleQueryBuilder =<br />&#160;&#160;new : unit -&gt; SimpleQueryBuilder<br />&#160;&#160;member For : tz:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; Query&lt;&#39;R&gt;) -&gt; Query&lt;&#39;R&gt;<br />&#160;&#160;member Quote : e:Expr&lt;&#39;a&gt; -&gt; Expr&lt;&#39;a&gt;<br />&#160;&#160;member SelectAttrs : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; &#39;R) -&gt; Query&lt;&#39;R&gt;<br />&#160;&#160;member SelectCount : source:Query&lt;&#39;T&gt; -&gt; int<br />&#160;&#160;member Where : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; bool) -&gt; Query&lt;&#39;T&gt;<br />&#160;&#160;member Yield : v:&#39;T -&gt; Query&lt;&#39;T&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder<br /><em><br /><br />&#160;Defines a query builder which lets us write queries containing<br />&#160;&#39;for&#39;, &#39;where&#39;, &#39;selectAttr&#39; and &#39;selectCount&#39; operations.</em><br /><br />--------------------<br />new : unit -&gt; SimpleQueryBuilder</div>
+<div class="tip" id="fs22">val x : SimpleQueryBuilder</div>
+<div class="tip" id="fs23">member SimpleQueryBuilder.For : tz:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; Query&lt;&#39;R&gt;) -&gt; Query&lt;&#39;R&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder.For<br /><em><br /><br />&#160;&#39;For&#39; and &#39;Yield&#39; enables the &#39;for x in xs do ..&#39; syntax</em></div>
+<div class="tip" id="fs24">val tz : Query&lt;&#39;T&gt;</div>
+<div class="tip" id="fs25">val f : (&#39;T -&gt; Query&lt;&#39;R&gt;)</div>
+<div class="tip" id="fs26">member SimpleQueryBuilder.Yield : v:&#39;T -&gt; Query&lt;&#39;T&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder.Yield</div>
+<div class="tip" id="fs27">val v : &#39;T</div>
+<div class="tip" id="fs28">Multiple items<br />member SimpleQueryBuilder.Quote : e:Expr&lt;&#39;a&gt; -&gt; Expr&lt;&#39;a&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder.Quote<br /><em><br /><br />&#160;Instructs the compiler to capture quotation of the query</em><br /><br />--------------------<br />active recognizer Quote: Expr -&gt; Expr option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |Quote|_| )</div>
+<div class="tip" id="fs29">val e : Expr&lt;&#39;a&gt;</div>
+<div class="tip" id="fs30">Multiple items<br />type Expr =<br />&#160;&#160;override Equals : obj:obj -&gt; bool<br />&#160;&#160;member GetFreeVars : unit -&gt; seq&lt;Var&gt;<br />&#160;&#160;member Substitute : substitution:(Var -&gt; Expr option) -&gt; Expr<br />&#160;&#160;member ToString : full:bool -&gt; string<br />&#160;&#160;member CustomAttributes : Expr list<br />&#160;&#160;member Type : Type<br />&#160;&#160;static member AddressOf : target:Expr -&gt; Expr<br />&#160;&#160;static member AddressSet : target:Expr * value:Expr -&gt; Expr<br />&#160;&#160;static member Application : functionExpr:Expr * argument:Expr -&gt; Expr<br />&#160;&#160;static member Applications : functionExpr:Expr * arguments:Expr list list -&gt; Expr<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Quotations.Expr<br /><br />--------------------<br />type Expr&lt;&#39;T&gt; =<br />&#160;&#160;inherit Expr<br />&#160;&#160;member Raw : Expr<br /><br />Full name: Microsoft.FSharp.Quotations.Expr&lt;_&gt;</div>
+<div class="tip" id="fs31">Multiple items<br />type CustomOperationAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : name:string -&gt; CustomOperationAttribute<br />&#160;&#160;member AllowIntoPattern : bool<br />&#160;&#160;member IsLikeGroupJoin : bool<br />&#160;&#160;member IsLikeJoin : bool<br />&#160;&#160;member IsLikeZip : bool<br />&#160;&#160;member JoinConditionWord : string<br />&#160;&#160;member MaintainsVariableSpace : bool<br />&#160;&#160;member MaintainsVariableSpaceUsingBind : bool<br />&#160;&#160;member Name : string<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Core.CustomOperationAttribute<br /><br />--------------------<br />new : name:string -&gt; CustomOperationAttribute</div>
+<div class="tip" id="fs32">member SimpleQueryBuilder.Where : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; bool) -&gt; Query&lt;&#39;T&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder.Where<br /><em><br /><br />&#160;Represents filtering of the source using specified condition</em></div>
+<div class="tip" id="fs33">val source : Query&lt;&#39;T&gt;</div>
+<div class="tip" id="fs34">Multiple items<br />type ProjectionParameterAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ProjectionParameterAttribute<br /><br />Full name: Microsoft.FSharp.Core.ProjectionParameterAttribute<br /><br />--------------------<br />new : unit -&gt; ProjectionParameterAttribute</div>
+<div class="tip" id="fs35">val f : (&#39;T -&gt; bool)</div>
+<div class="tip" id="fs36">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs37">member SimpleQueryBuilder.SelectAttrs : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; &#39;R) -&gt; Query&lt;&#39;R&gt;<br /><br />Full name: Query-translation.SimpleQueryBuilder.SelectAttrs<br /><em><br /><br />&#160;Represents projection where we select specified properties</em></div>
+<div class="tip" id="fs38">val f : (&#39;T -&gt; &#39;R)</div>
+<div class="tip" id="fs39">member SimpleQueryBuilder.SelectCount : source:Query&lt;&#39;T&gt; -&gt; int<br /><br />Full name: Query-translation.SimpleQueryBuilder.SelectCount<br /><em><br /><br />&#160;Represents projection where we get the count of values</em></div>
+<div class="tip" id="fs40">val failwith : message:string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith</div>
+<div class="tip" id="fs41">val simpleq : SimpleQueryBuilder<br /><br />Full name: Query-translation.simpleq<br /><em><br /><br />&#160;Global instance of the computation builder</em></div>
+<div class="tip" id="fs42">val q : Expr&lt;int&gt;<br /><br />Full name: Query-translation.q</div>
+<div class="tip" id="fs43">val p : Person</div>
+<div class="tip" id="fs44">property DB.People: Query&lt;Person&gt;</div>
+<div class="tip" id="fs45">custom operation: where (bool)<br /><br />Calls SimpleQueryBuilder.Where <br /><em><br /><br />&#160;Represents filtering of the source using specified condition</em></div>
+<div class="tip" id="fs46">custom operation: selectCount<br /><br />Calls SimpleQueryBuilder.SelectCount <br /><em><br /><br />&#160;Represents projection where we get the count of values</em></div>
+<div class="tip" id="fs47">type QueryCondition =<br />&#160;&#160;{Property: string;<br />&#160;&#160;&#160;Operator: string;<br />&#160;&#160;&#160;Constant: obj;}<br /><br />Full name: Query-translation.QueryCondition<br /><em><br /><br />&#160;Defines a single condition of the form<br />&#160;p.&lt;Property&gt; &lt;op&gt; &lt;Constant&gt;</em></div>
+<div class="tip" id="fs48">QueryCondition.Property: string</div>
+<div class="tip" id="fs49">QueryCondition.Operator: string</div>
+<div class="tip" id="fs50">QueryCondition.Constant: obj</div>
+<div class="tip" id="fs51">type obj = System.Object<br /><br />Full name: Microsoft.FSharp.Core.obj</div>
+<div class="tip" id="fs52">type QueryProjection =<br />&#160;&#160;| SelectAttributes of string list<br />&#160;&#160;| SelectCount<br /><br />Full name: Query-translation.QueryProjection<br /><em><br /><br />&#160;Specifies what kind of projection happens at the <br />&#160;end of query (count or list of projected attributes)</em></div>
+<div class="tip" id="fs53">union case QueryProjection.SelectAttributes: string list -&gt; QueryProjection</div>
+<div class="tip" id="fs54">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs55">union case QueryProjection.SelectCount: QueryProjection</div>
+<div class="tip" id="fs56">Multiple items<br />type Query =<br />&#160;&#160;{Source: string;<br />&#160;&#160;&#160;Where: QueryCondition list;<br />&#160;&#160;&#160;Select: QueryProjection option;}<br /><br />Full name: Query-translation.Query<br /><em><br /><br />&#160;A query consits of source (table) name, a list of<br />&#160;filters specified using `where` and an optional <br />&#160;projection at the end.</em><br /><br />--------------------<br />type Query&lt;&#39;T&gt; = | NA<br /><br />Full name: Query-translation.Query&lt;_&gt;<br /><em><br /><br />&#160;Represents a query (but it is never executed!)</em></div>
+<div class="tip" id="fs57">Query.Source: string</div>
+<div class="tip" id="fs58">Query.Where: QueryCondition list</div>
+<div class="tip" id="fs59">Query.Select: QueryProjection option</div>
+<div class="tip" id="fs60">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs61">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs62">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs63">val translateWhere : _arg1:Expr -&gt; QueryCondition<br /><br />Full name: Query-translation.translateWhere</div>
+<div class="tip" id="fs64">active recognizer Lambda: Expr -&gt; (Var * Expr) option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |Lambda|_| )</div>
+<div class="tip" id="fs65">val var1 : Var</div>
+<div class="tip" id="fs66">active recognizer Call: Expr -&gt; (Expr option * System.Reflection.MethodInfo * Expr list) option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |Call|_| )</div>
+<div class="tip" id="fs67">val op : System.Reflection.MethodInfo</div>
+<div class="tip" id="fs68">val left : Expr</div>
+<div class="tip" id="fs69">val right : Expr</div>
+<div class="tip" id="fs70">active recognizer PropertyGet: Expr -&gt; (Expr option * System.Reflection.PropertyInfo * Expr list) option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |PropertyGet|_| )</div>
+<div class="tip" id="fs71">Multiple items<br />active recognizer Var: Expr -&gt; Var option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |Var|_| )<br /><br />--------------------<br />type Var =<br />&#160;&#160;interface IComparable<br />&#160;&#160;new : name:string * typ:Type * ?isMutable:bool -&gt; Var<br />&#160;&#160;member IsMutable : bool<br />&#160;&#160;member Name : string<br />&#160;&#160;member Type : Type<br />&#160;&#160;static member Global : name:string * typ:Type -&gt; Var<br /><br />Full name: Microsoft.FSharp.Quotations.Var<br /><br />--------------------<br />new : name:string * typ:System.Type * ?isMutable:bool -&gt; Var</div>
+<div class="tip" id="fs72">val var2 : Var</div>
+<div class="tip" id="fs73">val prop : System.Reflection.PropertyInfo</div>
+<div class="tip" id="fs74">active recognizer Value: Expr -&gt; (obj * System.Type) option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |Value|_| )</div>
+<div class="tip" id="fs75">val value : obj</div>
+<div class="tip" id="fs76">property Var.Name: string</div>
+<div class="tip" id="fs77">property System.Reflection.MemberInfo.Name: string</div>
+<div class="tip" id="fs78">System.String.StartsWith(value: string) : bool<br />System.String.StartsWith(value: string, comparisonType: System.StringComparison) : bool<br />System.String.StartsWith(value: string, ignoreCase: bool, culture: System.Globalization.CultureInfo) : bool</div>
+<div class="tip" id="fs79">System.String.Substring(startIndex: int) : string<br />System.String.Substring(startIndex: int, length: int) : string</div>
+<div class="tip" id="fs80">val e : Expr * Expr</div>
+<div class="tip" id="fs81">val failwithf : format:Printf.StringFormat&lt;&#39;T,&#39;Result&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.failwithf</div>
+<div class="tip" id="fs82">val translatePropGet : varName:string -&gt; _arg1:Expr -&gt; string<br /><br />Full name: Query-translation.translatePropGet<br /><em><br /><br />&#160;Translate property access (may be in a tuple or not)</em></div>
+<div class="tip" id="fs83">val varName : string</div>
+<div class="tip" id="fs84">val v : Var</div>
+<div class="tip" id="fs85">val e : Expr</div>
+<div class="tip" id="fs86">val translateProjection : e:Expr -&gt; string list<br /><br />Full name: Query-translation.translateProjection<br /><em><br /><br />&#160;Translate projection - this handles both of the forms <br />&#160;(with or without tuple) and calls `translatePropGet`</em></div>
+<div class="tip" id="fs87">active recognizer NewTuple: Expr -&gt; Expr list option<br /><br />Full name: Microsoft.FSharp.Quotations.Patterns.( |NewTuple|_| )</div>
+<div class="tip" id="fs88">val args : Expr list</div>
+<div class="tip" id="fs89">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs90">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; list:&#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="fs91">val arg : Expr</div>
+<div class="tip" id="fs92">module Patterns<br /><br />from Microsoft.FSharp.Quotations</div>
+<div class="tip" id="fs93">module DerivedPatterns<br /><br />from Microsoft.FSharp.Quotations</div>
+<div class="tip" id="fs94">val translateQuery : e:Expr -&gt; Query<br /><br />Full name: Query-translation.translateQuery</div>
+<div class="tip" id="fs95">active recognizer SpecificCall: Expr -&gt; Expr -&gt; (Expr option * System.Type list * Expr list) option<br /><br />Full name: Microsoft.FSharp.Quotations.DerivedPatterns.( |SpecificCall|_| )</div>
+<div class="tip" id="fs96">member SimpleQueryBuilder.SelectAttrs : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; &#39;R) -&gt; Query&lt;&#39;R&gt;<br /><em><br /><br />&#160;Represents projection where we select specified properties</em></div>
+<div class="tip" id="fs97">val builder : Expr option</div>
+<div class="tip" id="fs98">val tTyp : System.Type</div>
+<div class="tip" id="fs99">val rTyp : System.Type</div>
+<div class="tip" id="fs100">val source : Expr</div>
+<div class="tip" id="fs101">val proj : Expr</div>
+<div class="tip" id="fs102">val q : Query</div>
+<div class="tip" id="fs103">val s : string list</div>
+<div class="tip" id="fs104">member SimpleQueryBuilder.SelectCount : source:Query&lt;&#39;T&gt; -&gt; int<br /><em><br /><br />&#160;Represents projection where we get the count of values</em></div>
+<div class="tip" id="fs105">member SimpleQueryBuilder.Where : source:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; bool) -&gt; Query&lt;&#39;T&gt;<br /><em><br /><br />&#160;Represents filtering of the source using specified condition</em></div>
+<div class="tip" id="fs106">val cond : Expr</div>
+<div class="tip" id="fs107">val w : QueryCondition</div>
+<div class="tip" id="fs108">member SimpleQueryBuilder.For : tz:Query&lt;&#39;T&gt; * f:(&#39;T -&gt; Query&lt;&#39;R&gt;) -&gt; Query&lt;&#39;R&gt;<br /><em><br /><br />&#160;&#39;For&#39; and &#39;Yield&#39; enables the &#39;for x in xs do ..&#39; syntax</em></div>
+<div class="tip" id="fs109">val body : Expr</div>
+<div class="tip" id="fs110">val source : string</div>
+<div class="tip" id="fs111">property System.Reflection.MemberInfo.DeclaringType: System.Type</div>
+<div class="tip" id="fs112">val typeof&lt;&#39;T&gt; : System.Type<br /><br />Full name: Microsoft.FSharp.Core.Operators.typeof</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fquery-translation%2f&amp;text=Writing+custom+F%23+LINQ+query+buildervia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fquery-translation%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2015%2fquery-translation%2f&title=Writing+custom+F%23+LINQ+query+builder">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Writing%20custom%20F%23%20LINQ%20query%20builder&body=%20F%23%203.0%20provides%20full%20support%20for%20writing%20LINQ-style%20queries%20and%20the%20syntax%20can%20be%20used%20with%20SQL%20databases%20and%20many%20other%20standard%20data%20sources.%20But%20you%20can%20also%20write%20your%20own%20querying%20computation.%20This%20blog%20post%20shows%20a%20minimal%20example%20that%20shows%20how%20to%20parse%20F%23%20queries%20and%20translate%20them%20to%20other%20querying%20language%20(like%20SQL).%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2015%2fquery-translation%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 7 April 2015, 1:41 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a>, <a
+          href="/blog/tag/linq/">linq</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Functional Programming in .NET using C# and F# (Manning Greenpaper) - Tomas Petricek</title>
+
+  <meta name="description" content=" This article is partially an excerpt from my book. It introduces the benefits of functional pogramming, and explains the essential aspects of the functional style using F# and C# 3.0. Finally, it also shows how functional style influences the application architecture." />
+  <meta name="keywords" content="functional, c#, parallel, meta-programming, writing, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Functional Programming in .NET using C# and F# (Manning Greenpaper)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/functional-overview.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article is partially an excerpt from my book. It introduces the benefits of functional pogramming, and explains the essential aspects of the functional style using F# and C# 3.0. Finally, it also shows how functional style influences the application architecture." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Functional Programming in .NET using C# and F# (Manning Greenpaper)" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article is partially an excerpt from my book. It introduces the benefits of functional pogramming, and explains the essential aspects of the functional style using F# and C# 3.0. Finally, it also shows how functional style influences the application architecture." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Functional Programming in .NET using C# and F# (Manning Greenpaper)",
+    "headline": "Functional Programming in .NET using C# and F# (Manning Greenpaper)",
+  	"description": " This article is partially an excerpt from my book. It introduces the benefits of functional pogramming, and explains the essential aspects of the functional style using F# and C# 3.0. Finally, it also shows how functional style influences the application architecture.",
+  	"url": "http://tomasp.net/blog/functional-overview.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2008-12-11T01:48:07.0000000",
+  	"datePublished": "2008-12-11T01:48:07.0000000",
+    "dateModified": "2008-12-11T01:48:07.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/functional-overview.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "c#", "parallel", "meta-programming", "writing", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Functional Programming in .NET using C# and F# (Manning Greenpaper)</h1>
+<h2 style="margin-left:50px; margin-right:50px; text-indent:0px; font-style:italic; font-size:125%">
+  Real-World Functional Programming  in .NET</h2>
+  
+<p style="margin-left:50px; margin-right:50px; text-indent:0px; font-style:italic">
+  Functional programming languages have been around for a while and were always astonishing for their 
+  ability to express the ideas in a succinct, declarative way allowing the developer to focus on the 
+  essence of problem rather than on technical details of the solution. Recently, functional paradigm is 
+  gaining new prominence as an efficient way to handle development of multi-processor, parallel and 
+  asynchronous applications.</p>
+
+<div class="rdecor">
+ <img src="http://www.tomasp.net/img/cover_main.gif" alt="Book cover" /><br /><small>Available via MEAP | 500 pages<br />Softbound print: March 2009 (est.)</small></div>
+
+<p style="margin-left:50px; margin-right:50px; text-indent:0px; font-style:italic">
+  Functional ideas are arising in C# as well as in other main-stream languages and functional languages 
+  are becoming an alternative for real-world projects.  Also, Microsoft recently introduced a new 
+  language called F#, which has a strong background in traditional functional languages, but as a .NET 
+  language also benefits from the rich .NET and Visual Studio ecosystem.</p>
+
+<p style="margin-left:50px; margin-right:50px; text-indent:0px; font-style:italic">
+  This article is partially an excerpt from my book <strong><a href="http://www.manning.com/petricek">Real-world Functional Programming in .NET</a></strong> [<a href="#fpgpref">1</a>]. 
+  Thanks to my editors at <a href="http://www.manning.com" type="external">Manning</a> I have the permission
+  to publish it on my blog. We’ll look at several aspects of functional programming and how the same 
+  concepts, which are essential for the functional paradigm, look in the F# and in C# 3.0 with LINQ. We 
+  will shortly look at the basic programming language features like lambda functions and type inference 
+  that are now available in both F# and C#. Functional programming isn’t only about language features, 
+  but also about using different programming style, so we’ll look at some high level concepts as well. 
+  These include using immutable data structures for developing code that can be executed in parallel 
+  and writing code in a more declarative style.</p>
+
+<p style="margin-left:50px; margin-right:50px; margin-bottom:30px; text-indent:0px; font-style:italic">
+  Thanks to the combination of C# 3.0 and F#, this article shows the ideas in a way that should be 
+  familiar to you in C#, but also shows a further step that you can take with a primarilly functional
+  language F#. If you're a .NET developer and you want to understand what functional programming is
+  and how it can help you to become better and more productive then continue reading. If you'll find 
+  this article interesting, then don't forget to check out the <a href="http://www.manning.com/petricek">book</a>,
+  which explains everything in larger detail and discusses many other interesting ideas.</p>
+
+<h2>Introduction</h2>
+
+<p>Functional programming differs from the usual imperative and object oriented style in many ways, so I’d
+  like to start this article with an introduction of the basic concepts that are essential for 
+  functional programming. There are many different functional languages and every language puts 
+  emphasis on a slightly different set of concepts, but the ideas presented in section 1 are shared by 
+  almost all functional languages. </p>
+
+<p>After introducing the core concepts, we’ll look at the F# language in the section 2. F# existed for a 
+  several years as a project developed and maintained by Don Syme at Microsoft Research. Recently, 
+  Microsoft announced that F# is being productized, so it is now joining the family of Visual Studio 
+  languages. F# isn’t purely functional language, but instead mixes the best from many styles, 
+  including functional and object-oriented. It is also a .NET language, so we’ll look how to use .NET 
+  libraries (like Windows Forms) from F#. As already mentioned, features typical for functional languages are 
+  now available in many non-functional 
+  languages like C# 3.0, Visual Basic and Python. We’ll look at three examples showing how the same 
+  idea looks in a primarily functional F# language and in C# in section 4.</p>
+
+<p>In particular we’ll look at the list type known from many functional languages and how it relates to 
+  the iterators and the <code>IEnumerable</code> type in C# 2.0. Next, we’ll look at lambda functions, which is 
+  arguably the most essential feature of functional languages. Lambda functions are one of the 
+  additions to C# in the 3.0 version. The next feature that we’ll look at is generics and type inference.
+  The development of generics for C# and .NET 2.0 was largely influenced by F#, so we’ll see how 
+  generics are important for F#. Type inference, which simplifies declaration of variables in C# 3.0, 
+  is also rooted in functional programming. The succinctness of the F# programming style is possible 
+  only thanks to the use of type inference, but thanks to the combination with generics we can get the 
+  usual safety of statically typed languages.</p>
+
+<p>Next, we’ll focus our attention to topics that are very important nowadays and we’ll discuss parallel 
+  and asynchronous programming. Parallel execution means that two pieces of code execute at the same 
+  time (for example on a multi-core processor). As we’ll see functional programs avoid using global 
+  mutable state, which eliminates the common source of problems and makes writing parallel programs 
+  easier. Asynchronous programming refers to something different – when writing program that performs I/O
+  operations or accesses web services, we often want to start executing some operation and wait until 
+  it finishes (e.g. web request), but writing this using methods like <code>BeginInvoke</code> is difficult, so we’ll 
+  look at the F# solution in section 4.</p>
+
+<p>Finally, in the last section of this article, we’ll discuss a different point of view at programs 
+  that can be used when writing code and which is very useful when thinking about functional programs. 
+  We’ll see that library can be viewed as a language that specifies how we can some particular type of 
+  problems. We’ll shortly get back to lists and look at the library for working with lists and I’ll 
+  demonstrate an example from a more complex solution for developing animations in a functional way.</p>
+
+<h2>1&#160;&#160;The elements of functional style</h2>
+
+<h3>1.1&#160;&#160;Values instead of variables</h3>
+
+<p>First of all, functional programs don’t usually have typical variables that are used for storing a 
+  state of some operation, by reading and writing a value of the variable after executing a single 
+  operation. Variables in functional languages are instead immutable, meaning that the value of 
+  variable can’t change after it has been initialized. This is a reason why functional languages 
+  usually use the term “value” instead of “variable”. </p>
+
+<p>Let me demonstrate what I mean using an example. Let’s say we want to write a program that takes 0 as 
+  an initial value, reads two numbers from the console, adds the first number to the initial value and 
+  multiplies the result by the second number. A typical implementation of something like this in C# 
+  would look like this:</p>
+
+<pre lang="csharp">
+int res = 0;
+res = res + ReadInt32();
+res = res * ReadInt32();
+WriteInt32(res);
+</pre>
+
+<p>As you can see, we created a variable <code>res</code> and modified it two times when reading the input value from 
+  the console. Now, let’s look at the same code implemented without modifying a value of variables:</p>
+
+<pre lang="csharp">
+int res0 = 0;
+int res1 = res0 + ReadInt32();
+int res2 = res1 * ReadInt32();
+WriteInt32(res2);
+</pre>
+
+<p>Because we didn’t want to modify the value of existing variable we declared a new variable (<code>res0</code>, <code>res1</code>,
+  <code>res2</code>) every time we wanted to calculate a new value. The key difference is that in the second 
+  example, we didn’t use the assignment operator (written as an equal sign in C#). The only occurrence 
+  of this symbol in a second example is when initializing a variable value, which has a different 
+  meaning then assignment operator – instead of changing a value of an existing variable it creates a 
+  new variable with a specified initial value.</p>
+
+<h3>1.2&#160;&#160;Programming using recursion</h3>
+
+<p>You can probably imagine how to write some extremely simple programs without using traditional 
+  variables and assignment operator, but once you start thinking about slightly more complicated 
+  problems, things become difficult. Let’s look at the following function, which sums numbers in a 
+  specified range (this can be of course calculated directly, but I’ll use it as an example of a 
+  calculation which uses a loop): </p>
+
+<pre lang="csharp">
+int SumNumbers(int from, int to) {
+    int res = 0;
+    for (int i = from; i &lt;= to; i++)
+        res = res + i;
+    return res;
+}
+</pre>
+
+<p>In this case, we just can’t directly replace variable with value bindings, because we need to modify 
+  the value during every evaluation of the loop. The program needs to keep certain state and the state 
+  is changed during every execution of the loop, so we can’t declare a new variable for every change of 
+  the state. Thus we need to do a more fundamental change in the code and use a technique called 
+  recursion instead of using loops:</p>
+
+<pre lang="csharp">
+int SumNumbers(int from, int to) {
+    if (from &gt; to) 
+        return 0;
+    int sumRest = SumNumbers(from + 1, to);
+    return from + sumRest;
+}
+</pre>
+
+<p>As you probably already know, recursion means that a function (<code>SumNumbers</code> in our case) calls itself 
+  (in our case this is when we calculate a value for <code>sumRest</code> variable). In this code, we’re using only 
+  value binding, so it is using only purely functional features. The state of the computation, which 
+  was originally stored in a mutable variable, is now expressed using recursion. As you may guess from 
+  this introduction, the use of values instead of variables and keeping program state using recursion 
+  is an important feature whenever you want to write any interesting F# program.</p>
+
+<h3>1.3&#160;&#160;Functions as values</h3>
+
+<p>Writing almost every program using recursion explicitly would be rather difficult, so functional 
+  languages have developed a ways that allow us to write the “difficult recursive part” of the program 
+  only once and use it in many variations for different purposes. How can we separate the functionality 
+  that will vary during every use from a recursive part of the code? The answer is simple – we will 
+  write the recursive part as a function with parameters and these parameters will specify what “unique 
+  operation” that the function should perform.</p>
+
+<p>Let me demonstrate the idea on a previous example. We wrote a function that takes an initial value, 
+  loops through a specified numeric range and calculates a new “state” of the calculation during every 
+  iteration using the previous state and the current number from the range. In the function above we 
+  used zero as an initial value and we used addition as an operation that is used to fold the numbers 
+  in the range, so a resulting computation for a range from 5 to 10 would look like <code>(((((0 + 5) + 6) + 7) + 8) + 9) + 10</code>. </p>
+
+<p>What if we now decided to modify this function to be more general and allow us to perform 
+  computations using different operations, for example multiply all numbers in the range and generate 
+  the following computation: <code>(((((1 * 5) * 6) * 7) * 8) * 9) * 10</code>? If you think about the differences 
+  between these two computations, you’ll see that there are only two changes. First, we changed the 
+  initial value from 0 to 1 (because we don’t want to multiply any result of a call by zero!) and we 
+  changed the operator used during the computation. 
+  To make the code more general, we’d like to write a method <code>AggregateNumbers</code> that takes the initial 
+  value as an argument and a function, which would specify the operation that is used for aggregating 
+  the numbers. This function should take two integers as an argument and should return an integer as a result.</p>
+
+<p>We’ll see how to write a function like this in both C# and F# in the next section. The use of 
+  functions as an argument is called using functions as values, because we use a function in a place 
+  where other values are used such as method argument or return value. Hiding recursion in a function 
+  or method that accepts a function value as an argument is a very powerful technique and we’ll see it 
+  in the example demonstrating working with lists as well.</p>
+
+<h3>1.4&#160;&#160;Immutable data structures</h3>
+
+<p>We already discussed that functional languages prefer to use value bindings instead of variables and 
+  we’ve seen how it influences the programming style. The approach not to use mutable values isn’t 
+  limited just to variables and extends to a declaration of all functional data types. 
+  Functional data types are usually immutable as well, which means that a value of the type cannot 
+  change. The only way we can change a value is by creating a copy with a modified value. Even though 
+  it may seem a bit strange for the first time, it isn’t actually that uncommon. An example that you 
+  already know is a <code>string</code> type, which is immutable in .NET. This means that all operations performed 
+  on strings return a copy and don’t modify the original value:</p>
+
+<pre lang="csharp">
+string input = "hElLo wOrLD!";
+string first = input.Substring(0, 1).ToUpper();
+string rest = input.Substring(1).ToLower();
+string result = first + rest;
+</pre>
+
+<p>As you can see in this example, working with immutable data types is quite simple. Instead of 
+  modifying the value, we just declare a variable and store the new value returned by the operation in 
+  this variable and leave the original value unchanged. Of course, this approach can be used for other 
+  data types as well. Let’s look for example at the type for storing a collection of integers 
+  implemented as an immutable data structure:</p>
+
+<pre lang="csharp">
+FunctionalList list0 = FunctionalList.Empty();
+FunctionalList list1 = list0.Add(1);
+FunctionalList list2 = list1.Add(3);
+FunctionalList list3 = list2.Add(5);
+FunctionalList list4 = list3.Add(7);
+</pre>
+
+<p>To construct a list of integers, we need just two basic operations – on the first line, we need to 
+  create an empty list (called <code>Empty</code>) and in the rest of the example, we’re just adding element to the 
+  existing list, which is an operation (called <code>Add</code> in this example) that returns a new list composed 
+  from the original list and the new element. This previous example can be of course written more 
+  elegantly, without declaring all the unnecessary temporary variables. We could just call the <code>Add</code> 
+  operation straight away on the returned temporary list:</p>
+
+<pre lang="csharp">
+FunctionalList res = FunctionalList.Empty().Add(1).Add(3).Add(5).Add(7);
+</pre>
+
+<p>You’re probably thinking that copying the whole list every time we want to add a new member to the 
+  list is inefficient. This would be of course true, but we don’t actually have to copy the whole list. 
+  Let’s say that we have a list <code>l1</code> containing 1, 2, 3 and want to append 0 at the beginning. Instead of 
+  copying the whole content of <code>l1</code>, we can simply create an object (for example <code>l2</code>) that contains the 
+  new value (0) and a reference to the original list (<code>l2</code>). This wouldn’t work for a mutable list, 
+  because if we modified some element in l2, it would also change the original list (<code>l1</code>). Since we’re 
+  working with immutable data structures, none of the lists can be changed, so keeping just a reference 
+  to the original list is a correct approach.</p>
+
+<h3>1.5&#160;&#160;The absence of side effects</h3>
+
+<p>The use of immutable data types means that a code cannot perform any side-effect. By side-effect I 
+  mean for example modifying a value of global variable. A function written in this way is much closer 
+  to the mathematical notion of a function and is usually called pure function by functional programmers.</p>
+
+<p>Functions like this are very interesting, because they have similar properties as mathematical 
+  functions. The only thing that the function can do is to return a value, which means that the order 
+  of evaluation is not important and evaluating a function two times leads always to the same result. 
+  This means that the following two examples perform exactly the same thing:</p>
+
+<pre lang="csharp">
+FunctionalList l = GetData();
+return ProcessList(l) + ProcessList(l);
+</pre>
+
+<p>In the second version, we optimize the code to run the <code>ProcessList</code> function only once:</p>
+
+<pre lang="csharp">
+FunctionalList l = GetData();
+int tmp = ProcessList(l);
+return tmp + tmp;
+</pre>
+
+<p>Indeed, you would expect that this code does the same thing, but it isn’t always true in imperative 
+  programming, because <code>ProcessList</code> can modify some global variable, so running it just once instead of 
+  twice changes the meaning of the program.</p>
+
+<p>So far I mentioned modifying global variable as the only side-effect, but to be a truly pure function 
+  (meaning that the result depends solely on the arguments), it also cannot perform any I/O operation, 
+  like reading from or writing to a file, communicating over the network or interacting with the user. 
+  In F#, you can do all these operations, but the way you write the code helps you to prevent from 
+  mistakes that can be caused by using side-effects in a place where you wouldn’t expect them.</p>
+
+<p>Minimizing the use of side-effects is very useful if you want to have clearer way for thinking about 
+  the code, but it is also extremely valuable when developing applications that run on multi-core 
+  systems. We’ll see an example demonstrating why avoiding side effects is important shortly in section 4.</p>
+
+<h2>2&#160;&#160;F#: The functional .NET language</h2>
+
+<p>Before we can continue our discussion about functional programming in general, let’s look at several 
+  practical examples in the F# language. As already mentioned, F# is a .NET language, so we can access .
+  NET libraries, but there is also a lot of functionality in the F# libraries, that is suited 
+  especially for functional programming in F#.</p>
+
+<p>To present F#, I decided to write several “Hello world” examples. We’ll start with the most classic 
+  version, which prints the message to a screen. To show something more complicated, I implemented two 
+  more “Hello world” examples that we’ll examine later. Next one presents a recursive function for 
+  calculating factorial, which is a “Hello world” example used in functional programming and the last 
+  one is a graphical “Hello world” showing how to use basic Windows Forms controls and event in F#.</p>
+
+<p>F# can be downloaded from the F# Web site [<a href="#fpgpref">2</a>] and it contains integration with Visual Studio (you can 
+  even use the free Shell version [<a href="#fpgpref">3</a>]). In the following examples we’ll use the simplest way to play 
+  with F#, which is to use the F# interactive tool. It can be used either from console (<code>fsi.exe</code>) or 
+  from Visual Studio. After creating new F# project in Visual Studio, you can simply highlight a block 
+  of F# code and hit [Alt]+[Enter]. This command sends the selected text to the F# interactive window 
+  compiles it and executes it, so we can immediately see the results.</p>
+
+<h3>2.1&#160;&#160;Imperative hello world</h3>
+
+<p>Let’s start with the first example from our “Hello world” series. The following listing shows the 
+  content of the F# interactive window after entering and executing a line of code that calls the 
+  <code>printfn</code> function, which is a function defined in the standard F# library:</p>
+
+<pre lang="fsharp">
+MSR F# Interactive, (c) Microsoft Corporation, All Rights Reserved
+F# Version 1.9.4.17, compiling for .NET Framework Version v2.0.50727
+
+&gt; #light
+  printfn "Hello world!"
+  ;;
+Hello world!
+val it : unit = ()
+</pre>
+
+<p>The first line contains a directive #light, which turns on the lightweight F# syntax – this is a 
+  syntax option that simplifies writing  code a lot and we’ll use it in the rest of the article. Next, 
+  you can see a line of code with the <code>printfn</code> function followed by a two semicolons - two semicolons 
+  are used to terminate the input, so that you can enter multiple lines of text when writing the code 
+  directly in F# interactive. As you can see, after entering the command, the message “Hello world” 
+  appeared in the console window. Finally, the last line shows the result of the calculation. In F#, 
+  you can treat every block of code as a calculation with some result. In this case, the <code>printfn</code> 
+  function doesn’t return any value, so it just returns <code>unit</code>, which is something very similar to the 
+  <code>void</code> “type” known from C#.</p>
+
+<h3>2.2&#160;&#160;Functional hello world </h3>
+
+<p>Let’s now look at more interesting “Hello world” example, which shows a calculation of the factorial 
+  function in F#. If you’re not familiar with factorial, it is a function that takes a number n and 
+  returns 1 when n is less than 2 and returns factorial of n – 1 multiplied by n otherwise:</p>
+
+<pre lang="fsharp">
+&gt; #light
+  // Declaration of the factorial function
+  let rec factorial num =
+      match num with
+      | n when n &lt;= 1 -&gt; 1            // First case branch
+      | n -&gt; n * (factorial (n - 1))  // Second case branch
+  ;;
+val factorial : int -&gt; int
+
+&gt; // Testing the factorial
+  factorial 5
+val it : int = 120
+</pre>
+
+<p>The first command entered to the F# interactive is a declaration of the function to compute the 
+  factorial. The function is declared using <code>let rec</code> keyword. This specifies that we’re declaring 
+  something (<code>let</code> can be used for declaring simple variables as we’ll see later) and that we’re 
+  declaring something recursive (<code>rec</code> can be viewed as a modifier). These keywords are followed by the 
+  function name and by the arguments of the function (here we have just one argument called <code>num</code>) and by 
+  the equals sign.</p>
+
+<p>The equals sign separates the function header from the body. In our example, the body is just one 
+  <code>match</code> expression. This is a very common expression in functional languages and represents the fact 
+  that we want to take the value (<code>num</code> in our case) and test whether it satisfies some condition (in a 
+  functional terminology we’d say whether it matches a certain pattern) and select the according code 
+  branch. In our example, we have just two patterns. The first pattern assigns the value to a variable 
+  called <code>n</code> and tests whether <code>n</code> is less than or equal to one. This is written as an additional condition 
+  using <code>when</code> clause. The second patter simply assigns the value to a variable called <code>n</code> and doesn’t 
+  perform any additional test, so it matches all the remaining situations. The code for both branches 
+  is separated by the arrow sign (<code>-&gt;</code>) and either directly returns a value, or performs the recursive 
+  call and multiplication.</p>
+
+<p>This code demonstrates one more essential F# feature, which is type inference. If you look at the 
+  result printed on the next line, you can see that we declared a function that takes <code>int</code> as an 
+  argument and returns <code>int</code> as a result. This may be surprising, because we didn’t specify the type 
+  anywhere! What the F# compiler did is that it analyzed the code. It can see that in the first branch, 
+  we’re returning a value of type <code>int</code> (constant 1), so it deduced that the return type is an integer. 
+  Similarly, we’re subtracting one from the argument <code>n</code> in the second branch, which means that the 
+  argument <code>num</code> itself should also be an integer. The type inference mechanism in F# is quite advanced 
+  and as you can see it attempts to deduce as much as it can automatically. We’ll talk about type 
+  inference in some more detail later in the article.</p>
+
+<h3>2.3&#160;&#160;.NET hello world</h3>
+<p>To finish our quick tour of F#, let’s look at simple example that creates Windows Forms “Hello world” 
+  application. It creates a simple form with a label on it. You can see the source code in the 
+  following listing with a screenshot of the running application below:</p>
+
+<pre lang="fsharp">
+&gt; // Import useful .NET namespaces
+  open System
+  open System.Drawing
+  open System.Windows.Forms
+
+  // Create the form and a label objects
+  let frm = new Form(Text = "Hello world!", Height = 150)
+  let lbl = new Label(Text = "Click here!", Dock = DockStyle.Fill, 
+                      TextAlign = ContentAlignment.MiddleCenter)
+
+  // Set ‘Font’ property of the label and add label to the form
+  lbl.Font &lt;- new Font("Calibri", 24.0f)
+  frm.Controls.Add(lbl)
+  frm.Show()
+  ;;
+
+val frm : Form
+val btn : Label
+</pre>
+
+<img src="/articles/functional-overview/winforms1.png" style="margin:15px;float:right" alt="Windows Forms in F#"/>
+<p>This example demonstrates several F# features that are essential for accessing .NET components. First,
+  you can see the use of open keyword, which makes types from a .NET namespace available in the code, 
+  so we don’t have to use full names. </p>
+
+<p>The next block demonstrates creating the controls. This is done by creating standard .NET objects 
+  using the usual <code>new</code> keyword for creating objects. As you can see, we’re using the <code>let</code> keyword again, 
+  but this time it is used to declare a local value (similar to variables from imperative languages), 
+  so here we declare values <code>frm</code> and <code>lbl</code> that hold the reference to our objects representing the controls. </p>
+
+<p>When creating an object instance in F#, it is also possible to specify some properties of the object 
+  directly during initialization. You can see this for example in the code that creates the form – the 
+  comma separated assignments that are specified after listing all arguments to the constructor (in our 
+  case there aren’t any arguments) specify additional properties of the object. For example <code>Text = "Hello world!"</code> 
+  when creating the form specifies that the <code>Text</code> property should be initialized with the given string.
+  After that, we set the <code>Font</code> property of the label, which is done using operator written as <code>&lt;-</code>, so 
+  keep in mind that ordinary equals sign (<code>=</code>) in F# is a comparison that returns bool value and not an 
+  assignment! Finally, we call two .NET methods to add label to the form and show the form. If you want 
+  to turn this code from an F# interactive script into a Windows application, you’ll have to use 
+  <code>Application.Run</code> instead of <code>frm.Show</code>.</p>
+
+<p>Using F# interactive has one interesting advantage – we can develop the program in an iterative style,
+  meaning that we can write some code, immediately see the result and then add some features and see 
+  how it affects the running program. This is exactly what we’re going to do next – we use the previous 
+  example and add some event handling to the code:</p>
+
+<pre lang="fsharp">
+&gt; // Create random number generator
+  let rnd = new Random()   
+
+  // Function that changes the text of the label and back color of the form
+  let handleClick (e:EventArgs) =
+      let r = rnd.Next(256) 
+      let g = rnd.Next(256)
+      let b = rnd.Next(256)
+      // Set the text and the new back color
+      lbl.Text &lt;- if (lbl.Text = "Tock!") then "Tick!" else "Tock!"
+      frm.BackColor &lt;- Color.FromArgb(r, g, b)
+
+  // Add ‘handleClick’ as an event handler to the label
+  lbl.Click.Add(handleClick)
+  ;;
+val rnd : Random
+val handleClick : EventArgs -&gt; unit
+</pre>
+
+<img src="/articles/functional-overview/winforms2.png" style="margin:15px;float:right" alt="Windows Forms in F#"/>
+<p>The code first creates a standard .NET random number generator object, which is then used in the 
+  <code>handleClick</code> function for generating a new color of the background. This function will be later used 
+  as an event handler for the click event of the label. It takes single argument, because we need to 
+  make it compatible with the code for attaching functions as event handlers below. As you can see the 
+  argument <code>e</code> isn’t used anywhere in the code, so I added type annotation <code>(e:EventArgs)</code> to specify what 
+  is the type of the argument. Actually, the code would work without the type annotation as well thanks 
+  to the automatic use of generics in F#, which I’ll talk about shortly later, but I wanted to make it 
+  as simple as possible for now.</p>
+
+<p>The next interesting thing is that we’re using <code>if … then … else</code> as an expression, which is not usual 
+  in imperative languages. Here, the return value of the <code>if … then … else</code> expression is a string and it 
+  can be either "Tick!" or "Tock!" depending on the currently displayed text. Finally, we use the <code>Add</code> 
+  method of the <code>Click</code> property to add the function as an event handler for the event. F# works with .
+  NET events in a slightly different way than C#, so there is no need to create a delegate explicitly. 
+  We can just use directly the function name or even lambda function, which I’ll talk about shortly.</p>
+
+<h2>3&#160;&#160;Real-world functional programming</h2>
+
+<p>In this section, we’ll look at some practical uses of the functional programming concepts introduced 
+  in the first section. I’ll start with an example that I already talked about in the first section – 
+  that is using functions as arguments to other function in both C# 3.0 and F#. Next, I’ll show you why 
+  generics are so important for F#. Finally, we’ll look at some interesting examples that demonstrate 
+  how close LINQ in C# 3.0 is to the F# functions for working with collections of data. </p>
+
+<h3>3.1&#160;&#160;Functions in F# and C# 3.0</h3>
+
+<p>Let me just shortly remind you the example that I used earlier when talking about functions in the 
+  first section. We started with a code that sums all numbers in a specified range. You can see our 
+  original code in the following listing:</p>
+
+<pre lang="csharp">
+int SumNumbers(int from, int to) {
+    if (from &gt; to) 
+        return 0;
+    int rest = SumNumbers(from + 1, to);
+&#160;&#160;   return from + rest;
+}
+</pre>
+
+<p>The question that we faced was: “How can we make the code more general?” In particular, we wanted to 
+  extend the function so that it could either sum all numbers in the range or multiply all numbers in 
+  the range.</p>
+
+<h4>Calculating using functions in C#</h4>
+
+<p>To do this, we need to add two additional arguments to the method. The first argument should specify 
+  the initial value (as we need to use 1 as a default value instead of 0 when multiplying numbers) and 
+  the second argument should specify the operation that should be used on the last line when we’re 
+  calculating a result from variables <code>from</code> and <code>rest</code>. Let’s start by looking at the solution in C# 
+  language (using the 3.0 version):</p>
+
+<pre lang="csharp">
+int AggregateNumbers(Func&lt;int, int, int&gt; f, int init, int from, int to) {
+    if (from &gt; to) 
+        return init;
+    int rest = AggregateNumbers(f, init, from + 1, to);
+    return f(from, rest);
+}
+</pre>
+
+<p><code>Func</code> is a delegate that is defined in <code>System</code> namespace in .NET 3.5. As you probably already know, 
+  delegates in .NET are something like a type-safe pointer to a method. This means that we can use 
+  delegate for giving some piece of executable code as an argument to other methods. <code>Func</code> in particular 
+  is a generic delegate, so we have to provide it with type arguments. Type arguments specify what the 
+  parameters and return value of the referenced piece of code are. Just for a review, here is a 
+  declaration of the delegate (showing also similar delegate written without generics):</p>
+
+<pre lang="csharp">
+// Declartion of the generic Func delegate with 2 arguments 
+delegate TResult Func&lt;T1, T2, TResult&gt;(T1 arg1, T2 arg2); 
+
+// Instance used in our example earlier (without generics):
+delegate int Func_IntIntInt(int arg1, int arg2); 
+</pre>
+
+<p>Delegates can be used similarly as methods in the code, so on the last line of the <code>AggregateNumbers</code>, 
+  we simply invoke the delegate value <code>f</code> instead of adding the numbers using plus operator. In 
+  functional programming, we don’t talk about “delegates”, but we work with a simpler concept – a 
+  function. In a pure mathematical understanding, function is simply something that takes arguments and 
+  returns the result. Indeed, this is exactly what the delegate represents in this example. As we’ll 
+  see shortly, in F# we don’t have to use delegates to implement this example and we can use the basic 
+  ‘function’ concept directly.</p>
+
+<p>Before looking at the F# version, let’s look at the code that calls <code>AggregateNumbers</code> to perform the 
+  two tasks discussed earlier (adding and multiplying numbers in a range). Of course, we could write 
+  methods with a compatible signature (for example <code>AddInts</code> and <code>MulInts</code>) and use them as the arguments. 
+  Unfortunately that wouldn’t make the code shorter. What we want to do instead is to specify the 
+  argument to the <code>AggregateNumbers</code> directly when calling the method. To do this we can use new C# 3.0 
+  feature called lambda functions (which is an extension and simplification of anonymous delegates that 
+  appeared in C# 2.0):</p>
+
+<pre lang="csharp">
+// Aggregate numbers using "+" and using "*" operators
+int r1 = AggregateNumbers( (a, b) =&gt; a + b, 0, 1, 5);
+int r2 = AggregateNumbers( (a, b) =&gt; a * b, 1, 1, 5);
+
+// Outputs: "add: 15, mul: 120"
+Console.WriteLine("add: {0}, mul: {1}", r1, r2);
+</pre>
+
+<p>You can see two examples of lambda functions on the first two lines. The arrow symbol (<code>=&gt;</code>) separates 
+  specification of arguments (on the left side) from the body expression on the right side. In both 
+  examples, we define a function that takes two arguments (called <code>a</code> and <code>b</code>) and performs some simple 
+  calculation with them on the right side.</p>
+
+<p>Lambda functions are another important feature of functional languages. They give us a very simple 
+  way to write a function “inline”, so that we can use it as a parameter to method that takes delegate 
+  as an argument (in F# it will be just a function instead of delegate). This is particularly useful if 
+  the function is simple and isn’t used anywhere else in the code, which is exactly the case of our 
+  previous example. Functional programming also uses functions (or delegates) as parameters of other 
+  methods quite often, so using lambda functions is very common.</p>
+
+<h4>Calculating using functions in F#</h4>
+
+<p>Let’s now look at exactly the same code implemented in F#. Of course, in F#, we’ll implement 
+  <code>aggregateNumbers</code> simply as a function using <code>let rec</code> keyword instead of method in some class:</p>
+
+<pre lang="fsharp">
+&gt; let rec aggregateNumbers (f:int -&gt; int -&gt; int) init nfrom nto =
+      if nfrom &gt; nto then init else
+          let rest = aggregateNumbers f init (nfrom + 1) nto
+          f nfrom rest
+  ;;
+val aggregateNumbers : (int -&gt; int -&gt; int) -&gt; int -&gt; int -&gt; int -&gt; int
+</pre>
+
+<p>Most of the code is similar to the previous C# version. It contains <code>if</code> expression with <code>then</code> branch 
+  that returns the initial value (<code>init</code>) and an <code>else</code> branch. The <code>else</code> branch first recursively processes 
+  the numbers in a range skipping the first number and then calculates the aggregate value from the 
+  first number (<code>nfrom</code>) and recursively calculated result (<code>rest</code>).</p>
+
+<p>What is however interesting is the parameter <code>f</code>, which is a function used for aggregating the numbers. 
+  In the header of the function, I added type annotation to it, so that we can see what the function 
+  type looks like: <code>int -&gt; int -&gt; int</code>.  This syntax represents a function that takes <code>int</code> as a first 
+  argument, another <code>int</code> as a second argument and returns <code>int</code> as well. This is similar to the delegate 
+  type that we’ve used earlier. You can also see the type of the whole function <code>aggregateNumbers</code> 
+  (printed by the F# interactive). It starts with the type of the <code>f</code> parameter (in braces), followed by 
+  three integers. The return type is of course also an integer. 
+  To call it, we’ll again use lambda functions, but this time in F#. This represents exactly the same 
+  idea as the previous C# version, but with a slightly different syntax:</p>
+
+<pre lang="fsharp">
+&gt; aggregateNumbers (fun a b -&gt; a + b) 0 1 5;;
+val it : int = 15
+</pre>
+
+<p>In F#, lambda functions are written using the fun keyword, which is followed by the declaration of 
+  arguments (in our example <code>a</code> and <code>b</code>). The header is ended with a single arrow symbol (<code>-&gt;</code>) and then 
+  follows the body of the function.</p>
+
+<h4>Making functions using partial application</h4>
+
+<p>Now we’ve implemented a more general version of the function, which is certainly very useful. On the 
+  other side, if we wanted to use it for adding numbers (as <code>sumNumbers</code> did) very often, we’d prefer to 
+  declare the more specific function (<code>sumNumbers</code>) as well, so we wouldn’t have to write the additional 
+  arguments in every call.</p>
+
+<p>In F# this can be done using partial application, which is also sometimes called currying. It means 
+  that we specify only first few arguments of the function and the result will be a function that takes 
+  only the remaining arguments. In our case, we’ll specify only the operator for aggregation and the 
+  initial value:</p>
+
+<pre lang="fsharp">
+&gt; // Declare 'sumNumbers' and 'mulNumbers' using partial application
+  let sumNumbers = aggregateNumbers ( + ) 0
+  let mulNumbers = aggregateNumbers ( * ) 1
+  ;;
+val sumNumbers : (int -&gt; int -&gt; int)
+val mulNumbers : (int -&gt; int -&gt; int)
+
+&gt; // Test the returned functions:
+  sumNumbers 1 5;;
+val it : int = 15
+&gt; mulNumbers 1 5;;
+val it : int = 120
+</pre>
+
+<p>On the first two lines, we use partial application to create two specialized functions using 
+  <code>aggregateNumbers</code>.  Also note that in F# we can use ordinary operators as parameters. This means that 
+  instead of writing the code using lambda function, which calls the operator, we can simply use the 
+  operators themselves. </p>
+
+<p>If you look at the signatures printed by the F# interactive, you can see that both sumNumbers and 
+  <code>mulNumbers</code> have type <code>int -&gt; int -&gt; int</code>. This is exactly what you get if you “cut off” first two 
+  arguments from the <code>aggregateNumbers</code> function. And, as you probably already know, this represents a 
+  function that takes two integers (representing the range) and returning an integer.</p>
+
+<p>I think that now you know enough about functions and we can look at some examples where we can use 
+  them for some more real-world example. In the next section, I’ll briefly talk about the relation 
+  between F# functions for working with collections of data and similar functionality now available in C#
+  3.0 and LINQ.</p> 
+
+<h3>3.2&#160;&#160;Functional lists and LINQ</h3>
+
+<p>Since this article is just a short introduction to functional programming, I will not discuss 
+  everything in detail (you can find much more information in the book). In particular, I won’t explain 
+  how lists are implemented in F# and how you can manipulate with them on the lowest level – that is 
+  accessing elements of the list, constructing lists programmatically and so on.</p>
+
+<p>Instead, I’ll demonstrate several interesting similarities between lists in F# and working with 
+  collections of data using new C# 3.0 features and LINQ project. This part will demonstrate two things 
+  – first, you’ll see how using the new C# 3.0 features makes many daily task easier and second, you’ll 
+  see that these new features are directly motivated by functional languages. Later, we’ll see that in 
+  functional programming, the same approach is often used also for solving problems other then working 
+  with data. The point of the functional style is to make the code more declarative. This means 
+  avoiding as many technical details that are not relevant for the problem as possible. </p>
+
+<h4>Creating lists</h4>
+
+<p>Before we can start manipulating with lists, we’ll need to initialize some. In F#, we’ll also 
+  reference module called <code>List</code>, which contains useful functions for working with lists (module is 
+  something like a namespace, but it can contains functions and not only classes). Similarly, in C# you’ll
+  need to add using directive for the <code>System.Linq</code> namespace, which contains LINQ functionality for 
+  working with collections.</p>
+
+<p>The code that references <code>List</code> module and initializes list called <code>l</code> in F# looks like this:</p>
+
+<pre lang="fsharp">
+&gt; open List;;
+&gt; let l = [ 1 .. 10 ];;
+val l : int list = [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
+</pre>
+
+<p>The list is written in square brackets and can be written by listing all the elements as you can see 
+  on the last line, where F# interactive automatically printed the value. We’ve used a second option, 
+  which is a simplified notation for creating list containing a range of numbers. In C#, we can use 
+  collection initializers to write very similar code:</p>
+
+<pre lang="csharp">
+var l = new List&lt;int&gt; { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+</pre>
+
+<p>Collection initializers are new feature of C# 3.0 and allow us to use similar expression when 
+  initializing (built-in) arrays and when initializing custom collections. This is very simple feature, 
+  but has been available in many functional languages for a long time.</p>
+
+<h4>Filtering and projection</h4>
+
+<p>In the upcoming two sections, we’ll look at basic examples of manipulating with items in the list. As 
+  I already mentioned, the functional data structures are immutable, which means that all the 
+  operations do not actually modify the existing data structure. Instead they return a new list. The 
+  examples that demonstrate LINQ in C# use <code>IEnumerable&lt;T&gt;</code> type, so the returned value is calculated on 
+  demand (only when we enumerate it using something like <code>foreach</code>), but the idea is essentially the same. </p>
+
+<p>In both cases, we get a new value representing the new data and the original list is not altered in 
+  any way. In F#, this isn’t possible, because the list is truly immutable and in C# we don’t do it, 
+  because we want to use data collections in a functional way. In section 4 I’ll shortly discuss the 
+  key reasons why using immutable structures is a good idea, but now, let’s look at the code.</p>
+
+<p>The first example demonstrates two operations – filtering and projection. Filtering means that we 
+  select only elements that fulfill some condition (for example, whether a number is a multiple of three)
+  and is similar to the <code>WHERE</code> clause from SQL.  On the other side, projection is similar to the <code>SELECT</code> 
+  clause. We can use it to perform some calculation for every element in the list and get a list 
+  containing results of these calculations (for example, we can multiply all numbers in the list by two). 
+  The code for this is surprisingly similar, so you can see both F# and C# version side by side:</p>
+
+<table width="100%"><tr><td width="49%">
+<pre lang="fsharp" style="width:100%">
+&gt; // Select multiples of three
+  let l1 = filter (fun n -&gt; n%3 = 0) l;;
+val l1 : int list = [3; 6; 9]
+
+&gt; // Multiply every element by two
+  let l2 = map (fun n -&gt; n*2) l1;;
+val l2 : int list = [6; 12; 18]&#160;&#160;&#160;&#160;
+</pre>
+</td><td width="49%">
+<pre lang="csharp" style="width:100%">
+// Select mutiples of three
+var l1 = l.Where(n =&gt; n%3 == 0);
+// result l1: [3; 6; 9]
+
+// Multiply every element by two
+var l2 = l1.Select(n =&gt; n*2);
+// result l2: [6; 12; 18]
+</pre>
+</td></tr></table>
+
+<p>To perform filtering, we use a function called <code>filter</code> in F# and an extension method <code>Where</code> in C# 3.0. 
+  Both of them take a lambda function that specifies the condition as an argument. Note that the lambda 
+  expression takes a single argument (the element in the list) and returns a boolean value specifying 
+  whether the condition was satisfied or not. When using the extension method in C#, the list is 
+  specified by the value preceeding the “dot” symbol and in F#, it is specified as a last argument of 
+  the function. The second example, which demonstrates projection is very similar. The only diference 
+  is that the lambda function takes a number as an argument and returns also a number. The results are 
+  collected into a list, so we get a list of numbers (<code>l2</code>) as a result. </p>
+
+<h4>Processing lists in a pipeline</h4>
+
+<p>In the previous examples, we wrote filtering and projection as two separate calls that took some 
+  input and returned a collection as a result. This works fine, but it would be more elegant if we 
+  could write this as a single operation without declaring an additional variable to store the 
+  temporary result.</p>
+
+<p>We can do this simply by “cutting” the first expression and “pasting” it in place of the temporary 
+  variable (<code>l1</code>). As you can see in the following listing, the C# version already looks very readable, 
+  but we’ll still have to do some improvements to the F# version:</p>
+
+<table width="100%"><tr><td width="49%">
+<pre lang="fsharp" style="width:100%">
+&gt; map (fun n -&gt; n*2) 
+      (filter (fun n -&gt; n%3 = 0) l)
+  ;;
+
+val it : int list = [6; 12; 18]
+</pre></td><td width="49%"><pre lang="csharp" style="width:100%">
+var it = 
+  l.Where(l, n =&gt; n%3 == 0)
+   .Select(n =&gt; n*2);
+
+// result it: [6; 12; 18]
+</pre></td></tr></table>
+
+<p>The C# version looks elegant, because we were already using extension methods that were added to C# 3.0
+  exactly for this purpose. If you try to imagine how you’d write the same thing using ordinary 
+  static methods like <code>Utils.Where</code>, you’ll see that it would be similarly confusing as our current F# 
+  version. </p>
+
+<p>One of the advantages of using extension methods in C# is that we can write the method calls in the 
+  order in which they are executed (first <code>Where</code> – filtering and then <code>Select</code> – projection). In the 
+  previous F# version the operations were written in a reverse order. Of course, F# offers a solution 
+  for this problem. The solution is to use pipelining operator (written as <code>|&gt;</code>), which allows us to 
+  write a sequence of operations:</p>
+
+<pre lang="fsharp">
+&gt; l |&gt; filter (fun n -&gt; n%3 = 0) 
+    |&gt; map (fun n -&gt; n*2)
+  ;;
+val it : int list = [6; 12; 18]
+</pre>
+
+<p>Using the query operator, we get a similar structure of the code as we had in the previous C# 3.0 
+  version using extension methods. The pipelining operator is a binary operator and its meaning is that 
+  the value on the left side is used as an argument to the function on the right side. Thanks to the 
+  associativity rules, the operations are performed in a sequence, meaning that the first operator 
+  (preceding <code>filter</code>) is executed before the second one (preceding <code>map</code>).</p>
+
+<p>In F#, it is possible to define custom operators and pipelining operator is something that you could 
+  very simply implement on your own. It is however extremely useful, so it is part of the standard F# 
+  library. As you probably know, custom operators cannot be declared in C#, but extension methods 
+  provide often an interesting alternative. As this example demonstrated, we can get very similar 
+  result by using extension methods (<code>Where</code>, <code>Select</code>) in C# and pipelining operator (<code>|&gt;</code>) in F#.</p>
+
+<h4>Embedded query language</h4>
+
+<p>To close our short excursion to the world of data collections, we should also look at query 
+  expressions that are available in C# 3.0 and let us write a query like the previous in a form that is 
+  syntactically similar to SQL. You should however keep in mind that this is just a syntactic sugar and 
+  the code is translated to exactly the same code as we’ve used in the last example:</p>
+
+<pre lang="csharp">
+var it = 
+    from n in l
+    where n % 3 == 0
+    select n * 2;
+</pre>
+
+<p>F# has a more general feature that can be used for writing computations like this, which is called 
+  sequence expression. The interesting thing is, that in F# this is a more general language feature
+  (the generalized version is called computation expressions). This means that you can use it not only 
+  for working with lists (let’s call these list computations), but also for other kinds of computations.
+  One interesting example that is further described in our book is using computation expressions for 
+  writing code that executes asynchronously (e.g. when downloading data from internet using HTTP requests).</p>
+
+<p>I’ll not demonstrate sequence expressions here, but there is still one thing that I’d like to show you.
+  There is one interesting option for making the previous F# code even more compact and that is using 
+  partial application (or currying), which I shortly introduced earlier:</p>
+
+<pre lang="fsharp">
+l |&gt; filter (fun n -&gt; n%3 = 0) 
+  |&gt; map ((*) 2)
+</pre>
+
+<p>You can see that we did a change to the second line and instead of using lambda function as a 
+  parameter we used an expression <code>((*) 2)</code>. What does this code represent? Well, asterisk is an 
+  operator for multiplication, so if we had a function <code>mul</code> that multiplies two numbers, the expression 
+  would mean the same thing as: <code>(mul 2)</code>. Here, we’re getting back to partial application – the function 
+  <code>mul</code> takes two numbers and returns their product. In this code, we give it only a single argument, so 
+  it instead creates a function that takes a number as an argument and multiplies it by two. This means 
+  that we get exactly the same functionality as earlier. If you’re still a bit confused by partial 
+  application, you can imagine that the compiler automatically inserts a function that takes the second 
+  argument for the <code>mul</code> function. The code with this modification would be (<code>fun n -&gt; mul 2 n</code>), which is 
+  exactly what we wrote earlier.</p>
+
+<h3>3.3&#160;&#160;Generics in .NET 2.0 and type inference in C# 3.0 and F#</h3>
+
+<p>In the previous section we looked at working with lists and we’ve seen several examples of using F# 
+  functions and C# extension methods for working with collections. In particular, we examined <code>filter</code> 
+  (and C# equivalent <code>Where</code>) and <code>map</code> (<code>Select</code> in C#). </p>
+
+<p>One thing that is extremely interesting about these methods is that they work with any type of list 
+  or collection. This means that we can use the same function for filtering a list of strings as well 
+  as a list of integers, floating point numbers or for example types representing products. The 
+  mechanism that makes this possible is called generics and is available in C# since version 2.0. In F# 
+  this mechanism is essential for writing any real-world piece of code.</p>
+
+<p>In functional programming the type signatures of a function (especially if the function is generic) 
+  serve as a very useful hint when writing the code. In the next few paragraphs I’d like to show how 
+  you can “read” the type signature and use it for understanding what the function does and functions 
+  for working with collections are excellent example for this. Let’s first look at declarations of the C#
+  extension methods that we were using:</p>
+
+<pre lang="csharp">
+// Filters elements of ‘source’ based on ‘predicate’
+IEnumerable&lt;T&gt; Where&lt;T&gt;(IEnumerable&lt;T&gt; source, Func&lt;T, bool&gt; predicate);
+
+// Projects each element in a sequence ‘source’ into a new form using ‘selector’
+IEnumerable&lt;R&gt; Select&lt;S, R&gt;(this IEnumerable&lt;S&gt; source, Func&lt;S, R&gt; selector);
+</pre>
+
+<p>The first method has a single type parameter (called <code>T</code>), which represents the type of elements in the 
+  collection to be filtered. This means that the type parameter is used in the type of the first 
+  parameter (<code>IEnumerable&lt;T&gt;</code>). The second parameter represents a function which takes a value of type <code>T</code> 
+  as an argument and returns a <code>bool</code> and is used as a predicate when filtering the elements. </p>
+
+<p>You may already know that when you call a generic method as we did in previous examples, the type 
+  parameter is replaced with the actual type (in our examples the actual type was <code>int</code>). This can be 
+  either done explicitly by writing <code>Where&lt;int&gt;(...)</code>. In this case we just write the type that should be 
+  used instead of the type parameter. However, C# is sometimes able to infer the type of the type 
+  parameter, so we don’t actually need to write it. That’s how all our previous examples worked. We 
+  simply wrote <code>Where(src, f)</code> (where <code>src</code> and <code>f</code> were some expressions with a known type) and C# compiler 
+  used the type of <code>src</code> and <code>f</code> to deduce the type for the type parameter. This mechanism for deducing 
+  types based on the context is called type inference and I already shortly talked about it when we 
+  were looking at F# “Hello world” examples.</p>
+
+<p>Let’s now look at the signatures of <code>filter</code> and <code>map</code> functions in F#. We can do this simply by entering 
+  the names of the functions in the F# interactive. This is because a function is also a value in F# 
+  (it is a value of type function) and when we enter any value in the F# interactive, it prints its 
+  type and the value. A function is just some compiled code, so it cannot be reasonably printed, but 
+  we’re interested in the type:</p>
+
+<pre lang="fsharp">
+&gt; List.filter;;
+val it : (('a -&gt; bool) -&gt; 'a list -&gt; 'a list) = &lt;...&gt;
+&gt; List.map;;
+val it : (('a -&gt; 'b) -&gt; 'a list -&gt; 'b list) = &lt;...&gt;
+</pre>
+
+<p>In this example, I entered the full name of the function including a module name. In our discussion 
+  of C# versions, I talked about <code>Where</code> (equivalent to <code>filter</code>), so this time, I’ll focus on the second 
+  one. In the C# version a method for projection had two type parameters. It was declared as <code>Select&lt;S, R&gt;</code>,
+  where <code>S</code> was a type of the elements in the source collection and <code>R</code> was a type of the elements in the 
+  resulting collection.</p>
+
+<p>To distinguish between ordinary types and type parameters, F# uses slightly different syntax, so if 
+  you look at the signature of map, you can see two type parameters: <code>'a</code> representing the source type 
+  and <code>'b</code> representing the result type. F# also allows different syntax for instantiation of generic 
+  types (that is specifying the type for generic types), so <code>'a list</code> means exactly the same thing as 
+  <code>list&lt;'a&gt;</code>. The following diagram shows in detail what the signature means:</p>
+
+<div style="text-align:center; margin:15px;">
+<img src="/articles/functional-overview/hedgehog.png" alt="Type signature"/>
+</div>
+
+<p>If you think about the type, you can easily come to conclusion what the function does. It takes a 
+  list containing some values of type <code>'a</code>. The code is generic, which means that it doesn’t know 
+  anything about this type and without any other argument it wouldn’t be able to do anything with a 
+  value of this type. However, another argument specifies a function that can transform a value of type 
+  <code>'a</code> into a value of type <code>'b</code>. This suggests that the function could iterate over all elements (of type 
+  <code>'a</code>) in the list and transform all of them into values of type <code>'b</code>. Finally, we also know that it 
+  returns a list containing elements of type <code>'b</code>, so we can easily guess that the function performs 
+  projection. This kind of reasoning is often very useful, because it makes reading functional code 
+  very easy. You can apply similar reasoning to <code>filter</code> as well and you’ll see that the only thing it 
+  can do is to test whether every element in a list should be contained in the result using the specified predicate.</p>
+
+<h4>Automatic generalization</h4>
+
+<p>The most important difference between generics in C# and similar mechanism in F# is that in F# 
+  you don’t have to explicitly say that the method is generic when you write it. You can do it, 
+  but in most of the cases you don’t have to, because the compiler makes it generic automatically. 
+  This is topic that would require much more space, but it is very important, so I’d like to 
+  quickly introduce it. </p>
+
+<p>Let’s look at a very simple C# implementation of <code>Map</code> method. The following code works with 
+  <code>List&lt;T&gt;</code>, so it is different from the previous examples, where we were working with LINQ methods 
+  that take general <code>IEnumerable&lt;T&gt;</code> type. Nevertheless, it is a good example for demonstrating 
+  automatic generalization in F#:</p>
+
+<pre lang="csharp">
+List&lt;R&gt; Map&lt;S, R&gt;(Func&lt;S, R&gt; f, List&lt;S&gt; source) {
+    List&lt;R&gt; res = new List&lt;R&gt;();
+    foreach (S el in source) 
+        res.Add(f(el));
+    return res;
+}
+</pre>
+
+<p>As you can see, we explicitly defined two generic type parameters (<code>S</code> and <code>R</code>) and used them in 
+  the method header (for defining types of arguments <code>f</code> and <code>source</code>) and also in the body (when 
+  declaring <code>res</code> and in the <code>foreach</code> loop). I will not show how the code looks in F#, because we 
+  haven’t seen any examples of functions working with lists (this is unfortunately out of the 
+  scope of this article), but I’ll demonstrate how we could write this in a non-existent 
+  functional pseudo-C# language. First, I’d like to shortly recapitulate one new feature in 
+  C# 3.0 – a new keyword <code>var</code>, which can be used for declaring local variables in a method body:</p>
+
+<pre lang="csharp">
+var n = 10;
+</pre>
+
+<p>The <code>var</code> keyword simply instructs the compiler to look at the expression assigned to the 
+  variable and infer the type of the expression. In our case, the expression is a constant of 
+  type <code>int</code>. The compiler then uses the type as a type of the variable (in our case <code>n</code>). This means 
+  that the variable will be ordinary, statically-typed variable (or type <code>int</code> in our example), but 
+  we don’t have to write the type explicitly. In C#, this feature is called type-inference.
+  In the pseudo-C# language that I made up to demonstrate automatic generalization, you can use 
+  <code>var</code> almost anywhere, where a type is expected, so you can write the following code:</p>
+
+<pre lang="csharp">
+var Filter(var f, List&lt;var&gt; source) {
+    var res = new List&lt;var&gt;();
+    foreach (var el in source) 
+        res.Add(f(el));
+    return res;
+}
+</pre>
+
+<p>The compiler for pseudo-C# has to be quite smart – at the beginning it only knows that source 
+  is a list containing elements of some unknown type. The compiler could assign it some name, for 
+  example <code>T1</code>. Then it also knows that the <code>foreach</code> loop iterates over all elements in the <code>source</code>, 
+  so the type of <code>el</code> should be also <code>T1</code>. Next, it sees that we’re using the argument <code>f</code> as if it 
+  were a function and that we’re adding the returned values to a list <code>res</code> (containing elements of 
+  some unknown type). From this, it infers that <code>f</code> is a function taking <code>T1</code> and returning something 
+  (let’s assign it a name <code>T2</code>), so it has to be of a type <code>Func&lt;T1, T2&gt;</code>. Similarly, we now know 
+  that <code>res</code> is of type <code>List&lt;T2&gt;</code> and also that the return type of <code>Filter</code> is <code>List&lt;T2&gt;</code>. Because there 
+  are two newly named types (<code>T1</code> and <code>T2</code>), the compiler now know that the method is generic and has 
+  two type parameters.</p>
+
+<p>This kind of reasoning is just a much more advanced variant of type-inference and is used in 
+  many functional languages including F#. Thanks to the different syntax of F# language, the code 
+  doesn’t look as odd as the code in the pseudo-C# (with <code>var</code> keyword almost everywhere). In F#, 
+  you just don’t have to write the types if you don’t want to change the type automatically 
+  inferred by the compiler. The type inference mechanism not only makes the code more generic 
+  automatically, but also often helps to catch a mistake. If the inferred signature is different 
+  from what you’d expect, you can see that there is something wrong with the code.</p>
+
+<h2>4&#160;&#160;Functional architecture</h2>
+
+<p>In this last section, I’d like to shortly talk about architectural aspects of functional 
+  programming. This would of course require an entire article (more likely even a longer book 
+  than our Real-world Functional Programming), but I’d like to conclude this article with a short 
+  look from a high level – to balance the low level look from the previous sections where I was 
+  talking mostly about language features. </p>
+
+<h3>4.1&#160;&#160;Immutable data structures and parallelism</h3>
+
+<p>The first thing that you learn when using functional programming is that you start the 
+  development of any functional program by thinking about the structure of the data that the 
+  program uses. For example, when developing a game, you don’t think about the objects that are 
+  in the game and about the functionality that each object provides. You think about the data 
+  structure that could represent the world, structure that could represent the characters in the 
+  game and so on. Please, keep in mind that this is a very simplistic example and it doesn’t 
+  cover all the complexity of a real-world development. It is however advanced enough to show 
+  some important aspects of functional programming, which is exactly a reason why I’m discussing 
+  it in this section.</p>
+
+<p>We didn’t talk about common functional data structures in this article, but you can find a good 
+  overview in my article [<a href="#fpgpref">4</a>]. Of course, an entire section of our book focuses on the problem of 
+  structuring functional programs. However, we did introduce one functional data structure in 
+  this article and that is list, so we can for example imagine that in a game, we have a list 
+  storing information about all characters in a game:</p>
+
+<pre lang="fsharp">
+&gt; // Stores information about computer controlled agents in the game
+  type GameCharacter = ... 
+
+&gt; // List with all characters currently in the game
+  let characters = [ ... ]
+val characters : GameCharacter list
+</pre>
+
+<p>There is some type called <code>GameCharacter</code> that represents a single AI character controlled by the 
+  computer. This type would store all the necessary information about the character. Next, we 
+  have a list containing all the characters. This list would be probably a part of some type 
+  representing the whole virtual world, but in our simple example, we’ll just work with this list.
+  The next thing to do is to define functions for working with <code>GameCharacter</code> type. Simplest 
+  functions that we may need are a function to update the character – that is to perform a single 
+  step in the game, like moving the character, and a function that tests whether the character is 
+  still alive (or whether it died for some reason during the last update):</p>
+
+<pre lang="fsharp">
+&gt; // Calculates a new position, etc. of the character
+  let updateCharacter ch = ...
+val updateCharacter : GameCharacter -&gt; GameCharacter 
+&gt; // Tests whether the character is alive
+  let isCharacterAlive ch = ...
+val isCharacterAlive : GameCharacter -&gt; bool
+</pre>
+
+<p>Now that we have the data structures that represent our game and several basic functions that 
+  define operations on them, we can write an elementary step in our game. We’ll write a function 
+  <code>updateCharacters</code> that takes a list of game characters, performs update on each of them and 
+  removes all characters that died during the update. Since we’re using a list as a data 
+  structure to store our characters, we can of course use previously discussed functions for 
+  working with lists:</p>
+
+<pre lang="fsharp">
+&gt; // Updates all characters and removes those who died during the last update
+  let updateCharacters characters = 
+    characters
+        |&gt; map updateCharacter
+        |&gt; filter isCharacterAlive
+val updateCharacters : GameCharacter list -&gt; GameCharacter list
+</pre>
+
+<p>The data structure to store characters is immutable, so the <code>updateCharacters</code> function takes a 
+  list with characters (representing the current state) and returns a new list without modifying 
+  the original one. This approach has several important benefits. First of all, it is much easier 
+  to understand what the code really does – if you see a function that takes a list of characters 
+  and returns a list of characters, you can safely assume that it doesn’t modify any other part 
+  of the world than the characters. In the previous example it is also guaranteed that the 
+  <code>updateCharacter</code> doesn’t do anything else then just calculating a new state of the character 
+  from the previous one. It might read some properties of the state stored globally, but it 
+  cannot alter it. As we’ll see in the next few paragraphs this is an extremely useful property 
+  for dealing with recent trends in the computing industry, such as multi-core processors and 
+  multi-processor systems.</p>
+
+<h4>Parallelization of functional programs</h4>
+
+<p>Let’s now imagine that we want to make the previous code multi-threaded. Updating the state of 
+  the character may be an expensive operation (especially if it involves some AI), so we’d like 
+  to use multiple threads to calculating new state of the characters. It turns out that doing 
+  change like this is astonishingly simple: </p>
+
+<pre lang="fsharp">
+let updateCharacters characters = 
+    characters 
+        |&gt; parallelMap updateCharacter
+        |&gt; parallelFilter isCharacterAlive
+</pre>
+
+<p>In this example, we just changed call to <code>map</code> with a <code>parallelMap</code> and similarly replaced <code>filter</code> 
+  with <code>parallelFilter</code>. These new parallel functions do exactly the same thing as their non-
+  parallel versions, but their implementation is more advanced and performs the operation on 
+  multiple threads instead of doing it sequentially. </p>
+
+<p>How is it possible that adding multi-threading is that simple in this example, while doing 
+  similar thing in imperative object-oriented code is difficult? The first key difference is that 
+  the functional program we’ve written is very declarative – it separates the functionality that 
+  knows how to process a list into high-order functions (<code>map</code> and <code>filter</code>) and the user code just 
+  defines what should be done with the list (<code>updateCharacter</code> and <code>isCharacterAlive</code> in our example).
+  The second key feature is that we use immutable data structures, so changing the code from 
+  sequential to parallel cannot introduce any race conditions. I’ll talk about this in a more 
+  detail shortly.</p>
+
+<p>Currently, functions like <code>parallelMap</code> and <code>parallelFilter</code> are not part of the standard .NET or F# 
+  library, but with the upcoming Microsoft Parallel Extensions to .NET [<a href="#fpgpref">5</a>] these will be 
+  available for LINQ and there will be bindings for F# as well. In the meantime you can either 
+  download a preview version or implement these functions on your own (for more information you 
+  can refer to my earlier article [<a href="#fpgpref">6</a>]).  </p>
+
+<p>Using the preview of Parallel Extensions to .NET we can write the same thing in C#. Assuming 
+  that we have a list of characters and methods <code>UpdateCharacter</code> and <code>IsCharacterAlive</code>, we can 
+  rewrite the previous F# code to C# as follows:</p>
+
+<pre lang="csharp">
+List&lt;GameCharacter&gt; UpdateCharacters(List&lt;GameCharacter&gt; characters) {
+    return characters
+            .AsParallel()
+            .Select(UpdateCharacter)
+            .Where(IsCharacterAlive);
+}
+</pre>
+
+<p>Without the call to <code>AsParallel</code> method, it would look like an ordinary code for working with 
+  collections from our earlier examples. The <code>AsParallel</code> method, which comes from the Parallel 
+  Extensions library, hides a surprising complexity and as we can see, it exposes it in a very 
+  simple way. It changes a type of the collection that we’re working and provides a new 
+  implementation of Select and Where for this type. This means, that similarly as in the F# 
+  example, the code is using a different version of these methods that define how to work with 
+  collections.  The implementation used in this example thanks to <code>AsParallel</code> uses multi-threading,
+  so the processing is executed in parallel.</p>
+
+<p>Of course, changing the code from a sequential version to parallel requires that 
+  <code>UpdateCharacter</code> and <code>IsCharacterAlive</code> don’t modify any global state in an inconsistent way. If 
+  the code relied on the fact that it is executed sequentially, adding <code>AsParallel</code> would break it. 
+  In functional languages, this is not a big problem, because the data structures are usually 
+  immutable, but in C# you need to be more careful. Even though, C# doesn’t directly support 
+  writing immutable data structures, you can implement many types in a functional way, which 
+  makes it possible to safely use this technique for making code multi-threaded. For more 
+  information about implementing functional data structures in C#, you can refer to a series of 
+  articles by Eric Lippert [<a href="#fpgpref">7</a>].</p>
+
+<p>This example nicely demonstrates how architectural ideas from functional programming influenced 
+  technologies that are being currently developed to deal with issues like multi-threaded 
+  development such as Parallel Extensions to .NET. There are of course other technologies 
+  influenced by functional programming, but concurrent and asynchronous programming is very 
+  important nowadays, so these examples show why functional programming matters for a real-world 
+  developers. </p>
+
+<h3>4.2&#160;&#160;Programs as languages</h3>
+
+<p>So far, we’ve discussed how functional programs are structured. I wrote that developing of 
+  functional program starts by designing the data structures and by designing operations that 
+  work on top of these structures. In this section, I’ll shortly talk about different way of 
+  thinking about functional programs and especially functional libraries.</p>
+
+<p>Based on the earlier examples of F# you could see that the language has a minimum of predefined 
+  constructs. For example, we’ve seen that the same keyword <code>let</code> is used for declaring local 
+  values as well as for declaring functions. The rationale behind this is that a local value can 
+  be treated as a function that doesn’t take any arguments – not surprisingly, this is the way 
+  constants are usually defined in mathematics. </p>
+
+<p>Thanks to the syntax of F# (and the same is true for many other functional languages as well) 
+  it is possible to define many typical constructs not as a built-in language feature, but as a 
+  custom operator or a library function. This means that you can implement a set of primitives 
+  and use them to construct your programs. The programs will then look as if the primitives were 
+  standard part of the language. We’ve already seen an example of this when working with lists – 
+  the pipelining operator (<code>|&gt;</code>) is something that looks like a language feature, but it is just an 
+  ordinary F# operator. </p>
+
+<h4>Functional animations</h4>
+
+<p>Let’s now look at a more advanced example that shows what this means in practice. The following 
+  example demonstrates a “language” for describing animations in a functional way from Chapter 20 
+  of our book:</p>
+
+<pre lang="fsharp">
+let solarSystem = 
+  sun
+    -- (rotate 80.00f 4.1f mercury)      
+    -- (rotate 150.0f 1.6f venus)        
+    -- (rotate 215.0f 1.0f 
+           (earth -- (rotate 20.0f 12.0f moon)))    
+</pre>
+
+<a href="/articles/functional-overview/planets.png"><img src="/articles/functional-overview/planets_sm.png" style="border-style:none;margin:15px;float:right" alt="Solar system simulation"/></a>
+
+<p>Even without knowing anything about F#, you could probably see what the program describes. It 
+  defines our solar system with the first three planets (Mercury, Venus and Earth with Moon) and 
+  defines how the cosmic objects rotate round each other. If you think about the code for a while,
+  you can see that Moon rotates around the Earth and Earth, together with two other planets, 
+  rotates around the Sun. The rotation is specified using two numbers and if you could play with 
+  the program, you would quickly recognize that the first number specifies how far the planet is 
+  from the center of rotation and the second specifies how fast it should rotate.</p>
+
+<p>In my opinion, the most surprising fact about this example is that if you didn’t know that the 
+  code is written in F#, you could think that it is written in some kind of simulation language. 
+  You could think that <code>rotate</code> is a keyword of this language (that defines how things rotate 
+  around each other) and that <code>--</code> is some connector used in simulations. In fact, <code>rotate</code> is 
+  ordinary F# function and <code>--</code> is a custom operator.</p>
+
+<h4>Language for working with lists</h4>
+
+<p>We can apply the same thinking to our earlier examples of working with lists. In the example 
+  with planets, the language defined two primitives – a <code>rotate</code> function and an operator <code>--</code> for 
+  describing connections. The code that we implemented using these primitives is a model of an 
+  animation. In our case <code>solarSystem</code> is a model of an animation of our solar system. The language 
+  also knows how to execute the models. In the example with animations, executing a model means 
+  drawing the animation on a form.</p>
+
+<p>In the examples for working with lists, we’re modeling transformations of lists. The primitives 
+  that are available to us are pipelining operator (<code>|&gt;</code>) and basic functions for list 
+  manipulations (<code>filter</code>, <code>map</code> and many others). The transformation is described by parameterizing 
+  these basic functions (e.g. by specifying what items from the list should be filtered) and 
+  composition of the parameterized functions. We can for example model a transformation that 
+  takes a collection of customers, filters those who live in London and returns a collection of 
+  their names:</p>
+
+<pre lang="fsharp">
+let res = 
+  customers 
+    |&gt; filter (fun cust -&gt; cust.City = "London") 
+    |&gt; map (fun cust -&gt; cust.Name)
+</pre>
+
+<p>The code is very similar to our earlier examples for working with lists. This is because we’re 
+  using the same language for solving the problem. One more important note about this approach is 
+  that once a developer learns the language, he or she can very easily read and write code that 
+  solves problems for the problem domain for which the language was designed.</p>
+
+<p>The last topic that I’d like to shortly discuss is how the models can be executed. In some 
+  situations it is desirable to provide more ways for executing the problems implemented using a 
+  same “language”. Actually, we’ve already discussed this when talking about parallelization, 
+  because one possible alternative is to execute the transformation in parallel. Another 
+  alternative way is to execute it as an SQL query using a database engine. The following example 
+  shows how we could implement these two alternatives in F#:</p>
+
+<pre lang="fsharp">
+// Executing a ‘query’ on in-memory data in parallel
+let res = 
+  customers 
+    |&gt; parallelFilter (fun cust -&gt; cust.City = "London") 
+    |&gt; parallelMap (fun cust -&gt; cust.Name)
+
+// Executing a ‘query’ on database by translating it to SQL
+let res = 
+  SQL &lt;@@ %db.Customers 
+           |&gt; filter (fun cust -&gt; cust.City = "London") 
+           |&gt; map (fun cust -&gt; cust.Name) @@&gt;
+</pre>
+
+<p>The first example uses <code>parallelFilter</code> and <code>parallelMap</code> primitives that we already discussed. The 
+  second uses F# quotations, which provide a way for supplying a completely different execution 
+  method for a piece of F# code. In this case, the <code>SQL</code> function takes the F# code enclosed 
+  between <code>&lt;@@</code> and <code>@@&gt;</code>, translates it to SQL code and executes it as a database query. This example 
+  shows just the basic concept and you can find more information about quotations and F# 
+  integration with LINQ that allows this online (more on quotations can be found in [<a href="#fpgpref">4</a>], examples 
+  of real-world database queries in F# in [<a href="#fpgpref">8</a>]).</p>
+
+<h4>Domain specific languages</h4>
+
+<p>The approach to define some basic constructs is very popular and powerful. In context of F# it 
+  is called language oriented programming and these languages are called DSLs (domain specific 
+  languages) by some architects. This indicates that we’re defining a language for some problem 
+  domain and this language gives us a vocabulary and in some sense also grammatical rules for 
+  constructing our models.  Of course, there are techniques for implementing DSLs in other 
+  programming paradigms, so the term can be for example used in OOP as well. However, as you 
+  could see, the flexibility of functional languages makes it possible to define a very succinct 
+  and expressive “language”.</p>
+
+<p>Thanks to the vocabulary and grammar rules it can be often used even by those who understand 
+  the problem domain, but are not experts in functional programming. This means that those who 
+  use the DSL can be a distinct people from those who design it and develop it. Indeed, there are 
+  different requirements for people in both groups – the designers should be more advanced 
+  functional developers, whereas for the users, it is more important to well understand the 
+  problem domain.</p>
+
+<h2>5&#160;&#160;Summary</h2>
+
+<p>In this greenpaper I wanted to show you some of the wonders of functional programming. Indeed, we didn’t
+  have a space to look at more than a few selected topics and we couldn’t look at everything in 
+  detail, but I hope that the article convinced you that functional programming is an interesting and 
+  elegant paradigm, but also that it is very useful and can solve real-world problems as well as deal 
+  with current trends in the IT industry. Problems that can be nicely solved using functional 
+  programming include development for multi-core systems and the need to write the code in a more 
+  declarative and expressive way. </p>
+
+<p>In this article we started with discussing the general concepts that are important for functional 
+  programming. We’ve seen that functional programs usually work with immutable declarations, how to use 
+  recursion as a primary control structure. We also looked at functions and how they can be used as 
+  arguments for other functions (or methods in C#) and how functional programs avoid side-effects (that 
+  is modifying a global program state).</p>
+
+<p>Next we’ve looked shortly at the F# language by demonstrating several “Hello world” examples and we 
+  demonstrated some of the functional concepts in F# and how a similar thing can be achieved in C#. We’ve
+  looked at recursion, <code>Func</code> delegate in C# and functions in F#.</p>
+
+<p>Finally we’ve discussed functional programming from an architectural point of view. I wrote that when 
+  developing functional programs, we first think about the data structures and operations that 
+  transform or analyze these structures and we’ve also seen that using immutable data structures is 
+  extremely useful for parallelizing the code. We also looked at language oriented development in F#. 
+  In particular we’ve seen that functions for working with lists can be viewed as a “language” with a 
+  vocabulary and grammatical rules and I also shortly demonstrated another “language”, which can be 
+  used for creating functional animations.</p>
+
+<p>More information about functional programming in context of .NET can be found in my book <strong>Real-world 
+  functional programming in .NET</strong>, which reveals more connections between functional programming and C# 3.0
+  with LINQ as well as introduces the new functional F# language in a more detail.</p>
+
+<h2>References<a name="fpgpref"></a></h2>
+<p>The online resources and articles referenced from this greenpaper include the following:</p>
+
+<ul>
+  <li>[1] <a href="http://functional-programming.net" type="external">Real-world Functional Programming in .NET.</a> - Tomas Petricek</li>
+  <li>[2] <a href="http://research.microsoft.com/fsharp" type="external">Official F# web site</a> - Don Syme et al</li>
+  <li>[3] <a href="http://11011.net/archives/000721.html" type="external">F# in Visual Studio 2008 for free</a> - Douglas Stockwell</li>
+  <li>[4] <a href="http://tomasp.net/blog/fsharp-i-introduction.aspx" type="external">F# Overview.</a>  - Tomas Petricek</li>
+  <li>[5] <a href="http://msdn.microsoft.com/en-us/concurrency" type="external">Microsoft. Parallel Computing web site</a> </li>
+  <li>[6] <a href="http://tomasp.net/blog/fsparallelops.aspx" type="external">Keep your multi-core CPU busy with F#</a> - Tomas Petricek</li>
+  <li>[7] <a href="http://blogs.msdn.com/ericlippert/archive/tags/Immutability/default.aspx" type="external">Fabulous Adventures in Coding – Immutability</a> - Eric Lippert</li>
+  <li>[8] <a href="http://tomasp.net/blog/dynamic-flinq.aspx" type="external">Building LINQ queries at runtime in F#</a> - Tomas Petricek</li>
+</ul>
+
+<h3>F# community web sites</h3>
+<p>There are also many useful community resources on F# that are worth visiting if you’re interested in F#. 
+  First of all, there is a F# community web site [A] with forums and blogs. There is also an F# wiki [B] and 
+  various blogs on F# [C, D, E and F]. If you’re looking for examples that use F#, you can take a look at some 
+  open-source F# projects [G and H]. </p>
+  
+<ul>
+  <li>[A] <a type="external" href="http://cs.hubfs.net">hubFS: THE place for F#</a> - The F# community web site with blogs, forums, etc.. </li>
+  <li>[B] <a type="external" href="http://www.strangelights.com/fsharp/wiki">F# Wiki Homepage</a> - F# Wiki started by Robert Pickering </li>
+  <li>[C] <a type="external" href="http://blogs.msdn.com/dsyme">Don Syme’s WebLog on F# and Other Research Projects</a> - Blog written by the F# language designer Don Syme </li>
+  <li>[D] <a type="external" href="http://strangelights.com/blog ">Robert Pickering’s Strange Blog</a> - Blog of one of the most active F# community members</li>
+  <li>[E] <a type="external" href="http://tomasp.net/blog">Tomas Petricek</a> - My blog on F# and various other topics</li>
+  <li>[G] <a type="external" href="http://www.codeplex.com/fsharpsamples">F# Samples</a> - Contains code that demonstrate various F# language features </li>
+  <li>[H] <a type="external" href="http://www.codeplex.com/fswebtools">F# WebTools</a> - Advanced project that allows writing client/server Ajax web applications entirely in F# </li>
+  <li>[F] <a type="external" href="http://fsharpnews.blogspot.com">F# News</a> and <a type="external" href="http://www.ffconsultancy.com/dotnet/fsharp">F#.NET Tutorials</a> by Jon Harrop </li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffunctional-overview.aspx%2f&amp;text=Functional+Programming+in+.NET+using+C%23+and+F%23+(Manning+Greenpaper)via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffunctional-overview.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffunctional-overview.aspx%2f&title=Functional+Programming+in+.NET+using+C%23+and+F%23+(Manning+Greenpaper)">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Functional%20Programming%20in%20.NET%20using%20C%23%20and%20F%23%20(Manning%20Greenpaper)&body=%20This%20article%20is%20partially%20an%20excerpt%20from%20my%20book.%20It%20introduces%20the%20benefits%20of%20functional%20pogramming%2c%20and%20explains%20the%20essential%20aspects%20of%20the%20functional%20style%20using%20F%23%20and%20C%23%203.0.%20Finally%2c%20it%20also%20shows%20how%20functional%20style%20influences%20the%20application%20architecture.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffunctional-overview.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Thursday, 11 December 2008, 1:48 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/csharp/">c#</a>, <a
+          href="/blog/tag/parallel/">parallel</a>, <a
+          href="/blog/tag/meta-programming/">meta-programming</a>, <a
+          href="/blog/tag/writing/">writing</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

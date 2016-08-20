@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Aho-Corasick string matching in C# - Tomas Petricek</title>
+
+  <meta name="description" content=" C# implementation of very efficient Aho-Corasick keyword matching algorithm with multiple keywords support." />
+  <meta name="keywords" content=".net, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Aho-Corasick string matching in C#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/ahocorasick.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" C# implementation of very efficient Aho-Corasick keyword matching algorithm with multiple keywords support." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Aho-Corasick string matching in C#" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" C# implementation of very efficient Aho-Corasick keyword matching algorithm with multiple keywords support." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Aho-Corasick string matching in C#",
+    "headline": "Aho-Corasick string matching in C#",
+  	"description": " C# implementation of very efficient Aho-Corasick keyword matching algorithm with multiple keywords support.",
+  	"url": "http://tomasp.net/blog/ahocorasick.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2005-12-04T00:18:30.0000000",
+  	"datePublished": "2005-12-04T00:18:30.0000000",
+    "dateModified": "2005-12-04T00:18:30.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/ahocorasick.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": [".net",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Aho-Corasick string matching in C#</h1>
+<ul class="download"><li><a href="/articles/ahocorasick/demo.zip">Download demo application - 67 Kb </a></li><li><a href="/articles/ahocorasick/source.zip">Download library with source - 49 Kb</a></li></ul><h2>Introduction</h2><p>In this article I will describe implementation of an efficient Aho-Corasick algorithm for pattern matching.
+		In simple words this algorithm can be used for searching text for specified keywords. Following code
+		is usefull when you have a set of keywords and you want to find all occurences in text or check if any of 
+		the keywords is present in the text. You should use this algorithm especially if you have large number of
+		keywords that don't change often, because in this case it is much more efficient than other algorithms
+		that can be simply implemented using .NET class library.</p><p></p><h2>Aho-Corasick algorithm</h2><p>In this section I'll try to describe the concept of this algorithm. For more information and more exact explanation 
+		please take a look at links at the end of article. The algorithm consists of two parts. First part is
+		the building of tree from keywords you want to search for and second part is the searching text for
+		keywords using previously built tree (state machine). Searching for keyword is very efficient, because
+		it only moves through the states in the state machine. If a character is matching it follows <i>goto function</i> otherwise
+		it follows <i>fail function</i>.</p><h3>Tree building</h3><p>In the first phase of tree building, keywords are added to the tree. In my implementation I use class <code>StringSearch.TreeNode</code>,
+	  which represents one letter. Root node is used only as a place holder and contains links to other letters. Links created in
+	  this first step represents <i>goto function</i>, which returns next state when character is matching.</p><p>During second phase <i>fail</i> and <i>output functions</i> are found. Fail function is used when character is not matching
+	  and output function returns found keywords for each reached state. For example in text "SHIS" failure function is used
+	  to exit from "SHE" branch to "HIS" branch after first two characters (because third character is not matching).
+	  During the second phase BFS (breadth first search) algorithm is used for traversing through all nodes. 
+	  Functions are calculated in this order, because fail function of specified node is calculated using fail 
+	  function of parent node.</p><div style="text-align:center"><img src="http://tomasp.net/articles/ahocorasick/tree1.gif" style="margin:5px" /><img src="http://tomasp.net/articles/ahocorasick/tree2.gif" style="margin:5px" /><br /><small>Building of keyword tree (1 - after first step, 2 - tree with <i>fail function</i>)</small></div><h3>Searching</h3><p>As I already mentioned searching means only traversing previously built keyword tree (state machine).
+	  To demonstrate how this algorithm works, let's look at commented method which returns all matches of specified keywords:</p><pre><span class="c">// Searches passed text and returns all occurrences of any keyword
+// Returns array containing positions of found keywords</span>
+public StringSearchResult[] FindAll(string text)
+{
+  ArrayList ret=new ArrayList(); <span class="c">// List containing results</span>
+  TreeNode ptr=_root;            <span class="c">// Current node (state)</span>
+  int index=0;                   <span class="c">// Index in text</span><span class="c">// Loop through characters</span>
+  while(index&lt;text.Length)
+  {
+    <span class="c">// Find next state (if no transition exists, fail function is used)
+    // walks through tree until transition is found or root is reached</span>
+    TreeNode trans=null;
+    while(trans==null)
+    {
+      trans=ptr.GetTransition(text[index]);
+      if (ptr==_root) break;
+      if (trans==null) ptr=ptr.Failure;
+    }
+    if (trans!=null) ptr=trans;
+
+    <span class="c">// Add results from node to output array and move to next character</span>
+    foreach(string found in ptr.Results)
+      ret.Add(new StringSearchResult(index-found.Length+1,found));
+    index++;
+  }
+  
+  <span class="c">// Convert results to array</span>
+  return (StringSearchResult[])ret.ToArray(typeof(StringSearchResult));
+}</pre><h3>Algorithm complexity</h3><p>Complexity of first part is not so important, because it is executed only once. Complexity of second part
+		is <i>O(m+z)</i> where <i>m</i> is length of the text and <i>z</i> is the number of found keywords 
+		(in simple words it is very fast and its speed doesn't drop quickly for longer texts or many keywords).</p><h2>Performance comparsion</h2><p>To show how efficient this algorithm is, I created test application which compares this algorithm
+	  whit two other simple methods that can be used for this purpose. First algorithm is using <code>String.IndexOf</code> method to 
+	  search the text for all keywords and second algorithm uses regular expressions - for example for keywords he, she and his it
+	  creates regular expression <code>(he|she|his)</code>. Following graphs shows results of tests for two texts of different size.
+	  Number of used keywords is displayed on the X axis and time of search is displayed on Y axis.</p><p>Interesting thing is that for less than 70 keywords it is better to use simple method using <code>String.IndexOf</code>.
+    Regular expressions are almost always slower than other algorithms. I also tried compiling test under both 
+    .NET 1.1 and .NET 2.0 to see the difference. Althrough my measuring method may not be very precise it looks that
+    .NET 2.0 is a bit faster (about 5-10%) and method with regular expressions gives much better results (about 60% faster).</p><div style="text-align:center"><img src="http://tomasp.net/articles/ahocorasick/graph1kb.gif" style="margin:5px" /><img src="http://tomasp.net/articles/ahocorasick/graph10kb.gif" style="margin:5px" /><br /><small>Two charts comparing speed of three described algorithms - Aho-Corasick (yellow), IndexOf (green) and Regex (blue)</small></div><h2>How to use the code</h2><p>I decided to implement this algorithm when I had to ban some words in community web page (vulgarisms etc.). 
+	  This is typical use case because searching should be really fast, but blocked keywords don't change often
+	  (and creation of keyword tree can be slower).</p><p>Search algorithm is implemented in file <code>StringSearch.cs</code>. I created interface that represents any search 
+	  algorithm (so it is easy to replace it with another implementation). This interface is called <code>IStringSearchAlgorithm</code>
+	  and it contains property <code>Keywords</code> (gets or sets keywords to search for) and methods for searching.
+	  Method <code>FindAll</code> returns all keywords in passed text, <code>FindFirst</code> returns first match. 
+	  Matches are represented by <code>StringSearchResult</code> structure, that contains found keyword and its position in the text.
+	  Last method is <code>ContainsAny</code>, which returns <code>true</code> when passed text contains any keyword. Class that implements Aho-Corasick algorithm is 
+	  called <code>StringSearch</code>.</p><h3>Initialization</h3><p>Following example shows how to load keywords from database and create <code>SearchAlgorithm</code> instance:</p><pre><span class="c">// Initialize DB connection</span>
+SqlConnection conn = new SqlConnection(connectionString);
+SqlCommand cmd = new SqlCommand("SELECT BlockedWord FROM BlockedWords",conn);
+conn.Open();
+
+<span class="c">// Read list of banned words</span>
+ArrayList listWords = new ArrayList();
+using(SqlDataReader reader = 
+  cmd.ExecuteReader(CommandBehavior.CloseConnection))
+{
+  while(reader.Read()) 
+    listWords.Add(myReader.GetString(0));
+}
+string[] arrayWords = (string[])listWords.ToArray(typeof(string));
+
+<span class="c">// Create search algorithm instance</span>
+IStringSearchAlgorithm searchAlg = new StringSearch();
+searchAlg.Keywords = arrayWords;
+</pre><p>You can also use <code>StringSearch</code> constructor which takes array of keywords as parameter.</p><h3>Searching</h3><p>Searching passed text for keywords is event easier. Following sample shows how to write all matches to console output:</p><pre><span class="c">// Find all matching keywords</span>  
+StringSearchResult[] results=searchAlg.FindAll(textToSearch);
+
+<span class="c">// Write all results</span>  
+foreach(StringSearchResult r in results)
+{
+  Console.WriteLine("Keyword='{0}', Index={1}", r.Keyword, r.Index);
+}</pre><h2>Conclusion</h2><p>This implementation of Aho-Corasick search algorithm is very efficient if you want to find large number of keywords
+    in text of any length, but if you want to search only for a few keywords it is better to use simple method using
+    <code>String.IndexOf</code>. Code can be compiled in both .NET 1.1 and .NET 2.0 without any modifications.
+    If you want to learn more about this algorithm look at the link in the next section, that was very useful for me
+    during implementation of algorithm and explains theory behind this algorithm.</p><h2>Links and references</h2><ul class="externallinks"><li><a href="http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf">Set Matching and Aho-Corasick Algorithm</a>
+			[<a href="http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf" target="_blank">^</a>] - Pekka Kilpeläinen (University of Kuopio)</li></ul><h2>Future work and history</h2><ul class="externallinks"><li>(12/03/2005) - First version of this article published at CodeProject</li></ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fahocorasick.aspx%2f&amp;text=Aho-Corasick+string+matching+in+C%23via+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fahocorasick.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fahocorasick.aspx%2f&title=Aho-Corasick+string+matching+in+C%23">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Aho-Corasick%20string%20matching%20in%20C%23&body=%20C%23%20implementation%20of%20very%20efficient%20Aho-Corasick%20keyword%20matching%20algorithm%20with%20multiple%20keywords%20support.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fahocorasick.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Sunday, 4 December 2005, 12:18 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/dotnet/">.net</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

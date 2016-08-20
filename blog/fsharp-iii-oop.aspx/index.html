@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Overview (III.) - Imperative and Object-Oriented Programming - Tomas Petricek</title>
+
+  <meta name="description" content=" In the third part of the F# overview, we will look at the F# features that are essential for a smooth interoperability with other .NET languages and form a second part of the F# core language - that is object oriented and imperative programming." />
+  <meta name="keywords" content="functional, f#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Overview (III.) - Imperative and Object-Oriented Programming" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-iii-oop.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In the third part of the F# overview, we will look at the F# features that are essential for a smooth interoperability with other .NET languages and form a second part of the F# core language - that is object oriented and imperative programming." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Overview (III.) - Imperative and Object-Oriented Programming" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In the third part of the F# overview, we will look at the F# features that are essential for a smooth interoperability with other .NET languages and form a second part of the F# core language - that is object oriented and imperative programming." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Overview (III.) - Imperative and Object-Oriented Programming",
+    "headline": "F# Overview (III.) - Imperative and Object-Oriented Programming",
+  	"description": " In the third part of the F# overview, we will look at the F# features that are essential for a smooth interoperability with other .NET languages and form a second part of the F# core language - that is object oriented and imperative programming.",
+  	"url": "http://tomasp.net/blog/fsharp-iii-oop.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2007-11-03T00:00:03.0000000",
+  	"datePublished": "2007-11-03T00:00:03.0000000",
+    "dateModified": "2007-11-03T00:00:03.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-iii-oop.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "f#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>F# Overview (III.) - Imperative and Object-Oriented Programming</h1>
+<p>In the third part of the F# Overview article series, we will look at language features that are mostly well known, because they are present in most of the currently used programming languages. Indeed, I'm talking about imperative programming, which is a common way for storing and manipulating application data and about object oriented programming which is used for structuring complex programs.</p>
+<p>In general, F# tries to make using them together with the functional constructs described in the <a href="/blog/fsharp-ii-functional.aspx">previous part</a> [<a href="/blog/fsharp-ii-functional.aspx" target="_blank">^</a>] as natural as possible, which yields several very powerful constructs.</p>
+
+<h2>Imperative Programming and Mutable Values</h2>
+<p>Similarly as ML and OCaml, F# adopts an <em>eager evaluation</em> mechanism, which means that a code written using
+  sequencing operator is executed in the same order in which it is written and expressions given as an arguments 
+  to a function are evaluated before calling the function (this mechanism is used in most imperative languages
+  including C#, Java or Python). This makes it semantically reasonable to support 
+  imperative programming features in a functional language. As already mentioned, the F# value bindings are by default 
+  immutable, so to make a variable mutable the <code>mutable</code> keyword has to be used. Additionally F# supports a 
+  few imperative language constructs (like <code>for</code> and <code>while</code>), which are expressions of type <code>unit</code>:</p>
+<pre lang="fsharp">
+&gt; // Imperative factorial calculation
+  let n = 10
+  let mutable res = 1
+  for n = 2 to n do
+    res &lt;- res * n    
+  // Return the result
+  res;;
+val it : int = 3628800</pre>
+<p>The use of the eager evaluation and the ability to use mutable values makes it very easy to interoperate with other 
+  .NET languages (that rely on the use of mutable state), which is an important aspect of the F# language. In addition
+  it is also possible to use the <code>mutable</code> keyword for creating a record type with a mutable field.</p>
+
+<h3>Arrays</h3>
+<p>As mentioned earlier, another type of value that can be mutated is .NET array. Arrays can be either created
+  using <code>[| .. |]</code> expressions (in the following example we use it together with a range expression, 
+  which initializes an array with a range) or using functions from the <code>Array</code> module, for example
+  <code>Array.create</code>. Similarly to the mutable variables introduced in the previous section, the value of 
+  an array element can be modified using the <code>&lt;-</code> operator:</p>
+<pre lang="fsharp">
+&gt; let arr = [| 1 .. 10 |]
+val arr : array&lt;int&gt;
+
+&gt; for i = 0 to 9 do 
+    arr.[i] &lt;- 11 - arr.[i]
+(...)
+
+&gt; arr;;
+val it : array&lt;int&gt; = [| 10; 9; 8; 7; 6; 5; 4; 3; 2; 1 |]
+</pre>
+
+<h2>.NET interoperability</h2>
+
+<p>The .NET BCL is built in an object oriented way, so the ability to work with existing classes is essential for the 
+  interoperability. Many (in fact almost all) of the classes are also mutable, so the eager evaluation and the support 
+  for side-effects are two key features when working with any .NET library. The following example demonstrates working 
+  with the mutable generic <code>ResizeArray&lt;T&gt;</code> type from the BCL (<code>ResizeArray</code> is an alias for a type
+  <code>System.Collections.Generic.List</code> to avoid a confusion with the F# <code>list</code> type):</p>
+<pre lang="fsharp">
+&gt; let list = new ResizeArray&lt;_&gt;()
+  list.Add("hello")
+  list.Add("world")
+  Seq.to_list list;;
+val it : string list = ["hello"; "world"]</pre>
+<p>As you can see, we used the underscore symbol when creating an instance of the generic type, because the 
+  type inference algorithm in F# can deduce the type argument from the code (in this example it infers that the
+  type argument is <code>string</code>, because the <code>Add</code> method is called with a <code>string</code>
+  as an argument). After creating an instance we used <code>Add</code> method to modify the list and add two new items. 
+  Finally, we used a <code>Seq.to_list</code> function to convert the collection to the F# list.</p>
+  
+<p>As a fully compatible .NET language, F# also provides a way for declaring its own classes (called <em>object types</em>
+  in F#), which are compiled into CLR classes or interfaces and therefore the types can be accessed from any other 
+  .NET language as well as used to extend classes written in other .NET languages. This is an important feature that allows 
+  accessing complex .NET libraries like Windows Forms or ASP.NET from F#.</p>
+
+<h2>Object Oriented Programming</h2>
+<h3>Object Types</h3>
+<p>Object oriented constructs in F# are compatible with the OO support in .NET CLR, which implies that F# supports 
+  single implementation inheritance (a class can have one base class), multiple interface inheritance (a class 
+  can implement several interfaces and an interface can inherit from multiple interfaces), subtyping (an inherited class 
+  can be casted to the base class type) and dynamic type tests (it is possible to test whether a value is a 
+  value of an inherited class casted to a base type). Finally, all object types share a common base class which is called 
+  <code>obj</code> in F# and is an alias to the CLR type <code>System.Object</code>.</p>
+<p>F# object types can have fields, constructors, methods and properties (a property is just a syntactic sugar 
+  for getter and setter methods). The following example introduces the F# syntax for object types:</p>
+<pre lang="fsharp">
+type MyCell(n:int) =
+  let mutable data = n + 1
+  do  printf "Creating MyCell(%d)" n
+
+  member x.Data 
+    with get()  = data
+    and  set(v) = data &lt;- v
+    
+  member x.Print() = 
+    printf "Data: %d" data
+    
+  override x.ToString() = 
+    sprintf "(Data: %d)" data
+    
+  static member FromInt(n) = 
+    MyCell(n)</pre>
+<p>The object type <code>MyCell</code> has a mutable field called <code>data</code>, a property called <code>Data</code>, 
+  an instance method <code>Print</code>, a static method <code>FromInt</code> and the type also contains one 
+  overridden method called <code>ToString</code>, which is inherited from the <code>obj</code> type and returns 
+  a string representation of the object. Finally, the type has an implicit constructor. Implicit constructors are 
+  syntactical feature which allows us to place the constructor code directly inside the type declaration and to write the 
+  constructor arguments as part of the <code>type</code> construct. In our example, the constructor initializes the mutable
+  field and prints a string as a side effect. F# also supports <em>explicit</em> constructors that have similar syntax
+  as other members, but these are needed rarely.</p>
+  
+<p>In the previous example we implemented a <em>concrete object type</em> (a class), which means that it is possible
+  to create an instance of the type and call its methods in the code. In the next example we will look at declaration
+  of an interface (called <em>abstract object type</em> in F#). As you can see, it is similar to the declaration of a class:</p>
+<pre lang="fsharp">
+type AnyCell = 
+  abstract Value : int with get, set
+  abstract Print : unit -&gt; unit</pre>
+
+<p>The interesting concept in the F# object oriented support is that it is not needed to explicitly specify whether the 
+  object type is abstract (interface), concrete (class) or partially implemented (class with abstract methods), 
+  because the F# complier infers this automatically depending on the members of the type.
+  Abstract object types (interfaces) can be implemented by a concrete object type (class) or by an object expression,
+  which will be discussed shortly. When implementing an interface in an object type we use the 
+  <code>interface .. with</code> construct and define the members required by the interface. Note that the
+  indentation is significant in the lightweight F# syntax, meaning that the members implementing
+  the interface type have to be indented further:</p>
+<pre lang="fsharp">
+type ImplementCell(n:int) =
+  let mutable data = n + 1  
+  interface AnyCell with
+    member x.Print() = printf "Data: %d" data
+    member x.Value 
+      with get() = data 
+      and set(v) = data &lt;- v</pre>
+      
+<p>The type casts supported by F# are <em>upcast</em>, used for casting an object to a base type or to an implemented interface type
+  (written as <code>o :&gt; TargetType</code>), <em>downcast</em>, used for casting back from a base type 
+  (written as <code>o :?&gt; TargetType</code>), which throws an exception when the value isn’t a value of the specified type 
+  and finally, a <em>dynamic type test</em> (written as <code>o :? TargetType</code>), which tests whether 
+  a value can be casted to a specified type.</p>
+
+<h3>Object expressions</h3>
+<p>As already mentioned, abstract types can be also implemented by an object expression. This allows us to implement
+  an abstract type without creating a concrete type and it is particularly useful when you need to return an implementation
+  of a certain interface from a function or build an implementation on the fly using functions already defined somewhere
+  else in your program. The following example implements the <code>AnyCell</code> type:
+</p>
+<pre lang="fsharp">
+&gt; let newCell n =
+    let data = ref n
+    { new AnyCell with
+      member x.Print() = printf "Data: %d" (!data)
+      member x.Value 
+        with get() = !data
+        and set(v) = data:=v };;
+val newCell : int -&gt; AnyCell</pre>
+<p>In this code we created a function that takes an initial value as an argument and returns a cell holding
+  this value. In this example we use one more type of mutable values available in F#, called <em>reference cell</em>,
+  which are similar to a mutable values, but more flexible (the F# compiler doesn’t allow using an ordinary mutable value
+  in this example). A mutable cell is created by a <code>ref</code> function taking an initial value. The 
+  value is accessed using a prefix <code>!</code> operator and can be modified using <code>:=</code> operator. 
+  When implementing the abstract type, we use a <code>new ... with</code> construct with members implementing
+  the functionality required by the abstract type (an object expression can’t add any members).
+  In this example we need a reference cell to hold the value, so the cell is declared in a function and captured
+  in a <em>closure</em>, which means that it will exist until the returned object will be garbage collected.</p>
+
+<h2>Adding Members to F# Types</h2>
+<p>Probably the most important advantage of using object types is that they hide an implementation of the
+  type, which makes it possible to modify the implementation without breaking the existing code that uses them.
+  On the other side, basic F# types like discriminated unions or records expose the implementation details, which
+  can be problematic in some cases, especially when developing a larger application. Also, the dot-notation used 
+  with object types makes it very easy to discover operations supported by the type. To bridge this problem, F# 
+  allows adding members to both discriminated unions and record types:</p>
+<pre lang="fsharp">
+&gt; type Variant =
+    | Num of int
+    | Str of string with
+    member x.Print() =
+      match x with
+      | Num(n) -&gt; printf "Num %d" n
+      | Str(s) -&gt; printf "Str %s" s;;
+(...)
+
+&gt; let v = Num 42
+  v.Print();;
+Num 42</pre>  
+  
+<p>In this example we declared a type called <code>Variant</code> which can contain either
+  a number or a string value and added a member <code>Print</code> that can be invoked using
+  dot-notation. Aside from adding members (both methods an properties) it is also possible to 
+  implement an abstract object type by a record or discriminated union using the <code>interface ... with</code> 
+  syntax mentioned earlier.</p>
+<p>Rather than writing all code using <code>member</code> syntax, it is often more elegant to implement the 
+  functionality associated with an F# type in a function and then use <em>type augmentations</em> to make 
+  this functionality available as a member via dot-notation. This is a pattern used very often in the F# library 
+  implementation and I personally believe that it makes the code more readable. 
+  The following example re-implements the <code>Variant</code> type using this pattern:</p>
+<pre lang="fsharp">
+type Variant =
+  | Num of int
+  | Str of string
+  
+let print x =   
+  match x with
+  | Num(n) -&gt; printf "Num %d" n
+  | Str(s) -&gt; printf "Str %s" s
+
+type Variant with
+  member x.Print() = print x
+</pre>  
+<p>The construct <code>type ... with</code> is a type augmentation, which adds the member <code>Print</code>
+  to a type declared earlier in the code. The type augmentation has to be included in a same compilation unit as the declared type - 
+  usually in a same file. It is also possible to attach <em>extension members</em> to a type declared in a 
+  different compilation unit - the main difference is that these members are just a syntactical sugar and are not
+  a part of the original type, meaning that they can't access any implementation details of the type. The only reason
+  for using extension members is that they make your function for working with the type available using the dot-notation, 
+  which can simplify the code a lot and it will be easier to find the function (for example it will be available in the Visual Studio
+  IntelliSense). When declaring an extension member you use the same syntax as for type augmentations with the 
+  difference that the name of the type has to be fully qualified as demonstrated in the following example:</p>
+<pre lang="fsharp">
+&gt; type System.Collections.Generic.List&lt;'a&gt; with
+    member x.ToList() = Seq.to_list x;
+(...)
+    
+&gt; let r = new ResizeArray&lt;_&gt;()
+  r.Add(1)
+  r.Add(2)
+  r.ToList();;
+val it : list&lt;int&gt; = [ 1; 2 ]
+</pre>
+<p>In this example we use extension members to add a <code>ToList</code> method to an existing .NET generic
+  type. Note that when declaring the extension members we have to use the original type name and not the F#
+  alias. You should also bear in mind that extension members are resolved by the F# compiler and so calling them
+  from C# will not be easily possible. In general, extension members are not declared very often, but some parts of 
+  the F# library (for example the features for asynchronous and parallel programming) use them.</p>
+
+<h2>Article Series Links</h2>
+<ul>
+  <li><a href="/blog/fsharp-i-introduction.aspx">F# Overview (I.) - Introduction</a></li>
+  <li><a href="/blog/fsharp-ii-functional.aspx">F# Overview (II.) - Functional Programming</a></li>
+  <li>F# Overview (III.) - Object Oriented and Imperative Programming</li>
+  <li><a href="/blog/fsharp-iv-lang.aspx">F# Overview (IV.) - Language Oriented Programming</a></li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iii-oop.aspx%2f&amp;text=F%23+Overview+(III.)+-+Imperative+and+Object-Oriented+Programmingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iii-oop.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iii-oop.aspx%2f&title=F%23+Overview+(III.)+-+Imperative+and+Object-Oriented+Programming">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Overview%20(III.)%20-%20Imperative%20and%20Object-Oriented%20Programming&body=%20In%20the%20third%20part%20of%20the%20F%23%20overview%2c%20we%20will%20look%20at%20the%20F%23%20features%20that%20are%20essential%20for%20a%20smooth%20interoperability%20with%20other%20.NET%20languages%20and%20form%20a%20second%20part%20of%20the%20F%23%20core%20language%20-%20that%20is%20object%20oriented%20and%20imperative%20programming.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-iii-oop.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Saturday, 3 November 2007, 12:00 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/fsharp/">f#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

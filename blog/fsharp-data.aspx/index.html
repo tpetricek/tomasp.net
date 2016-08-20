@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Data: New type provider library - Tomas Petricek</title>
+
+  <meta name="description" content=" F# Data is a new library that gives you all you need to access data in F# 3.0. It implements type providers for WorldBank, Freebase and structured document formats (CSV, JSON and XML) as well as other helpers. This article introduces the library and gives a quick overview of its features." />
+  <meta name="keywords" content="open source, f#, f# data, type providers, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Data: New type provider library" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/fsharp-data.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" F# Data is a new library that gives you all you need to access data in F# 3.0. It implements type providers for WorldBank, Freebase and structured document formats (CSV, JSON and XML) as well as other helpers. This article introduces the library and gives a quick overview of its features." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Data: New type provider library" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" F# Data is a new library that gives you all you need to access data in F# 3.0. It implements type providers for WorldBank, Freebase and structured document formats (CSV, JSON and XML) as well as other helpers. This article introduces the library and gives a quick overview of its features." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Data: New type provider library",
+    "headline": "F# Data: New type provider library",
+  	"description": " F# Data is a new library that gives you all you need to access data in F# 3.0. It implements type providers for WorldBank, Freebase and structured document formats (CSV, JSON and XML) as well as other helpers. This article introduces the library and gives a quick overview of its features.",
+  	"url": "http://tomasp.net/blog/fsharp-data.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2013-03-28T03:23:41.0000000",
+  	"datePublished": "2013-03-28T03:23:41.0000000",
+    "dateModified": "2013-03-28T03:23:41.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/fsharp-data.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["open source", "f#", "f# data", "type providers",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">F# Data</span><span class="hs"> New type provider library</span></h1>
+<img src="https://raw.github.com/fsharp/FSharp.Data/master/misc/logo.png" class="rdecor" style="width:120px;height:120px;" />
+<p>When F# 3.0 type providers were still in beta version, I wrote a couple of type
+providers as examples for talks. These included the WorldBank type provider
+(now available <a href="http://www.tryfsharp.org">on Try F#</a>) and also type provider for
+XML that infered the structure from sample.<br />
+For some time, these were hosted as part of <a href="https://github.com/fsharp/fsharpx/">FSharpX</a>
+and the authors of FSharpX also added a number of great features.</p>
+<p>When I found some more time earlier this year, I decided to start a new library
+that would be fully focused on data access in F# and on type providers and
+I started working on <strong>F# Data</strong>. The library has now reached a stable state
+and <a href="http://www.navision-blog.de/blog/2013/03/27/fsharpx-1-8-removes-support-for-document-type-provider/">Steffen also announced</a>
+that the document type providers (JSON, XML and CSV) are not going to be available
+in FSharpX since the next version.</p>
+<p>This means that if you're interested in accessing data using F# type providers,
+you should now go to F# Data. Here are the most important links:</p>
+<ul>
+<li><a href="https://github.com/fsharp/FSharp.Data">F# Data source code on GitHub</a></li>
+<li><a href="http://fsharp.github.com/FSharp.Data/">F# Data documentation &amp; tutorials</a></li>
+<li><a href="http://nuget.org/packages/FSharp.Data">F# Data on NuGet</a></li>
+</ul>
+<p>Before looking at the details, I would like to thank to <a href="https://github.com/ovatsus">Gustavo Guerra</a>
+who made some amazing contributions to the library! (More contributors are always welcome,
+so continue reading if you're interested...)</p>
+<h2>F# Data Overview</h2>
+<p>The library contains several type providers, a couple of helper functions and it also
+comes with comprehensive documentation. Here is a quick summary of the key features:</p>
+<ul>
+<li>
+<p><strong>Document type providers</strong> are providers for JSON, XML and CSV that
+infer the structure of a file from a provided example and give you a typed
+access to other data in the same format.</p>
+</li>
+<li>
+<p><strong>WorldBank and Freebase</strong> are also hosted as part of the library. They give
+you access to <a href="http://data.worldbank.org">WorldBank</a> indicators (information about countries) and to the
+<a href="http://freebase.com">Freebase graph database</a> (this was originally written as
+a sample by the F# team).</p>
+</li>
+<li>
+<p><strong>Comprehensive documentation</strong> the library is using my other project,
+<a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a> to automatically
+generate a <a href="http://fsharp.github.com/FSharp.Data/">nice documentation</a> from
+<code>*.fsx</code> script files with examples.</p>
+</li>
+<li>
+<p><strong>HTTP utility</strong> the library also contains a very easy to use type for making
+HTTP requests with just a single line (look for <code>Http.Request</code> in the <a href="http://fsharp.github.com/FSharp.Data/library/Http.html">documentation</a>.
+This is something that I've been missing a lot when working with REST APIs from F#.</p>
+</li>
+</ul>
+<h2>F# Data Code Samples</h2>
+<p>I do not want to spend too much time demonstrating all the awesome features of the F# Data
+library, but let me include just a few code snippets to demonstrate some interesting features.
+(You can find more in the <a href="http://fsharp.github.com/FSharp.Data/">documentation</a>).</p>
+<p>All the samples assume that we're using an F# Script file, so we start by referencing the
+F# Data library using <code>#r</code> (in a project file, you would add reference as usual). I also
+open two namespaces - <code>FSharp.Data</code> with the data-related API and <code>FSharp.Net</code> with a
+helper type <code>Http</code> for making HTTP requests:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;FSharp.Data.dll&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">Data</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="i">Net</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Now, let's quickly look at a number of examples that demonstrate the F# Data library.
+You cannot quite see that in static code sample on a blog, but note that all data access
+is done in a typed way. When you type <code>.</code>, you get a completion and if you make a typo,
+you'll get an instantaneous feedback about the error.</p>
+<h3>Geting government debt from WorldBank</h3>
+<p>The <code>WorldBankData</code> type gives you access to the <a href="http://worldbank.org">World Bank</a> data
+set. For example, we can look at "Czech Republic" and get the government debt for the
+most recent year (using <code>Seq.maxBy</code> to get value for the most recent year available):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="i">wb</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">WorldBankData</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="f">GetDataContext</span>()
+<span onmouseout="hideTip(event, 'fs4', 8)" onmouseover="showTip(event, 'fs4', 8)" class="i">wb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="i">Countries</span><span class="o">.</span><span class="i">``Czech Republic``</span><span class="o">.</span><span class="i">Indicators</span><span class="o">.</span><span class="i">``Central government debt, total (% of GDP)``</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs8', 10)" onmouseover="showTip(event, 'fs8', 10)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs9', 11)" onmouseover="showTip(event, 'fs9', 11)" class="f">maxBy</span> <span onmouseout="hideTip(event, 'fs10', 12)" onmouseover="showTip(event, 'fs10', 12)" class="f">fst</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Geting religion list from Freebase</h3>
+<p>The <code>FreebaseData</code> type gives you access to <a href="http://freebase.com">Freebase</a>. You can just
+type <code>.</code> and explore the data sources available - for example, to look at a list of
+religions and print first 10:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 13)" onmouseover="showTip(event, 'fs11', 13)" class="i">fb</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs12', 14)" onmouseover="showTip(event, 'fs12', 14)" class="t">FreebaseData</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 15)" onmouseover="showTip(event, 'fs13', 15)" class="f">GetDataContext</span>()
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs14', 16)" onmouseover="showTip(event, 'fs14', 16)" class="i">rel</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs11', 17)" onmouseover="showTip(event, 'fs11', 17)" class="i">fb</span><span class="o">.</span><span class="i">Society</span><span class="o">.</span><span class="i">Religion</span><span class="o">.</span><span class="i">Religions</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs8', 18)" onmouseover="showTip(event, 'fs8', 18)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs15', 19)" onmouseover="showTip(event, 'fs15', 19)" class="f">take</span> <span class="n">10</span> <span class="k">do</span>
+  <span onmouseout="hideTip(event, 'fs16', 20)" onmouseover="showTip(event, 'fs16', 20)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="i">rel</span><span class="o">.</span><span class="i">Name</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Parsing RSS news feed from BBC</h3>
+<p>If you want to get news using RSS, you can use <code>XmlProvider</code>. All you need is a sample
+file or a string (marked as <code>Literal</code>) with the RSS data. Then you can pass this string
+or file to the provider as a static parameter and you'll get nice types for working with
+RSS feeds. Here, we get news from BBC using the <code>Http.Request</code> helper:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> [&lt;<span onmouseout="hideTip(event, 'fs17', 22)" onmouseover="showTip(event, 'fs17', 22)" class="t">Literal</span>&gt;] <span onmouseout="hideTip(event, 'fs18', 23)" onmouseover="showTip(event, 'fs18', 23)" class="i">RssSample</span> <span class="o">=</span> <span id="fst19" onmouseout="hideTip(event, 'fs19', 24)" onmouseover="showTip(event, 'fs19', 24, document.getElementById('fst19'))" class="omitted">(Sample RSS feed omitted)</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs20', 25)" onmouseover="showTip(event, 'fs20', 25)" class="t">Rss</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs21', 26)" onmouseover="showTip(event, 'fs21', 26)" class="t">XmlProvider</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs18', 27)" onmouseover="showTip(event, 'fs18', 27)" class="i">RssSample</span><span class="o">&gt;</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs22', 28)" onmouseover="showTip(event, 'fs22', 28)" class="i">feed</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs20', 29)" onmouseover="showTip(event, 'fs20', 29)" class="t">Rss</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 30)" onmouseover="showTip(event, 'fs23', 30)" class="f">Parse</span>(<span onmouseout="hideTip(event, 'fs24', 31)" onmouseover="showTip(event, 'fs24', 31)" class="t">Http</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 32)" onmouseover="showTip(event, 'fs25', 32)" class="f">Request</span>(<span class="s">&quot;http://feeds.bbci.co.uk/news/rss.xml&quot;</span>))
+<span onmouseout="hideTip(event, 'fs16', 33)" onmouseover="showTip(event, 'fs16', 33)" class="f">printfn</span>  <span class="s">&quot;</span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs22', 34)" onmouseover="showTip(event, 'fs22', 34)" class="i">feed</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 35)" onmouseover="showTip(event, 'fs26', 35)" class="i">Channel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 36)" onmouseover="showTip(event, 'fs27', 36)" class="i">Title</span>
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs28', 37)" onmouseover="showTip(event, 'fs28', 37)" class="i">item</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs22', 38)" onmouseover="showTip(event, 'fs22', 38)" class="i">feed</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 39)" onmouseover="showTip(event, 'fs26', 39)" class="i">Channel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs29', 40)" onmouseover="showTip(event, 'fs29', 40)" class="f">GetItems</span>() <span class="k">do</span>
+  <span onmouseout="hideTip(event, 'fs16', 41)" onmouseover="showTip(event, 'fs16', 41)" class="f">printfn</span> <span class="s">&quot; - </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs28', 42)" onmouseover="showTip(event, 'fs28', 42)" class="i">item</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs30', 43)" onmouseover="showTip(event, 'fs30', 43)" class="i">Title</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Geting stock prices from Yahoo CSV</h3>
+<p>Working with CSV files is similar. The <code>CsvProvider</code> takes static parameter with sample
+data (either as a file name or as actual data). Here, we use a file and we also specify
+that we only want to use first 10 rows for the inference (for performance reasons). The
+provider infers column names and types. Here is how you calculate the average MSFT stock
+price over the entire history:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs31', 44)" onmouseover="showTip(event, 'fs31', 44)" class="t">Stocks</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 45)" onmouseover="showTip(event, 'fs32', 45)" class="t">CsvProvider</span><span class="o">&lt;</span><span class="s">&quot;data/fsharp-data/MSFT.csv&quot;</span>, <span class="i">InferRows</span><span class="o">=</span><span class="n">10</span><span class="o">&gt;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 46)" onmouseover="showTip(event, 'fs33', 46)" class="i">msft</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs31', 47)" onmouseover="showTip(event, 'fs31', 47)" class="t">Stocks</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 48)" onmouseover="showTip(event, 'fs34', 48)" class="f">Load</span>(<span class="s">&quot;http://ichart.finance.yahoo.com/table.csv?s=MSFT&quot;</span>)
+<span onmouseout="hideTip(event, 'fs33', 49)" onmouseover="showTip(event, 'fs33', 49)" class="i">msft</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 50)" onmouseover="showTip(event, 'fs35', 50)" class="i">Data</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs8', 51)" onmouseover="showTip(event, 'fs8', 51)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 52)" onmouseover="showTip(event, 'fs36', 52)" class="f">averageBy</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs37', 53)" onmouseover="showTip(event, 'fs37', 53)" class="i">row</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs37', 54)" onmouseover="showTip(event, 'fs37', 54)" class="i">row</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs38', 55)" onmouseover="showTip(event, 'fs38', 55)" class="i">Open</span>)
+</code></pre></td>
+</tr>
+</table>
+<h3>Geting list of F# snippets using REST API</h3>
+<p>For our last example, we'll use REST API provided by <a href="http://fssnip.net">F# Snippets</a>. The
+API returns a JSON data set containing information about snippets. We can easily use it by
+defining a string <code>Literal</code> with sample JSON and passing it to <code>JsonProvider</code>. To get the
+data, we use <code>Http.Request</code>, but this time we specify <code>Content-Type</code> header. Working
+with the results is, again, done in a nice typed way:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> [&lt;<span onmouseout="hideTip(event, 'fs17', 56)" onmouseover="showTip(event, 'fs17', 56)" class="t">Literal</span>&gt;] <span onmouseout="hideTip(event, 'fs39', 57)" onmouseover="showTip(event, 'fs39', 57)" class="i">FsSnipNewsSample</span> <span class="o">=</span> <span id="fst40" onmouseout="hideTip(event, 'fs40', 58)" onmouseover="showTip(event, 'fs40', 58, document.getElementById('fst40'))" class="omitted">(Sample JSON with snippet data omitted)</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs41', 59)" onmouseover="showTip(event, 'fs41', 59)" class="t">FsSnipNews</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs42', 60)" onmouseover="showTip(event, 'fs42', 60)" class="t">JsonProvider</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs39', 61)" onmouseover="showTip(event, 'fs39', 61)" class="i">FsSnipNewsSample</span><span class="o">&gt;</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs43', 62)" onmouseover="showTip(event, 'fs43', 62)" class="i">data</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs24', 63)" onmouseover="showTip(event, 'fs24', 63)" class="t">Http</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 64)" onmouseover="showTip(event, 'fs25', 64)" class="f">Request</span>
+    ( <span class="s">&quot;http://api.fssnip.net/1/snippet&quot;</span>, 
+      <span class="i">headers</span><span class="o">=</span>[<span class="s">&quot;content-type&quot;</span>, <span class="s">&quot;application/json&quot;</span>] )
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs44', 65)" onmouseover="showTip(event, 'fs44', 65)" class="i">res</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs41', 66)" onmouseover="showTip(event, 'fs41', 66)" class="t">FsSnipNews</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 67)" onmouseover="showTip(event, 'fs45', 67)" class="f">Parse</span>(<span onmouseout="hideTip(event, 'fs43', 68)" onmouseover="showTip(event, 'fs43', 68)" class="i">data</span>)
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs46', 69)" onmouseover="showTip(event, 'fs46', 69)" class="i">snippet</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs44', 70)" onmouseover="showTip(event, 'fs44', 70)" class="i">res</span> <span class="k">do</span>
+  <span onmouseout="hideTip(event, 'fs16', 71)" onmouseover="showTip(event, 'fs16', 71)" class="f">printfn</span> <span class="s">&quot; - </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs46', 72)" onmouseover="showTip(event, 'fs46', 72)" class="i">snippet</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs47', 73)" onmouseover="showTip(event, 'fs47', 73)" class="i">Title</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Summary</h2>
+<p>Although I started working on F# Data around christmas, this is the first blog
+post about it. The library had some time to develop and we fixed some of the most
+important bugs, so if you're interested in data access in F#, <a href="https://github.com/fsharp/FSharp.Data">F# Data</a>
+is the right tool for you!</p>
+<p>I included a quick overview of some of the type providers that are available in the
+library - including those for WorldBank, Freebase, CSV, XML and JSON. Of course, I did
+not cover all the features of the library. You can find more information in the
+<a href="http://fsharp.github.com/FSharp.Data/">detailed documentation</a>.</p>
+<h3>Contribute to F# Data</h3>
+<p>As I mentioned already, the library already had some great contributors. Gustavo Guerra did
+a great job on making it work in Portable profile and on Silverlight. However, there
+is always work to be done :-) and contributors are very welcome. If you're interested,
+check out the <a href="https://github.com/fsharp/FSharp.Data/issues">list of issues</a>. I also
+wrote a page on <a href="http://fsharp.github.com/FSharp.Data/contributing.html">contributing to F# Data</a>
+with basic information about the library structure.</p>
+
+
+<div class="tip" id="fs1">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs2">Multiple items<br />namespace FSharp.Data<br /><br />--------------------<br />namespace Microsoft.FSharp.Data</div>
+<div class="tip" id="fs3">namespace FSharp.Net</div>
+<div class="tip" id="fs4">val wb : WorldBankData.ServiceTypes.WorldBankDataService<br /><br />Full name: Fsharp-data.aspx.wb</div>
+<div class="tip" id="fs5">type WorldBankData =<br />&#160;&#160;static member GetDataContext : unit -&gt; WorldBankDataService<br />&#160;&#160;nested type ServiceTypes<br /><br />Full name: FSharp.Data.WorldBankData</div>
+<div class="tip" id="fs6">WorldBankData.GetDataContext() : WorldBankData.ServiceTypes.WorldBankDataService</div>
+<div class="tip" id="fs7">property WorldBankData.ServiceTypes.WorldBankDataService.Countries: WorldBankData.ServiceTypes.Countries</div>
+<div class="tip" id="fs8">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs9">val maxBy : projection:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Seq.maxBy</div>
+<div class="tip" id="fs10">val fst : tuple:(&#39;T1 * &#39;T2) -&gt; &#39;T1<br /><br />Full name: Microsoft.FSharp.Core.Operators.fst</div>
+<div class="tip" id="fs11">val fb : FreebaseData.ServiceTypes.FreebaseService<br /><br />Full name: Fsharp-data.aspx.fb</div>
+<div class="tip" id="fs12">type FreebaseData =<br />&#160;&#160;static member GetDataContext : unit -&gt; FreebaseService<br />&#160;&#160;nested type ServiceTypes<br /><br />Full name: FSharp.Data.FreebaseData<br /><em><br /><br />Contains data and types drawn from the web data store. See www.freebase.com for terms and conditions.</em></div>
+<div class="tip" id="fs13">FreebaseData.GetDataContext() : FreebaseData.ServiceTypes.FreebaseService</div>
+<div class="tip" id="fs14">val rel : obj</div>
+<div class="tip" id="fs15">val take : count:int -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.take</div>
+<div class="tip" id="fs16">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs17">Multiple items<br />type LiteralAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; LiteralAttribute<br /><br />Full name: Microsoft.FSharp.Core.LiteralAttribute<br /><br />--------------------<br />new : unit -&gt; LiteralAttribute</div>
+<div class="tip" id="fs18">val RssSample : string<br /><br />Full name: Fsharp-data.aspx.RssSample</div>
+<div class="tip" id="fs19">&quot;&quot;&quot;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />&#160;&#160;&lt;rss version=&quot;2.0&quot;&gt;  <br />&#160;&#160;&#160;&#160;&lt;channel&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;title&gt;BBC News - Home&lt;/title&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;link&gt;http://www.bbc.co.uk/news/#sa-ns_mchannel=rss&amp;amp;ns_source=PublicRSS20-sa&lt;/link&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;description&gt;The latest stories from the Home section of the BBC News web site.&lt;/description&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;lastBuildDate&gt;Thu, 28 Mar 2013 01:10:12 GMT&lt;/lastBuildDate&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;item&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;title&gt;Government loses Abu Qatada appeal&lt;/title&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;description&gt;Home Secretary Theresa May loses her appeal against a ruling preventing the deportation of radical cleric Abu Qatada.&lt;/description&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;link&gt;http://www.bbc.co.uk/news/uk-21955844#sa-ns_mchannel=rss&amp;amp;ns_source=PublicRSS20-sa&lt;/link&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;guid isPermaLink=&quot;false&quot;&gt;http://www.bbc.co.uk/news/uk-21955844&lt;/guid&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;pubDate&gt;Wed, 27 Mar 2013 17:37:35 GMT&lt;/pubDate&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;/item&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;item&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;title&gt;Synchrotron yields &#39;safer&#39; vaccine&lt;/title&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;description&gt;British scientists develop a new way to create an entirely synthetic vaccine which does not rely on using live infectious virus, meaning it is much safer.&lt;/description&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;link&gt;http://www.bbc.co.uk/news/health-21958361#sa-ns_mchannel=rss&amp;amp;ns_source=PublicRSS20-sa&lt;/link&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;guid isPermaLink=&quot;false&quot;&gt;http://www.bbc.co.uk/news/health-21958361&lt;/guid&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;pubDate&gt;Wed, 27 Mar 2013 22:00:04 GMT&lt;/pubDate&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;/item&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;item&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;title&gt;Oil firms invest $500m in huge field&lt;/title&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;description&gt;Major oil companies announce plans which they hope will boost production from the UK&#39;s biggest oilfield.&lt;/description&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;link&gt;http://www.bbc.co.uk/news/uk-scotland-scotland-business-21955536#sa-ns_mchannel=rss&amp;amp;ns_source=PublicRSS20-sa&lt;/link&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;guid isPermaLink=&quot;false&quot;&gt;http://www.bbc.co.uk/news/uk-scotland-scotland-business-21955536&lt;/guid&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;pubDate&gt;Thu, 28 Mar 2013 00:31:05 GMT&lt;/pubDate&gt;  <br />&#160;&#160;&#160;&#160;&#160;&#160;&lt;/item&gt;  <br />&#160;&#160;&#160;&#160;&lt;/channel&gt; <br />&#160;&#160;&lt;/rss&gt;<br />&#160;&#160;&quot;&quot;&quot;</div>
+<div class="tip" id="fs20">type Rss = XmlProvider&lt;...&gt;<br /><br />Full name: Fsharp-data.aspx.Rss</div>
+<div class="tip" id="fs21">type XmlProvider<br /><br />Full name: FSharp.Data.XmlProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of a XML file&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of a XML sample file or a string containing a sample XML document&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Global&#39;&gt;If true, the inference unifies all XML elements with the same name&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates.&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;SampleList&#39;&gt;If true, the children of the root in the sample document represent individual samples for the inference.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution)&lt;/param&gt;</em></div>
+<div class="tip" id="fs22">val feed : XmlProvider&lt;...&gt;.DomainTypes.Rss<br /><br />Full name: Fsharp-data.aspx.feed</div>
+<div class="tip" id="fs23">XmlProvider&lt;...&gt;.Parse(text: string) : XmlProvider&lt;...&gt;.DomainTypes.Rss</div>
+<div class="tip" id="fs24">type Http =<br />&#160;&#160;private new : unit -&gt; Http<br />&#160;&#160;static member AsyncRequest : url:string -&gt; Async&lt;string&gt;<br />&#160;&#160;static member AsyncRequest : url:string * ?query:(string * string) list * ?headers:(string * string) list * ?meth:string * ?body:string -&gt; Async&lt;string&gt;<br />&#160;&#160;static member Request : url:string -&gt; string<br />&#160;&#160;static member Request : url:string * ?query:(string * string) list * ?headers:(string * string) list * ?meth:string * ?body:string -&gt; string<br /><br />Full name: FSharp.Net.Http</div>
+<div class="tip" id="fs25">static member Http.Request : url:string -&gt; string<br />static member Http.Request : url:string * ?query:(string * string) list * ?headers:(string * string) list * ?meth:string * ?body:string -&gt; string</div>
+<div class="tip" id="fs26">property XmlProvider&lt;...&gt;.DomainTypes.Rss.Channel: XmlProvider&lt;...&gt;.DomainTypes.Channel</div>
+<div class="tip" id="fs27">property XmlProvider&lt;...&gt;.DomainTypes.Channel.Title: string</div>
+<div class="tip" id="fs28">val item : XmlProvider&lt;...&gt;.DomainTypes.Item</div>
+<div class="tip" id="fs29">XmlProvider&lt;...&gt;.DomainTypes.Channel.GetItems() : XmlProvider&lt;...&gt;.DomainTypes.Item []</div>
+<div class="tip" id="fs30">property XmlProvider&lt;...&gt;.DomainTypes.Item.Title: string</div>
+<div class="tip" id="fs31">type Stocks = CsvProvider&lt;...&gt;<br /><br />Full name: Fsharp-data.aspx.Stocks</div>
+<div class="tip" id="fs32">type CsvProvider<br /><br />Full name: FSharp.Data.CsvProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of a CSV file&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of a CSV sample file or a string containing a sample CSV document&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Separator&#39;&gt;Column delimiter&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates.&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;InferRows&#39;&gt;Number of rows to use for inference. Defaults to 1000. If this is zero, all rows are used.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution)&lt;/param&gt;</em></div>
+<div class="tip" id="fs33">val msft : CsvProvider&lt;...&gt;<br /><br />Full name: Fsharp-data.aspx.msft</div>
+<div class="tip" id="fs34">CsvProvider&lt;...&gt;.Load(uri: string) : CsvProvider&lt;...&gt;<br />CsvProvider&lt;...&gt;.Load(stream: System.IO.Stream) : CsvProvider&lt;...&gt;</div>
+<div class="tip" id="fs35">property CsvProvider&lt;...&gt;.Data: System.Collections.Generic.IEnumerable&lt;CsvProvider&lt;...&gt;.Row&gt;</div>
+<div class="tip" id="fs36">val averageBy : projection:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; &#39;U (requires member ( + ) and member DivideByInt and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.Seq.averageBy</div>
+<div class="tip" id="fs37">val row : CsvProvider&lt;...&gt;.Row</div>
+<div class="tip" id="fs38">property CsvProvider&lt;...&gt;.Row.Open: decimal</div>
+<div class="tip" id="fs39">val FsSnipNewsSample : string<br /><br />Full name: Fsharp-data.aspx.FsSnipNewsSample</div>
+<div class="tip" id="fs40">&quot;&quot;&quot;[ { &quot;author&quot;: &quot;Kit Eason&quot;,<br />&#160;&#160;&#160;&#160;&quot;title&quot;: &quot;Eurovision - Some(points)&quot;,<br />&#160;&#160;&#160;&#160;&quot;description&quot;: &quot;The Eurovision final scoring system using records and some higher order functions. (...)&quot;,<br />&#160;&#160;&#160;&#160;&quot;likes&quot;: 1,<br />&#160;&#160;&#160;&#160;&quot;link&quot;: &quot;http://fssnip.net/cg&quot;,<br />&#160;&#160;&#160;&#160;&quot;published&quot;: &quot;5 months ago&quot;},<br />&#160;&#160;{ &quot;author&quot;: &quot;Eirik Tsarpalis&quot;,<br />&#160;&#160;&#160;&#160;&quot;title&quot;: &quot;Codomains through Reflection&quot;,<br />&#160;&#160;&#160;&#160;&quot;description&quot;: &quot;Any type signature has the form of a curried chain T0 -&gt; T1 -&gt; .... -&gt; Tn, where Tn is not a function type. (...)&quot;,<br />&#160;&#160;&#160;&#160;&quot;likes&quot;: 2,<br />&#160;&#160;&#160;&#160;&quot;link&quot;: &quot;http://fssnip.net/cf&quot;,<br />&#160;&#160;&#160;&#160;&quot;published&quot;: &quot;5 months ago&quot; } ]&quot;&quot;&quot;</div>
+<div class="tip" id="fs41">type FsSnipNews = JsonProvider&lt;...&gt;<br /><br />Full name: Fsharp-data.aspx.FsSnipNews</div>
+<div class="tip" id="fs42">type JsonProvider<br /><br />Full name: FSharp.Data.JsonProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of a JSON document&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of a JSON sample file or a string containing a sample JSON document&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;SampleList&#39;&gt;If true, sample should be a list of individual samples for the inference.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution)&lt;/param&gt;</em></div>
+<div class="tip" id="fs43">val data : string<br /><br />Full name: Fsharp-data.aspx.data</div>
+<div class="tip" id="fs44">val res : JsonProvider&lt;...&gt;.DomainTypes.Entity []<br /><br />Full name: Fsharp-data.aspx.res</div>
+<div class="tip" id="fs45">JsonProvider&lt;...&gt;.Parse(text: string) : JsonProvider&lt;...&gt;.DomainTypes.Entity []</div>
+<div class="tip" id="fs46">val snippet : JsonProvider&lt;...&gt;.DomainTypes.Entity</div>
+<div class="tip" id="fs47">property JsonProvider&lt;...&gt;.DomainTypes.Entity.Title: string</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-data.aspx%2f&amp;text=F%23+Data%3a+New+type+provider+libraryvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-data.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2ffsharp-data.aspx%2f&title=F%23+Data%3a+New+type+provider+library">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Data%3a%20New%20type%20provider%20library&body=%20F%23%20Data%20is%20a%20new%20library%20that%20gives%20you%20all%20you%20need%20to%20access%20data%20in%20F%23%203.0.%20It%20implements%20type%20providers%20for%20WorldBank%2c%20Freebase%20and%20structured%20document%20formats%20(CSV%2c%20JSON%20and%20XML)%20as%20well%20as%20other%20helpers.%20This%20article%20introduces%20the%20library%20and%20gives%20a%20quick%20overview%20of%20its%20features.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2ffsharp-data.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Thursday, 28 March 2013, 3:23 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/open-source/">open source</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/fsharp-data/">f# data</a>, <a
+          href="/blog/tag/type-providers/">type providers</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

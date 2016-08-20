@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Reactive Programming (III.) - Useful Reactive LINQ Operators - Tomas Petricek</title>
+
+  <meta name="description" content=" In the previous article, I introduced Reactive LINQ. Today, we're going to look at other operators that canbe used for working with events. We'll see aggregation is useful and how to dynamically change (switch) behavior." />
+  <meta name="keywords" content="functional, c#, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Reactive Programming (III.) - Useful Reactive LINQ Operators" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/reactive-iii-linqoperators.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" In the previous article, I introduced Reactive LINQ. Today, we're going to look at other operators that canbe used for working with events. We'll see aggregation is useful and how to dynamically change (switch) behavior." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Reactive Programming (III.) - Useful Reactive LINQ Operators" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" In the previous article, I introduced Reactive LINQ. Today, we're going to look at other operators that canbe used for working with events. We'll see aggregation is useful and how to dynamically change (switch) behavior." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Reactive Programming (III.) - Useful Reactive LINQ Operators",
+    "headline": "Reactive Programming (III.) - Useful Reactive LINQ Operators",
+  	"description": " In the previous article, I introduced Reactive LINQ. Today, we're going to look at other operators that canbe used for working with events. We'll see aggregation is useful and how to dynamically change (switch) behavior.",
+  	"url": "http://tomasp.net/blog/reactive-iii-linqoperators.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2008-11-21T19:59:02.0000000",
+  	"datePublished": "2008-11-21T19:59:02.0000000",
+    "dateModified": "2008-11-21T19:59:02.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/reactive-iii-linqoperators.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "c#",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Reactive Programming (III.) - Useful Reactive LINQ Operators</h1>
+<p>In the <a href="/blog/reactive-ii-csevents.aspx">previous article</a>, I introduced <strong>Reactive LINQ</strong>.
+  I explained the different point of view that we can use when working with .NET events. The idea is that
+  .NET events can be viewed as streams of values. The value is information about the event (such as position
+  of a mouse click or a mouse movement). These streams can be processed using LINQ queries - we can for example
+  filter all values that are not interesting for us using <code>where</code> LINQ clause. For example if we want to handle
+  clicks only in some specified area.</p>
+<p>In the previous article, I talked about basic LINQ query operators such as <code>select</code> and <code>where</code>
+  and some useful methods that <strong>Reactive LINQ</strong> provides (for example for merging event streams).
+  Today, we'll take a look at two more advanced kinds of operations that we can use for working with event streams. 
+  In particular, we'll talk about aggregation operators (that you certainly know from LINQ) and about switching. 
+  Switching is a concept from functional reactive programming and it allows us to change dynamically how the 
+  application behaves. However, I'll explain this in a more detail soon.</p>
+<p>In this article, I'm going to use mostly C# (and some Visual Basic). The functionality that I'm describing
+  in this part isn't part of the standard F# <code>Event</code> module that I discussed in 
+  <a href="/blog/reactive-i-fsevents.aspx">the first part</a>. I implemented most of them in F# too, but I'm not going
+  to write the samples in both of the versions in this part. If you've seen the first two articles, you'll be 
+  definitely able to use the F# versions as well, because they follow exactly the same ideas as the C#/LINQ versions.
+  I'm going to talk about a larger demo application in the last section and I'll show an F# version as well,
+  so you'll see some F# examples in the next part. This part serves more as a reference of the available
+  operators, so you may read only some parts of it, then jump to the last one (to see an exciting example!) 
+  and then come back here.</p>  
+
+<h2>Aggregating event streams</h2>
+<p>When working with data using LINQ, we can use various aggregation operators. These operators compute a single
+  value from a collection of object. You can for example  use <code>Sum</code> to add prices of all products,
+  <code>Max</code> to find the largest price or <code>Aggregate</code>, which is performs a custom aggregation
+  specified by a lambda function.</p>
+
+<p>As we'll see, these operations are quite useful for <strong>Reactive LINQ</strong> as well. However, they'll
+  have to behave a bit differently than for collections. When you have, for example, a collection of products, 
+  you can easily calculate the total price. The collection has finite number of elements, so we can iterate over
+  all of them. On the other hand, event streams aren't really finite or at least, you can't say when you
+  reached the end. If you're processing for example mouse clicks, you can't tell whether the user will continue 
+  clicking or not. The stream is finite in some sense - when the application is closed, the stream ends, but doing
+  something (other than cleanup) when the application is closed doesn't look very useful!</p>
+  
+<p>Instead of returning a value at the end of the stream, our aggregation operators will yield the present
+  value every time an event occurs and then continue with the aggregation. This means that aggregation operators
+  will also return <code>IEvent&lt;T&gt;</code> and the event will be triggered every time the aggregated 
+  value is updated. We can use this for example for counting number of clicks on a button.</p>
+
+<h3>Counting clicks</h3>
+<p>I believe that an example will make everything clear. In the following snippet, we'll attach an event to a 
+  button and we'll use <code>Sum</code> to count the number of clicks on the button:</p>
+<pre lang="csharp">
+btnClick.AttachEvent("Click")
+  .Select(ea =&gt; 1).Sum().Listen(n =&gt; 
+    lblOut.Text = String.Format("Current count is: {0}", n));
+</pre>
+<p>The usual call to <code>AttachEvent</code> is followed by a call to <code>Select</code>. The result of this
+  call will be an event stream that will contain a number 1 every time the button is clicked.
+  To get the total number of clicks on the button, we'll need to sum all the ones coming from the stream.
+  The easiest way to do this is to use the <code>Sum</code> operator. The result of this operation is an
+  event that is triggered every time the user clicks on the button. Values that will appear in this event
+  stream will be the sum calculated from the values so far, which means that it will contain numbers 1, 2, 3, ...
+  and that's the number of clicks that we want to display!</p>
+  
+<p>The fact that the result of aggregation in <strong>Reactive LINQ</strong> isn't just a number, but an event 
+  stream means that we can do multiple aggregations in a sequence. In the previous example, we've seen how
+  to generate a sequence containing ascending sequence of integers. If we'll multiply all of them, we'll
+  get the well known factorial function (the sequence of factorials will be 1, 1*2, 1*2*3, 1*2*3*4, ...).
+  Calculating total value was easy, because we had <code>Sum</code> operator, but multiplication isn't
+  built-in, so we'll have to use the generic <code>Aggregate</code> operation:</p>  
+<pre lang="csharp">
+btnClick.AttachEvent("Click")
+  // Generates sequence of integers: 1, 2, 3, ...
+  .Select(ea =&gt; 1).Sum() 
+  // Generate sequence of factorials: 1, 1*2, 1*2*3, ...
+  .Aggregate(1, (fact, current) =&gt; fact * current)
+  .Listen(n =&gt; 
+    lblOut.Text = String.Format("Factorial is: {0}", n));
+</pre>
+<p>The part ended with the call to <code>Sum</code> is same as in the previous example and it gives
+  us a sequence of integers. When aggregating using the <code>Aggregate</code> operator, we'll need
+  some initial value and we'll write a function that takes the current value from the stream and the
+  previous result (starting with the initial) and produces a new result. In our example, the initial value
+  is 1 (we don't want to multiply everything by zero!) and the function takes the current factorial 
+  (<code>fact</code>) and multiplies it by the next value from the stream (<code>current</code>).
+  Finally, we add a handler to show the results using <code>Listen</code>.</p>
+
+<h3>Using Visual Basic Query syntax</h3>
+<img src="/articles/reactive/vbcounter.png" alt="Counting clicks in Visual Basic" style="float:right; margin:15px;"/>
+<p>The only way to write aggregation in C# is to use extension methods explicitly. Interestingly,
+  in Visual Basic, there is query syntax for that as well using the <code>Aggregate</code> clause. 
+  We'll take a look how to rewrite the first example (showing the number of clicks) in Visual Basic 
+  using just a single query. First, we'll need a simple utility function for displaying the result,
+  because Visual Basic has only limited support for lambda functions:
+  </p>
+<pre lang="basic">
+' Utility function that allows us to set label text in the query easily
+Function SetText(ByVal lbl As Label, ByVal str As String) As Integer
+  lbl.Text = str
+  Return 0
+End Function
+</pre>
+<p>Now we can take a look at the query. This time we'll add reaction to the <code>MouseDown</code>
+  event and we'll only count clicks that were made by the left button. In C#, we'd have to write
+  this using a nested query, but in VB it can be written like this:</p>
+<pre lang="basic">
+' Count the number of clicks made by the left button
+Dim eCount = _
+  Aggregate ea In btnClick.AttachEvent(Of MouseEventArgs)("MouseDown") _
+  Where ea.Button = MouseButtons.Left _
+  Into Sum(1)
+  
+' Display the number using utility function 'SetText'
+eCount.Listen(Function(n) SetText(lblOutput, _
+  String.Format("Count: {0}", n)))
+</pre>
+<p>Visual Basic query that does aggregation starts with the <code>Aggregate</code> keyword and then 
+  specifies what values will be aggregated. In our case, it is the value coming from the <code>MouseDown</code>
+  event. This can be followed by various other LINQ clauses. We use just a single <code>Where</code> to
+  filter only left button clicks. Finally, there is an <code>Into</code> clause that specifies what will
+  be the aggregation function and what will be used as an input. The number 1 is the input - we ignore the 
+  value that comes from the event stream and just add one every time. You could for example sum X-coordinates
+  of the clicks, in which case you'd write <code>Sum(ea.X)</code>.</p>
+<p>The call to the <code>Listen</code> method is similar as in C#. Lambda function in Visual Basic
+  is written using <code>Function(..) ...</code> syntax. One of the limitations is that it can't contain
+  assignment in the body, so that's why we implemented the <code>SetText</code> function first. Thanks to this,
+  we can write a lambda function that contains method call, which is valid.</p>  
+<p>All the examples that we've seen so far were quite interesting, but a little limited. The most important
+  limitation is that once they started executing, the behavior didn't change. All of the examples were always
+  doing the same thing.</p>
+
+<h2>Changing behavior dynamically</h2>
+<p>In this section we're going to look at another set of operators that I'll call <em>switching operators</em>.
+  These operators can be used for writing programs that change their behavior during the execution and start
+  reacting differently. For example, we'll extend our 'click counting' sample and add a checkbox that
+  will specify whether we want to add 1 or subtract 1. Another example is that we could write a program that
+  would start behaving differently after an event occurs ten times. These examples should give you an 
+  idea what I mean by <em>dynamically</em>. When you write the program, you don't know when the 
+  change in the behavior will happen, because it is controlled by the program execution. The operators that we'll 
+  look at now are all very powerful, because most of the programs change parts of their behavior during the 
+  execution.</p>
+
+<h3>Choosing between behaviors</h3>
+<p>The first example that we'll implement is the 'click counting' sample with 'decrement' checkbox.
+  We'll add a checkbox to the form and we'll want to subtract 1 from the total every time the user clicks
+  on a button while the checkbox is checked and add 1 in case the checkbox is not checked.
+  Let's start by a thing that you already know. We'll use aggregation to create a stream that will 
+  yield a value when user changes the checkbox state. The values in the stream will be 1 (when checkbox 
+  is checked) or -1. We also don't want to wait until the user changes the state, so we'll add one 
+  additional initial event that will be triggered shortly after the program starts using <code>Reactive.After</code>:
+  </p>
+
+<pre lang="csharp">
+// Triggered after 1 second and then on every check-box click
+var eZigZag =
+  Reactive.Merge
+    (checkDecrement.AttachEvent("Click"), 
+     Reactive.After(1000, EventArgs.Empty))
+  // Create an event stream containing: 1, -1, 1, -1, ...  
+  .Aggregate(-1, (current, _) =&gt; current * -1);
+</pre>
+<p>The input for the <code>Aggregate</code> operator will be <code>EventArgs</code> values from the events.
+  This isn't needed and in cases like that, I'll often just use underscore as a variable name (in F#, this means
+  ignore the value; in C#, it is a valid variable name, but it suggests that we don't care about it). 
+  The initial value is -1 and every time an event occurs, we just multiply it by -1 to get a zig-zag stream 
+  containing 1, -1, 1, -1 etc.</p>
+
+<img src="/articles/reactive/csswitch.png" alt="Counting clicks with decrement checkbox" style="float:right; margin:15px;"/>
+<p>Now comes the interesting part. We know how to count the number of clicks on a button and we have another
+  event stream (<code>eZigZag</code>) that gives us a value every time we want to switch between addition
+  and subtraction when processing button clicks. We can write this using <code>SwitchRepeatedly</code>,
+  which calls our function every time the value in the zig-zag stream changes. The function that we 
+  provide is the most important thing. Instead of returning some value, it will generate an event stream.
+  The overall event stream will then switch between the event streams generated by our function.
+  Let's take a look at the example and I'll explain everything in a more detail shortly:</p>
+
+<pre lang="csharp">
+// Dynamically switch between 1, 1, 1... and -1, -1, -1...
+eZigZag.SwitchRepeatedly(n =&gt;
+     from ea in btnClick.AttachEvent("Click") select n)
+     
+  // Sum all nubers coming from the 'switch'
+  .Sum().Listen(n =&gt; 
+     lblOut.Text = String.Format("Current count is: {0}", n));
+</pre>
+<p>The input for the <code>SwitchRepeatedly</code> operator is the event that will be triggered
+  when the application starts (with 1 as the argument) and then every time the 'decrement' checkbox
+  is clicked. This means that the lambda function will be executed for the first time when
+  the application starts. The code inside the lambda function creates another event stream.
+  In our example, it attaches event handler for the <code>Click</code> event of the button and
+  yields <code>n</code> every time the event occurs. This variable is an argument for the 
+  lambda function and it will have value 1 at the beginning. Later (when <code>eZigZag</code> is 
+  triggered), it will alternate between -1 and 1.</p>
+<p>The overall type of the lambda function is <code>Func&lt;int,IEvent&lt;int&gt;&gt;</code>.
+  This means that it gets <code>int</code> as an argument and returns an event of integers.
+  The result of <code>SwitchRepeatedly</code> is an event that does the same thing as the
+  event returned by the lambda function (in our example, yields 1 every time button is clicked).
+  However, when the <code>eZigZag</code> is triggered, it calls the function to get a new event
+  stream and then starts to behave just like this new event stream. In our example, the event
+  returned by the second call will be yielding -1 values. The <code>Repeatedly</code> in the
+  name of the operator suggests that the behavior is changed dynamically every time an event
+  in the source stream occurs is triggered. </p>  
+<p>Also note that the type of <code>eZigZag</code> and the type of the event returned
+  by the lambda function can be different. If the lambda function returned for example
+  event yielding strings, the result will be also an event yielding strings. Values from 
+  the source event are used only to generate the current event. The next switching
+  operator will be a bit simpler, but (as we'll see shortly) very useful as well!</p>
+
+<h3>Changing behavior on the first event</h3>
+<p>In this section we'll take a look at <code>SwitchFirst</code> operator. It allows us
+  to write a event streams that yield a value when the event occurs for the first time
+  and then start behaving differently. For example, if you wanted to display a game 
+  score, you'd start with 0 when the user clicks on 'Start' and then switch to the 
+  actual algorithm that computes the score.</p>
+<p>Our example will be simpler. When the user clicks on a button, we'll display a message
+  that the button was clicked for the first time. Any subsequent click will display
+  a message showing the number of clicks:</p>  
+
+<pre lang="csharp">
+btnClick.AttachEvent("Click").Select(_ =&gt; "Clicked for the first time!")
+  .SwitchFirst(s =&gt;
+    // Return the new behavior: Sum clicks &amp; return message
+    btnClick.AttachEvent("Click").Select(_ =&gt; 1).Sum()
+      .Select(n =&gt; string.Format("Clicked {0} times!", n)))
+  .Listen(s =&gt; lblOut.Text = s);
+</pre>
+<p>The event that we use as a source for <code>SwitchFirst</code> yields a message when 
+  a button is clicked. The <code>SwitchFirst</code> operator waits for this event and
+  sends this event further to its listeners. This means that the <code>Listen</code>
+  handler will receive the message as well. After triggering the event, <code>SwitchFirst</code>
+  call the function used as an argument to get a new event stream and changes its behavior
+  to do the same thing as this event stream. In our example, the function returns an
+  event stream that counts the number of clicks. After the first click (and after showing
+  the first message), the program will start counting the clicks and it will display
+  the new count every time the button is clicked.</p>
+<p>This operator can be used for changing the behavior once, but it is actually far more interesting.
+  It can be used for changing the behavior in almost any way if we use it together with 
+  recursion. We'll look at an example in the next section.</p>
+
+<h3>Changing behavior on every event</h3>
+<p>Recursion is a very useful technique and it is used very often in functional programming.
+  In imperative languages, it is used less frequently, so if you're not used to it, you 
+  may find this section a bit tricky. As we've seen, we can use <code>SwitchFirst</code> to 
+  change the behavior after the first event occurs. This is done by specifying a function
+  that will be called to get a new event stream.</p>
+<p>However, the newly returned event stream can also contain <code>SwitchFirst</code>, so
+  it can change the behavior again. Even more interestingly, we can generate the original 
+  stream and the new one using the same function, so every event stream returned by the function
+  will always wait for the first event and then switch to another behavior generated using
+  the same function (possibly with some other arguments). </p>
+<p>This sounds a bit abstract, so let me show you a practical example. We'll a similar 
+  construct in the next article when developing the game. We want to implement the
+  following behavior: When you click on the button a message "Click" will appear. 
+  After 5 seconds, it will be replaced with "Timeout!" unless you clicked on the 
+  button again during that time. The way we'll do this is that we'll wait for an event
+  - either click or a timeout. After an event occurs we'll show the right message
+  and then change the behavior to start from the beginning again. This change here is very 
+  important, because it resets the timer, so the "Timeout!" message will not appear sooner
+  than after next 5 seconds:</p>
+<pre lang="csharp">
+// 'eClickOrTimeout' is a function that returns an evnet
+Func&lt;IEvent&lt;string&gt;&gt; eClickOrTimeout = null;
+eClickOrTimeout = () =&gt; 
+  // Triggered when user clicks on the button or after 5 seconds
+  Reactive.Merge
+    (btnClick.AttachEvent("Click").Select(_ =&gt; "Click..."),
+     Reactive.After(5000, "Timeout!"))
+  .SwitchFirst(e =&gt; eClickOrTimeout());
+
+// Create an event stream and add listener
+eClickOrTimeout()
+  .Listen(s =&gt; lblOut.Text = s);
+</pre>
+<p>We first declare a value called <code>eClickOrTimeout</code>. This is not an event as in
+  previous examples, but a function that creates an event when we call it. This is because
+  we need to generate a new event every time when the <code>SwitchFirst</code> operator
+  calls our function to make sure that the event generated using <code>Reactive.After</code>
+  will be triggered after 5 seconds (if it wasn't a function, the event would be triggered 
+  only once). Because we need to use the <code>eClickOrTimeout</code> inside its own declaration
+  we first initialize the value to <code>null</code> and then assign it the actual value.</p>
+<p>When constructing the event, we attach a handler for the button click and merge it
+  with an event generated using <code>Reactive.After</code>. This means that the first
+  event will be either a mouse click or a timeout event after 5 seconds. This is followed
+  by a <code>SwitchFirst</code> call. When the first event occurs, <code>SwitchFirst</code>
+  will throw the original event stream away (which means that no further clicks or timeouts 
+  will be handled) and changes its behavior to do the same thing as the new stream. 
+  The new stream is generated using the given function. In our example, it recursively 
+  uses <code>eClickOrTimeout</code>, so it will again wait either for a click or for a timeout.</p>  
+<p>To add an event handler to this recursive stream, we run the lambda function to start 
+  the event processing and add an event handler using <code>Listen</code> operator.
+  As I mentioned earlier, writing recursion explicitly is often quite tricky, so 
+  <strong>Reactive LINQ</strong> provides one more switching operator that can be used for 
+  implementing this example in an easier way. </p>
+
+<h3>Using recursive switch operator</h3>
+<p>The operator is named <code>SwitchRecursive</code> and it is the last one from the 
+  family of switching operators that <strong>Reactive LINQ</strong> currently implements.
+  It allows us to write the previous example without using recursion explicitly (internally,
+  it will do almost the same thing). The only difference is that we have to explicitly specify
+  the first event that will trigger the whole processing. In the previous example, the
+  first event was the same as all the subsequent events. In the new version, the program
+  will first wait 1 second and then start the processing similarly as in the last example:</p>
+<pre lang="csharp">
+Reactive.After(1000, "")
+  .SwitchRecursive(s =&gt; 
+      Reactive.Merge
+        (btnClick.AttachEvent("Click").Select(_ =&gt; "Click..."),
+         Reactive.After(5000, "Timeout!"))
+  .Listen(s =&gt; lblOut.Text = s);
+</pre>
+<p>The <code>SwitchRecursive</code> operator waits for the first event from the input stream and
+  then calls the function to generate the new event. So far, it does the same thing as
+  <code>SwitchFirst</code>. However, the difference is that when a first event occurs in the
+  returned event stream (in our example either a click or a timeout) it calls the function
+  again to obtain a new stream again. When calling the function, it uses the value returned
+  by the last event as an argument, so we can represent any state we need during the 
+  event processing.</p>
+<p>So far, we've looked at three slightly different switching operators that should be
+  sufficient for most of the event processing that you may need. In the last section, we're
+  going to look how they can be written using LINQ queries. This is not completely straightforward
+  as for example when using <code>where</code>, but it still simplifies the code in many
+  situations.</p>
+  
+<h2>Switches and LINQ queries</h2>
+<p>From all the query operators that LINQ provides the one that corresponds closely to our 
+  <em>switching operators</em> is <code>SelectMany</code> (side note for Haskell programmers:
+  this is <code>bind</code>, but not all switching operators above have exactly the right type).
+  When writing a query using the simplified syntax, <code>SelectMany</code> is used when you 
+  have multiple <code>from</code> clauses in the query. </p>
+<p>The following query implements the first example that we implemented earlier using
+  <code>SwitchRepeatedly</code>. It counts number of clicks on a specified button and allows
+  changing between incrementing and decrementing using a checkbox. We first declare an
+  event that is triggered when the application starts and then when the user clicks on the
+  'decrement' checkbox. This is just to make the code more readable - it would be perfectly
+  possible to write the whole thing as a single query. Then we write a query with multiple
+  <code>from</code> clauses that internally uses the <code>SwitchRepeatedly</code> operator.
+  Let's take a look at the example and I'll explain how exactly the operator is used later:</p>
+  
+<pre lang="csharp">
+// When application starts and then when 'decrement' checkbox is clicked
+var eDecrementClick = Reactive.Merge
+ (Reactive.After(1000, EventArgs.Empty), 
+  checkDecrement.AttachEvent("Click"));
+
+// Create stream with 1, -1, 1.. and combine it using 'SwitchRepeatedly'
+(from n in eDecrementClick.Aggregate(1, (current, _) =&gt; current * -1)
+ from m in btnClick.AttachEvent("Click").UseSwitchRepeatedly()
+ select -1 * n).Sum().Listen(n =&gt; 
+    lblOut.Text = String.Format("Current count is: {0}", n));
+</pre>
+<p>The first <code>from</code> clause specifies the input stream for the <code>SwitchRepeatedly</code>
+  operator. The second one specifies how to obtain an event stream once we have a value for the
+  <code>n</code> variable (or when we get a new value as a result of the first event being triggered).
+  An interesting thing to note is that we use an extension method <code>UseSwitchRepeatedly</code>
+  at the end of the second <code>from</code> clause. This alone doesn't do anything, but it 
+  specifies what kind of switch do we want to use (similarly, you could write <code>UseSwitchFirst</code>
+  or <code>UseSwitchRecursive</code>). If you forget to specify this, you'll get a compilation error,
+  because the C# compiler will not know which of the possible <code>SelectMany</code> implementations
+  should it use. There is one implementation for every switch and this <code>UseXyz</code> method specifies
+  this by returning a special type of event. In our example, it will return <code>IEventSwitchRepeatedly&lt;T&gt;</code>
+  instead of <code>IEvent&lt;T&gt;</code>, but this is very much just a technical detail
+  that you don't have to worry about.</p>
+
+<p>I believe that in some cases, the query syntax is more readable. In particular, it is interesting
+  when you need to use other operations that are available in a query such as <code>select</code> or
+  <code>where</code> or for example <code>Aggregate</code> in Visual Basic (actually, you could even use 
+  nested <em>switching operators</em>). Anyway, the following example should give you an idea how 
+  the query is translated to the ordinary method calls:</p>
+<pre>
+(from n in <span style="background-color:#b0c0ff">eDecrementClick.Aggregate(1, (current, _) =&gt; current * -1)</span>
+ from m in <span style="background-color:#c0ffb0">btnClick.AttachEvent("Click")</span>.UseSwitchRepeatedly()
+ select <span style="background-color:#ffb0c0">-1 * n</span>)
+<span style="background-color:#ffff90"> .Sum().Listen(n =&gt; 
+    lblOut.Text = String.Format("Current count is: {0}", n));</span>
+</pre>
+<p style="text-indent:0px">This code will be translated to something like this:</p>
+<pre><span style="background-color:#b0c0ff">(...)</span>.SwitchRepeatedly(n =&gt; <span style="background-color:#c0ffb0">...</span>).Select(... =&gt; <span style="background-color:#ffb0c0">...</span>).<span style="background-color:#ffff90">(...)</span></pre>
+<p>Actually, the query is compiled to a code that calls one of the <code>SelectMany</code> operators, but
+  this is what we get if we look at the implementation of this operator. As I already mentioned, the use 
+  of <code>SwitchRepeatedly</code> switching operator is controlled by the <code>UseXyz</code> method.
+  The example uses <code>select</code> clause, which is automatically translated to a call to <code>Select</code>
+  method that is added after the call to <code>SwitchRepeatedly</code>. If you included <code>where</code>
+  clause, it would be added after the call to switch as well and these are the cases where query syntax
+  is a lot more concise.</p>
+
+<h2>Summary</h2>
+<p>In this article, we've looked at a couple of operators that you can use in <strong>Reactive LINQ</strong>.
+  In particular, we discussed various ways of doing aggregation (such as <code>Sum</code>) and I also 
+  explained how this is different to the usual notion of aggregation in LINQ that works with finite data
+  sets. Next, we discussed three slightly different <em>switching operators</em>. These are very important
+  when implementing a more sophisticated code and in the next article we're going to look at a larger 
+  example that will use them (together with everything else that I just introduced). </p>
+<p>I already mentioned in the previous article, that the current implementation is just a prototype
+  that demonstrates the idea and shows what can be done with LINQ. My goal is to work on this project 
+  and turn it into a more stable and easier to use library. Currently, you can run into a problem
+  when using switching operators in some ways, because the resources used by events may not be
+  released correctly. Also, I'm not yet sure which of the switching operators are really the most useful, so 
+  if you'll play with the code, definitely send me your feedback!</p>
+<ul>
+  <li><a href="/articles/reactive/reactive3.zip">Download the examples including the <strong>Reactive LINQ</strong> source</a> (175 kB)</li>
+</ul>
+
+<h3>Series links</h3>
+<ul>
+  <li><a href="/blog/reactive-i-fsevents.aspx">Reactive programming (I.) - First class events in F#</a></li>
+  <li><a href="/blog/reactive-ii-csevents.aspx">Reactive programming (II.) - Introducing Reactive LINQ</a></li>
+  <li>Reactive Programming (III.) - Useful Reactive LINQ Operators</li>
+  <li><a href="/blog/reactive-iv-reactivegame.aspx">Reactive Programming (IV.) - Developing reactive game in Reactive LINQ</a></li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-iii-linqoperators.aspx%2f&amp;text=Reactive+Programming+(III.)+-+Useful+Reactive+LINQ+Operatorsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2freactive-iii-linqoperators.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2freactive-iii-linqoperators.aspx%2f&title=Reactive+Programming+(III.)+-+Useful+Reactive+LINQ+Operators">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Reactive%20Programming%20(III.)%20-%20Useful%20Reactive%20LINQ%20Operators&body=%20In%20the%20previous%20article%2c%20I%20introduced%20Reactive%20LINQ.%20Today%2c%20we%27re%20going%20to%20look%20at%20other%20operators%20that%20canbe%20used%20for%20working%20with%20events.%20We%27ll%20see%20aggregation%20is%20useful%20and%20how%20to%20dynamically%20change%20(switch)%20behavior.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2freactive-iii-linqoperators.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Friday, 21 November 2008, 7:59 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/csharp/">c#</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>

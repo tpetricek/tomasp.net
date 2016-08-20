@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+  <link href="/custom/bootstrap.3.css" rel="stylesheet">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>F# Math (II.) - Using matrices for graph algorithms - Tomas Petricek</title>
+
+  <meta name="description" content=" This article introduces the matrix type available in F# PowerPack. It discusses how to create matrices, manipulate matrices using indexing and slices and how to use built-in functions for working with them. As a running example, we use matrix to represent a graph using an adjacency matrix." />
+  <meta name="keywords" content="functional, f#, math and numerics, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="F# Math (II.) - Using matrices for graph algorithms" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/powerpack-matrix.aspx/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" This article introduces the matrix type available in F# PowerPack. It discusses how to create matrices, manipulate matrices using indexing and slices and how to use built-in functions for working with them. As a running example, we use matrix to represent a graph using an adjacency matrix." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="F# Math (II.) - Using matrices for graph algorithms" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" This article introduces the matrix type available in F# PowerPack. It discusses how to create matrices, manipulate matrices using indexing and slices and how to use built-in functions for working with them. As a running example, we use matrix to represent a graph using an adjacency matrix." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "F# Math (II.) - Using matrices for graph algorithms",
+    "headline": "F# Math (II.) - Using matrices for graph algorithms",
+  	"description": " This article introduces the matrix type available in F# PowerPack. It discusses how to create matrices, manipulate matrices using indexing and slices and how to use built-in functions for working with them. As a running example, we use matrix to represent a graph using an adjacency matrix.",
+  	"url": "http://tomasp.net/blog/powerpack-matrix.aspx/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2011-11-09T01:46:12.0000000",
+  	"datePublished": "2011-11-09T01:46:12.0000000",
+    "dateModified": "2011-11-09T01:46:12.0000000",
+    "mainEntityOfPage": "http://tomasp.net/blog/powerpack-matrix.aspx/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["functional", "f#", "math and numerics",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper">
+  <nav class="hidden-xs-home">
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas <span class="hidden-sm">Petricek</span> <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com">F# Consulting</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Books and talks</a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article>
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>F# Math (II.) - Using matrices for graph algorithms</h1>
+ <p>In the <a href="http://tomasp.net/blog/powerpack-numeric.aspx">previous article of this 
+  series</a>, we looked at <code>complex</code> and <code>BigRational</code>, which are two 
+  numeric types that are available in F# PowerPack. Aside from these two, the PowerPack 
+  library also contains a type <code>matrix</code> representing a two-dimensional matrix
+  of floating-point values.</p>
+
+<p>In this article, you'll learn how to work with matrices in F#, using some 
+  of the functions provided by F# PowerPack. I'll demonstrate the library using an 
+  example that represents <em>graphs</em> using a, so called, <em>adjacency matrix</em>.
+  If you're not familiar with this concept, you don't need to worry. It is quite simple
+  and it will be clear once we look at an example.
+  The matrix represents which vertices of a graph are connected with other vertices by 
+  an edge. Many of the standard operations on matrices are useful when working with 
+  adjacency matrix, so this tutorial will cover the following:</p>
+
+<ul>
+  <li>Creating matrices from lists and using functions from the <code>Matrix</code> module</li>
+  <li>Using slices to read or modify a part of matrix</li>
+  <li>Performing standard operations with matrices such as transposition and matrix multiplication</li>
+  <li>Using higher order functions for working with matrices</li>
+</ul>
+
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+
+<h2>Representing graphs using matrices</h2>
+
+<p>The folowing figure demonstrates how the adjacency matrix looks. It shows a graph with N 
+  vertices and its representation using an adjacency matrix of size N*N. A column of the 
+  matrix contains 1 if there is an edge connecting the two vertices (specified by the 
+  coordinates of the column). If there is no edge, then the table contains 0:</p>
+
+<style type="text/css">
+.mtbl td { padding:1px 10px 1px 10px; }
+.mtc { min-width:40px; }
+.r1  { background:#c0e0ff; }
+.r2  { background:#e0f0ff; }
+.hd  { background:#80b0ff; font-weight:bold; color:White; }
+.flisthdr { vertical-align:top;padding:0px 15px 0px 0px; font-weight:bold; }
+.flisthdrn { vertical-align:top;padding:0px 15px 0px 0px; }
+</style>
+
+<table style="margin-left:auto; margin-right:auto"><tr><td style="padding-right:30px">
+
+<img src="http://tomasp.net/articles/powerpack-series/matrix-graph.png" />
+
+</td><td style="padding-left:30px">
+
+<table class="mtbl" cellpadding="0" cellspacing="0">
+<tr class="hd"><td class="mtc">vertex</td><td class="mtc">0</td><td class="mtc">1</td><td class="mtc">2</td><td class="mtc">3</td></tr>
+<tr class="r1"><td class="mtc hd">0</td><td class="mtc">1</td><td class="mtc">0</td><td class="mtc">0</td><td class="mtc">0</td></tr>
+<tr class="r2"><td class="mtc hd">1</td><td class="mtc">0</td><td class="mtc">0</td><td class="mtc">1</td><td class="mtc">1</td></tr>
+<tr class="r1"><td class="mtc hd">2</td><td class="mtc">0</td><td class="mtc">1</td><td class="mtc">0</td><td class="mtc">0</td></tr>
+<tr class="r2"><td class="mtc hd">3</td><td class="mtc">0</td><td class="mtc">1</td><td class="mtc">0</td><td class="mtc">1</td></tr>
+</table>
+
+</td></tr></table>
+
+<p>If you look at the adjacency matrix, you can see a few interesting facts. For example, 
+  the diagonal of the matrix contains 1 for vertices marked 0 and 3. This means that there 
+  are two edges from a vertex to itself. Also, the graph has two disconnected parts 
+  consisting of 1 and 3 vertices respectively. As a result, our matrix of size 4x4 could be 
+  composed from two matrices of size 1x1 and 3x3. The first one would contain only the 
+  column (0, 0) and the second would once contain columns from (1, 1) to (3, 3). All 
+  remaining columns in the composed matrix contain zeros, because there is no edge between 
+  the two separate components of the graph. The composition is demonstrated by the following matrix: </p>
+
+<table class="mtbl" cellpadding="0" cellspacing="0"  style="margin-left:auto; margin-right:auto">
+<tr class="hd"><td class="mtc">vertex</td><td class="mtc">0</td><td class="mtc">1-3</td></tr>
+<tr class="r1"><td class="mtc hd">0</td><td class="mtc"><em>m<sub>1</sub></em></td><td class="mtc">0</td></tr>
+<tr class="r2"><td class="mtc hd">1-3</td><td class="mtc">0</td><td class="mtc"><em>m<sub>2</sub></em></td></tr>
+</table>
+
+<p>We'll see other interesting properties of the adjacency matrix later in the tutorial. 
+  First, let's take a look at various ways of constructing matrices, including a matrix
+  representing the graph from the introduction.</p>
+
+<h2>Creating matrices</h2>
+<p>In order to work with matrices, you first need to add reference to <code>PowerPack.dll</code>. 
+  Functionality for working with matrices is located in the namespace <code>Microsoft.FSharp.Math</code>, 
+  so you'll also need to open this namespace. Note that the <code>matrix</code> type is not generic 
+  and can contain only values of type <code>float</code>. In most of the cases, you'll want to 
+  work with floats anyway, so this isn't a limitation. If you need to store other values in matrices, 
+  you can use a generic version of the type, which will be discussed at the end of this article. 
+  The following example shows the most straightforward way of creating matrices:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">open</span> <span onmouseout="hideTip(event, 'f2pmg1', 1)" onmouseover="showTip(event, 'f2pmg1', 1)" class="i">Microsoft</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg2', 2)" onmouseover="showTip(event, 'f2pmg2', 2)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg3', 3)" onmouseover="showTip(event, 'f2pmg3', 3)" class="i">Math</span>
+<span class="l">2: </span>
+<span class="l">3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg4', 4)" onmouseover="showTip(event, 'f2pmg4', 4)" class="i">m1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg5', 5)" onmouseover="showTip(event, 'f2pmg5', 5)" class="i">matrix</span> [ [ <span class="n">1.</span> ] ]
+<span class="l">4: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg6', 6)" onmouseover="showTip(event, 'f2pmg6', 6)" class="i">m2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg5', 7)" onmouseover="showTip(event, 'f2pmg5', 7)" class="i">matrix</span> [ [ <span class="n">0.</span>; <span class="n">1.</span>; <span class="n">1.</span> ]
+<span class="l">5: </span>                  [ <span class="n">1.</span>; <span class="n">0.</span>; <span class="n">0.</span> ] 
+<span class="l">6: </span>                  [ <span class="n">1.</span>; <span class="n">0.</span>; <span class="n">1.</span> ] ]</pre>
+
+
+<p>The two matrices created in the example correspond to the two parts of the matrix from the introduction. 
+  We'll use them later in this tutorial, so if you're going through the code in this tutorial, it may be 
+  useful to keep them in your source file. </p>
+
+<p>Even though the code above looks like a special syntax for creating matrices, that's not the case. In 
+  fact, <code>matrix</code> is an ordinary function that takes a sequence of sequences of floats and 
+  constructs a matrix containing the values. The fact that <code>matrix</code> is an ordinary function means 
+  that the parameter doesn't have to be a list literal. It can be a value or any other F# expression. 
+  However, if you call matrix with a list of lists of non-equal lengths, you'll get a runtime error.</p>
+
+<p>There are also several functions for creating matrices in the <code>Matrix</code> module:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span onmouseout="hideTip(event, 'f2pmg7', 8)" onmouseover="showTip(event, 'f2pmg7', 8)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg8', 9)" onmouseover="showTip(event, 'f2pmg8', 9)" class="i">create</span> <span class="n">3</span> <span class="n">3</span> <span class="n">1.0</span>
+<span class="l"> 2: </span><span class="fsi">val it : matrix = matrix [ [1.0; 1.0; 1.0]</span>
+<span class="l"> 3: </span><span class="fsi">                           [1.0; 1.0; 1.0]</span>
+<span class="l"> 4: </span><span class="fsi">                           [1.0; 1.0; 1.0] ]</span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span><span onmouseout="hideTip(event, 'f2pmg7', 10)" onmouseover="showTip(event, 'f2pmg7', 10)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg9', 11)" onmouseover="showTip(event, 'f2pmg9', 11)" class="i">init</span> <span class="n">3</span> <span class="n">3</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'f2pmg10', 12)" onmouseover="showTip(event, 'f2pmg10', 12)" class="i">i</span> <span onmouseout="hideTip(event, 'f2pmg11', 13)" onmouseover="showTip(event, 'f2pmg11', 13)" class="i">j</span> <span class="k">-&gt;</span> 
+<span class="l"> 7: </span>  <span class="k">if</span> <span onmouseout="hideTip(event, 'f2pmg10', 14)" onmouseover="showTip(event, 'f2pmg10', 14)" class="i">i</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'f2pmg11', 15)" onmouseover="showTip(event, 'f2pmg11', 15)" class="i">j</span> <span class="o">&lt;</span> <span class="n">3</span> <span class="k">then</span> <span class="n">1.0</span> <span class="k">else</span> <span class="n">0.0</span>)
+<span class="l"> 8: </span><span class="fsi">val it : matrix = matrix [[1.0; 1.0; 1.0]</span>
+<span class="l"> 9: </span><span class="fsi">                          [1.0; 1.0; 0.0]</span>
+<span class="l">10: </span><span class="fsi">                          [1.0; 0.0; 0.0]]</span></pre>
+
+<p>The <code>Matrix.create</code> function creates a matrix of the specified size with all elements set 
+  to the specified value. In our example, we use value 1.0. If we trated the matrix as an adjacency 
+  matrix of some graph, the result would represent a complete graph that also contains an edge from 
+  every vertex to itself.</p>
+
+<p>The <code>Matrix.init</code> function is more complicated – it takes the required dimensions of 
+  the matrix and a function. The function is called to calculate a value for each element in the 
+  matrix. In our example, we return 1.0 only if the sum of current coordinates is less than 3. As a 
+  result the upper left triangle in the matrix contains 1.0 and the rest contains 0.0.</p>
+
+<p>The following table briefly reviews other functions that can be used for creating matrices:</p>
+
+<table class="flist">
+<tr>
+<td class="flisthdr">Matrix.identity</td>
+<td>
+  <code>int -&gt; matrix</code>
+  <p>Creates a square matrix of the specified size that contains 1.0 on the diagonal and 0.0 otherwise. Created matrix is dense (meaning that elements are stored in a two dimensional array).</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdr">Matrix.initDense</td>
+<td>
+  <code>int -&gt; int -&gt; seq&lt;int * int * float&gt; -&gt; matrix</code>
+  <p>Creates a dense matrix of the specified size. Then iterates over the given sequence and sets value of the columns specified by first two components of the tuple to the value (third component of the tuple).</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdr">Matrix.initSparse</td>
+<td>
+  <code>int -&gt; int -&gt; seq&lt;int * int * float&gt; -&gt; matrix</code>
+  <p>Creates a sparse matrix of the specified size whose certain elements are set to the values specified by the sequence given as the third argument. Created matrix uses sparse representation, which is more memory-efficient for matrices containing mostly zeros. Some operations are not available for sparse matrices and they can be converted to dense representation using <code>Matrix.toDense</code>. </p>
+</td>
+</tr>
+<tr>
+<td class="flisthdr">Matrix.zero</td>
+<td>
+  <code>int -&gt; int -&gt; matrix</code>
+  <p>Creates a dense matrix of the specified size that contains 0.0 in every element.</p>
+</td>
+</tr>
+</table>
+
+<h2>Working with matrices</h2>
+<p>Matrix is a mutable type, so it can be modified after it is created. 
+  When modifying matrices imperatively, the best approach is to do the modifications only once and 
+  then use the matrix as if it was immutable (e.g. after it is returned as a result from a function 
+  that is implemented using mutation). This way, you get good performance during the 
+  construction, but you can keep the rest of code referentially transparent.</p>
+
+<h3>Accessing matrix elements by index</h3>
+
+<p>The following listing shows a direct way of constructing adjacency matrix of size 4x4 from 
+  matrices that represent two parts of a graph as discussed in the introduction of this tutorial 
+  (though as we'll see later, there is a simpler way of doing this):</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg12', 16)" onmouseover="showTip(event, 'f2pmg12', 16)" class="i">m</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg7', 17)" onmouseover="showTip(event, 'f2pmg7', 17)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg13', 18)" onmouseover="showTip(event, 'f2pmg13', 18)" class="i">zero</span> <span class="n">4</span> <span class="n">4</span>
+<span class="l"> 2: </span><span class="fsi">val m : matrix = matrix [ ... ]</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span><span onmouseout="hideTip(event, 'f2pmg12', 19)" onmouseover="showTip(event, 'f2pmg12', 19)" class="i">m</span><span class="o">.</span>[<span class="n">0</span>, <span class="n">0</span>] <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'f2pmg4', 20)" onmouseover="showTip(event, 'f2pmg4', 20)" class="i">m1</span><span class="o">.</span>[<span class="n">0</span>, <span class="n">0</span>]
+<span class="l"> 5: </span><span class="fsi">val it : unit = ()</span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span class="k">for</span> <span onmouseout="hideTip(event, 'f2pmg14', 21)" onmouseover="showTip(event, 'f2pmg14', 21)" class="i">i</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">2</span> <span class="k">do</span>
+<span class="l"> 8: </span>  <span class="k">for</span> <span onmouseout="hideTip(event, 'f2pmg15', 22)" onmouseover="showTip(event, 'f2pmg15', 22)" class="i">j</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">2</span> <span class="k">do</span>
+<span class="l"> 9: </span>    <span onmouseout="hideTip(event, 'f2pmg12', 23)" onmouseover="showTip(event, 'f2pmg12', 23)" class="i">m</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'f2pmg14', 24)" onmouseover="showTip(event, 'f2pmg14', 24)" class="i">i</span><span class="o">+</span><span class="n">1</span>, <span onmouseout="hideTip(event, 'f2pmg15', 25)" onmouseover="showTip(event, 'f2pmg15', 25)" class="i">j</span><span class="o">+</span><span class="n">1</span>] <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'f2pmg6', 26)" onmouseover="showTip(event, 'f2pmg6', 26)" class="i">m2</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'f2pmg14', 27)" onmouseover="showTip(event, 'f2pmg14', 27)" class="i">i</span>, <span onmouseout="hideTip(event, 'f2pmg15', 28)" onmouseover="showTip(event, 'f2pmg15', 28)" class="i">j</span>]
+<span class="l">10: </span><span class="fsi">val it : unit = ()</span>
+<span class="l">11: </span>
+<span class="l">12: </span><span onmouseout="hideTip(event, 'f2pmg12', 29)" onmouseover="showTip(event, 'f2pmg12', 29)" class="i">m</span>
+<span class="l">13: </span><span class="fsi">val it : matrix = matrix [ [1.0; 0.0; 0.0; 0.0]</span>
+<span class="l">14: </span><span class="fsi">                           [0.0; 0.0; 1.0; 1.0]</span>
+<span class="l">15: </span><span class="fsi">                           [0.0; 1.0; 0.0; 0.0]</span>
+<span class="l">16: </span><span class="fsi">                           [0.0; 1.0; 0.0; 1.0] ]</span></pre>
+
+<p>The first command createS a matrix of size 4x4 whose elements are initialized to 0.0. Next, we 
+  copy the content of matrices <code>m1</code> and <code>m2</code> (from the earlier section). 
+  The matrix <code>m1</code> contains only a single element, so we use direct assignment. For copying 
+  elements of <code>m2</code>, we need to use two nested for loops. Once the elements are copied, 
+  we ask F# Interactive to print the value of <code>m</code>. As you can see, the matrix is exactly 
+  the same as the one in the figure from the introduction.</p>
+
+<p>To look at one more example of working with elements of a matrix directly, let's write a piece 
+  of code that gives us a list of edges in the graph. This can be done by searching for 1.0 in the 
+  matrix. Note that we only need to search the triangle below the diagonal (including the diagonal), 
+  since the matrix is symmetric:</p>
+  
+<pre class="fssnip">
+<span class="l">1: </span>[ <span class="k">for</span> <span onmouseout="hideTip(event, 'f2pmg10', 30)" onmouseover="showTip(event, 'f2pmg10', 30)" class="i">i</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span class="n">3</span> <span class="k">do</span>
+<span class="l">2: </span>    <span class="k">for</span> <span onmouseout="hideTip(event, 'f2pmg11', 31)" onmouseover="showTip(event, 'f2pmg11', 31)" class="i">j</span> <span class="k">in</span> <span class="n">0</span> <span class="o">..</span> <span onmouseout="hideTip(event, 'f2pmg10', 32)" onmouseover="showTip(event, 'f2pmg10', 32)" class="i">i</span> <span class="k">do</span>
+<span class="l">3: </span>      <span class="k">if</span> (<span onmouseout="hideTip(event, 'f2pmg12', 33)" onmouseover="showTip(event, 'f2pmg12', 33)" class="i">m</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'f2pmg10', 34)" onmouseover="showTip(event, 'f2pmg10', 34)" class="i">i</span>, <span onmouseout="hideTip(event, 'f2pmg11', 35)" onmouseover="showTip(event, 'f2pmg11', 35)" class="i">j</span>] <span class="o">=</span> <span class="n">1.0</span>) <span class="k">then</span> 
+<span class="l">4: </span>        <span class="k">yield</span> <span onmouseout="hideTip(event, 'f2pmg10', 36)" onmouseover="showTip(event, 'f2pmg10', 36)" class="i">i</span>, <span onmouseout="hideTip(event, 'f2pmg11', 37)" onmouseover="showTip(event, 'f2pmg11', 37)" class="i">j</span> ]
+<span class="l">5: </span><span class="fsi">val it : (int * int) list = [(0, 0); (2, 1); (3, 1); (3, 3)]</span></pre>
+
+<p>The upper bound of the nested loop is limited to the current value of <code>i</code>, so that we search 
+  from the left border of the matrix to the diagonal only. If an element of the matrix contains 1.0, we 
+  return the two vertex indices that specify an edge.</p>
+
+<p>The use of nested loops for copying elements, earlier in this section, is unnecessarily 
+  complicated. The next section shows slices, which provide a nicer way of solving the problem.</p>
+
+<h3>Accessing parts of matrix using slices</h3>
+
+<p>Slices are similar to indices, but instead of specifying individual elements, they allow us
+  to specify a range. The result
+  is a matrix containing a part of the original matrix. Slices can be used not only for reading 
+  parts of matrix, but also to replace a part of matrix with another matrix. </p>
+
+<p>For example, to remove the edge 4 from the original graph, we can take only the first three
+  columns and three rows of the original matrix:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'f2pmg12', 38)" onmouseover="showTip(event, 'f2pmg12', 38)" class="i">m</span><span class="o">.</span>[<span class="n">0</span> <span class="o">..</span> <span class="n">2</span>, <span class="n">0</span> <span class="o">..</span> <span class="n">2</span>]
+<span class="l">2: </span><span class="fsi">val it : Matrix&lt;float&gt; = matrix [ [1.0; 0.0; 0.0]</span>
+<span class="l">3: </span><span class="fsi">                                  [0.0; 0.0; 1.0]</span>
+<span class="l">4: </span><span class="fsi">                                  [0.0; 1.0; 0.0] ]</span></pre>
+
+<p>The syntax of slices is similar to accessing elements of a matrix using indices. The only difference 
+  is that in place of a single number (an index), we now write a range such as <code>0 .. 2</code>. The 
+  result of accessing a slice is a new matrix specified by the slice. If we look at the result, we can 
+  see that by removing the vertex 4 from the graph, we get a graph with 3 vertices and only 2 edges (one 
+  leads from vertex 1 to itself and one connects vertices 2 and 3).</p>
+
+<p>Slices can be used for modifying the matrix as well. The following example shows a more elegant way 
+  of constructing the adjacency matrix for the entire graph from adjacency matrices of two disconnected 
+  parts:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg16', 39)" onmouseover="showTip(event, 'f2pmg16', 39)" class="i">m</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg7', 40)" onmouseover="showTip(event, 'f2pmg7', 40)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg13', 41)" onmouseover="showTip(event, 'f2pmg13', 41)" class="i">zero</span> <span class="n">4</span> <span class="n">4</span>
+<span class="l">2: </span><span onmouseout="hideTip(event, 'f2pmg16', 42)" onmouseover="showTip(event, 'f2pmg16', 42)" class="i">m</span><span class="o">.</span>[<span class="n">0</span> <span class="o">..</span> <span class="n">0</span>, <span class="n">0</span> <span class="o">..</span> <span class="n">0</span>] <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'f2pmg4', 43)" onmouseover="showTip(event, 'f2pmg4', 43)" class="i">m1</span>
+<span class="l">3: </span><span onmouseout="hideTip(event, 'f2pmg16', 44)" onmouseover="showTip(event, 'f2pmg16', 44)" class="i">m</span><span class="o">.</span>[<span class="n">1</span> <span class="o">..</span> <span class="n">3</span>, <span class="n">1</span> <span class="o">..</span> <span class="n">3</span>] <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'f2pmg6', 45)" onmouseover="showTip(event, 'f2pmg6', 45)" class="i">m2</span></pre>
+
+<p>In the first assignment, the range describes a matrix of size 1x1 and in the second one we're overwriting a matrix of 
+  size 3x3. If the size of the range was incompatible with the size of the matrix on the right hand side, 
+  we would get an exception. Also note that there is an important difference between writing 
+  <code>m.[0, 0]</code> and <code>m.[0 .. 0, 0 .. 0]</code>. In the first case, we're accessing only a single element, so the type 
+  of the expression is <code>float</code>. In the second case, we're accessing a part of matrix that happens to contain 
+  only a single element. Nevertheless, the type of the expression is still <code>matrix</code>.</p>
+
+<h3>Performing operations with matrices</h3>
+<p>Next we look at a few standard operations for working with matrices that are available in F# PowerPack. 
+  Just like functions for creating matrices, the operations that we'll discuss in this step are available 
+  in the <code>Matrix</code> module. The following listing demonstrates first two of them:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'f2pmg16', 46)" onmouseover="showTip(event, 'f2pmg16', 46)" class="i">m</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg7', 47)" onmouseover="showTip(event, 'f2pmg7', 47)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg17', 48)" onmouseover="showTip(event, 'f2pmg17', 48)" class="i">transpose</span> <span onmouseout="hideTip(event, 'f2pmg16', 49)" onmouseover="showTip(event, 'f2pmg16', 49)" class="i">m</span>
+<span class="l">2: </span><span class="fsi">val it : bool = true</span>
+<span class="l">3: </span>
+<span class="l">4: </span><span onmouseout="hideTip(event, 'f2pmg7', 50)" onmouseover="showTip(event, 'f2pmg7', 50)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg18', 51)" onmouseover="showTip(event, 'f2pmg18', 51)" class="i">trace</span> <span onmouseout="hideTip(event, 'f2pmg16', 52)" onmouseover="showTip(event, 'f2pmg16', 52)" class="i">m</span>
+<span class="l">5: </span><span class="fsi">val it : float = 2.0</span></pre>
+
+<p>The first command tests whether a transpose of a matrix <code>m</code> is the same as 
+  the original matrix. The result is true, because the matrix is symmetric (at least for any 
+  graph that is not oriented, meaning that edge from vertex 1 to 2 is the same as edge from vertex 2 to 1). </p>
+
+<p>The second command calculates so-called <em>trace</em> of a matrix which is a sum of 
+  elements on the diagonal. When working with adjacency matrix, this gives the 
+  number of vertices such that there is an edge from the vertex to itself. 
+  In our case, the result is 2, because there is a value 1.0 at indices 
+  <code>[0, 0]</code> and <code>[3, 3]</code>, which correspond to edge from vertex 1 to 1 and 
+  from 3 to 3 respectively. </p>
+
+<p>The next example calculates the number of edges in the matrix. The fact that the matrix is 
+  symmetric means that some edges will appear twice in the matrix. To get the number of unique 
+  edges, we need to count only elements in the triangle over (or below) the diagonal, including 
+  the diagonal. The following example shows how to do that using two standard library functions:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'f2pmg16', 53)" onmouseover="showTip(event, 'f2pmg16', 53)" class="i">m</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'f2pmg7', 54)" onmouseover="showTip(event, 'f2pmg7', 54)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg19', 55)" onmouseover="showTip(event, 'f2pmg19', 55)" class="i">mapi</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'f2pmg10', 56)" onmouseover="showTip(event, 'f2pmg10', 56)" class="i">i</span> <span onmouseout="hideTip(event, 'f2pmg11', 57)" onmouseover="showTip(event, 'f2pmg11', 57)" class="i">j</span> <span onmouseout="hideTip(event, 'f2pmg20', 58)" onmouseover="showTip(event, 'f2pmg20', 58)" class="i">value</span> <span class="k">-&gt;</span> 
+<span class="l">2: </span>    <span class="k">if</span> <span onmouseout="hideTip(event, 'f2pmg10', 59)" onmouseover="showTip(event, 'f2pmg10', 59)" class="i">i</span> <span class="o">&gt;</span> <span onmouseout="hideTip(event, 'f2pmg11', 60)" onmouseover="showTip(event, 'f2pmg11', 60)" class="i">j</span> <span class="k">then</span> <span class="n">0.0</span> <span class="k">else</span> <span onmouseout="hideTip(event, 'f2pmg20', 61)" onmouseover="showTip(event, 'f2pmg20', 61)" class="i">value</span>) 
+<span class="l">3: </span>  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'f2pmg7', 62)" onmouseover="showTip(event, 'f2pmg7', 62)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg21', 63)" onmouseover="showTip(event, 'f2pmg21', 63)" class="i">sum</span>
+<span class="l">4: </span><span class="fsi">val it : float = 4.0</span></pre>
+
+<p>The <code>Matrix.mapi</code> function can be used to calculate a new value for every element 
+  in the matrix based on the index of the element and the original value. As most of the standard 
+  functions for working with matrices, it returns a newly created matrix as the result. In the 
+  example above, we replace all elements below the diagonal with zero. As a next step of the 
+  processing, we sum all elements of the newly created matrix, which gives us the number of edges.</p>
+
+
+
+<h2>Other operations</h2>
+
+<p>We'll conclude this section with a brief review of several useful functions and operators 
+  for working with matrices provided by the F# PowerPack. The following table gives a few 
+  examples including a few groups of similar functions.</p>
+
+<table class="flist">
+<tr>
+<td class="flisthdrn" style="width:150px"><strong>Point-wise operations</strong><br />
+<code>Matrix.cptMax</code><br />
+<code>Matrix.cptMin</code><br />
+Operators: <code>+</code> and <code>.*</code>
+</td>
+<td>
+  <code>matrix -&gt; matrix -&gt; matrix</code>
+  <p>These functions and operators perform a binary operation on corresponding elements of two 
+    matrices (of the same size) given as arguments and return the result in a new matrix. Functions 
+    <code>cptMax</code> and <code>cptMin</code> return maximal and minimal elements respectively, 
+    <code>+</code> performs addition and <code>.*</code> performs multiplication. Note that the 
+    operator <code>*</code> is used for matrix multiplication.</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdrn"><strong>Logical aggregation</strong><br />
+<code>Matrix.forall</code><br />
+<code>Matrix.exists</code></td>
+<td>
+  <code>(float -&gt; bool) -&gt; matrix -&gt; bool</code>
+  <p>Functions implement quantification over all elements of the matrix. The function <code>forall</code> tests 
+    whether the predicate holds for every element, <code>exists</code> tests whether it holds for at least one element.</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdrn"><strong>In-place operations</strong><br />
+<code>Matrix.inplaceAdd</code><br />
+<code>Matrix.inplaceSub</code></td>
+<td>
+  <code>matrix -&gt; matrix -&gt; unit</code>
+  <p>These functions perform in-place addition and subtraction of matrices, storing the result 
+    in the first matrix and returning unit as the result.</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdrn"><strong>General aggregation</strong><br />
+<code>Matrix.fold</code></td>
+<td>
+  <code>('a -&gt; float -&gt; 'a) -&gt; 'a -&gt; matrix -&gt; 'a</code>
+  <p>Folds all elements into a single value. The function takes an aggregation function, initial state 
+    and a matrix to be folded. The aggregation function is called for all elements of the matrix. The 
+    variant <code>Matrix.foldi</code> also passes the indices of the element to the aggregation function.</p>
+</td>
+</tr>
+<tr>
+<td class="flisthdrn"><strong>General projection</strong><br />
+<code>Matrix.map</code></td>
+<td>
+  <code>(float -&gt; float) -&gt; matrix -&gt; matrix</code>
+  <p>Applies the specified projection function to every element of the input matrix, storing the results 
+    in a newly created matrix. The variant <code>Matrix.mapi</code> also passes the indices of the element 
+    to the projection function.</p>
+</td>
+</tr>
+</table>
+
+<h2>Reachability using matrix multiplication</h2>
+
+<p>One of the most important operations that can be done with matrices is matrix multiplication. 
+  I won't explain how matrix multiplication works in this tutorial, but I'll show you how to use it.</p>
+
+<p>Matrix multiplication is quite useful when working with adjacency matrices. Another way 
+  of looking at adjacency matrix is that it specifies number of path of length 1 between each two 
+  vertices. If we multiply the adjacency matrix with itself, we'll get a number of paths of length 
+  2 and so on. The listing shows what we get as the result:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'f2pmg16', 64)" onmouseover="showTip(event, 'f2pmg16', 64)" class="i">m</span><span class="o">*</span><span onmouseout="hideTip(event, 'f2pmg16', 65)" onmouseover="showTip(event, 'f2pmg16', 65)" class="i">m</span>
+<span class="l">2: </span><span class="fsi">val it : Matrix&lt;float&gt; = matrix [ [1.0; 0.0; 0.0; 0.0]</span>
+<span class="l">3: </span><span class="fsi">                                  [0.0; 2.0; 0.0; 1.0]</span>
+<span class="l">4: </span><span class="fsi">                                  [0.0; 0.0; 1.0; 1.0]</span>
+<span class="l">5: </span><span class="fsi">                                  [0.0; 1.0; 1.0; 2.0] ]</span></pre>
+
+<img src="http://tomasp.net/articles/powerpack-series/matrix-graph.png" style="float:right;margin:10px" />
+
+<p>The figure on the right (repeated from the introduction) shows the graph represented by 
+  matrix <code>m</code>. What do the values in <code>m*m</code> represent? The value <code>m.[1, 1]</code> 
+  gives us the number of paths between the vertex marked 1 and itself. The number 2.0 means that there are 
+  two distinct paths. We can go from the vertex 1 to either 2 or 3 and then back, which gives us two 
+  distinct paths. Another interesting fact is that there is no path of length 2 from vertex 2 to 1 (or 
+  the other way round). They are connected by a direct edge, but a path of length 2 would need to 
+  contain one more edge and there is no way to add this edge.</p>
+
+<p>We can use matrix multiplication repeatedly to find which of the vertices are unreachable from which 
+  other vertices. We'll simply construct a matrix whose elements represents the number of paths of 
+  length 1, 2, ..., n and then find all zeros in the matrix. To find indices of elements containing 
+  zero, we can use the following function:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg22', 66)" onmouseover="showTip(event, 'f2pmg22', 66)" class="i">collectUnreachable</span> <span onmouseout="hideTip(event, 'f2pmg23', 67)" onmouseover="showTip(event, 'f2pmg23', 67)" class="i">paths</span> <span class="o">=</span> 
+<span class="l">2: </span>  <span onmouseout="hideTip(event, 'f2pmg23', 68)" onmouseover="showTip(event, 'f2pmg23', 68)" class="i">paths</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'f2pmg7', 69)" onmouseover="showTip(event, 'f2pmg7', 69)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg24', 70)" onmouseover="showTip(event, 'f2pmg24', 70)" class="i">foldi</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'f2pmg10', 71)" onmouseover="showTip(event, 'f2pmg10', 71)" class="i">i</span> <span onmouseout="hideTip(event, 'f2pmg11', 72)" onmouseover="showTip(event, 'f2pmg11', 72)" class="i">j</span> <span onmouseout="hideTip(event, 'f2pmg25', 73)" onmouseover="showTip(event, 'f2pmg25', 73)" class="i">st</span> <span onmouseout="hideTip(event, 'f2pmg20', 74)" onmouseover="showTip(event, 'f2pmg20', 74)" class="i">value</span> <span class="k">-&gt;</span>
+<span class="l">3: </span>    <span class="k">if</span> (<span onmouseout="hideTip(event, 'f2pmg20', 75)" onmouseover="showTip(event, 'f2pmg20', 75)" class="i">value</span> <span class="o">&lt;&gt;</span> <span class="n">0.0</span>) <span class="k">then</span> <span onmouseout="hideTip(event, 'f2pmg25', 76)" onmouseover="showTip(event, 'f2pmg25', 76)" class="i">st</span> <span class="k">else</span> (<span onmouseout="hideTip(event, 'f2pmg10', 77)" onmouseover="showTip(event, 'f2pmg10', 77)" class="i">i</span>, <span onmouseout="hideTip(event, 'f2pmg11', 78)" onmouseover="showTip(event, 'f2pmg11', 78)" class="i">j</span>)<span class="o">::</span><span onmouseout="hideTip(event, 'f2pmg25', 79)" onmouseover="showTip(event, 'f2pmg25', 79)" class="i">st</span> ) []
+<span class="l">4: </span><span class="fsi">val collectUnreachable : matrix -&gt; (int * int) list</span></pre>
+
+<p>The function is implemented using <code>Matrix.foldi</code>, which iterates over all elements of the 
+  matrix and accumulates some state during the iteration. We use empty list as an initial state. The 
+  aggregation function gets indices of the element, the list of indices accumulated so far and the value 
+  of the current element. If the value is zero, then we add the current indices to the list, otherwise 
+  we simply return the original state.</p>
+<p>The following listing uses the function to find vertices that are unreachable using a path of length 
+  one and also vertices which are unreachable using arbitrarily long path (the longest possible path 
+  that doesn't follow a single edge repeatedly in a graph with four vertices would have a length 3, so 
+  we only need to check for paths of this length): </p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span onmouseout="hideTip(event, 'f2pmg22', 80)" onmouseover="showTip(event, 'f2pmg22', 80)" class="i">collectUnreachable</span> <span onmouseout="hideTip(event, 'f2pmg16', 81)" onmouseover="showTip(event, 'f2pmg16', 81)" class="i">m</span>
+<span class="l"> 2: </span><span class="fsi">val it : (int * int) list =</span>
+<span class="l"> 3: </span><span class="fsi">  [ (3, 2); (3, 0); (2, 3); (2, 2); (2, 0); </span>
+<span class="l"> 4: </span><span class="fsi">    (1, 1); (1, 0); (0, 3); (0, 2); (0, 1) ]</span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg26', 82)" onmouseover="showTip(event, 'f2pmg26', 82)" class="i">paths</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg16', 83)" onmouseover="showTip(event, 'f2pmg16', 83)" class="i">m</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'f2pmg16', 84)" onmouseover="showTip(event, 'f2pmg16', 84)" class="i">m</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'f2pmg16', 85)" onmouseover="showTip(event, 'f2pmg16', 85)" class="i">m</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'f2pmg16', 86)" onmouseover="showTip(event, 'f2pmg16', 86)" class="i">m</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'f2pmg16', 87)" onmouseover="showTip(event, 'f2pmg16', 87)" class="i">m</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'f2pmg16', 88)" onmouseover="showTip(event, 'f2pmg16', 88)" class="i">m</span>
+<span class="l"> 7: </span><span class="fsi">val paths : matrix = matrix [ ... ]</span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span><span onmouseout="hideTip(event, 'f2pmg22', 89)" onmouseover="showTip(event, 'f2pmg22', 89)" class="i">collectUnreachable</span> <span onmouseout="hideTip(event, 'f2pmg26', 90)" onmouseover="showTip(event, 'f2pmg26', 90)" class="i">paths</span>
+<span class="l">10: </span><span class="fsi">val it : (int * int) list = [ (3, 0); (2, 0); (1, 0); (0, 3); (0, 2); (0, 1) ]</span></pre>
+
+<p>In the first case, we call the function with the original matrix as an argument and we get pairs of vertices 
+  that are not directly connected by a path. Note that we didn't do anything to remove symmetric vertices, 
+  so the result contains for example both (2, 3) and (3, 2). Next, we construct the matrix paths 
+  by adding the original adjacency matrix, <code>m</code> multiplied by <code>m</code> and <code>m</code> 
+  multiplied by <code>m</code> two times. This gives us a matrix indicating number of paths of lengths 
+  1, 2 and 3. If we find unreachable vertices in this matrix, we can see that we cannot get from 
+  the vertex 0 to any other vertex, but all other vertices are connected. This is exactly what 
+  you would expect after looking at the figure with the graph.</p>
+ 
+<h2>Introducing generic matrix</h2>
+
+<p>So far, we've been working only with matrices that store elements of type <code>float</code>. This is the 
+  most frequently needed type of matrix and you'll probably work with it most of the time in F#. To 
+  make the most common case convenient, F# provides the matrix type. However, it is also possible 
+  to create a matrix containing any other type such as <code>int</code>, <code>decimal</code>, or any 
+  custom numeric type that provides numeric operations.</p>
+
+<p>In the following two listings, we'll look at a brief example that re-implements some of the 
+  functionality discussed earlier in this tutorial using a generic matrix. We'll use integers instead 
+  of floats to represent the number of paths between two vertices. First, we'll need to create a 
+  generic matrix. This can be done using functions from the <code>Matrix.Generic</code> module. To make the 
+  module more easily accessible, we'll first declare a module alias:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">module</span> <span class="i">MatrixG</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg7', 91)" onmouseover="showTip(event, 'f2pmg7', 91)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg27', 92)" onmouseover="showTip(event, 'f2pmg27', 92)" class="i">Generic</span></pre>
+
+<p>The function <code>matrix</code> works only with floating point numbers. Luckily, we can use a 
+  function <code>MatrixG.ofSeq</code>, which does exactly the same thing, but works for any type. Then 
+  we can use all the familiar matrix operations we've seen earlier:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg28', 93)" onmouseover="showTip(event, 'f2pmg28', 93)" class="i">m</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg7', 94)" onmouseover="showTip(event, 'f2pmg7', 94)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg27', 95)" onmouseover="showTip(event, 'f2pmg27', 95)" class="i">Generic</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg29', 96)" onmouseover="showTip(event, 'f2pmg29', 96)" class="i">ofSeq</span> [ [ <span class="n">0</span>; <span class="n">0</span>; <span class="n">1</span> ]
+<span class="l">2: </span>                               [ <span class="n">0</span>; <span class="n">1</span>; <span class="n">0</span> ]
+<span class="l">3: </span>                               [ <span class="n">1</span>; <span class="n">0</span>; <span class="n">1</span> ] ]
+<span class="l">4: </span><span class="fsi">val m : Matrix&lt;int&gt; = matrix [ ... ]</span>
+<span class="l">5: </span>
+<span class="l">6: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'f2pmg30', 97)" onmouseover="showTip(event, 'f2pmg30', 97)" class="i">paths</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'f2pmg28', 98)" onmouseover="showTip(event, 'f2pmg28', 98)" class="i">m</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'f2pmg28', 99)" onmouseover="showTip(event, 'f2pmg28', 99)" class="i">m</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'f2pmg28', 100)" onmouseover="showTip(event, 'f2pmg28', 100)" class="i">m</span>
+<span class="l">7: </span><span class="fsi">val it : Matrix&lt;int&gt; = matrix [ [1; 0; 2</span>
+<span class="l">8: </span><span class="fsi">                                [0; 2; 0</span>
+<span class="l">9: </span><span class="fsi">                                [2; 0; 3] ]</span></pre>
+
+<p>The listing first creates a matrix containing integers and then uses point-wise addition 
+  of matrices and matrix multiplication to get a matrix that represents number of paths of length 
+  1 or 2 between vertices. It is worth noting that we could create matrix containing non-numeric 
+  values such as string. This is possible, but some operations such as <code>+</code> and <code>*</code> 
+  would throw an exception, because the string type doesn't support them. However, some 
+  other operations such as <code>map</code> or <code>fold</code> work for matrices of any types.</p>
+
+<p>Most of the functions from the <code>Matrix</code> module are also available in 
+  <code>Matrix.Generic</code>. The last example shows how to find combinations of unreachable 
+  vertices in an adjancency matrix containing integers:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'f2pmg30', 101)" onmouseover="showTip(event, 'f2pmg30', 101)" class="i">paths</span> <span class="o">|&gt;</span> <span class="i">MatrixG</span><span class="o">.</span><span onmouseout="hideTip(event, 'f2pmg31', 102)" onmouseover="showTip(event, 'f2pmg31', 102)" class="i">foldi</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'f2pmg10', 103)" onmouseover="showTip(event, 'f2pmg10', 103)" class="i">i</span> <span onmouseout="hideTip(event, 'f2pmg11', 104)" onmouseover="showTip(event, 'f2pmg11', 104)" class="i">j</span> <span onmouseout="hideTip(event, 'f2pmg25', 105)" onmouseover="showTip(event, 'f2pmg25', 105)" class="i">st</span> <span onmouseout="hideTip(event, 'f2pmg32', 106)" onmouseover="showTip(event, 'f2pmg32', 106)" class="i">value</span> <span class="k">-&gt;</span>
+<span class="l">2: </span>  <span class="k">if</span> (<span onmouseout="hideTip(event, 'f2pmg32', 107)" onmouseover="showTip(event, 'f2pmg32', 107)" class="i">value</span> <span class="o">=</span> <span class="n">0</span>) <span class="k">then</span> (<span onmouseout="hideTip(event, 'f2pmg10', 108)" onmouseover="showTip(event, 'f2pmg10', 108)" class="i">i</span>, <span onmouseout="hideTip(event, 'f2pmg11', 109)" onmouseover="showTip(event, 'f2pmg11', 109)" class="i">j</span>)<span class="o">::</span><span onmouseout="hideTip(event, 'f2pmg25', 110)" onmouseover="showTip(event, 'f2pmg25', 110)" class="i">st</span> <span class="k">else</span> <span onmouseout="hideTip(event, 'f2pmg25', 111)" onmouseover="showTip(event, 'f2pmg25', 111)" class="i">st</span>) []
+<span class="l">3: </span><span class="fsi">val it : (int * int) list = [(2, 1); (1, 2); (1, 0); (0, 1)]</span></pre>
+
+<p>The code is exactly the same as the one we wrote earlier with the exception that we're using 
+  <code>foldi</code> function from the <code>MatrixG</code> module. If we look at the result, we 
+  can see that there is no connection between the vertex 1 and any other vertex in the matrix.</p>
+
+<h2>Summary</h2>
+
+<p>This article demonstrated how to use the <code>matrix</code> type from F# PowerPack to
+  implement graph algorithms using adjacency matrix. We looked at functions for creating matrices,
+  accessing matrix elements and slices, as well as at some of the operations that F# PowerPack
+  provides for working with matrices.</p>
+
+<p>The <code>matrix</code> type supports most of the standard operations that one would 
+  expect (such as matrix multiplication), but the implementation is not optimized. This means that
+  it may is a good way for representing graphs or solving other problems that are not 
+  computationally intensive. However, the type is not suitable for highly-efficient numeric 
+  calculations. </p>
+<p>If you're interested in performance, then you can take a look at 
+  F# MathProvider [<a href="#ppmxl">4</a>], which provides efficient implementation of
+  some <code>matrix</code> operations using wrappers for (native) Blas and Lapack. Alternatively,
+  there is a wide range of numeric libraries suitable for F# [<a href="#ppmxl">3</a>], most importantly
+  the open-source project Math.NET Numerics [<a href="#ppmxl">5</a>].
+</p>
+
+
+<h3>References &amp; Links<a name="ppmxl"></a></h3>
+<ul>
+  <li>[1] <a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> (source code and binary packages) - CodePlex</li>
+  <li>[2] <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numeric Computing</a> - Real World Functional Programming on MSDN</li>
+  <li>[3] <a href="http://msdn.microsoft.com/en-us/library/hh304368.aspx">Numerical Libraries for F# and .NET</a> - Real World Functional Programming on MSDN</li>
+  <li>[4] <a href="http://mathprovider.codeplex.com/">F# MathProvider</a> - CodePlex</li>
+  <li>[5] <a href="http://numerics.mathdotnet.com/">Math.NET Numerics</a> - Open-source Mathematics for .NET</li>
+</ul>
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2fpowerpack-matrix.aspx%2f&amp;text=F%23+Math+(II.)+-+Using+matrices+for+graph+algorithmsvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2fpowerpack-matrix.aspx%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2fpowerpack-matrix.aspx%2f&title=F%23+Math+(II.)+-+Using+matrices+for+graph+algorithms">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=F%23%20Math%20(II.)%20-%20Using%20matrices%20for%20graph%20algorithms&body=%20This%20article%20introduces%20the%20matrix%20type%20available%20in%20F%23%20PowerPack.%20It%20discusses%20how%20to%20create%20matrices%2c%20manipulate%20matrices%20using%20indexing%20and%20slices%20and%20how%20to%20use%20built-in%20functions%20for%20working%20with%20them.%20As%20a%20running%20example%2c%20we%20use%20matrix%20to%20represent%20a%20graph%20using%20an%20adjacency%20matrix.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2fpowerpack-matrix.aspx%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 9 November 2011, 1:46 AM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/fsharp/">f#</a>, <a
+          href="/blog/tag/math-and-numerics/">math and numerics</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) hideOrShow(); };
+  </script>
+</body>
+</html>
