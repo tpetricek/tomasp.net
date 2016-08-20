@@ -14,7 +14,6 @@ Better F# data science with FsLab and Ionide
 --------------------------------------------------------------------------------
  - standalone
 
-
 At [NDC Oslo 2016](http://ndcoslo.com/), I did a talk about some of the recent new F# projects
 that are making data science with F# even nicer than it used to be. The talk covered a wider range
 of topics, but one of the nice new thing I showed was the improved F# Interactive in the [Ionide

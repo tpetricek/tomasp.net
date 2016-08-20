@@ -1,0 +1,47 @@
+{% extends "page.html" %}
+{% block head %}
+<title>{{ model.Title }} {{ model.Year }} - Tomas Petricek's Photos</title>
+
+<meta name="description" content="{{ model.Title }} {{ model.Year }} - Tomas Petricek's Photos" />
+<meta name="keywords" content="photo, photography, calendar, traveling" />  
+<meta name="author" content="Tomas Petricek" />
+<meta name="copyright" content="Tomas Petricek" />
+
+<meta property="og:title" content="{{ model.Title }} {{ model.Year }} - Tomas Petricek's Photos" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://tomasp.net/calendar/{{ model.Year }}/{{ model.Link }}/" />
+<meta property="og:image" content="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Year }}/{{ model.Link }}.jpg" />
+<meta property="og:description" content="When the time permits, I enjoy traveling. The calendar shows a new picture each month." />
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@tomaspetricek">
+<meta name="twitter:creator" content="@tomaspetricek">  
+<meta name="twitter:title" content="{{ model.Title }} {{ model.Year }} - Tomas Petricek's Photos" />
+<meta name="twitter:image" content="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Year }}/{{ model.Link }}.jpg" />
+<meta name="twitter:description" content="When the time permits, I enjoy traveling. The calendar shows a new picture each month." />
+{% endblock %}
+
+{% block bodyclass %}calendar{% endblock %}
+
+
+{% block body %}
+  <article>
+    <div class="container" itemscope itemtype="http://schema.org/Photograph">
+      <div class="col-sm-12">
+        <div class="calendar-month">
+          <h1 itemprop="name">{{ model.Title }}</h1>
+          <a itemprop="sameAs" href="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Link }}-original.jpg">
+            <img itemprop="image" src="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Link }}.jpg" />
+          </a>
+          <p>
+            {% for d in model.Days %}
+              <span class='{% if d.Highlighted == "true" %}highlighted{% endif %}'>
+                {{ d.Day }}
+              </span>
+            {% endfor %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </article>
+{% endblock %}
