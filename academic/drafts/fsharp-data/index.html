@@ -76,7 +76,7 @@
   </script>
   
 </head>
-<body class="academic">  
+<body class="default">  
   <div class="not-footer">
   <div class="top-panel-wrapper">
   <div class="top-panel">
@@ -440,8 +440,11 @@ This page has been moved to <a href="../../papers/fsharp-data/">published papers
     })();
   </script>
   <script type="text/javascript">
-    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
-    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var small = window.innerWidth < 600;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
     var opened = false;
     function hideOrShow() {
       opened = !opened;
@@ -452,7 +455,9 @@ This page has been moved to <a href="../../papers/fsharp-data/">published papers
       return false; 
     }
     $('.toggle-tomas').on("click", hideOrShow);
-    window.onscroll = function() { if (opened) hideOrShow(); };
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
   </script>
 </body>
 </html>

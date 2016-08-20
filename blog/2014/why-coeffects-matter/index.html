@@ -919,8 +919,11 @@ comonads and might be a nice way to embed coeffects in Haskell
     })();
   </script>
   <script type="text/javascript">
-    if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
-    else $('.top-panel').affix({ offset: { top: $('header').outerHeight() }}); 
+    var small = window.innerWidth < 600;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
     var opened = false;
     function hideOrShow() {
       opened = !opened;
@@ -931,7 +934,9 @@ comonads and might be a nice way to embed coeffects in Haskell
       return false; 
     }
     $('.toggle-tomas').on("click", hideOrShow);
-    window.onscroll = function() { if (opened) hideOrShow(); };
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
   </script>
 </body>
 </html>
