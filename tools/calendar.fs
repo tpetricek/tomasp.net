@@ -108,4 +108,3 @@ let generateCalendarSite archives (cfg:SiteConfig) =
           Days = [ for i in 1 .. enGb.Calendar.GetDaysInMonth(year, month) ->
                     { Day = i; Highlighted = enGb.Calendar.GetDayOfWeek(DateTime(year, month, i)) = DayOfWeek.Sunday } ] }
       File.WriteAllText(monthFile, DotLiquid.render (cfg.Layouts </> "cal-month.html") model)
-

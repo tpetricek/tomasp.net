@@ -111,10 +111,15 @@ let copyFiles (cfg:SiteConfig) changes =
 /// Generate tag and history archives from given blog posts
 let archives (posts:seq<Article<_>>) =
   { Tags = 
-      posts |> Seq.collect (fun p -> p.Tags) |> Seq.distinct |> Seq.map (fun t ->
+      posts 
+      |> Seq.collect (fun p -> p.Tags) |> Seq.distinct 
+      |> Seq.map (fun t ->
         { Name = t; Url = t; Count = posts |> Seq.filter (fun p -> p.Tags |> Seq.contains t) |> Seq.length })
+      |> Seq.sortByDescending (fun t -> t.Count)
     History = 
-      posts |> Seq.countBy (fun p -> p.Date.Year, p.Date.Month) |> Seq.map (fun ((y, m), c) ->
+      posts 
+      |> Seq.countBy (fun p -> p.Date.Year, p.Date.Month) 
+      |> Seq.map (fun ((y, m), c) ->
         { Name = sprintf "%s %d" (enGb.DateTimeFormat.GetMonthName m) y
           Url = sprintf "%s_%d" (enGb.DateTimeFormat.GetMonthName(m).ToLower()) y
           Count = c }) }

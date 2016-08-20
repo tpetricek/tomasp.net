@@ -16,6 +16,7 @@ open Fake
 open System
 open System.IO
 open FsBlog
+open Fake.Git.CommandHelper
 
 // --------------------------------------------------------------------------------------
 // Blog configuration
@@ -66,18 +67,21 @@ let updateSite full changes =
     
   traceImportant "Processing special files"
   let specialFiles = 
-    [ "404.html", "404.html"
-      "index.html", "hp-main.html"
-      "academic/index.html", "hp-academic.html"
-      "blog/index.html", "listing.html" ]
-  for target, layout in specialFiles do
-    DotLiquid.transform (config.Output </> target) (config.Layouts </> layout) site
+    [ "404.html", "404.html", site
+      "index.html", "hp-main.html", site
+      "academic/index.html", "hp-academic.html", site
+      "blog/index.html", "listing.html", 
+        { site with Posts = Seq.take 20 site.Posts } ]
+  for target, layout, model in specialFiles do
+    DotLiquid.transform (config.Output </> target) (config.Layouts </> layout) model
 
   if full then
     traceImportant "Generating RSS feed"
     Blog.generateRss (config.Output </> "rss.xml") config
       "Tomas Petricek - Languages and tools, open-source, philosophy of science and F# coding"
-      "Tomas is a computer scienctist, open-source developer and an occasional philosopher of science. I'm working on tools for data-driven storytelling, contribute to a number of F# projects and I run trainings and offer consulting via fsharpWorks."
+      ( "Tomas is a computer scienctist, open-source developer and an occasional philosopher of " +
+        "science. I'm working on tools for data-driven storytelling, contribute to a number of F# " +
+        "projects and I run trainings and offer consulting via fsharpWorks." )
       site.Posts 
     traceImportant "Generating archives"
     Blog.generateBlogArchives config site
@@ -179,8 +183,16 @@ Target "run" (fun () ->
   Console.ReadLine () |> ignore 
 )
 
-Target "publish" (fun () ->
+Target "update" (fun () ->
   regenerateSite ()
 )
 
+Target "publish" (fun () ->
+  Calendar.uploadCalendarFiles config
+  runGitCommand config.Output "add ." |> ignore
+  runGitCommand config.Output (sprintf "commit -a -m \"Updating site (%s)\"" (DateTime.Now.ToString("f"))) |> ignore
+  Git.Branches.push config.Output
+)
+
+"update" ==> "publish"
 RunTargetOrDefault "run"

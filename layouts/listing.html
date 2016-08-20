@@ -13,7 +13,7 @@
   <div class="col-lg-2 col-md-1"></div>
   <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
     
-  {% for post in model.Posts limit:15 %}
+  {% for post in model.Posts %}
     <div itemscope itemtype="http://schema.org/Article">
     <meta itemprop="author publisher" content="Tomas Petricek" />
     <meta itemprop="headline" content="{{ post.Title }}" />
@@ -35,6 +35,12 @@
       </div>
     </div>    
   {% endfor %}
+  
+  <h1>All blog posts by tag</h1>
+  {% assign next=false %}
+  {% for tag in model.Archives.Tags %}{% if next %}, {% endif %}<a 
+    href="/blog/tag/{{ tag.Url | tagUrl }}/">{{ tag.Name }} ({{ tag.Count }})</a>{% assign next=true %}{% endfor tag %}
+  
   </div></div>
   </div>
 <article>
