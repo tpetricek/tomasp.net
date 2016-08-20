@@ -125,10 +125,12 @@ let wsRefresh = """
 
 // All generated content is index files in directories. When serving
 // them, we replace absolute links & inject websocket code for refresh
+// Also insert link to local Bootstrap for no-wifi editting support!
 let handleDir dir = 
   let html = File.ReadAllText(config.Output </> dir </> "index.html")
   html.Replace(config.Root, sprintf "http://localhost:%d" port)
       .Replace("</body", wsRefresh + "</body")
+      .Replace("</head", "<link href='/custom/bootstrap.css' rel='stylesheet'></head")
   |> Successful.OK
 
 let app = 
