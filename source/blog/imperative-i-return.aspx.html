@@ -1,0 +1,452 @@
+<!-- [info]
+
+ - date: 2009-03-19T02:05:03.0000000
+ - description: Even though F# supports some imperative constructs such as for and while loops, it doesn't support some of the advanced constructs like imperative return and break. In this series, we'll look how we can implement these constructs ourselves using F# computation expressions.
+ - tags: functional,academic,f#
+ - layout: post
+ - title: Imperative computation in F# (I.) - Returning results from a function
+ - url: imperative-i-return.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>One of the limitations of F# is that it doesn't very well support some of the 
+  advanced imperative language constructs such as <code>break</code>, <code>continue</code>
+  or imperative style of returning value from a function, meaning that you can't write
+  something like <code>return false</code> in the middle of the function. This has 
+  good reasons. F# doesn't in principle have the notion of <em>currently executing statement</em>
+  and instead treat every code you write as an expression. Clearly, when there is no 
+  <em>current statement</em>, we cannot jump to other statements. If you're looking
+  for more information about these basic principles, you can take a look at my book 
+  <a href="http://www.functional-programming.net" target="external">Real World Functional 
+  Programming</a>, which covers this distinction in details in chapter 2, but we'll look 
+  at a brief example that will clarify this idea shortly.</p>
+
+<p>Often, there is really no need to use <code>break</code> or other imperative constructs
+  in F#, because you can write the same thing more elegantly using one of the provided higher
+  order function such as <code>Seq.exists</code> or <code>Seq.tryfind</code>. However,
+  there are still some cases where the imperative programming style makes it easier 
+  to express our original intention. Also, implementing your own higher order
+  functions (akin to <code>Seq.exists</code>) would sometimes be much easier if we
+  could just use imperative return.</p>  
+<p>So, what can be done about this?</p>
+[/abstract] -->
+
+<h1>Imperative computation in F# (I.) - Returning results from a function</h1>
+<p>One of the limitations of F# is that it doesn't very well support some of the 
+  advanced imperative language constructs such as <code>break</code>, <code>continue</code>
+  or imperative style of returning value from a function, meaning that you can't write
+  something like <code>return false</code> in the middle of the function. This has 
+  good reasons. F# doesn't in principle have the notion of <em>currently executing statement</em>
+  and instead treat every code you write as an expression. Clearly, when there is no 
+  <em>current statement</em>, we cannot jump to other statements. If you're looking
+  for more information about these basic principles, you can take a look at my book 
+  <a href="http://www.functional-programming.net" target="external">Real World Functional 
+  Programming</a>, which covers this distinction in details in chapter 2, but we'll look 
+  at a brief example that will clarify this idea shortly.</p>
+
+<p>Often, there is really no need to use <code>break</code> or other imperative constructs
+  in F#, because you can write the same thing more elegantly using one of the provided higher
+  order function such as <code>Seq.exists</code> or <code>Seq.tryfind</code>. However,
+  there are still some cases where the imperative programming style makes it easier 
+  to express our original intention. Also, implementing your own higher order
+  functions (akin to <code>Seq.exists</code>) would sometimes be much easier if we
+  could just use imperative return.</p>  
+
+<p>So, what can be done about this? Adding imperative language features to F# seems
+  a bit weird (at least to me), because it breaks the nice notion that everything
+  is an expression, which makes it easy to reason about what the code does (again, 
+  there is an example of this in chapter 2 of my book). On the other hand, having these
+  features would be really nice sometimes. In this article series, we'll look how to 
+  implement computation expression that allows us to write imperative code in F#.
+  Computation expressions (an introduction is in chapter 12) allow us to create blocks
+  of F# code that add some non-standard meaning to the usual F# code. In this first 
+  article, we'll allow returning from anywhere inside the body using 
+  <code>return <em>&lt;expr&gt;</em></code>. In the next articles of the series, we'll
+  look at more imperative constructs such as <code>break</code> and <code>continue</code>
+  and we'll look even further and explore some features that aren't available in 
+  C#, but can be useful sometimes.</p>  
+
+<h2>Programming with expressions</h2>  
+<p>When programming in F#, everything is an expression. The easy way to understand
+  what this means for a C# programmer is to imagine that we'd have to use conditional
+  expressions (<code>&lt;expr&gt;?&lt;expr&gt;:&lt;expr&gt;</code>) instead of the usual
+  <code>if</code>-<code>then</code>-<code>else</code> construct. Other constructs such
+  as <code>for</code> loop would be also slightly different, but we don't need to go 
+  into the details. Now, C# allows you to use <code>return</code> as a <em>statement</em>
+  anywhere, but you cannot use it as an <em>expression</em>, which means that the 
+  following isn't valid C# code:</p>
+<pre lang="csharp">
+return 
+  (input == 1)
+    ? (20 + 22) 
+    : (4 * (return false));
+</pre>  
+<p>The purpose of this example was just to demonstrate that disallowing imperative 
+  <code>return</code> in F# makes quite a good sense. The next point that I want to make
+  before looking how to get imperative programming style in F# is that in many
+  situations you don't really need to write the code in the imperative way.
+  For example, let's say that you want to return <code>true</code> when some input
+  collection of integers contains a number larger than 10 and <code>false</code> otherwise.
+  The usual way to write this in C# would be something like this:</p>
+<pre lang="csharp">
+foreach(var n in input) 
+  if (n &gt; 10) return true;
+return false;
+</pre>
+<p>There are various ways to write the same thing in F# - if you wanted to write this
+  for the <code>IEnumerable&lt;T&gt;</code> type directly in F#, you couldn't use 
+  built-in <code>for</code> loop (because there is no way to return from it). This means
+  that you'd have to call <code>GetEnumerator</code> explicitly and write a recursive
+  function to do the processing. That sounds like a lot of pain. However, the F#
+  library contains many generally useful higher order functions that make problems
+  like this trivial. The previous example can be implemented in F# like this: </p>
+<pre lang="fsharp">
+Seq.exists (fun n -&gt; n &gt; 10) input
+</pre>
+<p>As you can see, this is even easier than the original imperative solution. 
+  In fact, when using C# 3.0 and LINQ you would probably use one of the extension
+  methods together with C# lambda expressions to write the code in a functional
+  way even in C#. This means that before you'll think about using imperative style
+  in F#, you should always check whether the same thing cannot be done in a lot
+  simpler way using functions like <code>Seq.fold</code>, <code>Seq.exists</code>
+  or <code>Seq.tryfind</code>. That said, we can now look how to simulate
+  imperative programming in F# when we're really sure that we want it.</p>
+
+<h2>Imperative computations</h2>
+<p>When implementing F# computation expression, we need to create a <em>builder</em>
+  object that contains a few primitive members that are used to compose the code
+  from parts of the computations written by the user. We'll look at the implementation
+  of the builder in a second. Once we'll have it - we'll call it <code>ImperativeBuilder</code>,
+  we can write the following code to create <code>imperative</code> value that's used when
+  writing all the imperative computations.</p>
+<pre lang="fsharp">
+let imperative = new ImperativeBuilder()  
+</pre>
+<p>This one line of code created the builder, which we can now use to write imperative
+  style of code in F#. We'll start by looking at some trivial example to demonstrate
+  how the code works under the cover. Then we'll look at the implementation of the
+  <code>ImperativeBuilder</code> and finally we'll write some more real world example.
+  The following listing shows a single imperative function that contains the <code>return</code>
+  statement two times. The behavior should be the same as C# - we want the first value
+  to be returned and we don't want the <code>printfn</code> function to be ever called.</p>    
+<pre lang="fsharp">
+let test() = imperative {
+  return 0
+  printfn "after return!"
+  return 1 }
+</pre>
+<p>When the F# compiler sees this code, it translates it into a couple of calls to 
+  primitives provided by the <code>imperative</code> builder. The most important primitives
+  for us now are <code>Return</code>, which is used when translating the <code>return</code>
+  keyword and <code>Combine</code>. The <code>return</code> keyword denotes the end of a
+  sub-expression, so when we use it multiple times, the compiler needs some way to combine
+  these sub-expressions into one and that's exactly when it uses the <code>Combine</code>
+  primitive.</p>
+<pre lang="fsharp">
+imperative.Run
+ (imperative.Combine
+   (imperative.Return(0),
+    imperative.Delay(fun () ->
+      printfn "after return"
+      imperative.Return(1))))
+</pre>
+<p>There are a few other primitives that you can see in this example. We'll talk about them
+  shortly when discussing the implementation. However, the important point that the original
+  code that contained multiple <code>return</code> constructs (and felt like a sequence of
+  statements) has been translated into a standard F# expression.</p>      
+
+<h3>Designing the computation type</h3>  
+<p>The key question when implementing computations like this one is what the type 
+  of the expression we've seen above is? We'll represent the computation using a type called
+  <code>Imperative&lt;'T&gt;</code> and most of the primitives above work with this type.
+  In particular, the <code>Return</code> primitive takes a value of some type - in our 
+  example above <code>int</code> and returns a value of type <code>Imperative&lt;int&gt;</code>.
+  The <code>Combine</code> primitive takes two values of type <code>Imperative&lt;int&gt;</code> 
+  as an argument and returns a combined value of the same type.</p>
+
+<p>Now, what should this type look like, so that we can implement the desired imperative
+  behavior using the computation builder primitives? First of all, it must be a lazy type, 
+  which means that the <code>printfn</code> function shouldn't be called when evaluating
+  the arguments for the <code>Combine</code> member. The easiest way to achieve this is
+  to write the type as a function that takes a <code>unit</code> as an argument and returns
+  something. This means that we don't have to run the second part of the code in the 
+  <code>Combine</code> primitive, when the first part already returned some value.</p>  
+
+<p>The second question is - what should be the value returned by this function? We must be
+  able to represent computations that don't return any value (for example, when we have 
+  <code>if</code>-<code>then</code> loop without the <code>else</code> clause and the condition
+  evaluates to <code>false</code>) and we need to represent computations that 
+  return something using the <code>return</code> primitive. The usual way to 
+  represent a value that may be missing in F# is to use the <code>option&lt;'T&gt;</code>
+  type, so we'll end up with a type that looks like this:</p>  
+
+<pre lang="fsharp">
+type Imperative&lt;'T&gt; = unit -&gt; option&lt;'T&gt;
+</pre>
+
+<p>This type can easily represent the two parts of the computation we've seen above.
+  The first one (containing only <code>return</code>) will be represented as a function
+  that immediately returns a value <code>Some(0)</code> and the second one will be
+  represented as a function that prints string using the <code>printfn</code> function
+  and then returns a value <code>Some(1)</code>.
+  A more complicated computation such as the <code>if</code>-<code>then</code>
+  conditional without the <code>else</code> clause would be represented as a function
+  that evaluates the condition; if the condition is <code>true</code> it runs the computation in the
+  <code>then</code> clause and returns its result and otherwise returns <code>None</code>.</p>
+
+<h3>Implementing the computation</h3>  
+<p>Now that we have the type that can represent the computations let's have a look
+  at the implementation of the computation builder. We'll start by implementing the
+  core primitives that were used in the example above. In the last section 
+  of the article, we'll also add support for two looping constructs that can be 
+  used inside computation expressions (<code>for</code> and <code>while</code> loops).</p>
+
+<pre lang="fsharp">
+type ImperativeBuilder() = 
+  // Creatae computation that returns the given value  
+  member x.Return(v) : Imperative&lt;_&gt; = 
+    (fun () -&gt; Some(v))
+  // Create computation that doesn't return any value
+  member x.Zero() = (fun () -&gt; None)
+
+  // Return a computation that will evaluate the provided function  
+  // only when the computation is being evaluated
+  member x.Delay(f:unit -&gt; Imperative&lt;_&gt;) = 
+    (fun () -&gt; f()())
+  
+  // Combines two delayed computations (that may return 
+  // value imperatively using 'return') into one  
+  member x.Combine(a, b) = (fun () -&gt;
+    // run the first part of the computation
+    match a() with 
+    // if it returned, we can return the result immediately
+    | Some(v) -&gt; Some(v) 
+    // otherwise, we need to run the second part
+    | _ -&gt; b() )
+  
+  // Execute the imperative computation 
+  // expression given as an argument
+  member x.Run(imp) = 
+    // run the computation and return the result or 
+    // fail when the computation didn't return anything
+    match imp() with 
+    | Some(v) -&gt; v 
+    | None -&gt; failwith "nothing returned!"
+</pre>
+<p>The first two members give us a way to construct primitive computations. The 
+  computation created using <code>Return</code> is used when you write <code>return</code>
+  and represents a computation that returns something when executed. The second one
+  represents a computation that doesn't do anything and is used in places where
+  the F# compiler needs to fill in some blank space (for example when we don't
+  provide the <code>else</code> clause). The <code>Delay</code> is also interesting.
+  As we've seen when looking at the translation, it is used to wrap the second 
+  part of the computation when using <code>Combine</code> to make sure that the
+  code which can do some side-effects (such as printing to the console) will be 
+  executed only when the second part of the computation is actually needed.</p>
+
+<p>The first three primitives are used for creating individual parts of the computation
+  that are later composed together into a single computation that represents the 
+  whole imperative block of code. This composition is done using the <code>Combine</code>
+  primitive, which will get two computations as an argument. It returns a function
+  (delayed computation) that, when executed, tries to run the first computation 
+  and returns its result if it returns a value. If the first computation doesn't
+  return, it simply runs the second one and returns its result.</p>  
+
+<p>Finally, the computation builder also contains the <code>Run</code> primitive, 
+  which is used to wrap the whole computation. Inside this primitive, we run the 
+  computation to convert the internal representation (<code>Imperative&lt;'T&gt;</code>)
+  into the actual value that we want to return (<code>'T</code>). When the
+  computation returns <code>None</code>, we throw an exception because this means
+  that the computation completed without ending with any <code>return</code> statement
+  (we could also use <code>Unchecked.defaultof&lt;'T&gt;</code> to return 
+  zero or <code>null</code> if we wanted to simulate the behavior of C/C++,
+  but we don't want to go that far in this article!) .</p>
+  
+<h2>Real world example</h2>
+<p>Now that we've implemented the computation builder, we can take a look at some
+  more realistic example where you may want to use imperative coding style. Most of
+  the really interesting use cases will need imperative loops, so we'll get back to them
+  soon, but even without loops, we can already write quite interesting code. The
+  following listing shows a function that validates whether a provided string is a 
+  well-formed name. It uses various heuristics such as that the name should be
+  at least two words, both reasonably long and both starting with an uppercase letter
+  (By the way, sorry if your name doesn't pass the test - it's just a demo!)</p>
+<pre lang="fsharp">
+&gt; let validateName(arg:string) = imperative {
+    // Should be non-empty and should contain space
+    if (arg = null) then return false
+    let idx = arg.IndexOf(" ")
+    if (idx = -1) then return false
+    
+    // Verify the name and the surname
+    let name = arg.Substring(0, idx)
+    let surname = arg.Substring(idx + 1, arg.Length - idx - 1)
+    if (surname.Length &lt; 1 || name.Length &lt; 1) then return false
+    if (Char.IsLower(surname.[0]) || Char.IsLower(name.[0])) then return false
+
+    // Looks like we've got a valid name!
+    return true }
+<em>val validateName : string -&gt; bool</em>
+
+&gt; validateName(null);;
+<em>val it : bool = false</em>
+&gt; validateName("Tomas");;
+<em>val it : bool = false</em>
+&gt; validateName("Tomas Petricek");;
+<em>val it : bool = true</em>
+</pre>
+
+<p>The code uses quite common imperative programming pattern. It implements
+  various checks that are applied to the name and when the check fails, it 
+  immediately returns <code>false</code> as the result, otherwise it continues
+  to the next check. In functional languages, this can be implemented either
+  using nested <code>if</code>-<code>then</code>-<code>else</code> conditions
+  or using pattern matching. If we wanted to avoid nesting in the second case, 
+  we'd have to move the entire check into the <code>when</code> clause, which
+  would complicate the code. This means, that the code above is quite elegant
+  solution for the problem and is in many ways cleaner than code you'd write
+  using standard functional constructs.</p>
+<p>In this example the difference between imperative and functional version
+  would be mostly syntactical. I believe that <em>syntax matters</em>, so this is 
+  a good argument for me, but it may not be convincing example for everyone.
+  In the next section, we'll add support for using imperative <code>return</code>
+  inside loops, which will simplify solving some problems in a more significant way.</p>
+
+<h2>Supporting imperative loops</h2>
+<p>If we want to allow the user to write <code>for</code> and <code>while</code> loops
+  inside computation expressions, we need to add two additional members to our computation
+  builder. In most of the cases, these members can be implemented in terms of other
+  primitives (such as <code>Combine</code> and <code>Zero</code>) by using the code
+  you can see below. Note that exactly the same code would work for many other computation 
+  expressions, because we don't use the <code>Imperative&lt;'T&gt;</code> value directly.
+  However, in the next articles of this series, we'll need to change this implementation
+  a bit, so it is good that the F# language allows us to implement this ourselves.</p>
+
+<pre lang="fsharp">
+type ImperativeBuilder with
+  member x.For(inp:seq&lt;_&gt;, f) =
+    // Process next element from the sequence
+    let rec loop(en:IEnumerator&lt;_&gt;) = 
+      // If ther are no more elements, return empty computation
+      if not(en.MoveNext()) then x.Zero() else
+        // Otherwise call body and combine it with a 
+        // computation that continues looping
+        x.Combine(f(en.Current), x.Delay(fun () -&gt; loop(en)))
+    // Start enumerating from the first element
+    loop(inp.GetEnumerator())
+    
+  member x.While(gd, body) = 
+    // Perform one step of the 'looping'
+    let rec loop() =
+      // If the condition is false, return empty computation
+      if not(gd()) then x.Zero() else
+        // Otherwise, call body and then loop again
+        x.Combine(body, x.Delay(fun () -&gt; loop()))
+    loop()
+</pre>
+<p>We use type augmentation to add the two members to the existing 
+  <code>ImperativeBuilder</code> type. The implementation of both of the new primitives is 
+  quite similar. In both of the cases, we create a recursive function that performs
+  one step of the looping and returns computation that should be executed after the
+  step is performed. This means that the loop is 'unfolded' into a series of
+  computation steps that are combined using the <code>Combine</code> primitive
+  that we declared above. Note that we're also using the <code>Delay</code> primitive
+  to make sure that the next step of the looping is run only when it is actually needed.</p>
+<p>As discussed earlier, the <code>Combine</code> member may not need to run the 
+  second argument when the computation given as the first argument already returns some
+  value (using <code>return</code>). For our looping primitives, this means that
+  whenever one step of the looping runs the <code>Return</code> primitive, we'll stop
+  looping and immediately return the result. </p>
+
+<h3>Returning from while loop</h3>  
+<p>Now, let's have a look at how can we use the looping constructs to solve some 
+  real world problems. We'll start with the <code>while</code> loop and we'll use it
+  to create a loop that reads names from the console and returns the first one that's valid:</p>  
+
+<pre lang="fsharp">
+&gt; let readFirstName() = imperative {
+    // Loop until the user enters valid name
+    while true do
+      let name = Console.ReadLine()
+      // If the name is valid, we return it, otherwise
+      // we continue looping...
+      if (validateName(name)) then return name
+      printfn "That's not a valid name! Try again..." }
+<em>val it : (unit -> string) = &lt;fun:clo@@0&gt;</em>
+
+&gt; readFirstName();;
+<em>Tomas
+That's not a valid name! Try again...
+Tomas Petricek
+val it : string = "Tomas Petricek"</em>
+</pre>
+<p>The listing starts by implementing the <code>readFirstName</code> function. If we look at 
+  its signature printed by the F# interactive, we can see that it returns <code>string</code>,
+  which is exactly what we wanted. The function contains an infinite loop written using 
+  <code>while true do</code> loop, but because we can imperatively return from loops using
+  <code>return</code>, it isn't actually an infinite loop. The function starts by 
+  reading a name from the console and then uses the function we created earlier to test
+  whether the name is a valid name. If it is valid, then we want to return it as the result
+  and if it is not, then we continue looping.</p>
+<p>The interesting thing is, how the F# compiler translates the <code>if</code> expression.
+  In the <code>true</code> case, it uses calls something like <code>imperative.Return(name)</code>
+  to create an imperative computation that returns the name. We didn't provide any code to
+  use for the <code>false</code> case, so the compiler uses the "empty computation" we provided
+  and generates something like <code>imperative.Zero()</code>. As we've already seen, the 
+  <code>Zero</code> member returns a computation that doesn't yet have the return value. 
+  This means that when we finish executing the body of the loop and get back to the <code>Combine</code> 
+  primitive, it will execute the next iteration of the loop. On the other hand, if we return
+  value using <code>Return</code>, the <code>Combine</code> primitive will see that we 
+  already have the return value, so it will stop looping.
+</p>  
+
+<h3>Returning from for loop</h3>
+<p>To finish our discussion, let's look at one more real-world example where the imperative
+  <code>return</code> is useful. In the beginning of the article, I wrote that we don't
+  need to use imperative constructs in many of the cases, because the F# library contains
+  higher order functions that make it possible to express the same thing (often even more
+  concisely). However, implementing these higher order functions (such as <code>Seq.exists</code>)
+  isn't as easy as it could be. For example, the <code>exists</code> function that takes
+  a sequence as an argument has to be implemented by directly using <code>GetEnumerator</code>.</p>
+<p>The following example shows that implementing <code>exists</code> function taking
+  a sequence and a predicate as arguments using our <code>imperative</code> computation 
+  is very easy, because we can simply use <code>for</code> loop to enumerate over the source 
+  sequence. When the predicate returns <code>true</code> for the first time, 
+  we can immediately terminate the execution and return <code>true</code> as the overall result.</p>
+<pre lang="fsharp">
+&gt; let exists f inp = imperative {
+    for v in inp do 
+      if f(v) then return true
+    return false }
+<em>val exists : ('a -&gt; bool) -&gt; seq&lt;'a&gt; -> bool</em>
+
+&gt; [ 1 .. 10 ] |&gt; exists (fun v -&gt; v % 3 = 0)
+<em>val it : bool = true</em>
+</pre>
+<p>As you can see, the implementation of the function couldn't be easier. If the 
+  predicate returns true for any of the elements, we imperatively return <code>true</code>
+  and if all the elements are enumerated without finding any element like that, 
+  we come to the last line of the function, which returns <code>false</code>. It is
+  important to note that in the example above, the predicate is executed only
+  for elements <code>1</code>, <code>2</code> and <code>3</code>, because when we
+  reach <code>3</code>, we can return <code>true</code> without accessing the rest of the list.</p>
+
+<h2>Summary</h2>
+<p>In this article, we implemented the first version of the <code>imperative</code> computation
+  builder that allows us to use imperative <code>return</code> statement that returns the result
+  from any place in the function. We started with a relatively simple version and then we extended
+  it to also support two standard F# looping constructs - <code>for</code> and <code>while</code>.
+  We also looked at various examples that demonstrate situations where the imperative 
+  programming style allows us to write some code in easier way than when implementing the
+  same functionality in the purely functional way.</p>
+<p>However, there are more imperative constructs that you may sometimes need than just 
+  imperative <code>return</code>. In particular, many of the F# users sometimes ask for
+  <code>break</code> and <code>continue</code>. Indeed, both of these can be added to our
+  computation builder. We'll need to do a minor change to the way we represent the computation,
+  but as you'll see in the next article of this series, it is definitely possible to do that
+  and it can be done in a very syntactically convenient way.</p>
+
+<h2>Downloads &amp; References<a name="aaaaaaa"></a></h2>
+<ul>
+  <li><a href="/articles/imperative-fsharp/source.zip">Download the example source code</a></li>
+</ul>

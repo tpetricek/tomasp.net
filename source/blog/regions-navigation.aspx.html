@@ -1,0 +1,154 @@
+<!-- [info]
+
+ - date: 2012-01-01T23:02:47.0000000
+ - description: The beginning of a new year may be a good time for writing one lightweight blog post - this article shows two hidden features of F# IntelliSense in Visual Studio and also talks about writing plugins using the F# open-source release.
+ - tags: functional,mono
+ - layout: post
+ - title: Regions and navigation bar for F# in Visual Studio
+ - url: regions-navigation.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>The beginning of a new year may be a good time for writing one lightweight blog
+  post that I wanted to publish for some time now. During my last internship with the
+  F# team at MSR, I did some work on improving the F# IntelliSense in Visual Studio. This
+  mostly involved the usual features - automatic completion, colouring and tooltips.
+  The F# IntelliSense in Visual Studio 2010 still isn't perfect, but I think it is safe
+  to claim that it is the best IDE experience for a typed functional programming language
+  (aside, you can vote for some F# IDE features <a href="http://visualstudio.uservoice.com/forums/121579-visual-studio/suggestions/2149735-improve-intellisense-support-for-f-">here</a>
+  and <a href="http://visualstudio.uservoice.com/forums/121579-visual-studio/suggestions/2213611-provide-refactoring-support-for-f-code-">here</a>).
+  </p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/regions-navbar/vs-small.png" title="F# with regions and navigation bar in Visual Studio" style="margin-bottom:5px;border-style:none" />
+</div>
+[/abstract] -->
+
+<h1>Regions and navigation bar for F# in Visual Studio</h1>
+<p>The beginning of a new year may be a good time for writing one lightweight blog
+  post that I wanted to publish for some time now. During my last internship with the
+  F# team at MSR, I did some work on improving the F# IntelliSense in Visual Studio. This
+  mostly involved the usual features - automatic completion, colouring and tooltips.
+  The F# IntelliSense in Visual Studio 2010 still isn't perfect, but I think it is safe
+  to claim that it is the best IDE experience for a typed functional programming language
+  (aside, you can vote for some F# IDE features <a href="http://visualstudio.uservoice.com/forums/121579-visual-studio/suggestions/2149735-improve-intellisense-support-for-f-">here</a>
+  and <a href="http://visualstudio.uservoice.com/forums/121579-visual-studio/suggestions/2213611-provide-refactoring-support-for-f-code-">here</a>).
+  </p>
+
+<h2>Regions and navigation bar</h2>
+<div class="rdecor" style="text-align:center">
+<a href="http://tomasp.net/articles/regions-navbar/vs-full.png"><img src="http://tomasp.net/articles/regions-navbar/vs-small.png" title="F# with regions and navigation bar in Visual Studio" style="margin-bottom:5px;border-style:none" /><br />
+<small>(Click here for a larger version)</small>
+</a>
+</div>
+
+<p>Anyway, I also spent some time with prototyping and I implemented and experimental
+  version of <em>navigation bar</em> and <em>code collapsing</em>. You can see
+  both of the features in the attached screenshot.</p>
+
+<p>The implementation is really just a prototype that proves that it can be done.
+  There are some bugs and it doesn't implement all features that the C# version does
+  (for example, if you collapse some definitions and reopen the file, all definitions
+  will be expanded again). Nevertheless, it can be sometimes useful.</p>
+
+<p>Both of the features can be enabled by modifying the <code>devenv.exe.config</code> file
+  in the Visual Studio installation folder. By default, you can find it in the
+  <code>Common7\IDE</code> subdirectory in
+  <code>C:\Program Files (x86)\Microsoft Visual Studio 10.0</code>. You need to add
+  the following <code>appSettings</code> section to the root <code>configuration</code> element:</p>
+
+<pre lang="xml">
+&lt;appSettings&gt;
+    &lt;add key="fsharp-navigationbar-enabled" value="true" /&gt;
+    &lt;add key="fsharp-regions-enabled" value="true" /&gt;
+&lt;/appSettings&gt;
+</pre>
+  
+  <p>After adding these two keys, you should see navigation bar and buttons for collapsing
+    type and module definitions in F# source files. Keep in mind that this is just a prototype,
+    so it may not always work well!</p>
+
+  <p>I always had both of the features enabled on my machine (and some people noticed during
+    various F# talks :-)), but I have to say that I haven't been using them very often. The
+    collapsing of definitions is occasionally nice if you have multiple types in a single 
+    file, but F# type definitions are usually quite terse. Similarly, the navigation bar is
+    nice if you're editting large file (like F# type checker in <code>tc.fs</code>), but
+    I usually find what I'm looking for just using search. If you enable and use the feature,
+    I'd be quite interested to hear about your experience. I'm sure that the F# team
+    will find the feedback useful too (you can always vote for features at 
+    <a href="http://visualstudio.uservoice.com/forums/121579-visual-studio/category/30935-languages-f-">Visual Studio user voice page</a>.</p>
+
+<h2>Plugins &amp; implementation notes </h2>
+
+<p>With the <a href="http://blogs.msdn.com/b/dsyme/archive/2010/11/04/announcing-the-f-compiler-library-source-code-drop.aspx">open-source release of F#</a>,
+  it has become a lot easier to implement a Visual Studio plugin that extends the F# editor.
+  F# parser to get information about F# source code without writing a custom parser and type-checker.
+  There are quite a few projects that do that, including some that implement support for 
+  collapsing of F# declarations:</p>
+
+<ul class="spaces">
+  <li><a href="http://visualstudiogallery.msdn.microsoft.com/bec977b8-c9d9-4926-999e-e50c4498df8a"><strong>F# Outlining</strong></a>
+    makes it possible to collapse blocks of F# code. In addition to the built-in functionality
+    that can be enabled using a special key, the plugin also supports marking regions of code with
+    <code>//#region</code> tags.</li>
+
+  <li><a href="http://fsharpjump.codeplex.com/"><strong>FSharpJump</strong></a> provides an alternative
+    navigation menu for F# files. It displays a hierarchical list of F# definitions such as 
+    modules, types, members and let bindings. The plugin is available with a source code that implements
+    its own simplified F# parser.</li>
+
+  <li>Aside from navigation, <a href="http://lorgonblog.wordpress.com/2010/11/18/f-source-code-structural-colorizer-available/"><strong>F# Depth Colorizer</strong></a>
+    fills the background of F# source code depending on the nesting. For example, the body
+    of <code>if</code> is filled with different color than the code following the <code>if</code>.
+    This makes the indentation-based syntax even easier to read.    
+    The plugin is written by Brian McNamara from the F# team, so it may be the best place
+    to look if you want to write similar tool yourself.</li>
+</ul>
+
+<h2>Using F# parsing service</h2>
+<img src="http://tomasp.net/articles/monodevelop-update/github.png" class="rdecor" alt="GitHub logo" /> 
+
+<p>The code that implements navigation bars and collapsing in the F# IntelliSense for Visual Studio
+  is divided into two parts. The first part (which is not publicly available) passes information
+  from F# compiler service to Visual Studio. The second part extracts information about declarations
+  from the F# syntax tree (AST) obtained from the compiler service. The second part is available
+  in the open-source release and so it can be used by various tools based on the F# compiler code
+  (including the F# plugin for MonoDevelop).</p>
+
+<p>I'll give a couple of pointers for those who might be interested in using (and extending) the 
+  source code. The F# compiler API used by Visual Studio is implemented in the 
+  <code>FSharp.Compiler.dll</code>. The most important type to look at is <code>InteractiveChecker</code>,
+  which can be found in <code>service.fsi</code> file (see <a href="https://github.com/fsharp/fsharp/blob/master/src/fsharp/vs/service.fsi">
+  F# source code at GitHub</a>).</p>
+
+<p>If you're interested in a sample that uses the <code>InteractiveChecker</code> type, then take
+  a look at the <a href="https://github.com/fsharp/fsharpbinding">F# binding for MonoDevelop</a>. 
+  The simplest example is probably a command line tool <code>fsintellisense</code> that can be
+  used to get IntelliSense information from via a command line (i.e. from Emacs or Vi editors).
+  The tool can be found <a href="http://fsxplat.codeplex.com/wikipage?title=fsharp%20intellisense%20tool&amp;referringTitle=Home">on CodePlex</a>.</p>
+
+<p>If you're writing plugin using <code>FSharp.Compiler.dll</code>, it is easy to get the 
+  declarations using the <code>InteractiveChecker</code> type. Assuming we have an instance
+  <code>checker</code> and a few other values that are required to run the parsing, we can write:</p>
+
+<pre lang="fsharp">
+// Run parsing of a file loaded in 'source'
+let untypedInfo = checker.UntypedParse(fileName, source, checkOptions) 
+// Get declaration items for the file
+let declarations = untypedInfo.GetNavigationItems().Declarations
+
+// Iterate over all top-level declarations (modules, types)
+for topLevel in decls do
+  let (s1, e1), (s2, e2) = topLevel.Declaration.Range
+  printfn "[%d:%d-%d:%d] %s" s1 e1 s2 e2 topLevel.Declaration.Name
+  
+  // Print all child declarations (members, functions, values)
+  for nested in topLevel.Nested do
+    let (s1, e1), (s2, e2) = nested.Range
+    printfn "  - [%d:%d-%d:%d] %s" s1 e1 s2 e2 nested.Name
+</pre>
+
+<p>The function <code>GetNavigationItems</code> is used by the Visual Studio code that 
+  displays navigation bar and collapsible regions. This means that it is not fully tested
+  (and may not return all the information that you'd like). However, it is a part of the 
+  open-source release, and so it should be possible to improve it a bit.</p>

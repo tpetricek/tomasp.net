@@ -1,0 +1,72 @@
+<!-- [info]
+
+ - date: 2004-12-05T00:00:00.0000000
+ - description: Jak je to s dynamickou kompilací v Asp.Net 2 a co bude jinak oproti aktuální verzi
+ - tags: 
+ - layout: post
+ - title: Asp.Net 2 - Kompilace
+ - url: aspcompile.aspx
+
+[/info] -->
+<!-- [abstract]
+Jak je to s dynamickou kompilací v Asp.Net 2 a co bude jinak oproti aktuální verzi
+[/abstract] -->
+
+<h1>Asp.Net 2 - Kompilace</h1>
+<doc version="1"><body><h1>Asp.Net 2 - Kompilace</h1><h2>Kompilace v Asp.Net verze 1.1</h2><p>Pro zjednodušení budu popisovat pouze příklady, kdy aplikace má oddělený zdrojový kód (např <code>default.aspx.cs</code>) 
+		 od vzhledu stránky (<code>default.aspx</code>). Webová aplikace používající codebehind je rozdělena do několika assemblies.
+		 Ze tříd které obsahují chování webové aplikace - tj. codebehind stránky (<code>default.aspx.cs</code> a další)
+		 se vytvoří jedna assembly - na obrázku je pojmenovaná <code>TestAssembly.dll</code> (ve Visual Studiu si toho člověk ani 
+		 nevšimne, ale při psaní v notepadu je potřeba ručně vytvořit tuto assembly). Tato assembly je poté uložena v adresáři 
+		 <code>bin</code>. Pokud ve webové aplikaci jsou i UserControls, tak ty se chovají úplně stejně jako webové stránky, 
+		 takže i jejich codebehind třídy jsou zkompilovány v této assembly. Jednou z nepříjemností, která bude rozhodně v 
+		 dalších verzích Asp.Net odstraněna je, že v codebehind třídě je potřeba nadeklarovat všechny ovládací prvky, které 
+		 na stránce jsou (respektive měly by být), aby je člověk mohl používat (viz <code>testButton</code> na obrázku).</p><p>Assembly na obrázku pojmenovaná <code>xyz.dll</code>
+		 je automaticky generována Asp.Net při prvním požadavku na stránku. Obsahuje třídu, která zajistí vytváření 
+		 všech ovládacích prvků na stránce a výpis dalšího, na pevno napsaného html kódu v <code>aspx</code> souboru.
+		 Tato assembly je schovaná někde v adresáři <code>C:\­WINDOWS\­Microsoft.NET\­Framework\­v1.1.4322\­Temporary ASP.NET Files</code>
+		 a ve stejném adresáři je i stejně pojmenovaný <code>cs</code> soubor, který obsahuje její (vygenerovaný) zdrojový kód.
+		 V kódu této assembly jsou také přiřazeny reference na ovládací prvky nadeklarované v bázové třídě 
+		 (z tohoto důvodu musí být alespoň <code>protected</code>).</p><div style="text-align:center; padding:10px;"><img src="aspcompile/compilation11.gif" alt="Kompilace v Asp.Net 1.1" /></div><h2>Kompilace v aktuální beta verzí (beta 1)</h2><p>V beta verzi, která je nyní dostupná se kompilování docela dost změnilo, ale vzhledem k tomu, že podle dostupných informací
+		 se vše v další beta verzi (verze beta 2, která by doufejme měla být již velmi podobná finální verzi) zase změní, tak o aktuální verzi
+		 nebudu vykládat přiliš podrobně, nicméně za zmínku to myslím stojí.</p><p>Velkou změnou je, že v této verzi úplně zmizela jedna "vrstva" a to codebehind assembly. Asp.Net tedy při prvním 
+		 požadavku do jedné assembly zkompiluje jak kód vygenerovaný z <code>aspx</code> souboru, tak i ze souboru napsaného
+		 programátorem (dříve codebehind třída). Toto je možné díky nové konstrukci v C# nazvané <i>partitial classes</i>.
+		 Třída je tedy rozdělena do dvou souborů, jeden napsaný programátorem a druhý generovaný Asp.Net. </p><div style="text-align:center; padding:10px;"><img src="aspcompile/compilation2beta1.gif" alt="Kompilace v Asp.Net 2.0 (beta 1)" /></div><p>
+		 Tato změna výrazně zpřehledňuje zdrojový kód, protože odpadá všechen kód, který doposud generovalo Visual Studio.
+		 Následující velmi jednoduchý kód ukazuje jak vypadá zdrojový soubor ke stránce obsahující jeden ovládací prvek typu <code>Label</code>:</p><pre>public partial class Default_aspx
+{ 
+  private void Page_Load(object sender, EventArgs e)
+  {
+    lblHello.Text="Hello World!";
+  }
+}</pre><p>Nicméně toto řešení bylo (v reakci na kritiku zákazníků :-)) změněno. Nejsem si jistý, do jaké míry to je tím,
+		 že je řešení špatné a do jaké míry je to tím, že se programátorům nelíbí moc velké změny. Na první pohled se sice
+		 zdá, že jedna chyba je nutnost nahrávat na server s aplikací i kompletní zdrojový kód, jenže to není pravda, protože
+		 díky (nové) možnosti tzv. precompilation, není nutné na server nahrávat vůbec žádný zdrojový kód. </p><h2>A jak to bude ve finální verzi?</h2><p>Ve finální verzi se pro změnu způsob kompilace velmi podobá tomu z Asp.Net 1.1 (Pokud tedy ve finální verzi vše 
+		 zůstane tak,jak by to podle dostupných informací mělo být ve verzi beta 2). Mimochodem docela mě překvapilo, 
+		 že někdo z vývojového týmu v Asp.Net fórech popíše jak převést stránku z verze beta 1 na verzi beta 2 a místo 
+		 toho aby přesněji popsal proč a jak přesně se změní chovaání napíše komentář: <i>"Confusing isn't it? The good 
+		 news is that this is an implementation detail you don't need to understand"</i>. Myslím si totiž, že to jak 
+		 se kompilují Asp.Net stránky rozhodně neni implementační detail a pokud to člověk myslí s Asp.Net vážně musí
+		 toto pochopit.</p><p>Zdrojový kód ve verzi beta 2 vypadá sice skoro stejně, ale ve skutečnosti je vše zase jinak 
+		 (tučně je pro zajímavost odlišeno těch pár nepatrných změn):</p><pre>public partial class Default_aspx <b>: System.Web.UI.Page</b>
+{ 
+  <b>protected</b> void Page_Load(object sender, EventArgs e)
+  {
+    lblHello.Text="Hello World!";
+  }
+}</pre><p>Ve verzi beta 2 se bude opět generovat jedna codebehind assembly. Ve této assembly budou bázové třídy a od nich budou
+		 odvozené třídy, které Asp.Net vygeneruje z <code>aspx</code> souborů. (Že by dejavu, neboli chyba v Matrixu?).
+		 Jedinou podstatnou změnou oproti Asp.Net 1.1 je, že zdrojový kód psaný programátorem nemusí obsahovat deklarace všech
+		 ovládacích prvků na stránce a přiřazování event handlerů (doposud generováno Visual Studiem), protože soubor
+		 s tímto kódem bude k partitial třídě vygenerován automaticky (jenom se mi zatím nikde nepodařilo zjistit, zda tento 
+		 luxus budou moci využívat pouze programátoři s Visual Studiem, nebo tento soubor bude nějakým způsobem generovat 
+		 samotné Asp.Net).
+	</p><div style="text-align:center; padding:10px;"><img src="aspcompile/compilation2beta2.gif" alt="Kompilace v Asp.Net 2.0 (beta 2)" /></div><p>Na závěr se tedy zdá, že přes poměrně bouřlivé změny bude kompilace probíhat více méně stejně jako v aktuální 
+		 verzi a jediný rozdíl bude, že psaní kódu bude pro programátory snažší a přehlednější. Další zajímavá věc, která
+		 se spíš jen rýsuje na obzoru, je možnost předkompilovat všechny stránky (a <code>ascx</code> ovládací prvky).
+		 Toto by mělo přinést možnost nekopírovat na server žádný zdrojový kód, ale také by díky této funkci mělo jít
+		 naráz objevit všechny syntaktické chyby ve zdrojových kódech zapsaných v <code>aspx</code> souborech.</p><h2>Odkazy na související stránky</h2><ul><li><a href="http://msdn.microsoft.com/asp.net/whidbey/beta2update.aspx">Popis změn mezi verzemi beta 1 a beta 2 na MSDN</a>
+			[<a href="http://msdn.microsoft.com/asp.net/whidbey/beta2update.aspx" target="_blank">^</a>]</li><li><a href="http://www.asp.net/Forums/ShowPost.aspx?tabindex=1&amp;PostID=747775">A tentýž dokument s některými zajímavými komentáři v diskusních fórech Asp.Net</a>
+			[<a href="http://www.asp.net/Forums/ShowPost.aspx?tabindex=1&amp;PostID=747775" target="_blank">^</a>]</li></ul></body></doc>

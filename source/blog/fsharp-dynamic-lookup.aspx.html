@@ -1,0 +1,307 @@
+<!-- [info]
+
+ - date: 2008-06-04T01:50:08.0000000
+ - description: Dynamic languages allow you to represent a member using a symbol or a string and to use this symbol to work with the member. In this article I'll show how to do same thing in statically-typed way in F#.
+ - tags: meta-programming,f#
+ - layout: post
+ - title: Dynamic Lookup in F#
+ - url: fsharp-dynamic-lookup.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Many people view <em>dynamic</em> and <em>statically-typed</em> languages as two distinct groups (and 
+  this is often a reason for never-ending discussions). In this article, I'll try to show one interesting
+  example, which demonstrates that these two groups are not in fact that distinct and that you can implement
+  a common <em>dynamic</em> language feature in F#, which is undoubtedly <em>statically-typed</em>.
+  The feature that I'm talking about is dynamic invoke using a symbolic representation of the member
+  (this is something that can be done using <em>symbols</em> in Ruby, but I'll shortly explain what exactly I mean).</p>  
+<p>I intentionally wrote <em>statically-typed</em> and <em>dynamic</em> instead of <em>dynamically-typed</em>.
+  In my understanding <em>dynamic</em> is a broader term while <em>dynamically-typed</em> and 
+  <em>statically-typed</em> are of course two distinct groups. On the other side <em>dynamic</em> refers
+  to language features that are usually available in <em>dynamically-typed</em> languages, just because
+  it is easy to support them in a nice way. This doesn't mean that having a <em>dynamic</em> feature in
+  a <em>statically-typed</em> language would be impossible - it is just more difficult to implement it in 
+  a way that would be similarly elegant.
+</p>
+[/abstract] -->
+
+<h1>Dynamic Lookup in F#</h1>
+<p>Many people view <em>dynamic</em> and <em>statically-typed</em> languages as two distinct groups (and 
+  this is often a reason for never-ending discussions). In this article, I'll try to show one interesting
+  example, which demonstrates that these two groups are not in fact that distinct and that you can implement
+  a common <em>dynamic</em> language feature in F#, which is undoubtedly <em>statically-typed</em>.
+  The feature that I'm talking about is dynamic invoke using a symbolic representation of the member
+  (this is something that can be done using <em>symbols</em> in Ruby, but I'll shortly explain what exactly I mean).</p>  
+<p>I intentionally wrote <em>statically-typed</em> and <em>dynamic</em> instead of <em>dynamically-typed</em>.
+  In my understanding <em>dynamic</em> is a broader term while <em>dynamically-typed</em> and 
+  <em>statically-typed</em> are of course two distinct groups. On the other side <em>dynamic</em> refers
+  to language features that are usually available in <em>dynamically-typed</em> languages, just because
+  it is easy to support them in a nice way. This doesn't mean that having a <em>dynamic</em> feature in
+  a <em>statically-typed</em> language would be impossible - it is just more difficult to implement it in 
+  a way that would be similarly elegant.
+</p>
+  
+<h2>Dynamic Lookup</h2>
+<p>This article is motivated by an interesting <a href="http://cs.hubfs.net/forums/thread/5986.aspx">question</a> [<a href="#dynfslinks">1</a>], which 
+  was recently raised at hubFS.
+  The question was, whether it is possible to read a value of a member of an F# record 
+  by using a name of that member. Indeed, this is something that you would expect to see in 
+  any dynamic language. As already mentioned, you can do similar things in Ruby using symbols (which are often explained
+  as "something like a string", but more suitable exactly for this kind of situation) and in
+  many other dynamic languages, you can do this just using strings. Basically, this means that
+  you have some representation of a member (that can be for example given as an argument to a method)
+  and which you can use to access the member value, but also for other manipulations with the member.
+  In this article I'll use <em>dynamic invoke</em> as a name for this feature.</p>
+<p>In statically-typed languages (such as F# or C#) this isn't directly supported, because the language 
+  wants to guarantee that it will not be possible to write a code that attempts to access a class member 
+  that doesn't exist. Clearly, this error can occur quite easily when using dynamic lookup in a dynamically-typed language.
+  On .NET platform, we can of course use .NET reflection mechanism, but this solution alone isn't very elegant
+  and the resulting code is not very safe (e.g. a method accepts <code>MemberInfo</code> as an argument,
+  but there is no guarantee that the <code>MemberInfo</code> will represent a member from a specified class).
+  Here, I'll show how to do similar thing in a much safer way in F#.
+ </p>  
+
+<h3>What exactly do we want?</h3>
+<p>In this article, I'll look at slightly more interesting problem than the original question - instead of discussing
+  how to get a value of the field, I'll show how to create a function that will return the value
+  when it is given a value of the specified record type. This is practically more useful solution, 
+  because it allows us to write the code in a more efficient way, however I'll not discuss 
+  efficiency issues in this article. I'll shortly explain what this means, but let's first look
+  at the F# record type that I'll use as an example:</p>
+<pre lang="fsharp">
+type SampleRec = { Str : string; Num : int }
+</pre>
+<p>As you can see, the record type is very simplistic and serves just to show important aspects of the 
+  problem. The only important thing is that it has two fields of different types, because we'll later 
+  want to write a solution that will be as type-safe as possible. </p>
+  
+<p>Now, let's look what kind of code would we like to write using this dynamic lookup. We might for 
+  example want to create two functions - one for reading the string field and second for reading the 
+  number field. We don't know how to do this yet, so I'll just demonstrate the idea using pseudo-code.
+  I'm using a non-existing construct `RecordType.Field` to denote some description of the field 
+  that can be used programmatically. Ruby users would surely call this <em>symbol</em>, .NET programmers
+  can see it as a <code>MemberInfo</code> from <code>System.Reflection</code>, though I'll shortly
+  show why using simply <code>MemberInfo</code> isn't a good solution here:
+</p>
+<pre lang="fsharp">
+// Get a pair of functions for reading 'Str' and 'Num' fields
+let readStrField = getValueReader `SampleRec.Str`
+let readNumField = getValueReader `SampleRec.Num`
+
+// Create a value of the record...
+let rc = { Str = "Hello world!"; Num = 42 }
+
+// Read 'Str' and 'Num' field using the dynamically created functions
+let s, n = readStrField rc, readNumField rc
+</pre>
+<h3>What is it good for?</h3>
+<p>
+  Of course, the code presented here is just an example with no big practical usefulness, but it 
+  should demonstrate the idea how to implement a typical dynamic language feature in a statically typed 
+  language. As we'll see later, it is possible to implement it with a surprising static type safety. In a real-world 
+  application, you would use this approach for a same purpose as in dynamic languages. That is for meta-programming. 
+  This may be for example for inserting some additional run-time checking, adding logging features or for manipulating 
+  with the data represented by the record in some non-standard way (e.g. storing them in a database). This 
+  can be nicely used together with .NET attributes that can annotate the record type and specify additional 
+  properties of the values.</p>
+<h3>When we don't need this?</h3>  
+<p>If we didn't want to use this feature for meta-programming (e.g. together with .NET attributes) and 
+  simply wanted to wrap an access to a field of the record in a code that does some additional processing, 
+  then we can do this simply using F# functions:</p>
+<pre lang="fsharp">
+let readNumField = getValueReader (fun (rc:SampleRec) -&gt; rc.Num)
+let n = readNumField rc
+</pre>
+<p>Let's say that we want to write <code>getValueReader</code> that adds logging to the code.
+  This means that the returned function (<code>readNumField</code>) writes the value to a console window when 
+  it is called and the value of the record is accessed. In this case, the <code>getValueReader</code> 
+  function which adds additional processing to the given "field reader" (a function which reads the field) can 
+  be implemented in a following way:</p>
+<pre lang="fsharp">
+let getValueReader f =
+  // Returns a function that takes the record as an argument..
+  (fun rc -&gt; 
+     // .. reads the value of the field using 'f' ..
+     let value = f rc
+     // .. prints the value on a console and returns it
+     printfn "%A" value
+     value)
+</pre>
+<p>This is very useful solution to a simpler kind of problem where meta-programming is not involved, but when
+  you want to read the .NET attributes associated with the field and generate wrapping code depending on these
+  attributes, simple functions are not powerful enough. This is because it isn't possible to inspect
+  the internal structure of the function - it is just an arbitrary compiled code and for meta-programming
+  we need to know something about the internal structure of the code. In case of record fields, we want to
+  know what the name of the record field is as well as what .NET attributes are associated with it and so on.</p>
+
+<h2>Statically-typed Dynamic Lookup</h2>
+<p>Now that I explained why you might be interested in writing something like that, let's get back to the
+  original pseudo-code. Here is a shorter version of the code (which reads just the <code>Str</code> field
+  of the record):</p>
+<pre lang="fsharp">
+let readStrField = getValueReader `SampleRec.Str`
+let s = readStrField rc
+</pre>
+<p>Before we turn this into a real code, let's look at the types. Dynamic lookup is a feature known from
+  dynamically typed languages, but I'm now showing how to use it in F#, so types will be quite important for us.
+  In particular, we want to know what is the type of the member description (or simply a <em>symbol</em>) written
+  in a backquotes. Our initial idea may be that it is simply some representation of the member (let's call it for 
+  example <code>DynamicMember</code>). This would unfortunately mean that we don't know anything about type of the 
+  member represented by the symbol. We don't know the type of the F# record whose member is represented by the symbol
+  (in this example <code>SampleRec</code>) and we also don't know the type of the record field (in this case 
+  <code>string</code>). This means that the <code>getValueReader</code> would have the following type signature:</p>
+<pre lang="fsharp">
+getValueReader : DynamicMember -&gt; (obj -&gt; obj)
+</pre>
+<p>This isn't very satisfying, because we would have a function that takes an object and returns an object. This
+  isn't really a code that we want to write in a statically-typed language, because we're losing all the checking 
+  guaranteed by the F# type checking. So, what we'd ideally want to is to include additional information in the
+  type of the symbol. This can be done in F# by using type parameters. Our representation of symbol should have two
+  type parameters that can carry a type of the F# record type (in which the field belongs) and the type of the field. 
+  Using this better version of symbol, we could write the following <code>getValueReader</code> function:</p>
+<pre lang="fsharp">
+getValueReader : DynamicMember&lt;'recordT, 'fieldT&gt; -&gt; ('recordT -&gt; 'fieldT)
+</pre>
+<p>Using this representation of symbols (that represent the field of the record), we can get surprising type 
+  safety. You can see that the returned function (of type <code>'recordT -&gt; 'fieldT</code>) is fully typed.
+  Its argument is a record, in which the symbol belongs and the result of the function has same type as the record field,
+  so this is exactly the type that we want to get for a function that reads the field of the record!
+  Using this representation, the type system can guarantee that we will use the dynamically constructed 
+  function returned by <code>getValueReader</code> only in the correct ways.</p>
+  
+<p>The question that remains to be answered is: How can we get this representation of symbols in F# language?
+  There is no direct language support for this, but we can use F# quotations. The following output from the
+  F# interactive console shows that we can use specifc quotation syntax (I'll explain it shortly) to get
+  a value that contains all the necessary type information and we can use it to define the <code>DynamicMember</code>
+  type which was used in the previous examples:</p>
+<pre lang="fsharp">
+// Using F# quotations mechanism...
+&gt; let dynMem = &lt;@@ (_ : SampleRec).Str @@&gt;
+val dynMem : Expr&lt;SampleRec&gt; -&gt; Expr&lt;string&gt;
+
+// Now we can define the DynamicMember type from the previous example:
+&gt; type DynamicMember&lt;'a, 'b&gt; = Expr&lt;'a&gt; -&gt; Expr&lt;'b&gt;
+</pre>
+<p>Let's now look at the quoted expression that we used to create our symbol representation. The simplest form
+  is <code>&lt;@@ _.Str @@&gt;</code>, but in the previous example, I added type annotation, because otherwise the 
+  F# compiler wouldn't know what is the type of the record that is used in the expression. The whole expression is
+  enclosed in a quotation (<code>&lt;@@ ... @@&gt;</code> operator), which means that it will return some representation
+  of the F# code enclosed in the operator. Quotations are somewhat similar to C# 3.0 expression trees and I already 
+  discussed them on this blog [<a href="#dynfslinks">2</a>, <a href="#dynfslinks">3</a>]. The underscore symbol represents
+  a hole in the quotation. A hole is simply something that can be filled in later, so if we create a hole, the 
+  returned quotation is actually a function. The function takes a quotation to be filled in the hole and returns a quotation
+  with the hole replaced by the argument. Let me demonstrate this using a short script from the F# interactive:</p>
+<pre lang="fsharp">
+// Import necessary F# namespaces for quotations
+&gt; #light;;
+&gt; open Microsoft.FSharp.Quotations;;
+&gt; open Microsoft.FSharp.Quotations.Typed;;
+
+// Declare a quotation with a hole - returns a function 
+&gt; let expr = &lt;@@ 2 * _ @@&gt;;;
+val expr : (Expr&lt;int&gt; -&gt; Expr&lt;int&gt;)
+
+// Fill in a quotation of '2 + 3' into a hole 
+&gt; let filled = expr &lt;@@ 2 + 3 @@&gt;;;
+val filled : Expr&lt;int&gt;
+
+// The result is a quoation of '2 * (3 + 4)'
+&gt; filled;;
+val it : Expr&lt;int&gt; = &lt;@@
+  (App (App op_Multiply (Int32 2))
+     (App (App op_Addition (Int32 3)) (Int32 4))) @@&gt;
+</pre>  
+<p>Using quotations for representing symbols is quite powerful trick. The quotation can be analyzed using F# reflection
+  library, so we can access all the internals. Moreover, when we use typed quotations (<code>&lt;@@ ... @@&gt;</code> operator)
+  with hole as in the previous example, we get all the necessary type information to write a function with a fully
+  type safe signature. </p>
+  
+<h3>Implementation Internals</h3>
+<p>As a last thing in this article, I'll show you how to implement a code that simply returns a function that reads the
+  value without any additional processing. In a real world, you would of course add some additional mechanism depending
+  on the record field, but this isn't the point of this article. Let's first rewrite the example in pseudo-code from the 
+  beginning of the article into a real F# code that uses symbols in a way introduced in this article:</p>
+
+<pre lang="fsharp">
+let readStrField = getValueReader &lt;@@ (_ : SampleRec).Str @@&gt;   
+let readNumField = getValueReader &lt;@@ (_ : SampleRec).Num @@&gt;   
+
+let rc = { Str = "Hello world!"; Num = 42 }
+let s, n = readStrField rc, readNumField rc
+printfn "Extracted: %s, %d" v1 v2
+</pre>
+<p>This is of course syntactically a bit more complicated, because F# doesn't support symbols directly as other languages, 
+  but it is still very concise code, which is useable in practice. The function <code>getValueReader</code>, which is used
+  here takes a symbol represented using quotation as an argument, so it has the following type (the first version uses
+  the type synonym declared earlier in the article and the second shows the internal representation using quotations):</p>
+<pre lang="fsharp">
+getValueReader : (DynamicMember&lt;'recordT, 'fieldT&gt;) -&gt; ('recordT -&gt; 'fieldT)
+getValueReader : (Expr&lt;'recordT&gt; -&gt; Expr&lt;'fieldT&gt;)  -&gt; ('recordT -&gt; 'fieldT)
+</pre>
+<p>Let's now look at the implementation of the <code>getValueReader</code>function:</p>
+<pre lang="fsharp">
+#light
+
+open System
+open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Quotations.Typed
+open Microsoft.FSharp.Quotations.Raw
+
+let getValueReader (prop:DynamicMember&lt;'recdT, 'fieldT&gt;) = 
+  // Get the information about the record type
+  let rcTy = typeof&lt;'recdT&gt;
+  // Fill in the hole using 'dummy' quotation, so that
+  // we can examine its internal structure
+  let expr = prop (Typed.of_raw (MkHole rcTy))
+  
+  // Match the quotation representing the symbol
+  match expr.Raw with
+  | RecdGet (ty, nm, expr) -&gt;
+      // It represents reading of the F# record field..
+      // .. get a function that reads the record field using F# reflection
+      let rdr = Reflection.Value.GetRecordFieldReader (ty, nm)
+      
+      // we're not adding any additional processing, so we just
+      // simply add type conversion to the correct types &amp; return it
+      ((box &gt;&gt; rdr &gt;&gt; unbox) : 'recdT -&gt; 'fieldT)
+  | _ -&gt; 
+      // Quotation doesn't represent symbol - this is an error
+      failwith "Invalid expression - not reading record field!"
+</pre>
+<p>First, we need to get the internal representation of the quotation. Since the argument (quotation with a hole) is a function, 
+  we first need to apply it to some argument, so that we can access the code represented by the quotation. It is not important
+  what will be inserted in place of the hole in the quotation, so we just create an untyped quotation that represents another
+  hole and fill it in place of the original hole (this is just a trick that turns a function of type <code>Expr&lt;'a&gt; -&gt; Expr&lt;'b&gt;</code>
+  into a quotation of type <code>Expr&lt;'b&gt;</code>, but it doesn't change the internal value in any way).</p>
+<p>Anyway, the rest of the code is more interesting - it first uses pattern matching and the particularly the pattern <code>RecdGet</code>
+  to test whether the quotation represents a code that reads an F# record field. If yes, it uses F# reflection (<code>GetRecordFieldReader</code>)
+  to get a function which reads the F# record field. This function isn't however strongly typed, so the type of <code>rdr</code> is 
+  <code>obj -&gt; obj</code>. As a last step, we use the type information that we obtained from the statically-typed representation 
+  of the symbol to convert this function into a strongly typed function of type <code>'recdT -&gt; 'fieldT</code>.</p>
+<p>In a real-world code that adds some functionality using meta-programming, you would do modifications in two parts of the code. 
+  First, you would use the structures obtained using pattern matching and F# reflection to discover more information about the
+  record type. The most usual case that I can think of is reading .NET attributes associated with the record type or with the members of the record,
+  however there are probably many other useful uses. Second thing that you would modify is a code that returns the function - here we
+  simply obtained a function for reading the field, but the point of meta-programming is to do something more interesting here. The key
+  idea however is that the code can return a statically-typed function, which makes the code that uses this form of dynamic meta-programming
+  statically type-safe.</p>  
+  
+<h2>Summary</h2>
+<p>In this article we've seen that a feature that is usually present in <em>dynamic</em> languages can be very nicely 
+  used in <em>statically-typed</em> F# as well. We've seen that using F# quotations, we can work with a representation of record field, 
+  which is in many ways similar to symbols known from Ruby (and similar features in other dynamic languages). Even though it is 
+  possible to achieve similar things by using strings using .NET reflection, the solution that I demonstrated here as one important
+  advantage - the code that we write is statically type-safe, which makes the code more robust.</p>
+<p>In general, you could implement similar feature in C# 3.0 using lambda expressions (treated as an 
+  expression tree - that is you'd have to specify that it has a type <code>Expression&lt;Func&lt;...&gt;&gt;</code>),
+  however in C#, it much more depends on the particular problem that you want to solve. The code that would represent the symbol would be
+  <code>(SampleRec rc) => rc.Str</code> and its type would be <code>Expression&lt;Func&lt;SampleRec, string&gt;&gt;</code>.
+  Nevertheless, this is would be a topic for another article...
+  </p>
+
+<h2>References<a name="dynfslinks"></a></h2>
+<ul>
+  <li>[1] <a href="http://cs.hubfs.net/forums/thread/5986.aspx" type="external">Record field names as function parameters </a> - Forums at hubFS</li>
+  <li>[2] <a href="http://tomasp.net/blog/fsharp-quotation-samples.aspx" type="external">F# Quotations Samples on CodePlex</a> - TomasP.Net</li>
+  <li>[3] <a href="http://tomasp.net/blog/fsharp-iv-lang.aspx" type="external">F# Overview (IV.) - Language Oriented Programming</a> - TomasP.Net</li>
+</ul>

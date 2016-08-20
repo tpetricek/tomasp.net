@@ -1,0 +1,451 @@
+<!-- [info]
+
+ - date: 2010-02-07T20:13:32.0000000
+ - description: In LINQ, we can group data using the \"group by\" clause. However, there are other potentially useful implementations of grouping. For example, we may want to group only adjacent elements or group ascending or descending parts of the data. This article shows how to use custom behavior when grouping data using \"group by\" in LINQ query.
+ - tags: academic,c#,parallel
+ - layout: post
+ - title: Using custom grouping operators in LINQ
+ - url: custom-linq-grouping.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>You can use LINQ to write queries that perform grouping of data using <code>group by</code>
+  or ordering of data using <code>orderby</code> clause. LINQ provides the default
+  (and the most common) implementation of both of the operations, but sometimes you 
+  may need a slightly different behavior when grouping or ordering data (this article
+  is motivated by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  which needs to do exactly that for grouping).</p>
+  
+<p>Let's look at a simple example, which shows when we may need a different behavior when 
+  grouping data. For example, we may have the following list of stock trades
+  containing a name of a stock and the price of the trade (stored for example as a list
+  of <code>TradeInfo</code> classes with properties <code>Name</code> and <code>Price</code>):</p>  
+<pre lang="csharp">
+{ { Name = "MSFT", Price = 80.00 },
+  { Name = "MSFT", Price = 70.00 },
+  { Name = "GOOG", Price = 100.00 },
+  { Name = "GOOG", Price = 200.00 },
+  { Name = "GOOG", Price = 300.00 },
+  { Name = "MSFT", Price = 30.00 },
+  { Name = "MSFT", Price = 20.00 } }</pre>  
+<p>Now, we may want to group adjacent trades into a single summary record which will contain
+  the name of the stock (which is same for all trades in each group), the number of trades 
+  in the group and an average price in the group. The desired results are:</p>
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+<p>The operation that we want to do is very similar to <code>group by</code> in LINQ, but 
+  it doesn't do quite the same thing! If we used <code>group by</code>, we would get only 
+  two groups as the result. However, as I wrote earlier, we want to group only 
+  <em>adjacent trades</em>. You could write your own extension method to do this,
+  but then you need to leave the elegant LINQ query syntax. In this article, I'll show
+  you how to get the desired results using a simple LINQ query with a <code>group by</code>
+  clause...</p>
+[/abstract] -->
+
+<h1>Using custom grouping operators in LINQ</h1>
+<p>You can use LINQ to write queries that perform grouping of data using <code>group by</code>
+  or ordering of data using <code>orderby</code> clause. LINQ provides the default
+  (and the most common) implementation of both of the operations, but sometimes you 
+  may need a slightly different behavior when grouping or ordering data (this article
+  is motivated by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  which needs to do exactly that for grouping).</p>
+  
+<p>Let's look at a simple example, which shows when we may need a different behavior when 
+  grouping data. For example, we may have the following list of stock trades
+  containing a name of a stock and the price of the trade (stored for example as a list
+  of <code>TradeInfo</code> classes with properties <code>Name</code> and <code>Price</code>):</p>  
+<pre lang="csharp">
+{ { Name = "MSFT", Price = 80.00 },
+  { Name = "MSFT", Price = 70.00 },
+  { Name = "GOOG", Price = 100.00 },
+  { Name = "GOOG", Price = 200.00 },
+  { Name = "GOOG", Price = 300.00 },
+  { Name = "MSFT", Price = 30.00 },
+  { Name = "MSFT", Price = 20.00 } }</pre>  
+<p>Now, we may want to group adjacent trades into a single summary record which will contain
+  the name of the stock (which is same for all trades in each group), the number of trades 
+  in the group and an average price in the group. The desired results are:</p>
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+<p>The operation that we want to do is very similar to <code>group by</code> in LINQ, but 
+  it doesn't do quite the same thing! If we used <code>group by</code>, we would get only 
+  two groups as the result. However, as I wrote earlier, we want to group only 
+  <em>adjacent trades</em>. You could write your own extension method to do this,
+  but then you need to leave the elegant LINQ query syntax. In this article, I'll show
+  you how to get the desired results using a simple LINQ query with a <code>group by</code>
+  clause...</p>
+
+<h2>Customizing LINQ queries</h2>
+<p>Let's start by looking how we can customize the meaning of LINQ queries. In fact, you may have already
+  seen this - for example the <code>AsParallel</code> method from PLINQ does exactly that. 
+  Anyway, when you write a LINQ query, it is translated by the C# compiler to a sequence of 
+  method calls. The following query groups trades using the standard <code>GroupBy</code>
+  operation provided by LINQ (so the result will be only two groups):
+  </p>
+<pre lang="csharp">
+var agg = 
+  from t in trades
+  group t by t.Name into g
+  select new { Name = g.Key, Count = g.Count(), 
+               AvgPrice = g.Average(t => t.Price) };
+</pre>
+<p>Following the rules described in C# specification or using Reflector, we can see what the
+  compiler does with the above query. The use of <code>group by</code> clause is translated in 
+  a call to <code>GroupBy</code> (an argument is a lambda expression that selects the key we're using for
+  grouping) and the use of <code>select</code> is translated into a call to <code>Select</code>
+  method (an argument is lambda expression returning the anonymous type):</p>
+<pre lang="csharp">
+var agg = 
+  trades.GroupBy(t => t.Name).Select(g =>
+    new { Name = g.Key, Count = g.Count(), 
+          AvgPrice = g.Average(t => t.Price) });
+</pre>
+<p>This translation is done without checking whether the methods actually exist and what their type
+  is. In this example, the type of <code>trades</code> is <code>IEnumerable&lt;TradeInfo&gt;</code>.
+  When compiling the call to <code>GroupBy</code>, the compiler will first look for instance methods
+  of the interface. It doesn't provide any <code>GroupBy</code> method, so it will try finding
+  some extension method and it will use <code>Enumerable.GroupBy</code>, which is an extension
+  method for the <code>IEnumerable&lt;T&gt;</code> type.</p>
+<p>Now, what can we do if we want to use a different <code>GroupBy</code> method? We need to 
+  instruct the compiler to select a different extension method. We can implement a very simple
+  method <code>WithAdjacentGrouping</code> which takes <code>IEnumerable&lt;T&gt;</code> and
+  returns some other interface (we'll call it <code>IAdjacentGrouping&lt;T&gt;</code>). The
+  implementation of the inteface is just a wrapper of <code>IEnumerable&lt;T&gt;</code>, but
+  it means that C# compiler will use a <em>different type</em> when searching for the
+  <code>GroupBy</code> method:</p>
+
+<pre lang="csharp">
+var agg = 
+  trades.WithAdjacentGrouping()
+        .GroupBy(...).Select(...);
+</pre>
+<p>We'll provide our own implementation of the <code>GroupBy</code> method, which groups
+  only adjacent elements of the input sequence. The method will take an argument of type
+  <code>IAdjacentGrouping&lt;T&gt;</code>, so when the compiler analyzes the code above,
+  it will use our method instead of the standard one, which is available in the core
+  libraries (LINQ to Objects). And of course, this will also work with the LINQ query
+  syntax, because that is simply translated to method calls. We'll look at some nice
+  queries shortly, but let's first implement the required interface and <code>GroupBy</code> 
+  method.</p>
+
+<h2>Implementing adjacent grouping</h2>
+<p>To implement all the machinery that allows us to use custom <code>GroupBy</code> method,
+  we need to declare the <code>IAdjacentGrouping&lt;T&gt;</code> interface (including a 
+  concrete class implementing it) and we'll also need a class which implements the 
+  <code>IGrouping&lt;T&gt;</code> interface (which represents a group of elements with
+  a <code>Key</code>). Once that's done, we'll need two extension methods - our customized
+  <code>GroupBy</code> and a method that instructs the compiler to use it (<code>WithAdjacentGrouping</code>).</p>
+
+<h3>Interfaces and classes</h3>
+<p>Let's start with the <code>IAdjacentGrouping&lt;T&gt;</code> interface. We inherit it from
+  <code>IEnumerable&lt;T&gt;</code>, which means that all other LINQ query operators (other than
+  <code>group by</code>) will use the standard implementation. This will have some unfortunate
+  consequences. All LINQ query operators return <code>IEnumerable&lt;T&gt;</code>, so if we use
+  any other LINQ operator before our <code>GroupBy</code>, the query will "not remember" 
+  our non-standard grouping. This can be solved by providing our own implementations of other
+  operators (and we'll discuss this in details later). Other than inheriting from <code>IEnumerable&lt;T&gt;</code>
+  our new interface will not have any members, because we need it only to carry
+  type information through the query: </p>
+<pre lang="csharp">
+interface IAdjacentGrouping&lt;T&gt; : IEnumerable&lt;T&gt; { 
+} 
+
+class WrappedAdjacentGrouping&lt;T&gt; : IAdjacentGrouping&lt;T&gt; { 
+  public IEnumerable&lt;T&gt; Wrapped { get; set; } 
+  
+  public IEnumerator&lt;T&gt; GetEnumerator() {  
+    return Wrapped.GetEnumerator();  
+  } 
+  IEnumerator IEnumerable.GetEnumerator() {
+    return (IEnumerator)GetEnumerator();
+  } 
+}
+</pre>
+<p>The class <code>WrappedAdjacentGrouping&lt;T&gt;</code> is a simple implementation of our
+  new interface. It wraps an <code>IEnumerable&lt;T&gt;</code> value and delegates all 
+  operations to the wrapped type, so this is pretty uninteresting boilerplate code.</p>
+<p>We'll need one more trivial class. A typical grouping operation takes a list of elements 
+  and returns a list of lists (that is, a list of groups where each group consists of 
+  one or more inidividual elements). In LINQ, this is usually done by returning a value
+  of type <code>IEnumerable&lt;IGrouping&lt;TKey, T&gt;&gt;</code>. The 
+  <code>IGrouping&lt;TKey, T&gt;</code> type is just like <code>IEnumerable&lt;T&gt;</code> 
+  with one additional feature - it has a property <code>Key</code>, which returns the 
+  key used to identify the group (in our earlier example, the key would be the name
+  of the stock such as <code>GOOG</code> or <code>MSFT</code>). Since 
+  <code>IGrouping&lt;TKey, T&gt;</code> is an interface and .NET libraries don't provide
+  any simple implementation of the interface, we'll need to write our own:</p>
+<pre lang="csharp">
+class Grouping&lt;K, T&gt; : IGrouping&lt;K, T&gt; {
+  public K Key { get; set; }
+  public IEnumerable&lt;T&gt; Elements;
+
+  public IEnumerator&lt;T&gt; GetEnumerator() {
+    return Elements.GetEnumerator();
+  }
+  IEnumerator IEnumerable.GetEnumerator() {
+    return (IEnumerator)GetEnumerator();
+  }
+}
+</pre>
+<p>The class stores elements of the group in a property <code>Elements</code>, which will be
+  usually accessed via the <code>IEnumerable&lt;T&gt;</code> interface (both generic and 
+  non-generic <code>GetEnumerator</code> methods just delegate the operation to the wrapped
+  collection). The class also has a property <code>Key</code> with a getter (required by the
+  interface) and setter (so that we can use it easily). Now that we have all the boilerplate
+  code, let's look at more interesting things. In the next section, we'll implement our
+  custom grouping.</p>
+
+<h3>Implementing custom grouping</h3>
+<p>Our custom <code>GroupBy</code> method has exactly the same type signature as the
+  <code>GroupBy</code> method provided by LINQ (with the only exception that it takes
+  the <code>IAdjacentGrouping&lt;T&gt;</code> as the first argument). It implements the behavior discussed
+  in the introduction. Instead of grouping <em>all elements</em> into groups based on 
+  the returned keys, it groups all <em>adjacent elements</em> with the same key from the 
+  input collection.</p>
+<p>The implementation of this functionality is the only lengthy piece of code in this article.
+  We'll need to store a collection of elements in the current group (grouped so far) with
+  a key of the current group. Each time we move to the next element, we'll check if it has the 
+  same key as the current group or not. If the key didn't change, we'll just add the element
+  to the current group and continue. If the key changes, we'll return the previous group
+  and start a new one. We also need to deal specially with the first element:
+</p>  
+<pre lang="csharp">
+public static IEnumerable&lt;IGrouping&lt;K, T&gt;&gt; GroupBy&lt;T, K&gt;
+    (this IAdjacentGrouping&lt;T&gt; source, Func&lt;T, K&gt; keySelector) where K : IComparable { 
+  // Remembers elements of the current group
+  List&lt;T&gt; elementsSoFar = new List&lt;T&gt;(); 
+  IEnumerator&lt;T&gt; en = source.GetEnumerator(); 
+  
+  // Read the first element (we need an initial key value)
+  if (en.MoveNext()) { 
+    K lastKey = keySelector(en.Current); 
+    do {  
+      // Test whether current element starts a new group
+      K newKey = keySelector(en.Current); 
+      if (newKey.CompareTo(lastKey) != 0) 
+      {  
+        // Yield the previous group and start next one
+        yield return new Grouping&lt;K, T&gt; 
+          { Elements = elementsSoFar, Key = lastKey };
+        lastKey = newKey;
+        elementsSoFar = new List&lt;T&gt;(); 
+      } 
+      
+      // Add element to the current group
+      elementsSoFar.Add(en.Current); 
+    } 
+    while (en.MoveNext()); 
+    
+    // Yield the last group of sequence
+    yield return new Grouping&lt;K, T&gt; 
+      { Elements = elementsSoFar, Key = lastKey }; 
+  }
+} 
+</pre>
+<p>We're using the <code>IEnumerator&lt;T&gt;</code> to iterate over the source elements,
+  because this allows us to call the <code>MoveNext</code> once before we start looping 
+  (to get the key of the first element, which is also the key of the first group). Once
+  we initialize the <code>lastKey</code> variable, we start looping until the source 
+  is exhausted. Note that our method has a generic constraint saying that the key
+  should be <code>IComparable</code>. This allows us to compare keys (and decide whether to
+  start a new group or not) using the <code>CompareTo</code> method.</p>
+<p>The last thing we need to do is to implement the <code>WithAdjacentGrouping</code> method,
+  which instructs the compiler to use our <code>GroupBy</code>. As discussed earlier, the method
+  will change the type of the collection from <code>IEnumerable&lt;T&gt;</code> to our 
+  type <code>IAdjacentGrouping&lt;T&gt;</code>, so that the compiler will prefer our
+  <code>GroupBy</code> method (because it is an extension method directly for the 
+  <code>IAdjacentGrouping&lt;T&gt;</code> type):</p>
+<pre lang="csharp">
+public static IAdjacentGrouping&lt;T&gt; WithAdjacentGrouping&lt;T&gt;(this IEnumerable&lt;T&gt; e) { 
+  return new WrappedAdjacentGrouping&lt;T&gt; { Wrapped = e }; 
+} 
+</pre>
+<p>The extension method is trivial. It simply returns our concrete implementation of the interface, 
+  which wraps an <code>IEnumerable&lt;T&gt;</code>. This was the last missing piece that
+  we needed to implement, before we could use our grouping operation in LINQ queries, so let's
+  look at a couple of examples showing how this can be used.</p>
+
+
+<h2>Grouping trades and other examples</h2>
+<p>First of all, let's look at the example, which I presented as a motivation at the beginning
+  of this article. We can use our new extension method <code>WithAdjacentGrouping</code> to change
+  the meaning of a <code>group by</code> clause in a query. When we use the extension method,
+  the query will group only adjacent elements, which is exactly what we wanted: </p>
+  
+<pre lang="csharp">
+var groups =
+  from t in trades.WithAdjacentGrouping()
+  group t by t.Name into g
+  select new {
+    Name = g.Key, Count = g.Count(),
+    AvgPrice = g.Average(t => t.Price) };
+</pre>
+<p>The query uses the value specified in the <code>by</code> clause to decide whether
+  to start a new group or whether an element belongs to the current group. This means
+  that it will start a new group each time the <code>t.Name</code> value changes. When
+  that happens, it will use the <code>select</code> clause to generate aggregate
+  information about the group. In this case, we return the number of elements and
+  an average price in the group. If you run the query with the input data from the
+  beginning of the article, you'll get the following result:</p>
+
+<pre lang="csharp">
+{ { Name = "MSFT", Count = 2, AvgPrice = 75.00 },
+  { Name = "GOOG", Count = 3, AvgPrice = 200.00 },
+  { Name = "MSFT", Count = 2, AvgPrice = 25.00 } }</pre>  
+
+<p>I'm sure you can imagine other situations when this grouping technique would be useful.
+  It also seems to be useful when processing Open XML documents as mentioned by
+  <a href="http://blogs.msdn.com/ericwhite/archive/2008/04/21/the-groupadjacent-extension-method.aspx" type="external">Eric White</a>
+  (who shows how to implement this behavior using an ordinary extension method).
+  However, we'll look at one more interesting aspect of this implementation of grouping - 
+  the fact that it can work with <em>infinite sequences</em>.</p>
+
+
+<h3>Grouping prime numbers</h3>
+<p>An infinite sequence is an <code>IEnumerator&lt;T&gt;</code> that always returns
+  <code>true</code> when you call its <code>MoveNext</code> method. They do not represent
+  elements of a collection (because an infinite collection wouldn't fit in a memory!), but
+  we can easily generate them in C# using the <code>yield return</code> keyword.</p>
+<p>The usual implementation of <code>GroupBy</code> cannot work on infinite sequences,
+  because it needs to see all elements of the sequence, before it can give any result 
+  (we can't return any group early, because there may still be some element that belongs
+  to that group in the rest of the sequence). However, our implementation which groups 
+  only adjacent elements return a group immediately when the key calculated for the 
+  current element changes. This means that it needs to see only a limited number of
+  elements before returning the next group.</p>
+<p>Let's look at an example that shows how we can use this property in practice. 
+  The following code shows how to generate an infinite <code>IEnumerable&lt;long&gt;</code>
+  value, which will contain prime numbers (it is still somehow limited, because we're
+  using <code>long</code>, but we could use for example the new <code>BigInteger</code> from .NET 4.0): </p>
+<pre lang="csharp">
+static bool IsPrime(long n) {
+  long max = (long)Math.Sqrt(n);
+  for (long i = 2; i &lt;= max; i++)
+    if (n % i == 0) return false;
+  return true;
+}
+static IEnumerable&lt;long&gt; Primes() {
+  for (long n = 0; true; n++)
+    if (IsPrime(n)) yield return n;
+}
+</pre>
+<p>Now, let's say that we want to count the number of primes in groups of 100000 numbers.
+  It is a well known fact that for intervals of the same length (in our case, 100000) the
+  number of primes will be larger for smaller numbers (e.g. interval from 0 to 100000) 
+  and smaller once we move to larger numbers (e.g. interval from 500000 to 600000). 
+  We can verify this fact using the following query:
+</p>
+<pre lang="csharp">
+var primeGroups =
+  from n in Primes().WithAdjacentGrouping()
+  group n by (n / 100000) into g
+  select g.Count();
+</pre>
+<p>If you take first 10 results of the query (for example using <code>Take(10)</code>),
+  it will give the following numbers:</p>
+<pre lang="csharp">9594, 8392, 8013, 7863, 7678, 7560, 7445, 7408, 7323, 7224</pre>
+<p>If you wanted to take all results of the query (e.g. using just <code>foreach</code>),
+  it would continue printing results forever (and get slower and slower, because testing
+  whether a large number is prime can take quite long). If you forget to add the 
+  <code>WithAdjacentGrouping</code> method and run the code using the ordinary 
+  <code>GroupBy</code> method, it will never print any result (because the standard 
+  <code>GroupBy</code> operator tries to read <em>all</em> numbers from the infinite sequence). 
+  </p>
+
+<h3>Ascending and descending groups</h3>
+<p>So far, we have been using <code>group by</code> to group adjacent elements with the same key.
+  The standard LINQ implementation gives us <code>group by</code> which groups all elements
+  using the given key. However, we can imagine other ways to group elements. For example,
+  you could create groups of values for which the value of the key is ascending or descending. 
+  This can be used for example to simply show trends in a sequence of data. </p>
+<p>Let's say we have a sequence (ordered by time) which contains stock prices (of a single
+  stock) or for example currency exchange rate. The data may look like this:</p>  
+<pre lang="csharp">
+{ { Price = 80.00, Time = 8:00 },
+  { Price = 70.00, Time = 9:00 },
+  { Price = 50.00, Time = 10:00 },
+  { Price = 55.00, Time = 11:00 },
+  { Price = 60.00, Time = 12:00 },
+  { Price = 75.00, Time = 13:00 },
+  { Price = 65.00, Time = 14:00 } }</pre>  
+<p>Now, you can see that there is a descending sequence from 8:00 to 10:00, then we have
+  an ascending sequence from 10:00 to 13:00 and finally, there is a short descending sequence
+  from 13:00 to 14:00. If we want to simply visualize these trends, we would like to
+  aggregate these three groups into the following result:</p>
+<pre lang="csharp">
+{ { Difference = -30.00, Interval = 2:00 },
+  { Difference = +25.00, Interval = 3:00 },
+  { Difference = -10.00, Interval = 1:00 } }</pre>  
+<p>This operation is quite similar to the one which motivated this article, but it 
+  is different. We cannot implement it using our <code>WithAdjacentGrouping</code> method. 
+  However, after reading this article, you'd be able to follow the pattern and define your
+  own extension method (for example <code>WithTendencyGrouping</code>) and your own
+  custom implementation of <code>GroupBy</code>, which implements the behavior we just
+  described. Then you could write the following code:</p>
+<pre lang="csharp">
+var trens = 
+  from s in stocks.WithTendencyGrouping()
+  group s by s.Price into g
+  select new {  
+    Difference = g.Last().Price - g.First().Price,
+    Interval = g.Last().Time - g.First().Time };
+</pre>
+<p>With an appropriate custom implementation of <code>GroupBy</code> method, this code would
+  give the results we've seen earlier. As you can see, the <code>group by</code> clause 
+  can be customized to perform various useful tasks. </p>
+
+<h2>Summary</h2>
+<p>In this article, we discussed two alternative implementations of the <code>GroupBy</code>
+  operator (in addition to the standard implementation provided by LINQ). We've seen that
+  we can change the meaning of LINQ query syntax to use our own implementation of 
+  <code>GroupBy</code>. Then we can write readable and elegant LINQ queries to group
+  data in a non-standard way (for example by grouping adjacent elements with the same 
+  value of the key). You could use the techniques discussed in this article to customize 
+  other clauses of LINQ queries (for example the <code>orderby</code> clause). </p>
+
+<p>We didn't discuss one important thing. Once you use other operator in the LINQ query
+  (for example <code>where</code>), the compiler "forgets" that we wanted to use custom
+  <code>GroupBy</code> method. This happens because it selects the standard <code>Where</code>
+  method and gives it our wrapped sequence of type <code>IAdjacentGrouping&lt;T&gt;</code>.
+  However, the <code>Where</code> method returns the result of type <code>IEnumerable&lt;T&gt;</code>,
+  so if the compiler needs to invoke <code>GroupBy</code> on the result, it will pick a standard
+  overload. This problem can be easily solved by providing our own implementations for 
+  all the standard LINQ query operators. For example, we would implement a <code>Where</code> method,
+  which returns the result as <code>IAdjacentGrouping&lt;T&gt;</code>. The implementations of these
+  methods would be quite easy (because they just wrap standard methods), but it would
+  make the code rather lengthfy, so I didn't include them in the article.
+</p>
+
+<p>Finally, this article has been inspired by a <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">question on StackOverflow</a>
+  and by a paper by Philip Wadler and Simon Peyton Jones about <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/list-comp/list-comp.pdf" type="external">Haskell comprehensions</a> 
+  (Haskell comprehensions were one of the motivations for LINQ). The paper adds support for <code>order</code> and <code>group</code>
+  to the comprehension syntax (LINQ was one of the motivations of the paper). In Haskell, you can 
+  provide your own function directly in the syntax. Here is a Haskell version of our original
+  example with grouping stock trades: 
+</p>
+<pre lang="csharp">
+[ (the stock, length stock, average price)
+| (stock, price) &lt;- trades
+, group by stock using groupRun ]</pre>
+<p>The important thing about the example that it uses <code>using</code> clause which allows you to 
+  specify your own grouping function. In this case, the grouping function is <code>groupRun</code>,
+  which implements the same functionality as our custom <code>GroupBy</code> grouping adjacent elements.
+  The paper also states that in LINQ, it isn't possible to provide custom grouping (or ordering)
+  function. I believe that this article shows that this isn't quite true - you can do similar thing
+  in LINQ. However, there are many limitaions in LINQ. In particular, we can specify one grouping
+  function for the whole query and cannot change it for each <code>group by</code> clause.</p>
+
+<h2>Downloads &amp; References</h2>
+<ul>
+  <li><a href="/articles/custom-linq-grouping/source.zip">Download the example source code</a></li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://stackoverflow.com/questions/2194761/can-i-use-linq-to-retrieve-only-on-change-values" type="external">Can I use LINQ to retrieve only “on change” values?</a> - Question at StackOverflow</li>
+  <li>[2] <a href="http://blogs.msdn.com/ericwhite/archive/2008/04/21/the-groupadjacent-extension-method.aspx" type="external">The GroupAdjacent extension method</a> - Eric White's blog</li>
+  <li>[3] <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/list-comp/list-comp.pdf" type="external">Comprehensive Comprehensions: Comprehensions with ‘Order by’ and ‘Group by’</a> - Philip Wadler, Simon Peyton Jones</li>
+</ul>

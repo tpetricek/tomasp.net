@@ -1,0 +1,133 @@
+<!-- [info]
+
+ - date: 2006-06-21T02:20:03.0000000
+ - description: Application that displays graphical representation of given F# quotation (using Windows Forms TreeView control)
+ - tags: meta-programming,f#
+ - layout: post
+ - title: F# quotations visualizer
+ - url: quotvis.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>I already <a href="http://tomasp.net/blog/fsquotations.aspx">explained</a> what F# quotations are
+  and I explained how you can do some simple manipulations with it. In this article I'd like to 
+  present an application that I wrote and that can be helpful when working with quotations. 
+  It displays clear graphical representation of given F# quotation (using Windows Forms TreeView control).
+  </p>
+
+<div style="text-align:center;">
+  <a href="http://tomasp.net/articles/quotvis/qv_apps.gif" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis/qv_apps_sm.gif" alt="Quotation Visualizer" /></a>
+</div>
+[/abstract] -->
+
+<h1>F# quotations visualizer</h1>
+
+
+<p>I already <a href="http://tomasp.net/blog/fsquotations.aspx">explained</a> what F# quotations are
+  and I explained how you can do some simple manipulations with it. In this article I'd like to 
+  present an application that I wrote and that can be helpful when working with quotations. 
+  It displays clear graphical representation of given F# quotation (using Windows Forms TreeView control).
+  </p>
+
+<div style="text-align:center;">
+  <a href="http://tomasp.net/articles/quotvis/qv_apps.gif" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis/qv_apps_sm.gif" alt="Quotation Visualizer" /></a>
+</div>
+
+<h2>F# quotations</h2>
+<p>This application works with raw quotations (this means the internal representation that is used when
+  writing quotation compilers). You can get F# quotations using <code>&lt;@@@@ ... @@@@&gt;</code> operator 
+  and the type of raw quotations is <code>expr</code>. The <code>expr</code> type is following discriminated union:</p>
+<pre lang="fsharp">
+type expr =
+  | ConstExpr  of exprConstr * dtype list
+  | VarExpr    of exprVarName
+  | QuoteExpr  of expr 
+  | LambdaExpr of exprVar * expr 
+  | AppExpr    of expr * expr
+  | HoleExpr   of dtype 
+</pre>  
+<p>You can see that there are only a few types of quotations, but when you are writing application 
+  that works with quotations, you can use set of object that provide simplier view on quotations structure.
+  These objects (name starts with letters <code>ef</code>) can be found in the <code>Raw</code> namespace (see <a href="http://research.microsoft.com/projects/ilx/fsharp-manual/fslib/Microsoft.FSharp.Quotations.Raw.html">F# manual</a>
+  [<a href="http://research.microsoft.com/projects/ilx/fsharp-manual/fslib/Microsoft.FSharp.Quotations.Raw.html" target="_blank">^</a>]). 
+  All these objects have <code>Query</code> method that expects parameter of type <code>expr</code> and that either
+  splits given expression into several sub-expressions or returns <code>None</code> (if parameter doesn't match). 
+  So let's look at the example:</p>
+<pre lang="fsharp">let q = &lt;@@@@ if (a = 0) then 1 else 2 @@@@&gt;</pre>  
+<p>This is the quotation that represents conditional expression, but it is internally stored using <code>AppExpr</code> 
+  (one variant of discriminated union), but you can use the <code>efCond.Query</code> method to test whether it is
+  conditional expression and you can also get expression that represents the condition and expressions representating
+  both true and false branches.</p>
+<pre lang="fsharp">
+// Test whether q is conditional expression using efCond.Query
+match Raw.efCond.Query q with
+  | Some (_,(cond,trueBranch,falseBranch)) -&gt;
+      // cond        - 'expr' that represents condition
+      // trueBranch  - 'expr' that represents the true branch
+      // falseBranch - 'expr' that represents the false branch
+      print_string "If-then-else statement"
+      
+  | None -&gt; 
+      print_string "Something else"
+</pre>  
+<p>This was just a few words to explain what the application does and to help you understand the 
+  source code of the most interesting part of application that builds the TreeView tree.</p>
+
+<h2>Application features</h2>
+<p>The application contains a few interesting features that I'd like to mention. If you look at 
+  the right panel, it contains section called 'settings'. In this section you can configure
+  how should the tree representation be built. Using the first checkbox you can say, whether
+  the function calls in tree should be displayed as single function applications (more functional
+  approach) or as series of function applications (more imperative approach). To see the difference
+  look at the following screenshots:</p>
+<div style="text-align:center;">
+  <a href="http://tomasp.net/articles/quotvis/qv_apps_exp.gif" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis/qv_apps_exp_sm.gif" alt="Quotation Visualizer" /></a>
+  <a href="http://tomasp.net/articles/quotvis/qv_app_exp.gif" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis/qv_app_exp_sm.gif" alt="Quotation Visualizer" /></a>
+</div>
+<p>If you check the second option, visualizer will call <code>deepMacroExpandUntil</code> function 
+  before displaying the quotation tree. This function performs some simplifications on
+  quotation before it is displayed. At first, the top level definitions are expanded and
+  it also performs beta reduction which means that any local binding are replaced by 
+  its value. For example <code>let a=5 in a+a</code> will be reduced to <code>5+5</code>.
+  (This is the reason why complicated example from the first screenshot looks so simple
+  at the second and third screenshot)</p>
+  
+<h2>Source code</h2>  
+<p>I won't describe the complete source code (you can download it and look at it), but
+  I'd like to describe how is the code organized so you can easilly find what you want.
+  The application is divided into several files (FS file contains the implementation and
+  FSI file contains interface of the module).</p>
+<p>The <code>Main</code> function that launches the application can be found in the 
+  <code>main.fs</code> file. This file also contains a few quotations that are displayed
+  when application starts. The main form called can be found in the <code>gui.fs</code>
+  module. This module also contains dialog box that is displayed when user clicks
+  on the "Add new quotation" link (this form is called <code>EnterCodeDialog</code>) 
+  and class inherited from Windows Forms <code>TabPage</code> that displays
+  given <code>expr</code> in a <code>TreeView</code> control.</p>  
+<p>The last two modules are much more interesting. The <code>visualizer.fs</code>
+  contains function <code>getExpressionTree</code> that takes F# quotation and
+  builds the TreeView tree. This file contains code that matches given expression
+  with several expression families like <code>efApp</code>, <code>efMethodCall</code> 
+  and other (but it is still not complete). The last module is <code>compiler.fs</code>
+  and it contains function that takes string entered by user and returns object 
+  representation of F# quotation. This function simply calls <code>fsc.exe</code>
+  and loads the value from the compiled assembly using reflection.</p>  
+<p>The solution also contains one C# project (called Resources). I created this
+  project because the F# application contains resources and I wanted to use <code>resx</code>
+  desiner in Visual Studio to easily create resource files. The main F# application
+  just takes compiled resources (the file named <code>Resources.Main.resources</code> 
+  in the <code>obj</code> directory).</p>
+
+<h2>How to use it</h2>  
+<p>Using is pretty simple, so I won't describe it, however there are a few details that I want 
+  to mention. First, the application uses F# libraries (fslib.dll), but I created one package that
+  contains requiered libraries, so you can look at the application without installing F#. 
+  Also if you want to be able to add F# quotations at runtime, you have to install F#, because
+  adding quotations uses F# compiler (<code>fsc.exe</code>). You also have to set the correct
+  path to the <code>fsc.exe</code> in application config file (<code>quotvis.exe.config</code>).</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/quotvis/quotvis.zip">Download the application </a> (63.4kB)</li>
+  <li><a href="http://tomasp.net/articles/quotvis/quotvis_fs.zip">Download the application (including fslib.dll)</a> (384kB)</li>
+</ul>

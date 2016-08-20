@@ -1,0 +1,360 @@
+<!-- [info]
+
+ - date: 2012-08-21T14:23:19.0000000
+ - description: In a recent blog post, Edward Z. Yang talks about applicative functors. He mentions two equivalent definitions - the standard one used in Haskell and an alternative mentioned in the original paper. In this blog post, I describe some reasons why the alternative definition is useful.
+ - tags: research,haskell,f#
+ - layout: post
+ - title: Applicative functors: definition and syntax
+ - url: applicative-functors.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In a recent blog post, <a href="http://blog.ezyang.com/2012/08/applicative-functors/" title="Edward Z. Yang: Applicative functors">Edward Z. Yang talks about applicative functors</a>. 
+He mentions two equivalent definitions of applicative functors - the standard
+definition used in Haskell libraries (<code>Applicative</code>) and an alternative that
+has been also presented in the <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.html" title="C. McBride and R. Paterson: Applicative Programming with Effects">original paper</a>, but is generally less
+familiar (<code>Monoidal</code>).</p>
+
+<p>The standard definition makes a perfect sense with the standard uses in Haskell,
+however I always preferred the alternative definition. Edward uses the alternative
+(<code>Monoidal</code>) definition to explain the laws that should hold about applicative 
+functors and to explain <em>commutative</em> applicative functors, but I think it
+is even more useful.</p>
+
+<p>The <code>Monoidal</code> definition fits nicely with a trick that you can use to 
+<a href="http://tomasp.net/blog/idioms-in-linq.aspx" title="T. Petricek: Beyond the Monad fashion (I.): Writing idioms in LINQ">encode applicative functors in C# using LINQ</a> and I also used it as 
+a basis for an F# syntax extension that allows writing code using applicative 
+functors in a similar style as using monads (which is discussed in my draft 
+paper about <a href="http://www.cl.cam.ac.uk/~tp322/papers/notations.html" title="T. Petricek and D. Syme: Syntax Matters: Writing abstract computations in F#">writing abstract computations in F#</a>). And I also think that
+<em>commutative</em> applicative functors deserve more attention.</p>
+[/abstract] -->
+
+<h1>Applicative functors: definition and syntax</h1>
+<p>In a recent blog post, <a href="http://blog.ezyang.com/2012/08/applicative-functors/" title="Edward Z. Yang: Applicative functors">Edward Z. Yang talks about applicative functors</a>&#160;[<a href="#rf12082101">3</a>]. 
+He mentions two equivalent definitions of applicative functors - the standard
+definition used in Haskell libraries (<code>Applicative</code>) and an alternative that
+has been also presented in the <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.html" title="C. McBride and R. Paterson: Applicative Programming with Effects">original paper</a>&#160;[<a href="#rf12082101">1</a>], but is generally less
+familiar (<code>Monoidal</code>).</p>
+
+<p>The standard definition makes a perfect sense with the standard uses in Haskell,
+however I always preferred the alternative definition. Edward uses the alternative
+(<code>Monoidal</code>) definition to explain the laws that should hold about applicative 
+functors and to explain <em>commutative</em> applicative functors, but I think it
+is even more useful.</p>
+
+<p>The <code>Monoidal</code> definition fits nicely with a trick that you can use to 
+<a href="http://tomasp.net/blog/idioms-in-linq.aspx" title="T. Petricek: Beyond the Monad fashion (I.): Writing idioms in LINQ">encode applicative functors in C# using LINQ</a>&#160;[<a href="#rf12082101">6</a>] and I also used it as 
+a basis for an F# syntax extension that allows writing code using applicative 
+functors in a similar style as using monads (which is discussed in my draft 
+paper about <a href="http://www.cl.cam.ac.uk/~tp322/papers/notations.html" title="T. Petricek and D. Syme: Syntax Matters: Writing abstract computations in F#">writing abstract computations in F#</a>&#160;[<a href="#rf12082101">5</a>]). And I also think that
+<em>commutative</em> applicative functors deserve more attention.</p>
+
+<h2>Alternative definitions</h2>
+
+<h3>Applicative</h3>
+
+<p>Let's start with the definitions. If you want to define an applicative functor in Haskell,
+you need to define the following operations (I'll be using the F# syntax, but the idea is the 
+same):</p>
+
+<pre class="fssnip">
+<span class="k">val</span> <span onmouseout="hideTip(event, 'ft17', 125)" onmouseover="showTip(event, 'ft17', 125)" class="i">pure</span>  <span class="o">:</span> <span class="o">&#39;</span><span class="i">T</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 126)" onmouseover="showTip(event, 'ft60', 126)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>
+<span class="k">val</span> (<span class="o">&lt;*&gt;</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'ft60', 127)" onmouseover="showTip(event, 'ft60', 127)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T1</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">T2</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 128)" onmouseover="showTip(event, 'ft60', 128)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T1</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 129)" onmouseover="showTip(event, 'ft60', 129)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T2</span><span class="o">&gt;</span></pre>
+
+
+<p>The definition explains why applicative functors are called <em>applicative</em> in Haskell and
+it also suggests their usual use. When we have some function <code>f</code> and <em>effectful</em> arguments
+<code>a1</code>, <code>a2</code> and <code>a3</code>, we can can use the combinators and <em>apply</em> the function as follows:</p>
+
+<pre class="fssnip">
+(<span onmouseout="hideTip(event, 'ft17', 130)" onmouseover="showTip(event, 'ft17', 130)" class="i">pure</span> <span onmouseout="hideTip(event, 'ft1', 131)" onmouseover="showTip(event, 'ft1', 131)" class="i">f</span>) <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'ft11', 132)" onmouseover="showTip(event, 'ft11', 132)" class="i">a1</span> <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'ft12', 133)" onmouseover="showTip(event, 'ft12', 133)" class="i">a2</span> <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'ft13', 134)" onmouseover="showTip(event, 'ft13', 134)" class="i">a3</span></pre>
+
+
+<p>This is an extremely useful for programming in Haskell, but it gives one specific presentation of the idea.</p>
+
+<h3>Monoidal</h3>
+
+<p>The alternative definition (which is equivalent to the first one) uses the following operations
+(in Haskell, the <code>map</code> operation is a part of <code>Functor</code> type class, but since we do not have type classes
+in F#, I'll write all the operations explicitly):</p>
+
+<pre class="fssnip">
+<span class="k">val</span> <span onmouseout="hideTip(event, 'ft23', 135)" onmouseover="showTip(event, 'ft23', 135)" class="i">map</span>    <span class="o">:</span> (<span class="o">&#39;</span><span class="i">T1</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">T2</span>) <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'ft60', 136)" onmouseover="showTip(event, 'ft60', 136)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T1</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 137)" onmouseover="showTip(event, 'ft60', 137)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T2</span><span class="o">&gt;</span>)
+<span class="k">val</span> <span onmouseout="hideTip(event, 'ft61', 138)" onmouseover="showTip(event, 'ft61', 138)" class="i">unit</span>   <span class="o">:</span> <span onmouseout="hideTip(event, 'ft60', 139)" onmouseover="showTip(event, 'ft60', 139)" class="i">F</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft61', 140)" onmouseover="showTip(event, 'ft61', 140)" class="i">unit</span><span class="o">&gt;</span>
+<span class="k">val</span> ( <span class="o">**</span> ) <span class="o">:</span> <span onmouseout="hideTip(event, 'ft60', 141)" onmouseover="showTip(event, 'ft60', 141)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T1</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 142)" onmouseover="showTip(event, 'ft60', 142)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T2</span><span class="o">&gt;</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft60', 143)" onmouseover="showTip(event, 'ft60', 143)" class="i">F</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T1</span> <span class="o">*</span> <span class="o">&#39;</span><span class="i">T2</span><span class="o">&gt;</span></pre>
+
+
+<p>The <code>unit</code> value is essentially the same as the <code>pure</code> function in the previous definition
+(in terms of effects, they both create effect-free computations, with the only difference being
+that <code>pure</code> contains specified value and <code>unit</code> contains values of the <code>unit</code> type -- using
+<code>map</code>, you can easily turn <code>unit</code> into <code>pure</code>).</p>
+
+<p>However, the <code>**</code> operator (which call <em>merge</em>) is more interesting. It says that if we have
+multiple computations with different effects (or other non-standard computational properties),
+we can combine the values and, at the same time, combine the effects (properties).</p>
+
+<p>When talking about effects and IO, this operation simply combines the effects. However, when
+we take lists, this operation behaves as <code>zip</code>. One possible interpretation is that we're writing
+data-flow computations and list contains past values. In that interpretation, <em>merge</em> combines
+<em>n</em> past values of the first argument with <em>m</em> past values of the second argument and the 
+result is <em>min(n, m)</em> past tuples. Interestingly enough, Uustalu and Vene use exactly this operation
+in their <a href="http://www.cs.ioc.ee/~tarmo/papers/cmcs08.pdf" title="T. Uustalu and V. Vene: Comonadic Notions of Computation">comonadic model of data-flow computations</a>&#160;[<a href="#rf12082101">9</a>]. That's out of the scope of this 
+blog post, but it is an interesting point (they use <em>commutative</em> merge operation).</p>
+
+<p>The typical use of this interface is in some sense <em>reversed</em> when compared to the
+previous one. If we have a number of computations <code>c1</code>, <code>c2</code> and <code>c3</code>, we can combine 
+them and then perform some computation with the resulting tuple:</p>
+
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'ft14', 144)" onmouseover="showTip(event, 'ft14', 144)" class="i">c1</span> <span class="o">**</span> <span onmouseout="hideTip(event, 'ft15', 145)" onmouseover="showTip(event, 'ft15', 145)" class="i">c2</span> <span class="o">**</span> <span onmouseout="hideTip(event, 'ft16', 146)" onmouseover="showTip(event, 'ft16', 146)" class="i">c3</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft23', 147)" onmouseover="showTip(event, 'ft23', 147)" class="i">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'ft62', 148)" onmouseover="showTip(event, 'ft62', 148)" class="i">a1</span>, (<span onmouseout="hideTip(event, 'ft63', 149)" onmouseover="showTip(event, 'ft63', 149)" class="i">a2</span>, <span onmouseout="hideTip(event, 'ft64', 150)" onmouseover="showTip(event, 'ft64', 150)" class="i">a3</span>)) <span class="k">-&gt;</span> 
+  <span onmouseout="hideTip(event, 'ft1', 151)" onmouseover="showTip(event, 'ft1', 151)" class="i">f</span> <span onmouseout="hideTip(event, 'ft62', 152)" onmouseover="showTip(event, 'ft62', 152)" class="i">a1</span> <span onmouseout="hideTip(event, 'ft12', 153)" onmouseover="showTip(event, 'ft12', 153)" class="i">a2</span> <span onmouseout="hideTip(event, 'ft64', 154)" onmouseover="showTip(event, 'ft64', 154)" class="i">a3</span> ) </pre>
+
+
+<p>I could use <code>map</code> and <code>**</code> in a similar style as <code>&lt;*&gt;</code> and <code>pure</code> (with a couple of <code>uncurry</code>
+combinators etc.), but the different style is intentional, because I think that the second
+definition is more suited for the explicit (as opposed to point-free) programming style.</p>
+
+<p>Perhaps another analogy is possible here. There are two analogies when explaining monads (and
+they also apply to applicative functors). The first treats <code>F&lt;'T&gt;</code> as a "box" that wraps 
+value <code>'T</code> and the second treats <code>F&lt;'T&gt;</code> as a "computation" that produces <code>'T</code>.</p>
+
+<ul>
+<li><p>The <code>Applicative</code> definition fits better with the "box" analogy. We write applicative style code
+as usual, and additional combinators make sure the boxes are handled correctly.</p></li>
+<li><p>The <code>Monoidal</code> definition fits better with the "computations" analogy. We compose
+computations, bind the results to variables (<code>a1</code>, <code>a2</code> and <code>a3</code>) and then continue
+computing.</p></li>
+</ul>
+
+<h2>Alternative syntax</h2>
+
+<p>So far, I tried to informally explain the difference between two definitions. Indeed, the 
+definitions are <em>equivalent</em>, so mathematically speaking, there is no difference. However,
+I believe thay supply different intuitions and suggest different use. In this section,
+I'll talk about the syntactic support for <em>applicative functors</em> that Haskell and 
+(a research extension of) F# have.</p>
+
+<h3>Idiom brackets in Haskell</h3>
+
+<p>The original paper on applicative functors proposes a syntax that simplifies 
+programming with applicative functors (see also <a href="https://personal.cis.strath.ac.uk/conor.mcbride/pub/she/idiom.html" title="C. McBride: Idiom brackets (She's effectful)">idiom brackets in She</a>&#160;[<a href="#rf12082101">2</a>]).
+When you write:</p>
+
+<pre lang="haskell">(| f a1 .. an |) </pre>
+
+<p>The syntax is desugared to:</p>
+
+<pre lang="haskell">(pure f) &lt;*&gt; a1 &lt;*&gt; .. &lt;*&gt; an</pre>
+
+<p>This is a nice and useful simplification if you're using the <em>applicative</em> style.
+It even more clearly highlights the intuition that applicative functors are useful
+for writing code where we apply some function to an effectful arguments (values in 
+"boxes") and want to propagate the effects (deal with the boxes).</p>
+
+<p>It is also worth mentioning that this syntax is completely different from the 
+notations that Haskell supports for working with other similar abstractions, most
+notably the <code>do</code> notation and also <em>monad comprehensions</em>.</p>
+
+<h3>Computation syntax for F#</h3>
+
+<p>In a <a href="http://www.cl.cam.ac.uk/~tp322/papers/notations.html" title="T. Petricek and D. Syme: Syntax Matters: Writing abstract computations in F#">recent paper that I wrote with Don Syme</a>&#160;[<a href="#rf12082101">5</a>], I tried to design a syntax
+for applicative functors that would match with the rest of F# computation expressions.
+As discussed in the paper, F# computation expressions can be used for a wider range
+of abstractions., but if we work with monads, they look pretty similar to <code>do</code> in
+Haskell. Assuming <code>m</code> is a computation builder for a monad and <code>f : int -&gt; M&lt;int&gt;</code>, we can write:</p>
+
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'ft82', 211)" onmouseover="showTip(event, 'ft82', 211)" class="i">m</span> { <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft2', 212)" onmouseover="showTip(event, 'ft2', 212)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft84', 213)" onmouseover="showTip(event, 'ft84', 213)" class="i">f</span> <span class="n">42</span>
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft86', 214)" onmouseover="showTip(event, 'ft86', 214)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft84', 215)" onmouseover="showTip(event, 'ft84', 215)" class="i">f</span> <span onmouseout="hideTip(event, 'ft2', 216)" onmouseover="showTip(event, 'ft2', 216)" class="i">a</span>
+    <span class="k">return</span> <span onmouseout="hideTip(event, 'ft2', 217)" onmouseover="showTip(event, 'ft2', 217)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft86', 218)" onmouseover="showTip(event, 'ft86', 218)" class="i">b</span> }</pre>
+
+
+<p>We can use a very similar style of syntax for working with <em>applicative functors</em>.
+Assuming <code>a</code> is a computation builder for applicative syntax and <code>g : int -&gt; F&lt;int&gt;</code>,
+we can write:</p>
+
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'ft83', 219)" onmouseover="showTip(event, 'ft83', 219)" class="i">a</span> { <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft2', 220)" onmouseover="showTip(event, 'ft2', 220)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft85', 221)" onmouseover="showTip(event, 'ft85', 221)" class="i">g</span> <span class="n">42</span>
+    <span class="k">and</span>  <span onmouseout="hideTip(event, 'ft86', 222)" onmouseover="showTip(event, 'ft86', 222)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft85', 223)" onmouseover="showTip(event, 'ft85', 223)" class="i">g</span> <span class="n">43</span>
+    <span class="k">return</span> <span onmouseout="hideTip(event, 'ft2', 224)" onmouseover="showTip(event, 'ft2', 224)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft86', 225)" onmouseover="showTip(event, 'ft86', 225)" class="i">b</span> }</pre>
+
+
+<p>You can find more details about the syntax in <a href="http://www.cl.cam.ac.uk/~tp322/papers/notations.html" title="T. Petricek and D. Syme: Syntax Matters: Writing abstract computations in F#">the paper</a>&#160;[<a href="#rf12082101">5</a>], but here are the key points:</p>
+
+<ul>
+<li><p>The body of computation expression (in <code>{ .. }</code>) can have only one parallel binding
+block consisting of <code>let! .. and .. and ..</code>. This defines the computations that
+are combined using the <em>merge</em> operation (the <code>**</code> operator)</p></li>
+<li><p>The defined variables are not mutually recursive, so it is not possible to use, for example,
+the variable <code>a</code> in <code>g 43</code>. This is where my above example differs for monads and
+applicative functors.</p></li>
+<li><p>The code block following the parallel binding can contain other non-applicative
+<code>let</code> bindings, as well as other standard constructs (like <code>if</code>), but it cannot
+contain any more <code>let!</code> and it has to end with <code>return</code>.</p></li>
+</ul>
+
+<p>I think the syntax nicely demonstrates the difference between monads and applicative
+functors (and explains in what way is monad more powerful). To quote the original applicative
+functors paper (Section 5):</p>
+
+<blockquote>
+  <p><em>Intuitively, [a monad] allows the value returned by one computation to influence the 
+choice of another, whereas [applicative functor] keeps the structure of a computation 
+fixed, just sequencing the effects.</em></p>
+</blockquote>
+
+<p>This is exactly describing the limitation of the <code>let! .. and .. and ..</code> syntax. The value
+of a variable cannot affect what (applicative) computations are evaluated as part of the
+computation. They have to be specified at once and are always all evaluated. On the other
+hand, with monads in F#, we can write <code>let!</code> followed by <code>if</code> and then have another 
+<code>let!</code> only in one branch (in which case, the nested computation may or may not be evaluated).</p>
+
+<h3>Realistic example</h3>
+
+<p>There is a number of examples where the <em>applicative</em> programming style (and the idiom bracket
+syntax) make a good sense. So are there also some good examples where the explicit style
+that treats applicative functors as <em>computations</em> makes sense? Perhaps the best example
+I can think of are <a href="http://groups.inf.ed.ac.uk/links/formlets/" title="E. Cooper, S. Lindley, P. Wadler, and J. Yallop: The essence of form abstraction">formlets</a>&#160;[<a href="#rf12082101">4</a>] - a computation type that represents HTML forms:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft87', 226)" onmouseover="showTip(event, 'ft87', 226)" class="i">userInfo</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'ft59', 227)" onmouseover="showTip(event, 'ft59', 227)" class="i">form</span> { <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft88', 228)" onmouseover="showTip(event, 'ft88', 228)" class="i">name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft29', 229)" onmouseover="showTip(event, 'ft29', 229)" class="i">textBox</span> <span class="s">&quot;</span><span class="s">name</span><span class="s">&quot;</span>
+         <span class="k">and</span> <span onmouseout="hideTip(event, 'ft89', 230)" onmouseover="showTip(event, 'ft89', 230)" class="i">surname</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft29', 231)" onmouseover="showTip(event, 'ft29', 231)" class="i">textBox</span> <span class="s">&quot;</span><span class="s">surname</span><span class="s">&quot;</span>
+         <span class="k">let</span> <span onmouseout="hideTip(event, 'ft90', 232)" onmouseover="showTip(event, 'ft90', 232)" class="i">combined</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft88', 233)" onmouseover="showTip(event, 'ft88', 233)" class="i">name</span> <span class="o">+</span> <span class="s">&quot;</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft89', 234)" onmouseover="showTip(event, 'ft89', 234)" class="i">surname</span>
+         <span class="k">let</span> <span onmouseout="hideTip(event, 'ft91', 235)" onmouseover="showTip(event, 'ft91', 235)" class="i">message</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">Your</span><span class="s"> </span><span class="s">name</span><span class="s"> </span><span class="s">is</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft90', 236)" onmouseover="showTip(event, 'ft90', 236)" class="i">combined</span>
+         <span class="k">return</span> <span onmouseout="hideTip(event, 'ft91', 237)" onmouseover="showTip(event, 'ft91', 237)" class="i">message</span> }</pre>
+
+
+<p>The example builds a form that generates two HTML textbox elements, asking for name and
+surname. When processed, the form returns a message of the form "Your name is First Last".
+I do not want to go into details, but you can find more (including a live browser-hosted
+example that works on Mac and Windows) on the <a href="http://tryjoinads.org/index.html?computations/applicative.html" title="T. Petricek: TryJoinads - Applicative computations">try joinads web site</a>&#160;[<a href="#rf12082101">8</a>].</p>
+
+<h2>Summary</h2>
+
+<p>I hope this article provided some more evidence that the alternative definition of 
+applicative functors (the <code>Monoidal</code> type class) is useful. As <a href="http://blog.ezyang.com/2012/08/applicative-functors/" title="Edward Z. Yang: Applicative functors">Edward pointed out</a>&#160;[<a href="#rf12082101">3</a>],
+it makes it easier to understand the laws. This is even more the case with the syntax 
+that I proposed for F# above - <em>commutative</em> applicative functor allows you to reorder
+the bindings in the <code>let! .. and .. and ..</code> block.</p>
+
+<p>I believe that, intuitively, the <code>Applicative</code> definition is more natural when we
+treat values <code>F&lt;'T&gt;</code> as boxed values of type <code>'T</code> and want to work with them as if they
+were just <code>'T</code> values. However, if we treat them as computations returning <code>'T</code>, then
+the other definition might be more natural. It describes the operations that can be
+done with the computations and also leads to an interesting syntax (which I implemented
+for F#) and which relates applicative functors to monads.</p>
+
+<p>Finally, the <em>merge</em> operation (<code>**</code> operator) of type <code>F&lt;'T1&gt; * F&lt;'T2&gt; -&gt; F&lt;'T1 * 'T2&gt;</code>
+is quite interesting, because it appears in a number of places. Aside from applicative
+functors, it is used in <a href="http://www.cs.ioc.ee/~tarmo/papers/cmcs08.pdf" title="T. Uustalu and V. Vene: Comonadic Notions of Computation">comonadic model of data-flow</a>&#160;[<a href="#rf12082101">9</a>] and it is also used 
+in monad comprehensions as a generalization of <code>zip</code> (see <a href="http://tomasp.net/blog/comprefun.aspx" title="T. Petricek: Fun with parallel monad comprehensions (The Monad.Reader)">my Monad.Reader article</a>&#160;[<a href="#rf12082101">7</a>], Section 2.5)</p>
+
+<h3><a name="rf12082101">References</a></h3>
+
+<ul>
+<li>[1] <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.html" title="C. McBride and R. Paterson: Applicative Programming with Effects"> Applicative Programming with Effects</a> - C. McBride and R. Paterson</li>
+<li>[2] <a href="https://personal.cis.strath.ac.uk/conor.mcbride/pub/she/idiom.html" title="C. McBride: Idiom brackets (She's effectful)"> Idiom brackets (She's effectful)</a> - C. McBride</li>
+<li>[3] <a href="http://blog.ezyang.com/2012/08/applicative-functors/" title="Edward Z. Yang: Applicative functors"> Applicative functors</a> - Edward Z. Yang</li>
+<li>[4] <a href="http://groups.inf.ed.ac.uk/links/formlets/" title="E. Cooper, S. Lindley, P. Wadler, and J. Yallop: The essence of form abstraction"> The essence of form abstraction</a> - E. Cooper, S. Lindley, P. Wadler, and J. Yallop</li>
+<li>[5] <a href="http://www.cl.cam.ac.uk/~tp322/papers/notations.html" title="T. Petricek and D. Syme: Syntax Matters: Writing abstract computations in F#"> Syntax Matters: Writing abstract computations in F#</a> - T. Petricek and D. Syme</li>
+<li>[6] <a href="http://tomasp.net/blog/idioms-in-linq.aspx" title="T. Petricek: Beyond the Monad fashion (I.): Writing idioms in LINQ"> Beyond the Monad fashion (I.): Writing idioms in LINQ</a> - T. Petricek</li>
+<li>[7] <a href="http://tomasp.net/blog/comprefun.aspx" title="T. Petricek: Fun with parallel monad comprehensions (The Monad.Reader)"> Fun with parallel monad comprehensions (The Monad.Reader)</a> - T. Petricek</li>
+<li>[8] <a href="http://tryjoinads.org/index.html?computations/applicative.html" title="T. Petricek: TryJoinads - Applicative computations"> TryJoinads - Applicative computations</a> - T. Petricek</li>
+<li>[9] <a href="http://www.cs.ioc.ee/~tarmo/papers/cmcs08.pdf" title="T. Uustalu and V. Vene: Comonadic Notions of Computation"> Comonadic Notions of Computation</a> - T. Uustalu and V. Vene</li>
+</ul>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">val f : int -&gt; string -&gt; float -&gt; &#39;a<br /><br />Full name: Blog.f<br /><em><br /><br />&#160;An applicative functor structure</em></div>
+<div class="tip" id="ft2">val a : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft3">Multiple items<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft4">val b : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft5">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft6">val d : float<br />&#160;&#160;type: float<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft7">Multiple items<br />val float : &#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br />&#160;&#160;type: float&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br />&#160;&#160;type: float<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft8">val failwith : string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith</div>
+<div class="tip" id="ft9">type F&lt;&#39;T&gt; = | FC of &#39;T<br /><br />Full name: Blog.F&lt;_&gt;<br />&#160;&#160;type: F&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft10">union case F.FC: &#39;T -&gt; F&lt;&#39;T&gt;</div>
+<div class="tip" id="ft11">val a1 : F&lt;int&gt;<br /><br />Full name: Blog.a1<br />&#160;&#160;type: F&lt;int&gt;<br /></div>
+<div class="tip" id="ft12">val a2 : F&lt;string&gt;<br /><br />Full name: Blog.a2<br />&#160;&#160;type: F&lt;string&gt;<br /></div>
+<div class="tip" id="ft13">val a3 : F&lt;float&gt;<br /><br />Full name: Blog.a3<br />&#160;&#160;type: F&lt;float&gt;<br /></div>
+<div class="tip" id="ft14">val c1 : F&lt;int&gt;<br /><br />Full name: Blog.c1<br />&#160;&#160;type: F&lt;int&gt;<br /></div>
+<div class="tip" id="ft15">val c2 : F&lt;string&gt;<br /><br />Full name: Blog.c2<br />&#160;&#160;type: F&lt;string&gt;<br /></div>
+<div class="tip" id="ft16">val c3 : F&lt;float&gt;<br /><br />Full name: Blog.c3<br />&#160;&#160;type: F&lt;float&gt;<br /></div>
+<div class="tip" id="ft17">val pure : &#39;T -&gt; F&lt;&#39;T&gt;<br /><br />Full name: Blog.pure</div>
+<div class="tip" id="ft18">val a : &#39;T</div>
+<div class="tip" id="ft19">val f : F&lt;(&#39;T1 -&gt; &#39;T2)&gt;<br />&#160;&#160;type: F&lt;(&#39;T1 -&gt; &#39;T2)&gt;<br /></div>
+<div class="tip" id="ft20">val a : F&lt;&#39;T1&gt;<br />&#160;&#160;type: F&lt;&#39;T1&gt;<br /></div>
+<div class="tip" id="ft21">val a : &#39;a</div>
+<div class="tip" id="ft22">val b : &#39;b</div>
+<div class="tip" id="ft23">val map : (&#39;a -&gt; &#39;b) -&gt; F&lt;&#39;a&gt; -&gt; F&lt;&#39;b&gt;<br /><br />Full name: Blog.map</div>
+<div class="tip" id="ft24">val f : (&#39;a -&gt; &#39;b)</div>
+<div class="tip" id="ft25">type Formlet&lt;&#39;T&gt; = | FR of string list * (Map&lt;string,string&gt; -&gt; &#39;T)<br /><br />Full name: Blog.Formlet&lt;_&gt;</div>
+<div class="tip" id="ft26">union case Formlet.FR: string list * (Map&lt;string,string&gt; -&gt; &#39;T) -&gt; Formlet&lt;&#39;T&gt;</div>
+<div class="tip" id="ft27">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;<br />&#160;&#160;type: &#39;T list<br /></div>
+<div class="tip" id="ft28">Multiple items<br />module Map<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Map&lt;&#39;Key,&#39;Value (requires comparison)&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface System.Collections.IEnumerable<br />&#160;&#160;&#160;&#160;interface System.IComparable<br />&#160;&#160;&#160;&#160;interface System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;&#160;&#160;interface System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;&#160;&#160;interface System.Collections.Generic.IDictionary&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;&#160;&#160;new : elements:seq&lt;&#39;Key * &#39;Value&gt; -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;&#160;&#160;member Add : key:&#39;Key * value:&#39;Value -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;&#160;&#160;member ContainsKey : key:&#39;Key -&gt; bool<br />&#160;&#160;&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Remove : key:&#39;Key -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;&#160;&#160;member TryFind : key:&#39;Key -&gt; &#39;Value option<br />&#160;&#160;&#160;&#160;member Count : int<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : key:&#39;Key -&gt; &#39;Value with get<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Collections.Map&lt;_,_&gt;<br />&#160;&#160;type: Map&lt;&#39;Key,&#39;Value&gt;<br /></div>
+<div class="tip" id="ft29">val textBox : string -&gt; Formlet&lt;string&gt;<br /><br />Full name: Blog.textBox<br /><em><br /><br />&#160;Represents a textbox formlet</em></div>
+<div class="tip" id="ft30">val key : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft31">val map : Map&lt;string,string&gt;<br />&#160;&#160;type: Map&lt;string,string&gt;<br /></div>
+<div class="tip" id="ft32">val render : Formlet&lt;&#39;a&gt; -&gt; string list<br /><br />Full name: Blog.render</div>
+<div class="tip" id="ft33">val keys : string list<br />&#160;&#160;type: string list<br /></div>
+<div class="tip" id="ft34">val evaluate : Map&lt;string,string&gt; -&gt; Formlet&lt;&#39;a&gt; -&gt; &#39;a<br /><br />Full name: Blog.evaluate</div>
+<div class="tip" id="ft35">val state : Map&lt;string,string&gt;<br />&#160;&#160;type: Map&lt;string,string&gt;<br /></div>
+<div class="tip" id="ft36">val op : (Map&lt;string,string&gt; -&gt; &#39;a)</div>
+<div class="tip" id="ft37">Multiple items<br />val unit : &#39;a -&gt; Formlet&lt;&#39;a&gt;<br /><br />Full name: Blog.Formlets.unit<br /><em><br /><br />&#160;Formlet that always returns the given value</em><br /><br />--------------------<br />type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br />&#160;&#160;type: unit<br /></div>
+<div class="tip" id="ft38">val v : &#39;a</div>
+<div class="tip" id="ft39">val map : (&#39;a -&gt; &#39;b) -&gt; Formlet&lt;&#39;a&gt; -&gt; Formlet&lt;&#39;b&gt;<br /><br />Full name: Blog.Formlets.map<br /><em><br /><br />&#160;The map operation applies &#39;f&#39; to the result</em></div>
+<div class="tip" id="ft40">val merge : Formlet&lt;&#39;a&gt; -&gt; Formlet&lt;&#39;b&gt; -&gt; Formlet&lt;&#39;a * &#39;b&gt;<br /><br />Full name: Blog.Formlets.merge<br /><em><br /><br />&#160;Combine two formlets and pair their results</em></div>
+<div class="tip" id="ft41">val keys1 : string list<br />&#160;&#160;type: string list<br /></div>
+<div class="tip" id="ft42">val op1 : (Map&lt;string,string&gt; -&gt; &#39;a)</div>
+<div class="tip" id="ft43">val keys2 : string list<br />&#160;&#160;type: string list<br /></div>
+<div class="tip" id="ft44">val op2 : (Map&lt;string,string&gt; -&gt; &#39;b)</div>
+<div class="tip" id="ft45">type FormletBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; FormletBuilder<br />&#160;&#160;&#160;&#160;member Merge : form1:Formlet&lt;&#39;e&gt; * form2:Formlet&lt;&#39;f&gt; -&gt; Formlet&lt;&#39;e * &#39;f&gt;<br />&#160;&#160;&#160;&#160;member Return : v:&#39;b -&gt; Formlet&lt;&#39;b&gt;<br />&#160;&#160;&#160;&#160;member ReturnFrom : form:&#39;a -&gt; &#39;a<br />&#160;&#160;&#160;&#160;member Select : form:Formlet&lt;&#39;c&gt; * f:(&#39;c -&gt; &#39;d) -&gt; Formlet&lt;&#39;d&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.FormletBuilder</div>
+<div class="tip" id="ft46">val x : FormletBuilder</div>
+<div class="tip" id="ft47">member FormletBuilder.Merge : form1:Formlet&lt;&#39;e&gt; * form2:Formlet&lt;&#39;f&gt; -&gt; Formlet&lt;&#39;e * &#39;f&gt;<br /><br />Full name: Blog.FormletBuilder.Merge</div>
+<div class="tip" id="ft48">val form1 : Formlet&lt;&#39;e&gt;</div>
+<div class="tip" id="ft49">val form2 : Formlet&lt;&#39;f&gt;</div>
+<div class="tip" id="ft50">module Formlets<br /><br />from Blog</div>
+<div class="tip" id="ft51">member FormletBuilder.Select : form:Formlet&lt;&#39;c&gt; * f:(&#39;c -&gt; &#39;d) -&gt; Formlet&lt;&#39;d&gt;<br /><br />Full name: Blog.FormletBuilder.Select</div>
+<div class="tip" id="ft52">val form : Formlet&lt;&#39;c&gt;</div>
+<div class="tip" id="ft53">val f : (&#39;c -&gt; &#39;d)</div>
+<div class="tip" id="ft54">member FormletBuilder.Return : v:&#39;b -&gt; Formlet&lt;&#39;b&gt;<br /><br />Full name: Blog.FormletBuilder.Return</div>
+<div class="tip" id="ft55">val v : &#39;b</div>
+<div class="tip" id="ft56">val unit : &#39;a -&gt; Formlet&lt;&#39;a&gt;<br /><br />Full name: Blog.Formlets.unit<br /><em><br /><br />&#160;Formlet that always returns the given value</em></div>
+<div class="tip" id="ft57">member FormletBuilder.ReturnFrom : form:&#39;a -&gt; &#39;a<br /><br />Full name: Blog.FormletBuilder.ReturnFrom</div>
+<div class="tip" id="ft58">val form : &#39;a</div>
+<div class="tip" id="ft59">val form : FormletBuilder<br /><br />Full name: Blog.form</div>
+<div class="tip" id="ft60">type F&lt;&#39;T&gt; = | FC of &#39;T<br /><br />Full name: Blog.F&lt;_&gt;<br />&#160;&#160;type: F&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft61">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br />&#160;&#160;type: unit<br /></div>
+<div class="tip" id="ft62">val a1 : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft63">val a2 : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft64">val a3 : float<br />&#160;&#160;type: float<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft65">type M&lt;&#39;T&gt; = | MM of &#39;T<br /><br />Full name: Blog.M&lt;_&gt;<br />&#160;&#160;type: M&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft66">union case M.MM: &#39;T -&gt; M&lt;&#39;T&gt;</div>
+<div class="tip" id="ft67">type MBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; MBuilder<br />&#160;&#160;&#160;&#160;member Bind : M&lt;&#39;b&gt; * f:(&#39;b -&gt; &#39;c) -&gt; &#39;c<br />&#160;&#160;&#160;&#160;member Return : v:&#39;d -&gt; M&lt;&#39;d&gt;<br />&#160;&#160;&#160;&#160;member ReturnFrom : M&lt;&#39;a&gt; -&gt; M&lt;&#39;a&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.MBuilder</div>
+<div class="tip" id="ft68">val x : MBuilder</div>
+<div class="tip" id="ft69">member MBuilder.Return : v:&#39;d -&gt; M&lt;&#39;d&gt;<br /><br />Full name: Blog.MBuilder.Return</div>
+<div class="tip" id="ft70">val v : &#39;d</div>
+<div class="tip" id="ft71">member MBuilder.Bind : M&lt;&#39;b&gt; * f:(&#39;b -&gt; &#39;c) -&gt; &#39;c<br /><br />Full name: Blog.MBuilder.Bind</div>
+<div class="tip" id="ft72">val f : (&#39;b -&gt; &#39;c)</div>
+<div class="tip" id="ft73">member MBuilder.ReturnFrom : M&lt;&#39;a&gt; -&gt; M&lt;&#39;a&gt;<br /><br />Full name: Blog.MBuilder.ReturnFrom</div>
+<div class="tip" id="ft74">type FBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; FBuilder<br />&#160;&#160;&#160;&#160;member Merge : F&lt;&#39;d&gt; * F&lt;&#39;e&gt; -&gt; F&lt;&#39;d * &#39;e&gt;<br />&#160;&#160;&#160;&#160;member Return : a:&#39;a -&gt; F&lt;&#39;a&gt;<br />&#160;&#160;&#160;&#160;member Select : F&lt;&#39;b&gt; * f:(&#39;b -&gt; &#39;c) -&gt; F&lt;&#39;c&gt;<br />&#160;&#160;end<br /><br />Full name: Blog.FBuilder</div>
+<div class="tip" id="ft75">val x : FBuilder</div>
+<div class="tip" id="ft76">member FBuilder.Merge : F&lt;&#39;d&gt; * F&lt;&#39;e&gt; -&gt; F&lt;&#39;d * &#39;e&gt;<br /><br />Full name: Blog.FBuilder.Merge</div>
+<div class="tip" id="ft77">val a : &#39;d</div>
+<div class="tip" id="ft78">val b : &#39;e</div>
+<div class="tip" id="ft79">member FBuilder.Select : F&lt;&#39;b&gt; * f:(&#39;b -&gt; &#39;c) -&gt; F&lt;&#39;c&gt;<br /><br />Full name: Blog.FBuilder.Select</div>
+<div class="tip" id="ft80">val a : &#39;b</div>
+<div class="tip" id="ft81">member FBuilder.Return : a:&#39;a -&gt; F&lt;&#39;a&gt;<br /><br />Full name: Blog.FBuilder.Return</div>
+<div class="tip" id="ft82">val m : MBuilder<br /><br />Full name: Blog.m</div>
+<div class="tip" id="ft83">val a : FBuilder<br /><br />Full name: Blog.a</div>
+<div class="tip" id="ft84">val f : int -&gt; M&lt;int&gt;<br /><br />Full name: Blog.f</div>
+<div class="tip" id="ft85">val g : int -&gt; F&lt;int&gt;<br /><br />Full name: Blog.g</div>
+<div class="tip" id="ft86">val b : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft87">val userInfo : Formlet&lt;string&gt;<br /><br />Full name: Blog.userInfo</div>
+<div class="tip" id="ft88">val name : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft89">val surname : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft90">val combined : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft91">val message : string<br />&#160;&#160;type: string<br /></div>

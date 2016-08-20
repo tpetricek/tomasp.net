@@ -1,0 +1,142 @@
+<!-- [info]
+
+ - date: 2005-07-07T16:31:19.0000000
+ - description: Asp.Net control that allows developers to display articles in multi-column layout.
+ - tags: 
+ - layout: post
+ - title: Multi column layout control
+ - url: columncontrol.aspx
+
+[/info] -->
+<!-- [abstract]
+Asp.Net control that allows developers to display articles in multi-column layout.
+[/abstract] -->
+
+<h1>Multi column layout control</h1>
+<doc version="1"><body><h1>Multi column layout control</h1><ul class="download"><li><a href="columncontrol/demo.zip">Download demo project - 20 Kb </a></li><li><a href="columncontrol/source.zip">Download source - 32 Kb</a></li><li><a href="columncontrol/doc.zip">Download control documentation (chm file) - 34 Kb </a></li></ul><div style="margin-left:40px"><img src="columncontrol/screen.png" alt="Column control in action!" /><br /><small>Image 1. - Three column layout</small></div><h2>Introduction</h2><p>This control allows you to simply and automatically divide your html content into multiple columns
+    and present articles in better readable multi-column layout. If you look at web page of random newspapers,
+    you'll notice that width of article text is about 400px. This is because wider texts are less comfortable 
+    to read. In paper newspapers text of article is divided into more columns. This technique isn't used 
+    on the web pages, because it is more difficult to implement since you need to manually divide article into
+    more columns. This control makes it possible...</p><h3>See online demos</h3><ul><li>I just started to use this control at my <a href="http://www.eeeksoft.net/english">
+      homepage</a> - <a href="http://www.eeeksoft.net/english">www.eeeksoft.net</a> [<a href="http://www.eeeksoft.net/english" target="_blank">^</a>]</li><li>You can also see attached <a href="http://www.eeeksoft.net/files/demo/columncontrol/demo1.aspx">demo application online</a> 
+      [<a href="http://www.eeeksoft.net/files/demo/columncontrol/demo1.aspx" target="_blank">^</a>]</li></ul><h3>Multi-column layout</h3><p>Multi-column layout is part of CSS 3 specification (More at w3c.org - 
+    <a href="http://www.w3.org/TR/2001/WD-css3-multicol-20010118">CSS3 module: Multi-column layout</a> [<a href="http://www.w3.org/TR/2001/WD-css3-multicol-20010118" target="_blank">^</a>]),
+    but since CSS 3 is still only a draft it will take long time before it will be possible
+    to implement multi-column layout on your web page using CSS 3. If you want to use it now
+    you have to divide every article into columns manually and put these columns in table or 
+    floating DIV elements.</p><p>This control does all the work automatically, so everything you have to do is to put it 
+    into your web page, column control then takes it's content and divides it into specified number of columns.</p><pre>
+&lt;cc:ColumnControl ColumnCount="3" runat="server"&gt;
+  .. your original long html content ..
+&lt;/cc:ColumnControl&gt;</pre><h2>How does this control work</h2><p>There are two main problems with implementing this control. First is how 
+		to calculate estimated height of content and the second is how to divide content
+		into columns withou breaking anything, because it can't just split html after 
+		specified number of characters. I decided to solve this problems on server side,
+		but it could be also implemented on client using JavaScript. I believe that
+		server side is better for this, because it requiere quite complex code that
+		would run very slowly on client and it wouldn't probably work on all clients.
+		On the other hand it is more difficult to estimate size of HTML elements on 
+		server.</p><p>The control contains many features that allows you to specify how should the 
+		original HTML code be divided. Control groups HTML tags into following 
+		types: header tags (<code>h1</code>, <code>h2</code>, ...), paragraph tags 
+		(<code>p</code>, <code>div</code>, ...), list tags (<code>ul</code>, 
+		<code>ol</code>, <code>dl</code>) and list items (<code>li</code>,
+		<code>dd</code>, <code>dt</code>) and others. If control reaches the limit of 
+		column while rendering its behavior depends on the current top level tag.</p><p>If breaking occurs in header tag, this header is moved to the beginning
+		of next column. In parahraph tag control breaks this tag into two parts and
+		second part is moved to the next column. In list control waits to the end
+		of current list item and moves the rest of list items to next column.
+		Other tags can't be divided, the control just moves to the end of the tag.</p><h3>Header and list division</h3><p>These images show how the control behaves when dividing content.
+		Text highlighted with green color is first and red is second part when 
+		calculating where it should be divided. In gray boxes you can see the result.
+		Interesting fact that you can see from second image is that if you 
+		add some more attributes to list (and also to paragraphs) it is automatically
+		copied to second column, so these attributes aren't lost.</p><div class="whitediv"><img src="columncontrol/headersplit.png" style="margin:5px" /><img src="columncontrol/listsplit.png" style="margin:5px" /></div><h3>Formating tags</h3><p>Automatic division works great, but sometimes you may need to specify something
+		more. For example you want to define that one section of document should be 
+		divided into three columns, second section shouldn't be divided and third
+		section should be two columns. Sometimes you may also need to insert some
+		additional white space to specified column (and move content to following).
+		This is exactly what formating tags are good for! Formating tags can be
+		inserted into HTML code as HTML comments, so it is quite simple. Formating
+		tags can be also very usefull when you want to load content form external 
+		resource and still be able to change division settings simply.</p><div style="margin:5px;margin-right:30px; margin-left:20px; float:right;"><img src="columncontrol/cctags.png" /><br /><small>Image 2. - Usage of formating tags</small></div><p>Following code shows how you can control dividing behavior. If you enable 
+		formating tags using <code>EnableFormatTags</code> property, control will
+		not divide whole content info columns, but it will only divide sections marked
+		by <code>cc:section</code> tag.	(Image on the right side shows what this code generates)</p><pre>
+&lt;cc:ColumnControl runat="server" 
+  <b>EnableFormatTags="true"</b>&gt;
+
+  &lt;h1&gt;Header&lt;/h1&gt;
+	
+  &lt;!--[cc:section cols=2]--&gt;
+  &lt;p&gt;First paragraph..&lt;/p&gt;
+  &lt;p&gt;Second paragraph..&lt;/p&gt;
+  &lt;!--[/cc:section]--&gt;
+
+  &lt;h2&gt;Small header&lt;/h2&gt;
+	
+  &lt;!--[cc:section cols=3]--&gt;
+  &lt;p&gt;
+    This very long paragraph will be 
+    divided into three columns...
+  &lt;/p&gt;
+  &lt;!--[/cc:section]--&gt;
+
+&lt;/cc:ColumnControl&gt;</pre><p>Second use for formating tags is when you need to move some content to 
+		next column and you need to insert additional space to first one.
+		In this case you can use <code>cc:space</code> tag as you can see in following
+		example:</p><pre>
+&lt;cc:ColumnControl ColumnCount="3" runat="server"&gt;
+
+  &lt;p&gt;First paragraph..&lt;/p&gt;
+  &lt;!--[cc:space size=50]--&gt;
+
+  &lt;p&gt;Second paragraph..&lt;/p&gt;
+  &lt;p&gt;Third paragraph..&lt;/p&gt;
+  
+&lt;/cc:ColumnControl&gt;</pre><p>For more advanced examples with formating tags see <a href="http://www.eeeksoft.net/files/demo/columncontrol/demo2.aspx">online demo application</a> [<a href="http://www.eeeksoft.net/files/demo/columncontrol/demo2.aspx" target="_blank">^</a>].</p><h2>Control properties</h2><h3>General properties</h3><p>As you can see from previous examples, you can change column number using
+		<code>ColumnCount</code> property. When you want to control division from 
+		content using formating tags, you can use <code>EnableFormatTags</code>.
+		If formating tags are enabled <code>ColumnCount</code> is used as default
+		value when you don't specify column count in section tag (<code>&lt;!--[cc:section]--&gt;</code>).</p><div style="margin:5px;margin-right:30px; margin-left:20px; float:right;"><img src="columncontrol/mincolwid.gif" alt="What can be done with MinColumnWidth" /><br /><small>Image 3. - What can be done with MinColumnWidth property</small></div><h3>Generated code</h3><p>In current HTML, there are two ways of doing multi-column layout. First is using
+		<code>table</code> with specified number of columns and second is using <code>div</code>
+		tags (with CSS styles). Each of this approach has its advantages and disadvantages, so 
+		you can decide which one should be used by <code>RenderMode</code> property.
+		It has following three possible values:</p><ul><li><strong>DivFixed</strong> - generates columns using <code>div</code> elements.
+			All columns except last one has css style <code>float:left</code> to achieve column
+			layout. Each column has css class <code>cc_col</code> and it contains another 
+			<code>div</code> element with <code>cc_cont</code> class. Last column contains
+			element with <code>cc_last</code> css class.</li><li><strong>TableFixed</strong> - generates table with specified number of columns.
+			Each column has css class set to <code>cc_col</code> and it also has exactly set
+			width in percents, so column width can't change.</li><li><strong>TableVariable</strong> - Like previews method, generates table and
+			each column has css class set to <code>cc_col</code>. Table columns doesn't have 
+			specified width, so width can be adjusted by web browser.</li></ul><p>If you use <code>DivFixed</code> render mode, you can also use 
+		<code>MinColumnWidth</code> property to specify minimal width of control at which 
+		column layout will be preserved. This means that if you resize control to smaller
+		width, it will display whole content in one column. This feature is demonstrated
+		in <a href="http://www.eeeksoft.net/files/demo/columncontrol/demo2.aspx">second example</a> [<a href="http://www.eeeksoft.net/files/demo/columncontrol/demo2.aspx" target="_blank">^</a>].
+	</p><h3>Appearance - column division</h3><p>Because it is difficult to estimate size of elements, you can help control by 
+		setting properties <code>TagConstants</code> and <code>ElementsSizes</code>. First one
+		can be used to specify ratio between sizes of elements. For example if you expect
+		that one character in <code>pre</code> element has same size as 10 characters 
+		in <code>p</code> element, you can set this property to <code>"pre=10"</code> and control
+		will use this settings for better division. <code>ElementsSizes</code> property
+		allows you to specify how much space is taken by non-pair tags. This is very useful
+		if you want to insert image into document, just use this property (for example <code>"img=500"</code>)
+		and control will be able to better estimate size of <code>img</code> tags.		
+		Usage of these properties is demonstrated in <a href="http://www.eeeksoft.net/files/demo/columncontrol/demo3.aspx">third 
+		online example page</a> [<a href="http://www.eeeksoft.net/files/demo/columncontrol/demo3.aspx" target="_blank">^</a>].</p><p>As described above control uses three different approaches to division. You can
+		specify what HTML tags should be considered as header tags using <code>HeaderTags</code> property
+		(control will never divide tag into multiple columns and it won't be left at the end
+		of column). Next type are lists that are divided only after end of list item.
+		Tags that are handled as lists can be set using <code>ListTags</code> and
+		list items can be changed using <code>ListItemTags</code>. Last type of tags
+		are <code>ParagraphTags</code> that can be divided into multiple columns. <code>SpaceChars</code> 
+		allows you to specify characters that can be used to divide content of paragraph.
+		Control also uses list of all other tags used for text formating. This list can 
+		be modified using <code>PairTags</code> property, but be careful - control expects
+		that all this tags have matching end tag!</p><h2>Known issues</h2><ul><li>Parser that is used for dividing HTML content passed to the control isn't very smart.
+			It doesn't expect fully valid XHTML (it doesn't try to work with it using XML classes),
+			but it expects that all pair tags have ending tag.</li><li>I tried to test control as I could, but if you find any example when it generates
+			strange results, please contact me! I'm looking forward to improving it.</li></ul><h2>Future work and history</h2><ul class="graphical"><li>(7/7/2005) - Control available for ASP.NET 1.1 and ASP.NET 2.0 beta 2</li><li>(7/7/2005) - First version of this article published at CodeProject</li></ul></body></doc>

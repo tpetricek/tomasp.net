@@ -1,0 +1,213 @@
+<!-- [info]
+
+ - date: 2007-11-24T23:22:04.0000000
+ - description: This article describes a 3D version of famous Sierpinski carpet fractal implemented in the F# language using WPF 3D libraries from .NET 3.0.
+ - tags: parallel,f#
+ - layout: post
+ - title: Infinite Cheese Fractal using WPF 3D and F#
+ - url: infinite-cheese.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>I always liked fractals, because they look like objects from another world, but on the other side
+  if you look at some things in our world you can see many similarities with fractals (but not quite as ideal
+  with the infinite level of precision). One of my favorite fractals is 3D version of Sierpinski carpet [<a href="#wpffractref">1</a>],
+  which itself is based on very famous Cantor set. Quite long time ago I thought that it would be nice to 
+  implement animation of flying through this fractal, but I was never good in 3D graphics and it looked like a lot of work,
+  so I never get to doing it. Luckily, now with F#, which makes it very easy to write the code to generate the fractal and
+  with WPF 3D, which can be easily used to animate the fractal, I finally had everything I needed to do it, so here it is!
+</p>
+
+<div style="text-align:center;">
+<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+</div>
+[/abstract] -->
+
+<h1>Infinite Cheese Fractal using WPF 3D and F#</h1>
+<p>I always liked fractals, because they look like objects from another world, but on the other side
+  if you look at some things in our world you can see many similarities with fractals (but not quite as ideal
+  with the infinite level of precision). One of my favorite fractals is 3D version of Sierpinski carpet [<a href="#wpffractref">1</a>],
+  which itself is based on very famous Cantor set. Quite long time ago I thought that it would be nice to 
+  implement animation of flying through this fractal, but I was never good in 3D graphics and it looked like a lot of work,
+  so I never get to doing it. Luckily, now with F#, which makes it very easy to write the code to generate the fractal and
+  with WPF 3D, which can be easily used to animate the fractal, I finally had everything I needed to do it, so here it is!
+</p>
+
+<div style="text-align:center;">
+<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/pDxoge-_as0&amp;hl=en&amp;fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+</div>
+
+
+<h2>How does it work?</h2>
+<p>Before looking at the source code, I'd like to explain how the animation works, because it uses one very simple
+  trick. Even though it looks, that the precision of the model is increased every time the camera turns up or down
+  when flying through the fractal, the shape isn't actually changing. The effect is achieved by the fact that the position
+  of camera changes when turning up or down and the view starts again from a location before the whole cube.
+  This means that the model is not changing and we only need to do a loop of camera animation to get the feeling of 
+  infinite movement through the fractal. The code that generates the fractal is written in F# (and I will shortly
+  describe the key parts below) and the code to do the animation is declaratively specified in XAML.</p>
+  
+<h3>Generating the Fractal in F#</h3>  
+<p>The first problem that we will look at is how to generate the fractal. As usually in 3D graphics we'll need to generate 
+  a collection of triangles, but the code will first compose a fractal from small cubes and then turn them into triangles.
+  There is also one optimization, which occurs when placing two cubes side-by-side. Obviously we don't
+  want to include the sides that would be hidden, so this is handled in the code that composes the fractal and the code generates 
+  reasonable number of triangles.</p>
+
+<p>First, we'll define triangles from which the cube is composed. This needs to be done by hand and it is
+  just a bunch of numbers, so you can look at the attached source code for the complete declaration. The type of this
+  value is however interesting, so let's look at the type:</p>
+<pre lang="fsharp">
+// 3D point represented using integers
+type pointi3d = int * int * int
+// Triangle using integral points
+type trianglei = pointi3d * pointi3d * pointi3d
+// A value that represents a cube
+val cube : ((int * int * int) * trianglei list) list
+</pre>
+<p>As we can see the cube is represented as a list of sides (so the length of the list will be 6) and for each side
+  we have a tuple that represents the side (for example left side will have <code>(-1, 0, 0)</code>, bottom side will have 
+  <code>(0, -1, 0)</code> etc.) and the side is represented as collection of triangles (we need two triangles for every 
+  rectangular side). The cube represented by a <code>cube</code> value has size <code>1*1*1</code>. Now that we have a 
+  cube, we also need a function that will return only the sides that we need:</p>
+<pre lang="fsharp">
+// Returns a cube with filtered sides
+let GetCube incl_sides = 
+  [ for (side,trigs) in cube 
+      when Set.mem side incl_sides
+      -&gt;&gt; trigs ]
+</pre>
+<p>The natural representation of needed sides is a set which contains tuples that represent the needed sides (which I
+  mentioned earlier), so the type of <code>incl_sides</code> value is <code>Set&lt;int*int*int&gt;</code>. The function
+  takes sides from the cube, filters those that should be included (because the side identifier is included in the set) and
+  then returns all triangles from the side, so the result of the function will be simply a collection of triangles.</p>
+<p>The next function is a function that we will call during every recursive step and that will call recursively
+  our function for generating cubes and collect the generated triangles. Before looking at the function we need to 
+  define the 'pattern' of the fractal. In the actual code, this is represented using 3D array (created using
+  <code>Array3</code> module), but the values look like this:</p>
+<pre>
+The pattern representing the fractal:
+  [ [1; 1; 1]; [1; 0; 1]; [1; 1; 1] ];
+  [ [1; 0; 1]; [0; 0; 0]; [1; 0; 1] ];
+  [ [1; 1; 1]; [1; 0; 1]; [1; 1; 1] ];
+</pre>
+<p>By the way, if you want to experiment a bit you can try changing the function that generates the pattern to return the opposite
+  values, this means that it would return 1 instead of 0 and respectively - this generates another interesting
+  fractal, but you would also have to change the animation as the existing one would 'fly' through the model.</p>
+<p>Now, let's look at the <code>PatternMap</code> function, which uses the pattern and calls a function
+  given as an argument for every smaller cube generated using the pattern. When you look at the function 
+  signature, you can see that the function takes a set of sides as an argument (this represents the sides
+  of the whole cube that should be included) and a function that will be called recursively to generate
+  the triangles. This function takes coordinates (x, y, z) of the smaller cube to generate and a set of
+  sides that should be included for this smaller cube (this set depends on the pattern, but also on the
+  argument specifying which sides should of the large cube should be included):</p>
+<pre lang="fsharp">  
+// Takes set representing included sides (around the cube) and calls 'f'
+// for every sub-cube in the cube where pattern has '1', giving it  
+// coordinates and set with sides to include in the cube.
+//
+// Type signature:
+//   type side = int*int*int
+//   Set&lt;side&gt; -&gt; (int*int*int -&gt; Set&lt;side&gt; -&gt; #seq&lt;'b&gt;) -&gt; list&lt;'b&gt;
+let PatternMap incl_sides f =
+
+  // Calculates set of sides to be included for specific location in the 
+  // pattern. Uses 'incl_sides' for lookup when testing border sides and
+  // uses the pattern for sides inside the pattern.
+  let get_included_sides x y z = 
+    Set.of_seq
+      (seq 
+        { // loop over all possible 'directions',
+          // test if out of range and use either pattern or 'incl_sides'
+          for idx, neq, (dx, dy, dz) in 
+              [ (x, 0, (-1,0,0)); (y, 0, (0,-1,0)); (z, 0, (0,0,-1));
+                (x, 2, ( 1,0,0)); (y, 2, (0, 1,0)); (z, 2, (0,0, 1)); ] do
+            if ((idx &lt;&gt; neq &amp;&amp; pattern.[x+dx, y+dy, z+dz] = 0) ||
+                (idx = neq  &amp;&amp; Set.mem (dx, dy, dz) incl_sides)) then yield (dx, dy, dz) })    
+  
+  // Recursively collect triangles from all the smaller 
+  // cubes that should be included (as specifyied by the pattern).
+  [ for x in [0 .. 2] do
+      for y in [0 .. 2] do
+        for z in [0 .. 2] do
+          if (pattern.[x,y,z] = 1) then
+            yield! f (x, y, z) (get_included_sides x y z) ]
+</pre>
+<p>The function contains one inner function (<code>get_included_sides</code>), which generates a 
+  set with sides to be included for a smaller cube and the return value is generated by 
+  sequence comprehension, which loops over all the elements (small cubes) in the pattern
+  and calls the function given as an argument (<code>f</code>). The sequence comprehension
+  returns using <code>yield!</code>, which means that it collects all the recursively generated 
+  triangles and returns a list containing all of them.</p>
+
+<p>As a last step we need to implement the recursive function that takes depth as an arguments and
+  returns triangles using <code>GetCube</code> when the depth reaches some specified level, or calls
+  <code>PatternMap</code> giving it a function that calls <code>Generate</code> recursively for 
+  every generated cube. Note that the function also needs to move the recursively generated cubes 
+  accordingly to the depth of the recursion:</p>
+<pre lang="fsharp">
+let rec Generate k incl_sides = 
+  if k = 1 then 
+    (GetCube incl_sides) 
+  else
+    let d = k/3
+    PatternMap incl_sides ( fun (x, y, z) incl_sides -&gt; 
+      (Generate d incl_sides) |&gt; translate (x*d, y*d, -z*d)  )
+</pre>  
+<p>And that's all - the rest of the code that I didn't comment here mostly deals with conversion
+  of the generated triangles (which contained coordinates in the edges) to the format required by
+  WPF (triangles contain just indices to some array with edges), but that's not very interesting. 
+  The second part that I didn't mention is calling the WPF functionality, but as F# is .NET language
+  this is very straightforward, so this is commented only in the complete source code, which you can find below.  
+  You can also look at a good introduction to this topic in an article that
+  discusses using WPF 3D from F# written by Robert Pickering [<a href="#wpffractref">2</a>].</p>
+
+<h3>Animating the Camera in WPF</h3>  
+<p>Now let's look at the second part of the application, in which we'll use XAML (which is a declarative 
+  language based on XML, which is used for defining user interface and some basic interactions including animations
+  in WPF). We'll need to declare a <code>Storyboard</code>, which is an object that describes an animation. 
+  Our storyboard will first perform an animation that moves the camera from the initial position (which is far from
+  the fractal) closer to the object and then we'll use <code>ParallelTimeline</code> object, which can 
+  contain an animation that is executed forever. In this repeated animation we start moving the camera from a position 
+  right before the fractal and move it into the fractal and we'll also change the <code>LookDirection</code> property
+  of the camera when turning up or down (there are two distinct parts of the animation, first which moves the camera
+  up and second which moves the camera down, but the following code sample includes only the first part, because the
+  second is similar):</p>
+<pre lang="xml">
+&lt;Storyboard&gt;
+  &lt;!-- First, move to the fractal --&gt;
+  &lt;Point3DAnimation Storyboard.TargetName="cam" 
+    Storyboard.TargetProperty="Position" Duration="0:0:4" 
+    From="0,0,100" To="0,0,27" RepeatBehavior="1x"/&gt;
+    
+  &lt;!-- Repeat fractal animation forever --&gt;
+  &lt;ParallelTimeline RepeatBehavior="Forever" BeginTime="0:0:4"&gt;
+    &lt;!-- Move forward --&gt;
+    &lt;Point3DAnimation Storyboard.TargetName="cam" 
+      Storyboard.TargetProperty="Position" BeginTime="0:0:0"
+      From="0,0,27" To="0,0,-9" Duration="0:0:4" RepeatBehavior="1x" /&gt;
+    &lt;!-- Rotate camera up --&gt;
+    &lt;Vector3DAnimation Storyboard.TargetName="cam" 
+      Storyboard.TargetProperty="LookDirection" BeginTime="0:0:3"
+      From="0, 0, -1" To="0, 1, 0" Duration="0:0:1" RepeatBehavior="1x" /&gt;
+      
+    &lt;!-- Move forward &amp; rotate camera down --&gt;
+    &lt;!-- ... --&gt;
+  &lt;/ParallelTimeline&gt;
+&lt;/Storyboard&gt;</pre>
+<p>Animation of <code>Position</code> property is described using <code>Point3DAnimation</code>, which animates
+  a property specified by <code>TargetProperty</code> from an initial value (<code>From</code>) to a target value (<code>To</code>)
+  interpolating the coordinates of the 3D point linearly. The second animation primitive which I used in this
+  example is <code>Vector3DAnimation</code>, which similarly animates a 3D vector, which specifies a direction in WPF.</p>
+
+  
+<h2>Downloads and References<a name="wpffractref"></a></h2>
+<ul>
+  <li>Download the 3D fractal <a href="/articles/infinite-cheese/source.zip">source code</a> (7.68 kB)</li>
+  <li>For a latest version of the source code visit the <a href="http://www.codeplex.com/fsharpsamples" type="external">F# Samples</a> project at CodePlex</li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://en.wikipedia.org/wiki/Sierpinski_carpet" type="external">Sierpinski carpet</a> - Wikipedia</li>
+  <li>[2] <a href="http://www.strangelights.com/blog/archive/2006/06/23/1309.aspx" type="external">Bending the Cat: F# meets WPF 3D</a> - Robert Pickering's Strange Blog</li>
+</ul>

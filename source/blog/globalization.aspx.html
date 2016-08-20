@@ -1,0 +1,145 @@
+<!-- [info]
+
+ - date: 2005-07-06T00:44:35.0000000
+ - description: V tomto tutoriálu se dočtete o tom, jak vytvářet aplikace, které fungují nezávisle na lokálním nastavení.
+ - tags: 
+ - layout: post
+ - title: .NET - Globalizace a lokalizace aplikací (1.)
+ - url: globalization.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto tutoriálu se dočtete o tom, jak vytvářet aplikace, které fungují nezávisle na lokálním nastavení.
+[/abstract] -->
+
+<h1>.NET - Globalizace a lokalizace aplikací (1.)</h1>
+<doc version="1"><body><h1>.NET - Globalizace a lokalizace aplikací (1.)</h1><img src="globalization/screenshot.png" style="float:right; margin:10px;" alt="Ukázková aplikace" /><p>V následujících dvou článcích se podíváme na prostředky, které
+    .NET poskytuje pro tvorbu globalizovatelných a lokalizovatelných aplikací.
+    Globalizace - která je tématem této části - znamená, že vaše aplikace funguje
+    korektně v libovolném prostředí (tedy i pod operačním systémem s jiným
+    jazykem a lokálním nastavením) a také se podle tohoto nastavení chová.</p><p>Lokalizovatelnost aplikací (o které bude řeč v příštím článku) znamená, že 
+    aplikace má oddělené zdroje, které jsou závislé na jazyce od samotného 
+    kódu. Takovouto lokalizovatelnou aplikaci lze snadno lokalizovat,
+    tedy doplnit o zdroje v dalším jazyce.</p><p>Více o těchto pojmech naleznete například v MSDN v sekci 
+    Planning World-Ready Applications [<a href="#links">1</a>].</p><h2>Co se dočtete v této části tutoriálu</h2><ul><li>Základní přehled objektů jmenného prostoru <code>System.Globalization</code></li><li>Jak lze zjišťovat a nastavovat aktuální jazykové nastavení aplikace</li><li>Jak formátovat data do podoby odpovídající aktuálnímu nastavení</li><li>Jak ukládat data ve formátu nezávislém na nastavení</li></ul><h2>Objekty pro globalizaci</h2><p>Pro používání objektů umožňujících tvorbu globalizovatelných aplikací
+    budete potřebovat zejména jmenný prostor <code>System.Globalization</code>.
+    Základním objektem umožňující zjišťování systémového nastavení je 
+    objekt <code>CultureInfo</code>. Tento objekt obsahuje všechno základní
+    nastavení a obsahuje vlastnosti které vrací objekty s informacemi
+    o dalších detailech nastavení, jako je například kalendář (vlastnost <code>Calendar</code>).</p><p>Instanci tohoto objektu s aktuálním nastavením lze získat pomocí
+    staticke vlastnosti <code>CultureInfo.CurrentCulture</code>. 
+    Je také možno získat výchozí nastavení pro daný jazyk a zemi a to pomocí
+    standardních kódů popisovaných v RFC specifikaci [<a href="#links">2</a>].
+    Ve zkratce tyto kódy vypadají takto <code>xx-YY</code>, kde <code>xx</code> 
+    určuje jazyk a <code>YY</code> určuje nastavení specifické země.
+    Například kód pro češtinu je <code>cs</code> a pro české nastavení <code>cs-CZ</code>,
+    angličtina používaná v USA má kód <code>en-US</code> a britské 
+    nastavení má <code>en-GB</code>. Kompletní seznam všech podporovaných nastavení
+    naleznete v MSDN dokumentaci u popisu třídy CultureInfo [<a href="#links">3</a>].</p><h2>Lokální nastavení</h2><p>V následující ukázce se podíváme jak zle zjistit aktuální nastavení a
+    jak lze získat všechna možná nastavení .NET Frameworku:</p><pre><span class="c">// budeme pracovat s objekty Thread a CultureInfo</span>
+using System.Globalization;
+using System.Threading;
+...
+
+<span class="c">// zjisti vsechny mozna nastaveni</span>
+CultureInfo[] cultures=
+  CultureInfo.GetCultures(CultureTypes.AllCultures);
+			
+<span class="c">// Vypise jmena vsech nastaveni</span>
+foreach(CultureInfo culture in cultures)
+{
+  Console.WriteLine(culture.DisplayName);
+}
+
+<span class="c">// Vypise aktualni nastaveni</span>
+CultureInfo current=Thread.CurrentThread.CurrentCulture;
+Console.WriteLine(current.DisplayName);
+</pre><p>Nastavení <code>CurrentCulture</code> je specifické pro každé vlákno, proto
+    se pro zjišťování nastavení používá vlastnost <code>Thread.CurrentThread</code>,
+    která vrací objekt aktuálního vlákna. Měnit nastavení lze opět pouze pro aktuální
+    vlákno a to nastavením vlastnosti <code>CurrentCulture</code>. Při změně nastavení
+    je ale potřeba používat pouze specifické nastavení (tedy například nelze použít 
+    informace s kódem <code>cs</code>, ale je potřeba i určení země, tedy
+    <code>cs-CZ</code>). K tomuto účelu slouží metoda <code>CreateSpecificCulture</code> 
+    jak je vidět v následující ukázce:</p><pre><span class="c">// Vytvori specificke CultureInfo pro anglictinu</span>
+CultureInfo eng=CultureInfo.CreateSpecificCulture("en");
+<span class="c">// Vypsat informace o CultureInfo</span>
+Console.WriteLine("{0} - {1}",eng.Name,eng.DisplayName);
+
+<span class="c">// Nastavit aktualni culture na en-US</span>
+Thread.CurrentThread.CurrentCulture=eng;
+</pre><pre>
+Výstup programu bude:
+en-US - English (United States)
+</pre><h3>Možné chyby</h3><p>Při nastavování <code>CurrentCulture</code> dojde k výjimce pokud se pokusíte
+    nastavit CultureInfo, které nepopisuje specifické nastavení. Také může dojít
+    k chybě při nastavení jednoho z několka kódů, které jsou sice podporovány v 
+    .NET Frameworku, ale ne ve WinAPI a vzhledem k tomu, že toto volání vnitřně
+    s WinAPI pracuje dojde k chybě (jedná se například o <code>zh-CHT</code> - 
+    Traditional Chinese).</p><h2>Formátování dat</h2><p>Pokud používáte metody <code>ToString</code> nebo například <code>Double.Parse</code>
+    k převodu čísel a řetězců, automaticky se vždy použije aktuální nastavení.
+    Pokud tedy na systému s českým nastavením převedete číslo s desetinnou částí na 
+    textový řetězec, dostanete desetinnou čárku a v anglickém nastavení dostanete
+    desetinnou tečku. Při volání metody <code>Parse</code> se opět předpokládá,
+    že předávaný řetězec bude v aktuálním nastavení. Toto nastavení lze obejít tak,
+    že metodě jako druhý parametr předáte objekt <code>CultureInfo</code>, kterým
+    se má metoda řídit. Tato pravidla platí také pro strukturu <code>DateTime</code>,
+    pomocí které lze pracovat s časem.</p><pre><span class="c">// Vypise cislo PI ve francouzskem formatu</span>
+CultureInfo frCulture=CultureInfo.CreateSpecificCulture("fr");
+string pi=Math.PI.ToString(frCulture);
+Console.WriteLine(pi);
+
+<span class="c">// .. a prevod retezce zpet na cislo</span>
+double dblPi=Double.Parse(pi,frCulture);
+</pre><p>Další co .NET Framework umožňuje, je získání jmen měsíců nebo dnů v týdnu,
+    takže pokud ve vaší aplikaci chcete zobrazovat například ovládací prvek
+    <code>DropDownList</code> se seznamem měsíců, není potřeba tyto měsíce
+    psát do kódu, ale lze je získat za běhu a to přímo v jazyce, který má
+    uživatel nastavený v operačním systému.</p><pre><span class="c">// Naplni seznam monthList jmeny mesicu</span>
+DateTimeFormatInfo df=CurrentCulture.DateTimeFormat;
+for(int i=0; i&lt;12; i++)
+{
+  monthList.Items.Add(df.MonthNames[i]);
+}
+</pre><h2>Neutrální formát</h2><p>Pokud chcete ve vaší aplikaci ukládat data například do souboru tak, aby
+    nebyla závislá na aktuálním nastavení můžete použít takzvanou invariant culture,
+    která za všech podmínek popisuje stejné nastavení. K získání tohoto nastavení
+    lze použít statickou vlastnost objektu <code>CultureInfo</code> a to 
+    <code>InvariantCulture</code>. V následující ukázce se podíváme, jak lze 
+    zapsat a následně načíst ze souboru náhodné číslo ve formátu nezávislém 
+    na nastavení (v tomto nastavní se desetinná čísla ukládají s tečkou).</p><pre>
+using System.IO;
+using System.Globalization;
+...
+
+<span class="c">// Ziska objekt popisujici nezavisle nastaveni</span>
+CultureInfo invariant=CultureInfo.InvariantCulture;
+using(StreamWriter sw=new StreamWriter("C:\\test.txt"))
+{
+  <span class="c">// Prevede nahodne cislo na retezec v invariant formatu
+  // a ulozi jej do souboru..</span>
+  Random rnd=new Random();
+  string num=rnd.NextDouble().ToString(invariant);
+  sw.WriteLine(num);
+}
+</pre><p>Načítání ze souboru vypadá velmi podobně:</p><pre>
+using System.IO;
+using System.Globalization;
+...
+
+<span class="c">// Ziska objekt popisujici nezavisle nastaveni</span>
+CultureInfo invariant=CultureInfo.InvariantCulture;
+double num=0;
+using(StreamReader sr=new StreamReader("C:\\test.txt"))
+{
+  <span class="c">// Prevede nacteny retezec na cislo</span>
+  string str=sr.ReadLine();
+  num=Double.Parse(str,invariant);
+}
+
+<span class="c">// .. a vypise cislo ve formatu dle aktualniho nastaveni</span>
+Console.WriteLine(num.ToString());
+</pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vsent7/html/vxconwhydesigninternationalsoftware.asp">Overview of Globalization and Localization</a>
+      [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vsent7/html/vxconwhydesigninternationalsoftware.asp" target="_blank">^</a>] - MSDN</li><li>[2] <a href="http://www.google.com/search?q=RFC+1766">RFC 1766 - Kódy pro identifikaci lokálního nastavení</a>
+      [<a href="http://www.google.com/search?q=RFC+1766" target="_blank">^</a>]</li><li>[3] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfsystemglobalizationcultureinfoclasstopic.asp">CultureInfo Class</a>
+      [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfsystemglobalizationcultureinfoclasstopic.asp" target="_blank">^</a>] - MSDN</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/globalization/clanek.zip">Stáhnout tento článek v čistém HTML</a> (11 kB)</li><li><a href="http://www.eeeksoft.net/articles/globalization/sources.zip">Stáhnout zdrojové kódy ukázkových aplikací</a> (19 kB)</li></ul></body></doc>

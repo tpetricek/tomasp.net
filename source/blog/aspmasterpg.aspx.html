@@ -1,0 +1,190 @@
+<!-- [info]
+
+ - date: 2005-01-03T00:00:00.0000000
+ - description: Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další.
+ - tags: 
+ - layout: post
+ - title: Asp.Net 2 - Master pages
+ - url: aspmasterpg.aspx
+
+[/info] -->
+<!-- [abstract]
+Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další.
+[/abstract] -->
+
+<h1>Asp.Net 2 - Master pages</h1>
+<doc version="1">
+	<head keywords="asp.net; asp; asp.net 2; whidbey; master; pages; masterpages;" description="Jedna z nových a velice očekávaných věcí jsou master pages..."
+		category="Asp.Net 2" />
+<!--
+Problém jednotného vzhledu a společných některých částí stránky je v nové verzi Asp.Net řešen pomocí tzv. master pages. Funguje to tak, že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají pouze obsah... Master pages v Asp.Net 2 je již poměrně známá a velmi očekávaná věc. V tomto článku jsem se pokusil doplnit známé fakty o některé další zajímavosti týkající se master pages, jako je například dynamické načítání master stránky a další. 
+-->
+	<body>
+		<h1>Asp.Net 2 - Master pages</h1>
+		<h2>K čemu jsou Master pages</h2>
+		<p>Velice často řešený problém při vývoji webových aplikací je, že
+		člověk potřebuje oddělit části, které se na celém webu opakují 
+		(například hlavička a různé navigační ovládací prvky) od zbytku, který je
+		na každý stránce jiný.</p>
+		<h3>Řešeni ve verzi Asp.Net 1.1</h3>
+		<p>Ve starších verzích Asp.Net je toto možné řešit pomocí ovládacích prvků
+		(například <code>Header</code>, <code>MainMenu</code> atd..), 
+		ze kterých se jednotlvié stránky budou skládat. I tak je ale možné skládat 
+		stránky více způsoby.</p>
+		<p>Jedna cesta je vytořit pro každou stránku jeden aspx soubor a do něj
+		vložit standardní ovládací prvky (<code>Header</code> a <code>MainMenu</code>).
+		Zbytek stránky poté obsahuje samotné ovládací prvky, nebo nějaký statický text.
+		Toto řešení je velmi jednoduché a umožňuje přesně to co jsme chtěli tj. oddělit
+		základní ovládací prvky od obsahu stránek. Problém ale může nastat když je 
+		potřeba více změnit strukturu stránky (a ne vždy se to podaří udělat pouze
+		změnou CSS stylů). Potom totiž člověk musí měnit všechny stránky, což je u 
+		větších webů docela velká práce (ikdyž bude stránka velmi dobře navržená,
+		může tato situace nastat).</p>
+		<p>Druhou možností je vytvořit si jednu stránku (<code>show.aspx</code>), která obsahuje výše zmíněné 
+		standardní ovládací prvky a na místě obsahu je vložený ovládací prvek <code>PlaceHolder</code>.
+		Při požadavku na stránku je stránce předán parametr, podle kterého se 
+		načte nějaký ovládací prvek (nebo i více prvků) jako obsah stránky. 
+	  Toto řešení je poměrně jednoduché, ale nevýhodou je, že jednotlivé stránky
+		mají nepěknou adresu (<code>show.aspx?show=about</code>).
+		Kód na načítání ovládacích prvků je velmi jednoduchý a může vypadat přibližně takto:</p>
+		<pre>
+<span class="c">// Nacita obsah stranky podle parametru v QueryString</span>
+override protected void OnInit(EventArgs e)
+{
+<span class="c">  // Podle parametru nacist jeden z ovladacich prvku..</span>
+  Control ctrl=null;
+  switch(Request.QueryString["show"])
+  {
+    case "about":
+      ctrl=LoadControl("controls/about.ascx"); break;
+    default:
+      ctrl=LoadControl("controls/default.ascx"); break;
+  }
+	
+<span class="c">  // a ovladaci prvek se vlozi na stranku   </span>
+  pageContent.Controls.Add(ctrl);
+
+<span class="c">  // Asp.Net inicializace</span>
+  InitializeComponent();
+  base.OnInit(e);
+}
+	</pre>
+		<p>Další možné řešení je vytvoření bázové stránky, která by se sama postarala o 
+		vložení základních ovládacích prvků. Od této stránky jsou potom zděděny všechny
+		další stránky ve webu. Toto řešení sice vypadá nejčistěji, ale jeho implementace
+		není úplně snadná záležitost a člověk musí řešit docela dost problémů.
+		Existuje ale docela dost frameworků, které se tímto způsobem snaží přidat do 
+		Asp.Net 1.0 něco, co by se podobalo Master pages z Asp.Net 2 (pár odkazů je na konci textu).</p>
+		
+		<h2>Master pages v Asp.Net 2</h2>
+		<p>Problém jednotného vzhledu je v nové verzi Asp.Net řešen pomocí master pages. Funguje to tak,
+		že v master stránce je kód, který má být stejný na všech stránkách a ostatní stránky dodávají
+		pouze obsah. Master stránka pomocí tagů <code>asp:ContentPlaceHolder</code> určí jedno,
+		nebo více míst, kam je možné vkládat obsah a ostatní stránky pomocí <code>
+		asp:Content</code> vloží do master stránku obsah (atribut <code>ContentPlaceHolderID</code> určuje place holder).</p>
+		<p>Jednoduchý příklad na master pages by mohl vypadat takto:</p>
+		<pre>
+<span class="c">&lt;-- Common.master --&gt;</span>
+&lt;%@@ <b>Master</b> Language="C#" %&gt;
+&lt;html&gt;&lt;head runat="server"&gt;
+  &lt;title&gt;Master pages&lt;/title&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;form id="form1" runat="server"&gt;
+
+  &lt;h1&gt;Obsah z master page&lt;/h1&gt;
+  &lt;hr /&gt;
+  &lt;a href="prvni.aspx"&gt;Prvni stranka&lt;/a&gt;
+  &lt;a href="druha.aspx"&gt;Druha stranka&lt;/a&gt;
+  &lt;hr /&gt;
+  
+  <span class="c">&lt;-- Na tomto miste se bude vkladat obsah --&gt;</span><br />
+  <b>  &lt;asp:contentplaceholder id="PageContent" runat="server"&gt;
+  &lt;/asp:contentplaceholder&gt;</b>
+  
+&lt;/form&gt;
+&lt;/body&gt;&lt;/html&gt;
+</pre>
+		<pre>
+<span class="c">&lt;-- prvni.aspx --&gt;</span>
+&lt;%@@ Page Language="C#" Title="Titulek stranky"
+    <b>MasterPageFile="~/Common.master"</b> %&gt;
+
+<span class="c">&lt;-- Zde je definovan obsah stranky --&gt;</span><br />
+<b>&lt;asp:Content ContentPlaceHolderID="PageContent" Runat="server"&gt;</b>
+  Obsah stranky prijde sem...
+<b>&lt;/asp:Content&gt;</b>
+</pre>
+		<p>Master page je tedy obyčejná Asp.Net stránka, jenom místo direktivy <code>Page</code>
+		začíná direktivou <code>Master</code>, má příponu <code>master</code> a je potomkem
+		třídy <code>MasterPage</code>. Master page se volí pomocí
+		parametru <code>MasterPageFile</code> v direktivě <code>Page</code>. Dále je zde možné 
+		zadat titulek stránky (z tohoto důvodu má master page u tagu <code>head</code>
+		uvedeno <code>runat="server"</code>). Stránky, které používají master pages
+		obsaují všechny ovládací prvky v prvcích <code>asp:Content</code> a z nich
+		jsou ovládací prvky vkládány při renderování do master stránek.</p>
+		<h3>Master page podle zařízení</h3>
+		<p>Jednou z vymožeností master pages je možnost použít jinou stránku pro jiná
+		zařízení (prohlížeče). Zařízení (prohlížeče) jsou identifikovány podle 
+		konfiguračních souborů, které naleznete v adresáři 
+		<code>C:\&#173;WINDOWS\&#173;Microsoft.NET\&#173;Framework\&#173;v2.0.xxxxx\&#173;CONFIG\&#173;Browsers</code>
+		(narozdíl od předcházejících verzí se zde nachází pro každé zařízení jeden soubor, 
+		takže je to mnohem přehlednější a snadněji spravovatelné).
+		Rozlišení master page podle zařízení se provede v direktivě <code>Page</code> takto 
+		(vím, že to tu již někdo psal, ale pro pořádek :-)):</p>
+		<pre>
+<span class="c">&lt;!-- Pro prohlizece identifikovane jako mozilla 
+     pouzije jinou master page --&gt;</span>
+&lt;%@@ Page master="default.master"
+    Mozilla:master="mozilla.master" %&gt;</pre>
+		<h3>Master page podle ...</h3>
+		<p>Master pages lze měnit nejen podle zařízení, ale i podle čehokoliv jiného (z kódu).
+		Je tedy snadno možné umožnit uživateli změnu master page podle jeho preferencí.
+		Jediné na co je třeba dát pozor je, že master page lze změnit pouze na úplném počátku
+		dotazu na stránku (ještě dříve než začne Asp.Net cokoliv načítat). Z tohoto důvodu
+		přibyla v Asp.Net 2 nová událost, která se vyvolává dříve než jakákoliv jiná a 
+		jmenuje se <code>PreInit</code>. Kód na změnu master page podle hodnoty uložené v
+		cookie by mohl vypadat takto:</p>
+<pre>
+<span class="c">// Udalost se vyvolava pred jakymkoliv nacitanim stranky</span>
+void Page_PreInit(object sender,EventArgs e)
+{
+  HttpCookie ck=Request.Cookies["masterpage"];
+  if (ck != null &amp;&amp; ck.Value == "2")
+  {
+    <span class="c">// Zmenit master page na 'Master2.master'</span>
+    MasterPageFile = "Master2.master";
+  }
+}</pre>
+		<h3>Hierarchické master pages</h3>
+		<p>Master pages umožňují vytvářet i hierarchickou strukturu (tedy, že jedna 
+		jedna master page (<code>GlobalMaster.master</code>) obsahuje nějaké hlavní rozdělení
+		stránky a další master pages jsou odvozené od ní a dělí nějak dále její prostor 
+		pro vkládání obsahu. Toto umožňuje na větších firemních webech mít jednu hlavní master
+		stránku, které by obsahovala např. hlavičku a základní odkazy a od ní odvozené
+		další stránky (pro jednotlivá oddělení ve firmě), které by obsahovaly věci společné
+		pro dané oddělení (viz obrázek).</p>
+		
+		<div style="text-align:center; padding:10px;">
+			<img src="aspmasterpg/hierarchy.gif" alt="Hierarchická struktura Master pages" />
+		</div>
+		
+		<h3>Jak je to udělané</h3>
+		<p>Master pages připomínají z řešení ve starších verzích nejvíce to, kde je jedna bázová
+			stránka do které se vkládá obsah s tím rozdílem, že stránka není použita jako bázová,
+			ale přidruží se jiným způsobem. Ve skutečnosti master pages fungují tak, že se napřed 
+			vytvoří master page (která je z odvozených stránek přístupná vlastností <code>Master</code>),
+			poté se vygenerují osbsahy z <code>asp:Content</code> a vytvořené ovládací prvky se vloží
+			do master page (to dělá interně metoda <code>AddContentTemplate</code>). Na konec se
+			vyrenderuje master stránka. Je to tedy řešení, které není možné realizovat bez zásahů 
+			do Asp.Net a není ani možné master pages tímto způsobem zpětně přidat do starších verzí Asp.Net.		
+			</p>
+		
+		<h2>Odkazy na související stránky</h2>
+		<ul>
+			<li><a href="http://www.codeproject.com/aspnet/page_templates.asp">ASP.NET Page Templates - Using Inheritance</a>
+		[<a href="http://www.codeproject.com/aspnet/page_templates.asp" target="_blank">^</a>] (Řešení problému v Asp.Net 1.1)</li>
+		<li><a href="http://msdn.microsoft.com/library/en-us/dnvs05/html/masterpages.asp">Master pages in Asp.Net 2</a>
+		[<a href="http://msdn.microsoft.com/library/en-us/dnvs05/html/masterpages.asp" target="_blank">^</a>] (Popis master pages na MSDN)</li>
+		</ul>
+	</body>
+</doc>

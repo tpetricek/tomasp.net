@@ -1,0 +1,308 @@
+<!-- [info]
+
+ - date: 2010-07-09T02:03:00.0000000
+ - description: In this article we look at working with SQL databases in F# using ADO.NET. We'll see how to use dynamic invoke operator to make the usual ADO.NET code remarkably elegant and simple...
+ - tags: functional,web,f#
+ - layout: post
+ - title: Dynamic in F#: Reading data from SQL database
+ - url: dynamic-sql.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>When reading data from a SQL database in F#, you have a couple of options.
+  You can use F# implementation of LINQ, which allows you to write queries directly
+  in the F# language or you can use standard ADO.NET classes such as <code>SqlCommand</code>.
+  The second option is often good enough - when you just need to call a simple 
+  query, you probably don't want to setup the whole LINQ infrastructure (generate
+  classes, reference F# PowerPack, etc.) Unfortunately, ADO.NET classes are a bit
+  ugly to use. When calling an SQL stored procedure, you need to specify the name
+  of the procedure as a string, you need to add parameters one-by-one by creating
+  instances of <code>SqlParameter</code>, you need to dynamically cast results from 
+  the <code>obj</code> type and so on...</p>
+
+<p>In this article, we'll look how to use the <em>dynamic operator</em> to make the
+  experience of using ADO.NET from F# dramatically better. Dynamic operator (there are
+  actually two of them) are a simple way of supporting dynamic invoke in F#. We can use
+  it to write code that looks almost like an ordinary method call or property access,
+  but is resolved dynamically at runtime (using the name of the method or property).
+  The following example shows what we'll be able to write at the end 
+  of this article:</p>
+
+<pre lang="fsharp">
+// Call 'GetProducts' procedure with 'CategoryID' set to 1
+use conn = new DynamicSqlConnection(connectionString)
+use cmd = conn?GetProducts
+cmd?CategoryID &lt;- 1
+conn.Open()
+
+// Read all products and print their names
+use reader = cmd.ExecuteReader()
+while reader.Read() do
+  printfn "Product: %s" reader?ProductName
+</pre>
+
+<p>If you ever tried to call a SQL stored procedure directly using the 
+  <code>SqlCommand</code>, then you can surely appreciate the elegance of this code
+  snippet. Let's now take a look at a larger example and some of the neat 
+  tricks that make this possible...</p>
+[/abstract] -->
+
+<h1>Dynamic in F#: Reading data from SQL database</h1>
+<p>When reading data from a SQL database in F#, you have a couple of options.
+  You can use F# implementation of LINQ, which allows you to write queries directly
+  in the F# language or you can use standard ADO.NET classes such as <code>SqlCommand</code>.
+  The second option is often good enough - when you just need to call a simple 
+  query, you probably don't want to setup the whole LINQ infrastructure (generate
+  classes, reference F# PowerPack, etc.) Unfortunately, ADO.NET classes are a bit
+  ugly to use. When calling an SQL stored procedure, you need to specify the name
+  of the procedure as a string, you need to add parameters one-by-one by creating
+  instances of <code>SqlParameter</code>, you need to dynamically cast results from 
+  the <code>obj</code> type and so on...</p>
+
+<p>In this article, we'll look how to use the <em>dynamic operator</em> to make the
+  experience of using ADO.NET from F# dramatically better. Dynamic operator (there are
+  actually two of them) are a simple way of supporting dynamic invoke in F#. We can use
+  it to write code that looks almost like an ordinary method call or property access,
+  but is resolved dynamically at runtime (using the name of the method or property).
+  The following example shows what we'll be able to write at the end 
+  of this article:</p>
+
+<pre lang="fsharp">
+// Call 'GetProducts' procedure with 'CategoryID' set to 1
+use conn = new DynamicSqlConnection(connectionString)
+use cmd = conn?GetProducts
+cmd?CategoryID &lt;- 1
+conn.Open()
+
+// Read all products and print their names
+use reader = cmd.ExecuteReader()
+while reader.Read() do
+  printfn "Product: %s" reader?ProductName
+</pre>
+
+<p>If you ever tried to call a SQL stored procedure directly using the 
+  <code>SqlCommand</code>, then you can surely appreciate the elegance of this code
+  snippet. Let's now take a look at a larger example and some of the neat 
+  tricks that make this possible...</p>
+
+<h2>Calling stored procedure: The usual way</h2>
+<p>We'll start the article by looking at a single, more complete, example of
+  calling an SQL stored procedure. I wrote this while porting the Personal Web Site
+  Starter Kit to F# (which I'll describe in the next blog post). The project has 
+  a simple photo gallery that contains albums and each album contains some photos.
+  When reading photos from the database, we can nicely store them in the following
+  F# record type:</p>
+<pre lang="fsharp">
+// Record type that represents photo with caption
+type Photo = 
+  { PhotoID:int 
+    PhotoAlbumID:int
+    PhotoCaption:string }
+</pre>
+
+<p>Now that we have a type to represent photos, we can look at a function
+  that reads photos from the database. Our database has an SQL stored 
+  procedure called <code>GetPhotos</code> that takes two parameters. The
+  parameter <code>AlbumID</code> specifies the ID of the album and the
+  parameter <code>IsPublic</code> specifies whether we want to get only
+  publicly accessible photos in the gallery. The following function calls the
+  stored procedure and reads the returned photos. The whole function body is
+  wrapped in a sequence expression, so the return type will be <code>seq&lt;Photo&gt;</code>:</p>
+
+<pre lang="fsharp">
+// Function that obtains photos in a specified album from database
+let GetPhotos (albumID:int) = seq { 
+  // Create a command to call SQL stored procedure
+  use conn = new SqlConnection(connectionString)
+  use cmd = new SqlCommand("GetPhotos", conn)
+  cmd.CommandType &lt;- CommandType.StoredProcedure
+
+  // Add parameters to the stored procedure call
+  cmd.Parameters.Add(SqlParameter("@@AlbumID", albumID)) |&gt; ignore
+  cmd.Parameters.Add(SqlParameter("@@IsPublic", true)) |&gt; ignore
+  
+  // Run the command and read results into an F# record
+  conn.Open()
+  use reader = cmd.ExecuteReader()
+  while reader.Read() do
+    yield { PhotoID = unbox (reader.["PhotoID"])
+            PhotoAlbumID = unbox (reader.["AlbumID"])
+            PhotoCaption = unbox (reader.["Caption"])} } 
+</pre>
+<p>As you can see, we first create an instance of the <code>SqlConnection</code>
+  type, then create a new command and set its type to <code>StoredProcedure</code>.
+  Then we need to specify parameters of the procedure, which is done by calling
+  <code>cmd.Parameters.Add</code>, which takes <code>SqlParameter</code> as an argument.
+  To read the result, we get <code>SqlDataReader</code> and then repeatedly call
+  <code>Read</code>. When processing a single result row, we need to use the 
+  indexer to access individual columns of the result by name. The indexer returns
+  the data as value of type <code>obj</code>, so we use <code>unbox</code> to cast
+  the result to the type expected by the record.</p>
+<p>There are no particularly tricky places in the code, but if you look at it,
+  there is quite a lot of noise that doesn't express anything important. For 
+  example, we need to create <code>SqlCommand</code> explicitly (giving it the name
+  of the procedure as a string). When adding a parameter, we need to create 
+  an object (giving it the name of the parameter as a string), call a method
+  and ignore the result. And finally, when reading the results, we need to insert
+  explicit conversion. </p>
+<p>You could try writing a function for creating the SQL command to make the code
+  simple. However, there are still some problems. For example, if you decided to 
+  pass parameters of the procedure as a list of name-value pairs, the value would
+  have to be of type <code>obj</code> and you would need to add explicit boxing.
+  Luckily, we can throw all this noise away using the dynamic invoke operator...</p>
+
+<h2>Calling stored procedure: Using dynamic operator</h2>
+<p>Let's look how to write the same function using the dynamic operator. 
+  In order to make this work, you need to get an implementation of the 
+  operator that is available at the end of the article. The file with the 
+  implementation also defines several wrapper types that add the dynamic
+  functionality to standard ADO.NET types.</p>
+<p>Instead of creating 
+  standard <code>SqlConnection</code>, we need to create an instance of the
+  <code>DynamicSqlConnection</code> type (we'll look at why this is needed and 
+  how does it work soon). Once we do this change, we can use <code>?</code>
+  to create commands representing SQL procedure calls, to specify parameters
+  of the procedure and also to access columns when reading the result:</p>
+<pre lang="fsharp">
+// Function that obtains photos in a specified album from database
+let GetPhotos (albumID:int) = seq { 
+  use conn = new DynamicSqlConnection(connectionString)
+  use cmd = conn?GetPhotos
+  cmd?AlbumID &lt;- albumID
+  cmd?IsPublic &lt;- true
+
+  // Run the command and read results into an F# record
+  conn.Open()
+  use reader = cmd.ExecuteReader()
+  while (reader.Read()) do
+    yield { PhotoID = reader?PhotoID 
+            PhotoAlbumID = reader?AlbumID
+            PhotoCaption = reader?Caption } } 
+</pre>
+<p>Let's now look at the most interesting places in the code where we use
+  the dynamic invoke operator:</p>
+<ul>
+  <li><strong>Creating commands</strong> (e.g. <code>conn?GetPhotos</code>) - Here we use the operator to create a command
+    that will call the SQL stored procedure named <code>GetPhotos</code>. This snippet
+    doesn't call the procedure yet - it only returns a command, so that we can 
+    specify parameters of the procedure and decide how to call the command (in our
+    example, we're using <code>ExecuteReader</code> to get access to the returned
+    result set).</li>
+  <li><strong>Setting parameters</strong> (e.g. <code>cmd?AlbumID &lt;- albumID</code>) - This is
+    an example of using an operator <code>?&lt;-</code>, which sets a value of dynamically
+    accessed property. We're using it to specify parameters of the command created in 
+    the previous step.</li>
+  <li><strong>Accessing results</strong> (e.g. <code>reader?PhotoID</code>) - 
+    In this case, we're using dynamic access to get a value of a column with the
+    specified name. The result type of the operator is generic and the implementation
+    automatically converts the result to the specified type. Since the F# compiler
+    infers the type of the result from the context (e.g. when assigning result to 
+    a field of a specific type), the type casting is done fully automatically.</li>
+</ul>
+
+<h2>Looking under the cover</h2>
+<p>We're using the <code>?</code> operator in two ways. It can be called on an object 
+  representing SQL connection (e.g. <code>conn?GetPhotos</code>) in which case it 
+  returns a command for calling a stored procedure. It can be also called on an 
+  object representing SQL data reader (e.g. <code>reader?PhotoID</code>) in which case
+  it accesses column from the result set. As a result, we cannot write a single 
+  global declaration of the operator (using the <code>let</code> keyword), but we need
+  to associate the implementation with some type. However, we cannot add operators
+  to existing .NET types, so we create simple wrappers for the well-known ADO.NET 
+  types.</p>
+
+<p>Let's start by looking at the <code>DynamicSqlDataReader</code> type, which 
+  wraps a <code>SqlDataReader</code>. We didn't need to use this type directly in the
+  previous examples, because the wrapping is done automatically - when we invoke
+  <code>ExecuteReader</code> on a wrapped command object, it automatically wraps the
+  returned data reader. The implementation is slightly simplified (you can get
+  a full version at the end of the article), but it shows the two most important
+  things. Firstly, we expose the method <code>Read</code> for iterating through the 
+  result set and secondly, we implement the <code>?</code> operator for accessing 
+  results. (Note that the operator must be <code>static</code>, so we need to expose
+  the wrapped reader using a <code>private</code> property):</p>
+
+<pre lang="fsharp">
+// SqlDataReader wrapper that provides access to columns 
+// of the result-set using dynamic access operator
+type DynamicSqlDataReader(reader:SqlDataReader) =
+  member private x.Reader = reader
+  member x.Read() = reader.Read
+  // Read the specified column and casts it to the specified type
+  static member (?) (dr:DynamicSqlDataReader, name:string) : 'R = 
+    unbox (dr.Reader.[name])
+</pre>
+
+<p>The implementation of the dynamic operator is quite simple. The only interesting
+  aspect is the fact that the operator is generic (in the return type) and that 
+  it uses <code>unbox</code> to convert the obtained value from <code>obj</code>
+  to the type (which will be deduced by F# type inference based on how we use the
+  result). The next wrapper wraps the <code>SqlCommand</code> type and adds a
+  support for adding parameters using the <code>?&lt;-</code> operator:</p>
+
+<pre lang="fsharp">
+// SqlCommand wrapper that allows setting properties of a
+// stored procedure using dynamic setter operator
+type DynamicSqlCommand(cmd:SqlCommand) = 
+  member private x.Command = cmd
+  // Adds parameter with the specified name and value
+  static member (?&lt;-) (cmd:DynamicSqlCommand, name:string, value) = 
+    let p = SqlParameter("@@" + name, box value)
+    cmd.Command.Parameters.Add(p) |&gt; ignore
+  // Execute command and wrap returned SqlDataReader
+  member x.ExecuteReader() = 
+    new DynamicSqlDataReader(cmd.ExecuteReader())
+</pre>
+
+<p>The implementation is again pretty straightforward. Note that we need to 
+  provide an operator named <code>?&lt;-</code>, because F# uses different dynamic
+  access operator when reading properties and when setting value of a property. 
+  The operator takes three parameters - the target command (which needs to expose
+  the underlying command), a name of the property and a value to be used. We also
+  expose the <code>ExecuteReader</code> method, which automatically wraps the
+  returned reader (so that we can dynamically access columns).</p>
+<p>The last wrapper is the only one that needs to be created explicitly. It represents
+  connection to the database and provides an implementation of the <code>?</code> 
+  operator that can be used for creating commands that call SQL stored procedure
+  (the returned command is automatically wrapped using the previous type):</p>
+
+<pre lang="fsharp">
+// SqlConnection wrapper that allows creating stored 
+// procedure calls using the dynamic access operator
+type DynamicSqlConnection(connStr:string) =
+  let conn = new SqlConnection(connStr)
+  member private x.Connection = conn
+  member x.Open() = conn.Open()
+  // Creates command that calls the specified stored procedure
+  static member (?) (conn:DynamicSqlConnection, name) = 
+    let command = new SqlCommand(name, conn.Connection)
+    command.CommandType &lt;- CommandType.StoredProcedure
+    new DynamicSqlCommand(command)
+</pre>
+
+<p>The type exposes the <code>Open</code> method of the underlying connection and
+  implements the dynamic access operator <code>?</code>. The implementation of the
+  operator constructs a new command, specifies its type and wraps it using the 
+  <code>DynamicSqlCommand</code> type (so that we can set parameters of the stored
+  procedure call).</p>
+
+<h2>Summary &amp; downloads</h2>
+<p>In this article, we've seen how to make accessing data using ADO.NET from F# nicer 
+  using dynamic operators. This allows us to reduce the number of noise that has to 
+  be written in tasks related to data-access such as creating SQL commands, specifying
+  parameters of a stored procedure and reading data from the returned result-set. </p>
+
+<p>We've also seen one useful technique of implementing dynamic access in general. 
+  Because we needed to provide different implementation of the operator for different
+  types, we couldn't use a global implementation (written using the <code>let</code>
+  keyword). Instead, we implemented the operator in several wrappers that wrap standard
+  ADO.NET classes and augment them with the dynamic features. I believe that this technique can be
+  quite useful in other related scenarios.</p>
+
+<p>Below you can download the implementation of the wrappers that were used and presented
+  in this article. The download doesn't contain any examples (you can use the example
+  from the article as the starting point). I'll post an ASP.NET project that uses the
+  wrappers in another blog post soon...</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/dynamic-sql/dynamicsql.fs">Download F# source with the implementation of wrappers</a> (FS)</li>
+</ul>

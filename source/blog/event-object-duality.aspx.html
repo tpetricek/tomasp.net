@@ -1,0 +1,267 @@
+<!-- [info]
+
+ - date: 2010-07-19T16:58:05.0000000
+ - description: This article describes an interesting example of mathematical duality in programming languages - the duality between references between objects and references between events. The idea is useful for understading what events are garbage and can be garbage collected.
+ - tags: academic,research
+ - layout: post
+ - title: The Duality of Object and Event references
+ - url: event-object-duality.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Mathematical duality [<a href="http://tomasp.net/blog/event-object-duality.aspx
+#duallinks">2</a>] 
+  is a very useful and elegant concept that gives us a nice way of speaking
+  about objects or structures that behave in some way exactly conversely. There
+  is no clear definition of what <em>duality</em> is. However, the idea is that when we
+  have two structures that behave conversely and we know that something is true
+  about the first one, then we get the opposite statement about the other structure
+  "for free" (if you know how to translate from one structure to the other).</p>
+
+<p>In this article, I'll talk about an interesting example of duality that (to my best
+  knowledge) wasn't described by anyone before. The two dual structures are 
+  <strong>references between objects</strong> in a normal program and <strong>references
+  between events</strong> in a reactive application. The statement that is going to 
+  become obvious thanks to the duality principle is describing which of the objects (or
+  events) are garbage and can be safely collected by garbage collector.</p>
+
+<p>This topic is in much more details 
+  discussed in a paper [<a href="http://tomasp.net/blog/event-object-duality.aspx
+#duallinks">4</a>] I wrote with <a href="http://research.microsoft.com/en-us/people/dsyme/">Don Syme</a> 
+  and that I presented at the ISMM Workshop (see also <a href="http://tomasp.net/blog/pldi-2010-trip.aspx">my
+  trip report from PLDI</a>). In this article, I'll try to give an accessible
+  description of the most interesting idea from the paper...</p>
+[/abstract] -->
+
+<h1>The Duality of Object and Event references</h1>
+<p>Mathematical duality [<a href="#duallinks">2</a>] 
+  is a very useful and elegant concept that gives us a nice way of speaking
+  about objects or structures that behave in some way exactly conversely. There
+  is no clear definition of what <em>duality</em> is. However, the idea is that when we
+  have two structures that behave conversely and we know that something is true
+  about the first one, then we get the opposite statement about the other structure
+  "for free" (if you know how to translate from one structure to the other).</p>
+
+<p>In this article, I'll talk about an interesting example of duality that (to my best
+  knowledge) wasn't described by anyone before. The two dual structures are 
+  <strong>references between objects</strong> in a normal program and <strong>references
+  between events</strong> in a reactive application. The statement that is going to 
+  become obvious thanks to the duality principle is describing which of the objects (or
+  events) are garbage and can be safely collected by garbage collector.</p>
+
+<p>This topic is in much more details 
+  discussed in a paper [<a href="#duallinks">4</a>] I wrote with <a href="http://research.microsoft.com/en-us/people/dsyme/">Don Syme</a> 
+  and that I presented at the ISMM Workshop (see also <a href="http://tomasp.net/blog/pldi-2010-trip.aspx">my
+  trip report from PLDI</a>). In this article, I'll try to give an accessible
+  description of the most interesting idea from the paper...</p>
+
+<h2>Introduction</h2>
+<p>This concept of duality is quite useful in programming. In functional programming, the
+  <em>product type</em> (usually called tuple or record) is dual of <em>sum type</em>
+  (called discriminated union in F#). Let me demonstrate this using a simple example.
+  Here are two simple type declarations:</p>
+<pre lang="fsharp">
+// Color with R, G, B components   // Shape can be one of three types
+type Color =                       type Shape = 
+  { Red : int                        | Square of Point * int
+    Green : int                      | Circle of Point * int
+    Blue : int }                     | Triangle of Point * Point * Point
+</pre>
+<p>What is <em>dual</em> about these two types? When you have a record type consisting of three
+  values (such as <code>Color</code>), you get three functions for extracting individual 
+  values from the record (reading <code>Red</code>, <code>Green</code> and <code>Blue</code>  
+  component). On the other hand, when you have a discriminated union type, you get three
+  functions for constructing <code>Shape</code> from the three possible cases (creating a 
+  shape representing <code>Square</code>, <code>Circle</code> and <code>Triangle</code>). 
+  When we draw this idea using a simple diagram, you can easily see what the 
+  duality means:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/event-object-duality/duality.png" />
+</div>
+  
+<p>The two diagrams are essentially the same, with the only difference that the arrows in the
+  diagrams are reversed! In fact, most of the dualities usually mean just this - when you
+  find some nice way of drawing the concept as a diagram with arrows, the dual concept
+  looks exactly the same, just with the arrows reversed.</p>
+
+<p>Other interesting examples of duality in the programming languages world are for example   
+  the duality between <code>IEnumerable</code> (representing pull-based sequence of
+  values) and <code>IObservable</code> (representing push-based sequence of values) in .NET, which
+  has been nicely described by Erik Meijer [<a href="#duallinks">1</a>]. There are also some nice 
+  arrows involving <code>IObservable</code> in an article by Matthew Podwysocki [<a href="#duallinks">3</a>].
+  The next example is <em>covariance</em> and <em>contravariance</em> of generic types,
+  which is now available in C# 4.0. If you're wondering what arrows would be reversed 
+  in this case, you would change the orientation of arrows representing the inheritance,
+  but I'll write about this in some future article.</p>
+
+<p>Now, let's look at the duality between <strong>object references</strong> and <strong>event
+  references</strong> that I wanted to talk about in this article. I'll first describe the two
+  (idealized) dual world - the World of Objects and the World of Events and then we'll look
+  what does that tell us about garbage collection...</p>
+
+<h2>World of Objects</h2>
+<img src="http://tomasp.net/articles/event-object-duality/objects.png" style="float:right;margin:10px;margin-left:20px;" />
+<p>Let's start by looking at references between objects in the usual environment.
+  The diagram on the right gives an example - we have a root object called <code>program</code>
+  that references two other objects (<code>product</code> and <code>customer</code>). 
+  The diagram also shows an object <code>order</code> which references <code>product</code>,
+  but isn't referenced from any other object (we'll see that it can be garbage collected 
+  later).
+  </p>
+
+<p>There are two important facts about the World of Objects:</p>
+<ul>
+  <li><strong>Roots can be called directly</strong> - The <em>root</em> object is the one
+    that is called initially (there may be more of them, but that's not important). When the
+    object is called, it can make calls to other (referenced) objects and transfer the control
+    flow to them. </li>
+  <li><strong>Any node can have visible effect</strong> - All of the objects in the 
+    graph can "do something useful" such as print to the console, interact with the user
+    or modify some state of the application.</li>
+</ul>
+<p>These two points describe essential information that is important for specifying
+  what is a garbage. We don't want to dispose of any object that can do something useful.
+  In this scenario, this means that we cannot collect <em>roots</em> (because they can
+  be called from an external caller) and we cannot collect any object that is reachable
+  from the roots (because the control flow may be transferred to it while the application
+  is running). This leads to the usual definition of what is <em>garbage</em> in this 
+  environment:</p>
+<ul>
+  <li>An object is <strong>reachable</strong> if there is a path to it from some <strong>root</strong>.</li>
+  <li>An object that is not <strong>reachable</strong> is <strong>garbage</strong> and can be collected.</li>
+</ul>
+
+<p>As we'll see shortly, we can translate all of the points that I highlighted with bullets 
+  to the World of Events. We just need to write a few things in exactly the opposite way.
+  However, first I should talk a little bit about what I mean by the <em>World of Events</em>...</p>
+
+<h2>World of Events</h2>
+<p>When talking about <em>events</em>, you can imagine events as they are used in .NET and
+  first-class events in F# [<a href="#duallinks">5</a>] (see also <a href="http://tomasp.net/blog/reactive-i-fsevents.aspx">my
+  earlier article about them</a>). In general, an <em>event</em> is something that can 
+  emit a value at any time. You can create derived events that listen to some other 
+  events and emit the value that they receive only when it matches some predicate or 
+  for example emit a value that is calculated based on the original value. Let's 
+  demonstrate the idea using a simple snippet that uses first-class events in F#:</p>
+<pre lang="fsharp">
+// Creates an event that emits a value whenever one of 
+// the two events (MouseDown of btnOne or btnTwo) emit 
+let anyButton = 
+  Event.merge btnOne.MouseDown btnTwo.MouseDown
+
+// Creates an event that emits a string "click!"
+// whenever user clicks on any button with left-click
+let anyLeft = anyButton 
+  |&gt; Event.filter (fun e -&gt; 
+    e.Button = MouseButtons.Left)
+  |&gt; Event.map (fun _ -&gt; "click!")
+</pre>
+<p>These two examples are pretty simple, but they should illustrate the point.
+  You can write pretty complicated event processing code just by creating and 
+  composing events. So, let's now imagine that we have an environment that contains
+  <em>only events</em>. What would this kind of world look like?</p>
+
+<img src="http://tomasp.net/articles/event-object-duality/events.png" style="float:right;margin:10px;margin-left:20px;" />
+<p>The diagram on the right shows a simple scenario from the World of Events. 
+  Let's start from the <code>click</code> event. When it emits a value, the value
+  will be forwarded to the <code>right click</code> event (which emits the value only
+  when it was caused by right mouse button). The value is also forwarded to an event
+  called <code>handler</code> - we'll talk about this event shortly. The next branch
+  contains <code>key press</code> event which also sends values to <code>handler</code>.</p>
+
+<p>The <code>handler</code> event is a special event that can also have observable 
+  effects. When it receives a value from other events (or from the "outside"), it can 
+  for example modify something in the user interface or print to the console. In the terminology
+  used in .NET, those events actually represent <em>event handlers</em> that can be 
+  attached to events, but we can easily model them as special types of events.</p>
+
+<p>Let's summarize the interesting aspects of the World of Events (you may want to 
+  compare the points with those that I wrote about the World of Objects):</p>
+<ul>
+  <li><strong>Any event can emit</strong> - In general, we assume that any
+    events can emit value whenever it wants (for example, when the user does something). 
+    This is caused by some "external" source that we don't analyze. However an event
+    can also send values to other events (by following the references in the diagram).</li>
+  <li><strong>Only leaves can have visible effect</strong> - Only some of the 
+    events can perform something else than just emit a value. We call these special
+    events <em>leaves</em> (and they are displayed in green).</li>
+</ul>
+
+<p>Just like when discussing the World of Objects, these two points tell us which 
+  of the events are garbage. In general, we can dispose of any events that cannot
+  cause an observable action. An observable action can be caused only by special 
+  <em>leaf</em> events (drawn in the green color). However, these events can be triggered
+  by other events that have a reference to them (e.g. in the above example, the event
+  <code>click</code> can trigger the event <code>handler</code>). Now, we can 
+  easily define what is a garbage when it comes to events:</p>
+
+<ul>
+  <li>An event is <strong>observable</strong> if there is a path from it to some <strong>leaf</strong>.</li>
+  <li>An event that is not <strong>observable</strong> is <strong>garbage</strong> and can be collected.</li>
+</ul>
+
+<p>These definitions are <em>dual</em> to the two points that we've seen 
+  earlier when discussing the World of Objects. In the next section, we'll compare
+  the two in more detail and I'll explain the duality between them.</p>
+
+<h2>Garbage Collection and Duality</h2>
+<p>As I wrote in the introduction, <em>duality</em> usually means that two structures
+  are the same, with the only difference that some arrows are reversed. This is exactly
+  the case of <em>garbage</em> in the World of Objects and World of Events.
+  In both of the cases, we draw objects (or events) as nodes and references as 
+  oriented links between them. When we want to find objects (or events) that are garbage,
+  we need to check the following:</p>
+
+<ul>
+  <li>An object is garbage if there is no path <strong>to</strong> it <strong>from</strong> some root.</li>
+  <li>An event is garbage if there is no path <strong>from</strong> it <strong>to</strong> some leaf.</li>
+</ul>
+
+<p>I highlighted the words <strong>from</strong> and <strong>to</strong>, so that you can 
+  easily see that they are swapped. Let's now look at the two diagrams that I used
+  earlier in the discussion. The following version also shows which of the objects (events)
+  are garbage and can be safely collected:</p>
+
+<div style="text-align:center;">
+<img src="http://tomasp.net/articles/event-object-duality/objects-gc.png" style="margin-right:40px" />
+<img src="http://tomasp.net/articles/event-object-duality/events-gc.png" />
+</div>
+<p>In this case, the duality between the two structures tells us how to implement
+  garbage collection for the idealized World of Events. Instead of looking for objects
+  that are not referenced from roots, we need to look for the <em>dual</em> of this 
+  description - events that do not reference any leaves.</p>
+<p>We can also use duality in a different way. Let's say that we already have a standard garbage 
+  collection algorithm for objects and some graph of references between events. Now, we can
+  collect events that are garbage using the algorithm for garbage collection in the non-reversed
+  scenario. We just need to reverse all the links in the graph and then run the garbage collection
+  algorithm for objects. The nodes that will be marked as garbage will be those that 
+  are garbage when talking about events. You can look at the two above diagrams and easily
+  see that this trick would work!</p>
+
+<h2>Summary</h2>
+<p>The main point of this article was to demonstrate an elegant concept of duality 
+  that comes from mathematics and to show that it can be used when thinking about 
+  garbage collection in two dual worlds - the World of Objects and an idealized World
+  of Events. If you want to read more about this topic, you can also read our 
+  paper [<a href="#duallinks">4</a>], which also describes why this is an important problem
+  when it comes to first-class events in F# and how to integrate the two worlds - if you
+  wanted to model for example .NET application which contains both objects and events.</p>
+
+<p>How can the ideas from this article be useful in practice? First of all, duality
+  gives us a nice way of understanding the problem. When we know that something works in 
+  case of object references, we can easily find something that works for event references
+  (just by replacing <strong>from</strong> with <strong>to</strong> and the other way 
+  round in the description). However, to take the idea further, I believe that a framework for
+  reactive programming based on events could use the <em>dual garbage collection</em>
+  described in this article to collect unused events...</p>
+
+
+<h2>References<a name="duallinks">&#160;</a></h2>
+<ul>
+  <li>[1] <a href="http://channel9.msdn.com/shows/Going+Deep/Expert-to-Expert-Brian-Beckman-and-Erik-Meijer-Inside-the-NET-Reactive-Framework-Rx" type="external">Expert to Expert: Brian Beckman and Erik Meijer - Inside the .NET Reactive Framework (Rx)</a> - Interview at Channel 9</li>
+  <li>[2] <a href="http://en.wikipedia.org/wiki/Duality_(mathematics)" type="external">Mathematical duality</a> - wikipedia.org</li>
+  <li>[3] <a href="http://codebetter.com/blogs/matthew.podwysocki/archive/2009/11/03/introduction-to-the-reactive-framework-part-ii.aspx">Introduction to the Reactive Framework Part II </a> - Matthew Podwysocki</li>
+  <li>[4] <a href="http://tomasp.net/academic/event-chains.aspx">Collecting Hollywood's Garbage: Avoiding Space-Leaks in Composite Events</a> - Tomas Petricek, Don Syme</li>
+  <li>[5] <a href="http://blogs.msdn.com/b/dsyme/archive/2006/03/24/559582.aspx">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a> - Don Syme's WebLog on F# and Related Topics</li>
+</ul>

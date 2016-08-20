@@ -1,0 +1,41 @@
+{% extends "page.html" %}
+{% block head %}
+  <title>Latest writings from my blog - Tomas Petricek</title>
+
+  <meta name="description" content="Tomas Petricek's latest blog posts about programming languages and tools, working with data, philosophy of science and more." />
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+{% endblock %}
+
+{% block body %}
+<article>
+  <div class="container"><div class="row">
+  <div class="col-lg-2 col-md-1"></div>
+  <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+    
+  {% for post in model.Posts limit:15 %}
+    <div itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="author publisher" content="Tomas Petricek" />
+    <meta itemprop="headline" content="{{ post.Title }}" />
+    <meta itemprop="image" content="{{ post.Image }}" />
+    <h1 itemprop="mainEntityOfPage name"><a href="{{ post.Url }}">{{ post.Title }}</a></h1>
+      <div itemprop="description">{{ @post.Abstract }}</div>
+      <div class="info">
+      <p class="details">
+        <strong>Published</strong>: <span itemprop="datePublished">{{ post.Date | dateNice }}</span>
+        {% if post.Tags != "" %}
+          <br />      
+          <strong>Tags</strong>: 
+            {% assign next=false %}{% for tag in post.Tags %}{% if next %}, {% endif %}<a
+              href="/blog/tag/{{ tag | tagUrl }}/">{{ tag }}</a>{% assign next=true %}{% endfor tag %}
+        {% endif %}
+        <br />
+        <a itemprop="sameAs" href="{{ post.Url }}">Read the complete article</a><br /><br />
+      </p>
+      </div>
+    </div>    
+  {% endfor %}
+  </div></div>
+  </div>
+<article>
+{% endblock %}

@@ -1,0 +1,117 @@
+<!-- [info]
+
+ - date: 2011-07-20T00:19:37.0000000
+ - description: The blog post presents a paper that extends Haskell with pattern matching on monadic values. The paper has been accepted for publication at Haskell Symposium 2011 and extends the idea of joinads that I previously created for F#. The paper provides deeper theoretical background and discusses Haskell implementation.
+ - tags: parallel,writing,research,haskell,joinads
+ - layout: post
+ - title: Extending Monads with Pattern Matching (Haskell 2011)
+ - url: docase-haskell.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Some time ago, I wrote a <a href="http://tomasp.net/blog/match-bang-paper.aspx">paper about <em>joinads</em></a> and the <code>match!</code> extension
+  of the F# language. The paper was quite practically oriented and didn't go into much details about 
+  the theory behind <em>joinads</em>. Many of the examples from the F# version relied on some
+  imperative features of F#. I believe that this is useful for parctical programming, but I 
+  also wanted to show that the same idea can work in the <em>purely functional</em> context.</p>
+
+<p>To show that joinads work in the pure setting, I created a Haskell version of the idea.
+  The implementation (available below) is quite simple and consists of a pre-processor for 
+  Haskell source files and numerous examples. However, more important part of the recent work of 
+  joinads is a more detailed theoretical background.</p>
+
+<p>The theory of joinads, together with the language design of Haskell extension that implements
+  it is discussed in a paper <em>Extending Monads with Pattern Matching</em>, which was accepted
+  for publication at the <a href="http://www.haskell.org/haskell-symposium/2011/index.html">Haskell 
+  Symposium 2011</a>. Here is the abstract of the paper:</p>
+
+      <p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      Sequencing of effectful computations can be neatly captured using monads and elegantly written using 
+      <code>do</code> notation. In practice such monads often allow additional ways of composing computations, 
+      which have to be written explicitly using combinators.
+      </p><p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      We identify joinads, an abstract notion of computation that is stronger than monads and captures
+      many such ad-hoc extensions. In particular, joinads are monads with three additional operations: 
+      one of type <code>m a -> m b -> m (a, b)</code> captures various forms of <em>parallel composition</em>, 
+      one of type <code>m a -> m a -> m a</code> that is inspired by <em>choice</em> and one of type <code>m a -> m (m a)</code> 
+      that captures <em>aliasing</em> of computations. Algebraically, the first two operations form a 
+      near-semiring with commutative multiplication.
+      </p><p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      We introduce <code>docase</code> notation that can be viewed as a monadic version of <code>case</code>. Joinad laws
+      make it possible to prove various syntactic equivalences of programs written using <code>docase</code> 
+      that are analogous to equivalences about <code>case</code>. Examples of joinads that benefit from the notation
+      include speculative parallelism, waiting for a combination of user interface events, but also 
+      encoding of validation rules using the intersection of parsers.
+      </p>
+<p>Links to the full paper, source code and additional materials are <a href="http://tomasp.net/blog/docase-haskell.aspx#dscl">available below</a>.</p>
+[/abstract] -->
+
+<h1>Extending Monads with Pattern Matching (Haskell 2011)</h1>
+<p>Some time ago, I wrote a <a href="http://tomasp.net/blog/match-bang-paper.aspx">paper about <em>joinads</em></a> and the <code>match!</code> extension
+  of the F# language. The paper was quite practically oriented and didn't go into much details about 
+  the theory behind <em>joinads</em>. Many of the examples from the F# version relied on some
+  imperative features of F#. I believe that this is useful for parctical programming, but I 
+  also wanted to show that the same idea can work in the <em>purely functional</em> context.</p>
+
+<p>To show that joinads work in the pure setting, I created a Haskell version of the idea.
+  The implementation (available below) is quite simple and consists of a pre-processor for 
+  Haskell source files and numerous examples. However, more important part of the recent work of 
+  joinads is a more detailed theoretical background.</p>
+
+<p>The theory of joinads, together with the language design of Haskell extension that implements
+  it is discussed in a paper <em>Extending Monads with Pattern Matching</em>, which was accepted
+  for publication at the <a href="http://www.haskell.org/haskell-symposium/2011/index.html">Haskell 
+  Symposium 2011</a>. Here is the abstract of the paper:</p>
+
+      <p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      Sequencing of effectful computations can be neatly captured using monads and elegantly written using 
+      <code>do</code> notation. In practice such monads often allow additional ways of composing computations, 
+      which have to be written explicitly using combinators.
+      </p><p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      We identify joinads, an abstract notion of computation that is stronger than monads and captures
+      many such ad-hoc extensions. In particular, joinads are monads with three additional operations: 
+      one of type <code>m a -> m b -> m (a, b)</code> captures various forms of <em>parallel composition</em>, 
+      one of type <code>m a -> m a -> m a</code> that is inspired by <em>choice</em> and one of type <code>m a -> m (m a)</code> 
+      that captures <em>aliasing</em> of computations. Algebraically, the first two operations form a 
+      near-semiring with commutative multiplication.
+      </p><p style="padding-left:60px;padding-right:60px;font-style:italic;">
+      We introduce <code>docase</code> notation that can be viewed as a monadic version of <code>case</code>. Joinad laws
+      make it possible to prove various syntactic equivalences of programs written using <code>docase</code> 
+      that are analogous to equivalences about <code>case</code>. Examples of joinads that benefit from the notation
+      include speculative parallelism, waiting for a combination of user interface events, but also 
+      encoding of validation rules using the intersection of parsers.
+      </p>
+<p>Links to the full paper, source code and additional materials are <a href="http://tomasp.net/blog/docase-haskell.aspx#dscl">available below</a>.</p>
+<h2>Implementation</h2>
+<p>The paper doesn't discuss the implementation of the Haskell language extension and the samples
+  in details, so I'll add a few additional information to this blog post. At the moment, the 
+  extension is implemented using a simple pre-processor that translates Haskell'98 with the
+  <code>docase</code> extension into pure Haskell'98. The pre-processor is based on <a href="http://hackage.haskell.org/package/arrowp" type="external">Ross Paterson's
+  pre-processor</a> for the arrow notation.</p>
+
+<p>The <a href="https://github.com/tpetricek/Haskell.Joinads">Github repository</a> contains the following directories:</p>
+
+<ul>
+<li><p><strong>Preprocessor</strong> directory contains the implementation of the pre-processor. It
+can be compiled using the <code>Makefile</code> provided and then executed using 
+the command: <code>joinadsp.exe Sample.jhs &gt; Sample.hs</code></p></li>
+<li><p><strong>Samples</strong> includes numerous examples that use joinads. It includes <code>Joinad</code> instance
+for the <code>Maybe</code> type and types mentioned in the paper (parsers that can be used for
+input validation, parallelsim monad used above and simple cooperative parallelism 
+monad using resumptions).</p></li>
+<li><p><strong>ParMonad</strong> includes core parts of the <code>Par</code> monad that is used in the parallel programming
+samples. The implementation is extended to support speculative parallelism (see a separate
+<a href="http://tomasp.net/blog/speculative-par-monad.aspx">a blog post</a>). a complete modified implementation is available in a <a href="http://github.com/tpetricek/Haskell.ParMonad">separate
+project</a></p></li>
+<li><p><strong>Comprehensions</strong> shows several examples that use <em>generalized monad comprehensions</em> 
+to write similar examples as those that use <code>docase</code> notation. <em>Parallel monad comprehensions</em> 
+are a generalization of <em>parallel list comprehensions</em> and overlap with joinads in an interesting way. 
+For more information see my article <a href="http://tomasp.net/blog/comprefun.aspx">Fun with Parallel Monad Comprehensions</a>.</p></li>
+</ul>
+
+<h2>Downloads &amp; source code<a name="dscl">&#160;</a></h2>
+<ul>
+  <li>Download the <a href="http://www.cl.cam.ac.uk/~tp322/papers/docase.pdf">complete paper (PDF)</a>.</li>
+  <li>Get the <a href="https://github.com/tpetricek/Haskell.Joinads">implementation of pre-processor and samples</a> from Github.</li>
+  <li>For bibtex, formalized proof, and more see <a href="http://www.cl.cam.ac.uk/~tp322/papers/docase.html">my academic web</a>.</li>
+</ul>

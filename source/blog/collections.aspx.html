@@ -1,0 +1,159 @@
+<!-- [info]
+
+ - date: 2005-06-05T21:19:02.0000000
+ - description: Tento článek popisuje práci s poli a základními kolekcemi jako je ArrayList a Hashtable pod platformou .Net.
+ - tags: 
+ - layout: post
+ - title: .NET - Kolekce a seznamy objektů
+ - url: collections.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek popisuje práci s poli a základními kolekcemi jako je ArrayList a Hashtable pod platformou .Net.
+[/abstract] -->
+
+<h1>.NET - Kolekce a seznamy objektů</h1>
+<doc version="1"><body><h1>.NET - Kolekce a seznamy objektů</h1><h2>Co tento článek ukazuje</h2><ul><li>Základní přehled jmenného prostoru <code>System.Collections</code></li><li>Práce s polem (třída <code>Array</code>)</li><li>Kolekce <code>ArrayList</code>, <code>Hashtable</code> a <code>SortedList</code></li></ul><p>Datové struktury které pro ukládání seznamu prvků, nebo jiné kolekce jsou 
+		potřeba ve (skoro) každé aplikaci. Prostředí .NET obsahuje kromě obvyklého
+		pole (se kterým se ale pracuje v každém jazyce mírně odlišně) ještě několik 
+		dalších typů kolekcí. Tento tutoriál slouží jako přehled několika základních
+		typů kolekcí a snaží se zodpovědět otázku, kdy je vhodné použít jaký typ
+		kolekce.</p><h2>Práce s polem</h2><p>Základní datový typ pro ukládání seznamu objektů je pole.
+		Pole je narozdíl od ostatních obecných datových struktur typové 
+		(takže do pole objektů typu <code>MujObjekt</code> nelze vložit nic
+		jiného než <code>MujObjekt</code>). Hlavním omezením pole je,
+		že jeho délka se určuje při vytvoření, takže pokud předem nevíte
+		kolik prvků v seznamu bude, je práce s polem nešikovná. Pracovat
+		s polem (v C#) pravděpodobně již umíte, ale pro zopakování pár základních 
+		konstrukcí:</p><pre><span class="c">// Vytvoreni (prazdneho) pole</span>
+int[] cisla1=new int[5];
+
+<span class="c">// Inicializace pole cisel</span>
+int[] cisla2=new int[] {1,2,3,4,5}´ů
+
+<span class="c">// Prochazeni prvku v poli</span>
+foreach(int i in cisla2)
+  Console.WriteLine("{0}\n",i);
+</pre><p>To byl pouze krátký úvod, protože v .NET lze s poli dělat ještě další 
+		zajímavé věci a to pomocí třídy <code>Array</code>. Pole je možné setřídit
+		(a to i v případě, že v něm jsou uloženy nějaké vaše objekty) a v setřízeném
+		poli je možno hledat (pomocí algoritmu binárního vyhledávání, který dokáže
+		v setřízeném poli rychle vyhledávat prvek). K řazení nebo hledání v poli, které
+		obsahuje nějaké vaše prvky je potřeba, nějakým způsobem poli umožnit 
+		porovnávat dva prvky. Existují dvě možnosti jak toto dosáhnout. První možností je 
+		předat poli objekt implementující rozhraní <code>IComparer</code> (obsahuje metodu,
+		která porovnává dva prvky) a druhou možností je implementovat v prvku rozhraní 
+		<code>IComparable</code> (umožňuje porovnat daný prvek s jiným).</p><pre><span class="c">// Pole z minuleho prikladu je serazene a <b>int</b>
+// implmentuje <b>IComparable</b>, tedy muzeme hledat takto: </span>
+int pos=Array.BinarySearch(cisla,2);
+</pre><p>Předchozí ukázka vrátí pozici 1, což je správně, protože v C# se k prvnímu
+    prvku v poli přistupuje přes index 0 (tedy <code>cisla[0]</code>).<br />
+    Nyní se podívejme na složitější příklad:</p><pre><span class="c">// V poli budeme ukladat tyto objekty</span>
+class Zamestnanec
+{
+  public string Jmeno;
+  public int Plat;
+
+  public Zamestnanec(string jmeno,int plat)
+  {
+    Jmen=jmeno; Plat=plat;
+  }
+}
+
+<span class="c">// Objekt, ktery porovnava zamestnance podle platu</span>
+public class PorovnatPodlePlatu : IComparer
+{
+  <span class="c">// x&lt;y - zaporne cislo; x=y - nula; x&gt;y - kladne cislo</span>
+  public int Compare(object x, object y)
+  {
+    return ((Zamestnanec)x).Plat-((Zamestnanec)y).Plat;
+  }
+}
+</pre><pre>
+Zamestnanec[] zam=new Zamestnanec[5];
+zam[0]=new Zamestnanec("Martin",15);
+zam[1]=new Zamestnanec("Libor",10);
+zam[2]=new Zamestnanec("David",5);
+zam[3]=new Zamestnanec("Jiri",20);
+zam[4]=new Zamestnanec("Tomas",15);
+
+<span class="c">// Setridit pole podle platu</span>
+Array.Sort(zam,new PorovnatPodlePlatu());
+</pre><h2>Další kolekce</h2><h3>ArrayList</h3><p><code>ArrayList</code> je velmi užitečná kolekce, která je podobná poli,
+    ale je "nafukovací", tedy nepotřebuje při vytváření znát celkovou délku.
+    To je velmi vhodné při načítání dat, pokud předem neznáte počet prvků.
+    Vnitřně <code>ArrayList</code> funguje tak, že si vytvoří pole nějaké délky 
+    a s ním pracuje. Pokud je kapacita nedostačující, tak si vytvoří nové delší pole
+    a prvky do něj zkopíruje. V konstruktoru je možné předat výchozí kapacitu, takže
+    pokud víte, že budete vkládat řádově stovky prvků je velmi vhodné vytvořit
+    <code>ArrayList</code> přibližně s touto kapacitou. Vzhledem k tomu, že
+    <code>ArrayList</code> vnitřně pracuje s polem, není překvapující, že 
+    existují metody <code>ArrayList.Sort</code> a <code>ArrayList.BinarySearch</code>
+    (a další), které dělají přesně totéž co v případě pole. Další užitečnou
+    metodou je metoda <code>ToArray</code>, pomocí které je možné z objektu
+    typu <code>ArrayList</code> vytvořit obyčejné pole (metodě je potřeba předat jako
+    parametr typ položky v seznamu a vrátí pole těchto položek).</p><pre><span class="c">Vytvorit a naplnit seznam</span>
+ArrayList list=new ArrayList();
+list.Add(new Zamestnanec("Ondrej",10));
+list.Add(new Zamestnanec("Jan",1));
+
+<span class="c">Seradit a prevest na pole</span>
+list.Sort(new PorovnatPodlePlatu());
+Zamestnanec[] zam2=
+  (Zamestnanec[])list.ToArray(typeof(Zamestnanec));
+</pre><h3>Hashtable</h3><p>Další zajímavá kolekce je <code>Hashtable</code>. Tato kolekce umožňuje 
+    podle klíče ukládat objekty, ale nepamatuje si pořadí v jakém jsou vkládány
+    ani není možné ji třídit a není možné vložit dvakrát stejný objekt!
+    Umožňuje ale velmi rychlý (nejrychlejší možný) přístup 
+    k prvkům podle klíče, takže pokud potřebujete například přistupovat k
+    zaměstnancům podle jejich jména je toto ideální datová struktura.</p><p><code>Hashtable</code> funguje ve zkratce tak, že objekty ukládá 
+    do nějakého vnitřního pole a index v tomto poli vypočítá z klíče pomocí 
+    hashovací funkce (<code>GetHashCode</code>), kterou má každý objekt. 
+    Při vkládání se objekt ukládá na takto spočítaný index a při hledání objektu 
+    podle klíče se vypočte index v poli a pokud tam je objekt s příslušným 
+    klíčem tak je vrácen. Toto samo o sobě nestačí, protože je možné že index
+    v poli se vypočte pro dva různé objekty stejný (ikdyž je to málo pravděpodobné).
+    V tomto případě se musí nějakým způsobem spočítat nový index v poli, dokud
+    se nenalezne prázdné místo.</p><pre><span class="c">// Ulozime k zamestnanci jeho plat</span>
+Hashtable tab=new Hashtable();
+tab.Add("Tomas",15);
+tab.Add("Jiri",20);
+tab.Add("David",5);
+
+<span class="c">// .. nyni lze podle jmena rychle zjistit plat</span>
+int plat=(int)tab["Tomas"];
+</pre><p>V tomto příkladě ukládáme k zaměstnanci přímo jeho plat, ale ve skutečné
+    aplikaci je výhodné ukládat do <code>Hashtable</code> objekt, který obsahuje
+    kompletní informace o zaměstnanci (tedy objekt <code>Zamestnanec</code>).</p><h3>SortedList</h3><p>Poslední datová struktura o které napíšu více se jmenuje <code>SortedList</code>
+    a jak již jméno napovídá jedná se o seřazený seznam prvků. Do seznamu je možné
+    jednak vkládat dvojice klíč-hodnota (řadí se podle klíče) a klíč musí být 
+    jedinečný. Pokud chcete ukládat pouze seřazený seznam objektů můžete
+    objekty vkládat jako klíče a položku hodnota nechat prázdnou 
+    (tedy vkládat <code>null</code>). Vnitřně funguje <code>SortedList</code>
+    velmi podobně jako <code>ArrayList</code> s jediným rozdílem a to, že
+    při vkládání prvku zařadí prvek na správné místo a ne na konec seznamu.
+    K prvkům uloženým v seznamu <code>SortedList</code> lze přistupovat podle
+    klíče (<code>sorted[klic]</code>) a nebo podle indexu 
+    (<code>sorted.GetByIndex(2)</code>). Dále lze přistupovat ke kolekci obsahující
+    vložené klíče (<code>sorted.Keys</code>) a hodnoty (<code>sorted.Values</code>).</p><pre><span class="c">// Seznam bude radit podle jmena</span>
+SortedList sorted=new SortedList(new PorovnatPodleJmena());
+
+<span class="c">// Vlozime zamestnance jako klice</span>
+sorted.Add(new Zamestnanec("Martin",15),null);
+sorted.Add(new Zamestnanec("Libor",10),null);
+sorted.Add(new Zamestnanec("Jiri",20),null);
+
+<span class="c">// .. zamestnanci jsou automaticky razeni</span>
+foreach(Zamestnanec zamestnanec in <b>sorted.Keys</b>)
+  Console.WriteLine("{0} ({1})",zamestnanec.Jmeno,zamestnanec.Plat);
+</pre><h2>Další datové typy</h2><p>Ve jmenném prostoru <code>System.Collections</code> jsou ješě dvě další třídy, které
+		nejsou v tomto článku popsány. První z těchto tříd je zásobník (<code>Stack</code>), 
+		který umožňuje přidávat a odebírat prvky z vrcholu (tedy odebírají se naposledy
+		vložené prvky). Druhá datová struktura je fronta (<code>Queue</code>), která umožňuje prvky
+		z jedné strany vkládat a z druhé odebírat.</p><p>Existuje ještě mnoho dalších datových struktur, které je občas potřeba použít.
+		.NET Framework bohužel neobsahuje implementaci žádných obecných stromových struktur,
+		ale na <a href="http://www.codeproject.com" target="_blank">www.codeproject.com</a> 
+		naleznete několik velmi zajímavých článků na toto téma, takže pokud se chcete 
+		dozvědět více prohlédněte si odkazy v následujícím odstavci.</p><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li><a href="http://www.codeproject.com/csharp/TreeCollection.asp">A Tree Collection</a>
+    [<a href="http://www.codeproject.com/csharp/TreeCollection.asp" target="_blank">^</a>] - CodeProject.Com</li><li><a href="http://www.codeproject.com/csharp/RedBlackCS.asp">Red-Black Trees in C#</a> 
+    [<a href="http://www.codeproject.com/csharp/RedBlackCS.asp" target="_blank">^</a>] - CodeProject.Com</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/collections/clanek.zip">Stáhnout tento článek v čistém HTML</a> (9 kB)</li><li><a href="http://www.eeeksoft.net/collections/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (12 kB)</li></ul></body></doc>

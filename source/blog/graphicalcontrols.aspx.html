@@ -1,0 +1,128 @@
+<!-- [info]
+
+ - date: 2004-11-20T03:25:26.0000000
+ - description: Graphical radio button and check box ASP.NET controls
+ - tags: 
+ - layout: post
+ - title: Graphical ASP.NET Controls
+ - url: graphicalcontrols.aspx
+
+[/info] -->
+<!-- [abstract]
+Graphical radio button and check box ASP.NET controls
+[/abstract] -->
+
+<h1>Graphical ASP.NET Controls</h1>
+<doc version="1"><body><h1>Graphical ASP.NET Controls</h1><ul class="download"><li><a href="graphicalcontrols/demo.zip">Download demo project - 50 Kb</a></li><li><a href="graphicalcontrols/source.zip">Download source - 18 Kb</a></li><li><a href="graphicalcontrols/doc.zip">Download documentation - 38 Kb</a></li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/files/grcontrols/demo.aspx">Open online sample</a>[<a href="http://www.eeeksoft.net/files/grcontrols/demo.aspx" target="_blank">^</a>]</li></ul><h2>Introduction</h2><p>It is possible to create very nice web pages and you can even change the look of some form controls using CSS (for example, 
+		 it is possible to change the look of textbox and button), but there is no way to change the look of checkbox and radio button.
+		 This article describes two custom controls with the same functionality as standard ASP.NET <code>CheckBox</code> and 
+		<code>RadioButton</code> and with properties that allow you to change design of controls using images. Another way of how to 
+		use controls like this is when you want to place icon with checkbox functionality on your web page; for example, I wanted to 
+		mark some data as hidden, so I used checkbox control with lock and stricken lock icons).</p><p>These two controls are very simple to use, because all functionality is same as functionality of standard controls, so if you 
+		 want to replace standard controls with these graphical controls, you can do it with Search/Replace tool. These controls use 
+		 JavaScript, but it was tested with latest version of IE, Opera and Mozilla (FireFox), so it should display correctly to 
+		 majority of Internet users.</p><p>Another usefull feature of check box control is, that it support three state. This can be very usefull, because the standard 
+		 HTML chcekbox doesn't support third state, so there is no way how to create three state chcekbox in Asp.Net. 
+		 If you want to allow third state set <code>ThreeState</code> property to true. You will also need one or two (if you want 
+		 to have different image for active state) images. To get state of three state chcek box you can use <code>CheckState</code> 
+		 property, which returns <code>Chceked</code>, <code>Unchecked</code> or <code>Indeterminate</code>.</p><div style="text-align:center"><img alt="Graphical controls screenshot" style="margin-top:15px;" src="graphicalcontrols/controls.gif" /></div><h2>Background</h2><p>Graphical checkbox control generates <code>img</code> tag, that is followed by <code>span</code> and hidden <code>input</code> control.
+		 State of control is saved in hidden input control. When user clicks on image (or on text associated to checkbox), control changes its 
+		 state (value of hidden control) and changes <code>src</code> attribute of image element. (You can also set image that is displayed 
+		 when user moves mouse over checkbox - this is done using <code>onmouseover</code> and <code>onmouseout</code> events.)</p><p>Graphical radio button is very similar to checkbox, but there is one complication: User should be able to check only 
+		 <b>one</b> button in every group. Only solution to this problem is to use a bit more JavaScript. One JS function called 
+		 <code>radio{GroupName}Sel</code> is generated for each group of controls (this is done using <code>IsStartupScriptRegistered</code> 
+		 and <code>RegisterStartupScript</code> methods, so it is very simple to check if any control of same group generated this 
+		 function before). Each control in the group calls this function when it is clicked, so this function can uncheck previously
+		 checked radio button.</p><p>Controls needs to implement interface <code>IPostBackDataHandler</code> to be able to read data after postback. This interface contains 
+		 two methods. <code>LoadPostData</code> is called by ASP.NET after postback, and it processes postback data (read data from POST
+		 collection and compare new value with one stored in ViewState) and optionally calls second method 
+		 (<code>RaisePostDataChangedEvent</code>) that raises <code>CheckedChanged</code> event.</p><h2>Using this control</h2><h3>Designer</h3><p><img alt="Design time" src="graphicalcontrols/designtime.gif" style="float:right; margin:5px; margin-left:10px;" /><img alt="Toolbox" src="graphicalcontrols/toolbox.gif" /></p><p>Both controls support design-time, so you can simply add them to your page like any other ASP.NET controls. First, you'll 
+		 need to add controls to toolbox. To do this, right click on toolbox and select "Add/Remove Items". In "Customize Toolbox" 
+		 dialog, click on Browse button and select <i>EeekSoft.Web.Controls.dll</i>. After clicking OK, you should be able to see two 
+		 new controls in your toolbox.</p><p>You can modify properties in Properties window. Most important are properties that define location of images used by control. 
+		 After you enter image URL (<code>CheckedImg</code> or <code>UncheckedImg</code>), control will automatically update its look.</p><h3>Code</h3><p>Following code demonstrates how to access control properties from code:</p><pre><span class="c">&lt;!-- Demo1.aspx --&gt;</span>
+&lt;%@@ Register TagPrefix="cc1" Namespace="EeekSoft.Web.Controls"
+  Assembly="EeekSoft.Web.Controls" %&gt;
+  
+&lt;cc1:graphicalcheckbox id="check1" runat="server" 
+  CheckedOverImg="checked-over.gif" UncheckedOverImg="unchecked-over.gif" 
+  UncheckedImg="unchecked.gif" CheckedImg="checked.gif" Checked="False" 
+  Text="First checkbox"&gt;&lt;/cc1:graphicalcheckbox&gt;
+&lt;cc1:graphicalcheckbox id="check1" runat="server" 
+  CheckedOverImg="checked-over.gif" UncheckedOverImg="unchecked-over.gif" 
+  UncheckedImg="unchecked.gif" CheckedImg="checked.gif" Checked="False" 
+  Text="First checkbox"&gt;&lt;/cc1:graphicalcheckbox&gt;
+    
+&lt;asp:label id="lblInfo" runat="server" &gt;&lt;/asp:label&gt;
+&lt;asp:button id="btnPostback" runat="server" Text="Do postback!"&gt;&lt;/asp:button&gt;</pre><pre><span class="c">// Display what checkboxes are checked</span>
+private void btnPostback_Click(object sender, System.EventArgs e)
+{
+  if (check1.Checked&amp;&amp;check2.Checked)
+    lblInfo.Text="Both checkboxes are checked!";
+  else if (check1.Checked)
+    lblInfo.Text="First checkbox is checked!";
+  else if (check2.Checked)
+    lblInfo.Text="Second checkbox is checked!";
+  else 
+    lblInfo.Text="No checkbox is checked!";
+}</pre><h3>ThreeState chcekbox</h3><p>As I described above, checkbox supports third state, so you can use it when you want to allow user to choose from three 
+		 (third state usually indicates that value can't be distinctly determinated). Following code shows, how to create three state 
+		 check box and how to get its state from code:</p><pre><span class="c">&lt;!-- Demo2.aspx --&gt;</span>
+&lt;%@@ Register TagPrefix="cc1" Namespace="EeekSoft.Web.Controls"
+  Assembly="EeekSoft.Web.Controls" %&gt;
+  
+&lt;cc1:graphicalcheckbox id="threeCheck" runat="server"
+  <b>ThreeState="True" CheckState="Indeterminate" 
+  IndeterminateOverImg="indet-over.gif" IndeterminateImg="indet.gif" </b>
+  CheckedOverImg="checked-over.gif" UncheckedOverImg="unchecked-over.gif" 
+  UncheckedImg="unchecked.gif" CheckedImg="checked.gif" 
+  Text="Three state checkbox"&gt;&lt;/cc1:graphicalcheckbox&gt;
+    
+&lt;asp:label id="lblInfo" runat="server" &gt;&lt;/asp:label&gt;
+&lt;asp:button id="btnPostback" runat="server" Text="Do postback!"&gt;&lt;/asp:button&gt;</pre><pre><span class="c">// Display value of three state checkbox</span>
+private void btnPostback_Click(object sender, System.EventArgs e)
+{
+  switch(threeCheck.CheckState)
+  {
+    case CheckState.Checked:
+      lblInfo.Text="Checkbox is checked!"; break;
+    case CheckState.Unchecked:
+      lblInfo.Text="Checkbox is unchecked!"; break;
+    case CheckState.Indeterminated:
+      lblInfo.Text="Value is set to indeterminated!"; break;
+  }
+}</pre><h3>Setting graphical look globally</h3><p>Setting location of images for each state of control is a bit exhausting if you have more than one 
+		 control on page, so I created an object called <code>GraphicalControlsSettings</code> that allows you 
+		 to set location of images only once in the whole application. This object stores all location of images 
+		 (both for checkbox and radio button) and is stored in application state (<code>Application</code> property).
+		 After you save settings for controls using this object, all controls with property <code>LoadGlobalSettings</code> 
+		 set to <code>true</code> will automatically load these settings, so you don't have to set location of particular images.</p><p>Following example shows how to use this object (to learn more, see <I>design.aspx.cs</I> file in demo application):</p><pre><span class="c">&lt;!-- Demo3.aspx --&gt;</span>
+&lt;%@@ Register TagPrefix="cc1" Namespace="EeekSoft.Web.Controls"
+  Assembly="EeekSoft.Web.Controls" %&gt;
+  
+&lt;cc1:graphicalcheckbox <b>LoadGlobalSettings="true"</b> id="check1" 
+  runat="server" Text="Checkbox 1"&gt;&lt;/cc1:graphicalcheckbox&gt;
+&lt;cc1:graphicalcheckbox <b>LoadGlobalSettings="true"</b> id="check2" 
+  runat="server" Text="Checkbox 2"&gt;&lt;/cc1:graphicalcheckbox&gt;</pre><pre><span class="c">// Demo3.aspx.cs</span>
+using EeekSoft.Web.Controls;
+
+<span class="c">// Save checkbox settings in Page_Load or in Application_Start event handler</span>
+GraphicalControlsSettings grs=new GraphicalControlsSettings();
+string skin="green/";
+
+<span class="c">// Set images for chcekbox buttons</span>
+grs.CheckboxCheckedImg=skin+"check-checked.gif";
+grs.CheckboxUncheckedImg=skin+"check.gif";
+grs.CheckboxCheckedOverImg=skin+"check-checked-over.gif";
+grs.CheckboxUncheckedOverImg=skin+"check-over.gif";
+
+<span class="c">// Set images for radio buttons</span>
+grs.RadioCheckedImg=skin+"radio-checked.gif";
+grs.RadioUncheckedImg=skin+"radio.gif";
+grs.RadioCheckedOverImg=skin+"radio-checked-over.gif";
+grs.RadioUncheckedOverImg=skin+"radio-over.gif";
+
+<span class="c">// Save settings to Application</span>
+grs.Save();</pre><h2>History</h2><ul><li><i>10/12/2004</i> - Graphical check box now supports ThreeState checkbox
+							Properties <code>ThreeState</code>, <code>CheckState</code> and images for third state added.
+							(Thanks to <i>bubák</i> for this suggestion)</li><li><i>10/2/2004</i> - First version of article (Published at <a href="http://www.codeproject.com/aspnet/graphicalcontrols.asp" target="_blank">CodeProject.Com</a>).</li></ul></body></doc>

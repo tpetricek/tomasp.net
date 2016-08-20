@@ -1,0 +1,68 @@
+<!-- [info]
+
+ - date: 2005-03-31T23:26:19.0000000
+ - description: Tento článek popisuje základy spolupráce mezi více formuláři ve Windows Forms aplikaci.
+ - tags: 
+ - layout: post
+ - title: WinForms - Spolupráce mezi více formuláři
+ - url: formsinter.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek popisuje základy spolupráce mezi více formuláři ve Windows Forms aplikaci.
+[/abstract] -->
+
+<h1>WinForms - Spolupráce mezi více formuláři</h1>
+<doc version="1"><body><h1>WinForms - Spolupráce mezi více formuláři</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak vytvářet formuláře, které budou vždy "nad" hlavním oknem</li><li>Jak umožnit více formulářům vzájemnou komunikaci</li><li>Jak požadovat při zavírání formuláře potvrzení akce</li></ul><img src="formsinter/formsinter.gif" alt="Ukázková aplikace" style="float:right; margin:10px;" /><h2>Komunikace mezi formuláři</h2><p>V aplikaci, která je vidět na obrázku jsou dva forumuláře. Hlavní formulář
+    (<code>MainForm</code>) je zobrazený stále a druhý formulář - panel nástrojů
+    (<code>ToolsForm</code>) je možné zobrazovat a skrývat z hlavního formuláře.
+    V panelu nástrojů je jednak tlačítko které zavírá panel (ale předtím se aplikace
+    ještě zeptá jestli chcete panel opravdu zavřít). Dále je možné z panelu 
+    nástrojů měnit barvu <code>PictureBoxu</code> v hlavním formuláři.</p><h2>Vytváření panelu s nástroji</h2><p>Při kliknutí na tlačítko 'Zobrazit nástroje' (které je klikatelné pouze
+    pokud není zobrazen panel s nástroji), se nejprve vytvoří nový formulář
+    a poté se posune tak aby byl vpravo od hlavního formuláře. Nově vytvořenému 
+    formuláři musíme nějakým způsobem umožnit přistupovat k hlavnímu formuláři,
+    proto mu při vytváření předáme referenci na hlavní formulář pomocí
+    klíčového slova <code>this</code>, které reprezentuje objekt ve kterém je 
+    použíté (tj. hlavní formulář). Vytváření nového formuláře vypadá takto:</p><pre><span class="c">// pri vytvareni preda formulari odkaz na sebe</span>
+frmTools=new ToolsForm(this);
+
+<span class="c">// nastavi panelu s nastroji vlastnika na tento formular,</span><br /><span class="c">// takze panel s nastroji bude vzdy "nad" nim</span>
+frmTools.Owner=this;
+
+<span class="c">// zobrazi a posune panel s nastroji</span>
+frmTools.Show();
+frmTools.Location=new Point(Left+Width,Top);</pre><p>Aby bylo možné při vytváření panelu s nástroji předat referenci na
+    hlavní formulář, je potřeba upravit konstruktor (speciální funkce,
+    která se volá při vytváření objektu), tak aby měl jako parametr
+    referenci na objekt typu hlavní formulář (<code>MainForm</code>) a 
+    aby si tuto referenci pro další použití uložil. Kód panelu nástrojů 
+    tedy vypadá takto:</p><pre><span class="c">// Zde si ukladame referenci na hlavni formular</span>
+MainForm main;
+
+<span class="c">// Upraveny konstruktor s parametrem </span>
+public ToolsForm(MainForm main)
+{
+  <span class="c">// Zde si ulozime referenci</span>
+  this.main=main;
+  <span class="c">// Toto je vyzadovane volani WinForms</span>
+  InitializeComponent();
+}
+</pre><h2>Zavírání panelu s nástroji</h2><p>Při pokusu o zavření panelu s nástroji se aplikace ještě uživatele
+    zeptá, jestli chce panel opravdu zavřít. To je uděláno pomocí události
+    <code>Closing</code>, která se vyvolá pokud se někdo pokusí zavřít formulář.
+    Pokud chcete tuto událost zpracovávat ve vaší aplikaci, klikněte na formulář,
+    v Properties vyberte události (events) a poklepejte na Closing. Kód který
+    zobrazí dotaz jestli se má formulář opravdu zavřit ukazuje následující ukázka:</p><pre>
+private void ToolsForm_Closing(object sender,CancelEventArgs e)
+{
+  if (MessageBox.Show("Opravdu chcete zavrit panel?",Text,
+    MessageBoxButtons.YesNo)==DialogResult.No) {
+    <span class="c">// nastavime ze se ma akce zrusit!</span>
+    e.Cancel=true;
+  } else {
+    <span class="c">// posle zpravu hlavnimu formulari, ze byl panel zavren</span>
+    main.EnableButtons(false);
+  }
+}
+</pre><h2>Soubory na stažení</h2><ul class="externallinks"><li><a href="formsinter/clanek.zip">Stáhnout tento článek v čistém HTML</a> (9 kB)</li><li><a href="formsinter/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (21 kB)</li><li><a href="formsinter/FormsInteraction.exe">Spustit ukázkovou aplikaci</a></li></ul></body></doc>

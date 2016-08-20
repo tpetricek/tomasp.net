@@ -1,0 +1,337 @@
+<!-- [info]
+
+ - date: 2008-03-08T23:07:29.0000000
+ - description: In this article I look at the F# suppot for ASP.NET and at some interesting aspects of the samples that are available in the F# distribution.
+ - tags: web,f#
+ - layout: post
+ - title: F# Support for ASP.NET and Notes on Samples
+ - url: aspnet-in-fsharp.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>As I mentioned earlier, I spent three months as an intern in Microsoft Research in Cambridge last year 
+  and I was working with Don Syme and James Margetson from the F# team. Most of the time I was working
+  on the F# Web Toolkit, which I introduced on the blog some time ago [<a href="#myfsstuff">1</a>],
+  but I also worked on a few additions that are now part of the F# release. Probably the most useful addition is 
+  a new implementation of the CodeDOM provider for the F# language which makes it possible to use ASP.NET
+  smoothly from F# (but it can be used in some other scenarios as well) together with two ASP.NET sample
+  applications that you can explore and use as a basis for your web sites. This was actually a part of the
+  distribution for a few months now (I of course wanted to write this article much earlier...), so you may 
+  have already noticed, but anyway, I'd still like to write down a short description of these ASP.NET samples
+  and also a few tips for those who're interested in writing web applications in F#.
+  </p>
+[/abstract] -->
+
+<h1>F# Support for ASP.NET and Notes on Samples</h1>
+<div class="note">
+<h3>More recent article available</h3>
+This article is no longer up-to-date. Although the techniques described in the article might still work (with minor adjustments to the newer version of F#), it is now recommended to use a different approach. Also, the samples discussed in the article are not currently available. For more recent information see:
+<ul>
+  <li><a href="http://tomasp.net/blog/fsharp-mvc-web.aspx">ASP.NET and F# (I.) - Creating MVC web applications in F#</a></li>
+</ul>
+</div>
+
+<p>As I mentioned earlier, I spent three months as an intern in Microsoft Research in Cambridge last year 
+  and I was working with Don Syme and James Margetson from the F# team. Most of the time I was working
+  on the F# Web Toolkit, which I introduced on the blog some time ago [<a href="#myfsstuff">1</a>],
+  but I also worked on a few additions that are now part of the F# release. Probably the most useful addition is 
+  a new implementation of the CodeDOM provider for the F# language which makes it possible to use ASP.NET
+  smoothly from F# (but it can be used in some other scenarios as well) together with two ASP.NET sample
+  applications that you can explore and use as a basis for your web sites. This was actually a part of the
+  distribution for a few months now (I of course wanted to write this article much earlier...), so you may 
+  have already noticed, but anyway, I'd still like to write down a short description of these ASP.NET samples
+  and also a few tips for those who're interested in writing web applications in F#.
+  </p>
+
+<h2>F# and ASP.NET</h2>
+<p>Let's start by looking at the ASP.NET examples. You can find them in the <code>samples</code> directory
+  in your F# installation under the <code>Web/ASP.NET</code> path. The directory also contains <code>html</code>
+  files with description of the projects and a guide to configuring them, but I'll describe both of these topics
+  in this post. The distribution contains two sample projects: </p>
+<ul>
+  <li><strong>AspNetIntro</strong> - this project is (almost) the simples possible F# web site, so it 
+    can be used as a template for your web sites. It shows how to configure the CodeDOM provider, how to
+    write a simple page with code-behind and how to use the <code>App_Code</code> directory and data-binding. </li>
+  <li><strong>PersonalWebSite</strong> - this is a more complex web site ported from the C# sample called <strong>Personal 
+    Web Site Starter Kit</strong> [<a href="#myfsstuff">2</a>]. It demonstrates many of the standard ASP.NET 2.0 techniques
+    including data access controls, master pages, membership and custom HTTP handlers.</li>
+</ul>  
+
+<h2>ASP.NET Introduction using F#</h2>
+<p>To start playing with ASP.NET you'll need to open the project (I recommend copying it to your working directory first).
+  If you're using Visual Studio, you can select <code>File - Open - Web Site...</code> in the menu and select the directory with
+  your project as demonstrated at Figure 1 below. The organization of ASP.NET projects is different than organization of ordinary 
+  F# projects - in ASP.NET the project is just a directory and it contains all the files in the directory (this is also the reason 
+  why you have to open it using a different command). The Figure 2 shows how the files of the ASP.NET Introduction project are 
+  organized in the Solution Explorer:
+</p>
+
+<div>
+  <div style="width:650px; margin-left:auto; margin-right:auto;">
+  <div style="float:left; text-align:center; margin:10px;">
+    <a href="/articles/aspnet-in-fsharp/openweb.png" target="_blank"><img src="/articles/aspnet-in-fsharp/openweb_sm.png" alt="Open Web Site in Visual Studio" style="border:0px;margin-left:auto;margin-right:auto;" /></a><br />
+    <small>Figure 1: Open Web Site</small>
+  </div>
+  <div style="float:left; text-align:center; margin:10px;">
+    <img src="/articles/aspnet-in-fsharp/solutionexp.png" alt="Solution Explorer" /><br />
+    <small>Figure 2: Solution Explorer</small>
+  </div>
+  <div style="clear:both;"></div>
+</div></div>
+
+<p>As you can see, there are 6 files in the project. The <code>Default.aspx.fs</code> and <code>Default.aspx</code> together
+  form one web page and the <code>DataBinding.aspx.fs</code> with <code>DataBinding.aspx</code> form the second web page. 
+  The <code>App_Code</code> directory contains application logic that can be used from other pages in the project and in
+  our sample project it contains only one file (<code>logic.fs</code>).
+  Finally, the <code>web.config</code> file contains configuration of the whole application.</p>
+  
+<p>Before we look at the pages you may want to check the <code>web.config</code> file, because it needs to contain the correct 
+  reference to the CodeDOM provider implementation including a version of the current F# installation.
+  At the time of writing this article, the latest version is <code>1.9.3.14</code>, but if you're not sure what version
+  you are using, you can just start the <code>fsi.exe</code> from the F# installation which prints the version number. The <code>web.config</code> file
+  is an <code>xml</code> file and it should contain the following content (with the right version number). The samples in the
+  distribution should contain the correct version number, but the incorrect configuration is a common issue when working
+  with ASP.NET in F#, so it is useful to know what the configuration should look like:</p>  
+
+<pre lang="xml">
+&lt;?xml version="1.0"?&gt;
+&lt;configuration&gt;&lt;system.web&gt;
+&lt;compilation debug="true"&gt;  
+  &lt;compilers&gt;
+    &lt;compiler 
+      language="F#;f#;fs;fsharp" extension=".fs" 
+      type="Microsoft.FSharp.Compiler.CodeDom.FSharpAspNetCodeProvider, 
+            FSharp.Compiler.CodeDom, Version=<strong style="color:red;">1.9.3.14</strong>, 
+            Culture=neutral, PublicKeyToken=a19089b1c74d0809"/&gt;
+  &lt;/compilers&gt;
+&lt;/compilation&gt;&lt;/system.web&gt;
+&lt;/configuration&gt;
+</pre>
+
+<p>Now, let's look at the <code>Default.aspx</code> and <code>Default.aspx.fs</code> files that together represent a simple page.
+  The page contains one button and one label (a control that can display some text) and when the user clicks on the button, the
+  result of some calculation is displayed in the label (the calculation is executed on the server-side). The following code is 
+  a (slightly simplified) content of the <code>Default.aspx</code>
+  file, which defines the HTML markup together with the ASP.NET controls that are on the page:</p>  
+<pre lang="aspx">
+&lt;%@@ Page Language="F#" 
+  CodeFile="Default.aspx.fs" Inherits="FSharpWeb.Default" %&gt;
+&lt;html&gt;
+&lt;body&gt;&lt;form runat="server"&gt;
+  &lt;asp:Button 
+    ID="btnTest" RunAt="server" Text="Click me!" 
+    OnClick="ButtonClicked" /&gt;&lt;br /&gt;
+  &lt;asp:Label ID="lblResult" RunAt="server" /&gt;
+&lt;/form&gt;&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<p>You can easily identify two server-side controls, because these are written using prefix <code>asp</code> and
+  also contain the <code>RunAt="server"</code> attribute, which means that the control is processed on the server-side.
+  You can use standard HTML notation for setting attributes of the controls. We set the <code>ID</code> attribute
+  to both of the controls, which is important because it allows us to use them in the code-behind code. The <code>OnClick</code>
+  attribute of the button sets an event handler - a member of the <code>FSharpWeb.Default</code> type from the code-behind file that 
+  will be called on the server-side, when a user clicks on the button (which submits the HTML form and causes a page reload, 
+  so the event can be processed on the server). The file also contains the first special line, which tells the ASP.NET engine that the 
+  page is written in F# and it also tells what source file contains the code-behind code and what is the name of type declared in that file.
+  The code-behind file (<code>Default.aspx.fs</code>) has the following content:</p>
+<pre lang="fsharp">
+#light
+namespace FSharpWeb
+open System
+open System.Web
+open System.Web.UI.WebControls
+
+type Default() =
+  inherit Page()
+  
+  [&lt;DefaultValue&gt;]
+  val mutable btnTest : Button
+
+  [&lt;DefaultValue&gt;]
+  val mutable lblResult : Label
+
+  member this.ButtonClicked(sender, e) =
+    this.lblResult.Text &lt;- 
+      (sprintf "Factorial of 5 is: %d" 
+               (FSharpWeb.Logic.factorial 5))
+</pre>
+<p>As we can see, the file contains an F# object type (named <code>Default</code>), inherited from the base ASP.NET <code>Page</code>
+  type. Thanks to the recent improvements in F# it is possible to write the type using the new implicit class syntax (note the parentheses
+  after the type name), which means that you can place additional initialization code to the type declaration directly (following
+  the <code>inherit</code> clause and F# will treat this as a constructor.</p>
+<p>  
+  The class contains a mutable field for every control declared in the declarative markup with the name same as the <code>ID</code>
+  attribute in the markup file (<code>btnTest</code> and <code>lblResult</code>). The ASP.NET initializes these controls automatically
+  when it creates the page (that's why the fields are marked using <code>mutable</code>), so we don't need to initialize these fields 
+  in our code - F# doesn't usually allow uninitialized fields, but if you place the <code>DefaultValue</code> before the field declaration,
+  it will be initialized to the default value (<code>null</code>), which is correct, because the field will be later initialized by the 
+  ASP.NET runtime. Finally, the type contains a member called <code>ButtonClicked</code>, which is a 
+  same name we used in the markup for the <code>OnClick</code> attribute of the button control. This is an
+  event handler that will be called when user clicks on the button, it performs some calculation (the <code>factorial</code>
+  function is declared in the <code>logic.fs</code> file) and sets a property of the other control that we have on the page. </p>
+
+<h2>Personal Web Site in F#</h2>
+<div style="float:right;margin:10px;text-align:center;">
+  <a href="/articles/aspnet-in-fsharp/pws.png" target="_blank"><img src="/articles/aspnet-in-fsharp/pws_sm.png" alt="Personal Web Site" style="border:0px;margin-left:auto;margin-right:auto;" /></a><br />
+  <small>Figure 3: Personal Web Site</small>
+</div>
+<p>The second sample ASP.NET project is a port of quite a complex ASP.NET web site which also uses MS SQL database. The database
+  can be created manually as described in <code>Welcome.html</code> in the <code>PersonalWebSite</code> directory, but I also
+  uploaded the database to my web, so you can just download it and attach it in the SQL server (this is described below and the files for download 
+  can be found at the end of the article). 
+  The <code>PWS_AspNetDb</code> is a database managed by ASP.NET that contains user information - the database below already contains
+  the required role (called <code>Administrators</code>) and one user (<code>admin</code> with password <code>admin123!</code>).
+  The second database file (<code>PWS_WebPersonal</code>) contains the application data, mainly information about photos and galleries
+  (as you can see from the screenshot in Figure 3). </p>
+<p>The application uses many advanced ASP.NET features including the following:</p>
+<ul>
+  <li><strong>Master Pages</strong> - the overall structure of the web site is stored in a master page
+    (<code>Default.master</code>) and the other pages use the <code>asp:Content</code> control to fill 
+    the place holders in the master page.</li>
+  <li><strong>Site Maps</strong> - the map of the web site is defined in the <code>web.sitemap</code> file and
+    is used for generating the menu in the <code>Default.master</code> file.</li>
+  <li><strong>Themes</strong> - the design of the page including CSS files and images are managed using
+    ASP.NET Themes - there are two standard themes in the <code>App_Themes</code> directory.</li>    
+  <li><strong>Membership</strong> - the web uses standard ASP.NET technology for managing user accounts
+    including the controls for manipulating with users (e.g. <code>asp:CreateUserWizard</code> control is used in 
+    <code>Register.aspx</code> file).</li>    
+  <li><strong>Data Controls</strong> - ASP.NET data-access controls are used for reading the 
+    data from the application logic layer (implemented as a module in F#)</li>
+</ul>
+
+<h3>Configuring the databases</h3>
+<p>To configure the databases required by the demo, you can either follow the steps described in the <a href="/articles/aspnet-in-fsharp/Welcome.html">Welcome.html</a>
+  file (which is part of the sample project), or if you already have some version of SQL Server installed on your machine, you can download
+  the sample databases below (a bunch of MDF and LDF files) and attach them to the SQL Server. I'll explain how to do this using full version
+  of SQL Server, but the steps needed with Express edition are very similar.</p>
+<p>Once you downloaded the files, you'll need to launch SQL Server Management Studio and connect to the server instance. After doing
+  that you should see an "Object Explorer" window, where you can right click on the "Databases" group and select "Attach..." from the pop-up menu.
+  In the opened dialog window, you can add the databases (by selecting the MDF file) and click the "OK" button to attach the databases.
+  Finally, you'll need to modify the <code>web.config</code> file in the Personal WebSite sample to include the following section:
+</p>  
+<pre lang="xml">
+&lt;connectionStrings&gt;
+ &lt;add name="Personal" providerName="System.Data.SqlClient" connectionString=
+      "Data Source=.;Integrated Security=True;Database=PWS_WebPersonal" /&gt;
+ &lt;remove name="LocalSqlServer"/&gt;
+ &lt;add name="LocalSqlServer" connectionString=
+      "Data Source=.;Integrated Security=True;Database=PWS_AspNetDb" /&gt;
+&lt;/connectionStrings&gt;
+</pre>
+<p>The <code>Data Source</code> parameter in the connection string specifies the instance of the SQL Server, where the databases are attached.
+  By default this is the name of your computer (which can be written shortly using dot "."). When using the SQL Express the default
+  instance name is ".\SQLExpress". The <code>Database</code> parameter specifies the name of the database, which you can see in the
+  "Object Explorer" in the SQL Server Management Studio. After following these steps, you should be able to run the demo application.</p>
+
+<h3>Data-access in F#</h3>
+<p>Most of the ASP.NET technologies used in the web site are used in almost the same way as in C#, so I will not
+  discuss them in larger details, but the last item in the list - the use of ASP.NET data controls together
+  with F# is I believe quite interesting, so I'll write a few notes about it. Let's look for example at the
+  <code>Photos.aspx</code> file, which displays a list of photos in a gallery. The most important parts
+  of the file related to data access are shown in the following code snippet:</p>
+<pre lang="aspx">
+&lt;asp:DataList RunAt="server" DataSourceID="photoSource" EnableViewState="false"&gt;
+&lt;ItemTemplate&gt;
+  &lt;!-- ... --&gt;
+  &lt;a href='Details.aspx?AlbumID=&lt;%# base.Eval("PhotoAlbumID") %&gt;'&gt;
+    &lt;img src="Handler.ashx?PhotoID=&lt;%# base.Eval("PhotoID") %&gt;&amp;Size=S" 
+      class="photo_198" style="border:4px solid white" 
+      alt='Thumbnail of Photo Number &lt;%# base.Eval("PhotoID") %&gt;' /&gt;
+  &lt;/a&gt;
+  &lt;!-- ... --&gt;
+&lt;/ItemTemplate&gt;
+&lt;/asp:DataList&gt;
+
+&lt;asp:ObjectDataSource ID="photoSource" RunAt="server" 
+  TypeName="PersonalWebSite.PhotoManager" 
+  SelectMethod="GetPhotos"&gt;
+  &lt;SelectParameters&gt;
+    &lt;asp:QueryStringParameter Name="AlbumID" Type="Int32" 
+      QueryStringField="albumID" DefaultValue="0"/&gt;
+  &lt;/SelectParameters&gt;
+&lt;/asp:ObjectDataSource&gt;
+</pre>
+
+<p>The first ASP.NET control used in the code is <code>asp:DataList</code>, which is a control that 
+  simply displays a collection of some items and uses a specified <code>ItemTemplate</code> for displaying
+  every single item. In our case we're working with collection of records and the record has several members 
+  (including <code>PhotoID</code> and <code>PhotoAlbumID</code>). To display a value of a record member
+  in the ASP.NET page we have to use ASP.NET <code>Eval</code> method as you can see in the sample. 
+  The <code>Eval</code> method reads the specified member of the item in collection and writing the code
+  in <code>&lt;%# ... %&gt;</code> tells ASP.NET that we want to render the result of the expression as
+  a part of the item template.
+  The record that we're using in this example is very simple and has the following structure:</p>
+<pre lang="fsharp">
+type Photo = 
+  { PhotoID:int; 
+    PhotoAlbumID:int; 
+    PhotoCaption:string; }
+</pre>
+<p>This is actually one of the places where the F# version is shorter, because in C# version you
+  have to write this as a class with properties, which makes the code quite longer.</p>  
+  
+<p>The second server-side control (<code>asp:ObjectDataSource</code>) in the first code snippet isn't visual, which means that it will
+  not produce any HTML output. It serves just as a declarative data-source for the data list and the properties
+  of this control specify how the content for the data list should be loaded. There are various other data-source
+  controls in ASP.NET (e.g. <code>asp:SqlDataSource</code> which loads data directly from the database),
+  but the one that we're using in the example uses a specified .NET/F# type and calls a method of the given object
+  when it needs to retrieve the data. In F# this is even easier, because we can use a name of the module and the
+  code that retrieves the data can be a function in the module.</p>
+<p>As you can see the property <code>TypeName</code> is set to <code>PersonalWebSite.PhotoManager</code>, which
+  can be treated as a module called <code>PhotoManager</code> in a namespace <code>PersonalWebSite</code> and
+  the <code>SelectMethod</code> property, which specifies a name of the function that will be called when
+  loading the data is set to <code>GetPhotos</code>. Finally, the <code>SelectParameters</code> specifies
+  that the function expects one argument called <code>AlbumID</code> and that the value of this argument
+  should be retrieved from the query string (that is from the URL of form <code>photo.aspx?albumIdD=42</code>).</p>
+
+<p>Now it is pretty easy to implement the module that matches this specifications and can be used as a data source
+  (we could of course use FLinq for loading the data, but I wanted to keep things simple for now, so we're using
+  standard <code>SqlDataReader</code> object from .NET):</p>
+
+<pre lang="fsharp">
+namespace PersonalWebSite
+// ...
+
+module PhotoManager = 
+  // Function will be called by ASP.NET when loading data
+  // for the asp:DataList control in the 'Photos.aspx' page
+  let GetPhotos (albumID:int) =
+    // Open connection &amp; create command
+    use conn = new SqlConnection(" ... ")
+    use cmd  = new SqlCommand("GetPhotos", conn)
+    
+    // Can the user see 'private' photos?
+    let usr = HttpContext.Current.User
+    let filter = not (usr.IsInRole("Friends") || usr.IsInRole("Administrators"))
+    cmd.CommandType &lt;- CommandType.StoredProcedure)
+    cmd.Parameters.Add(SqlParameter("@@AlbumID", albumID)) |&gt; ignore
+    command.Parameters.Add(SqlParameter("@@IsPublic", filter)) |&gt; ignore
+    conn.Open()
+    
+    // Read all photos into a .NET ResizeArray type
+    let list = new ResizeArray&lt;_&gt;()
+    use reader = command.ExecuteReader()
+    while (reader.Read()) do
+      list.Add({ PhotoID = unbox (reader.get_Item("PhotoID")) 
+                 PhotoAlbumID = unbox (reader.get_Item("AlbumID")) 
+                 PhotoCaption = unbox (reader.get_Item("Caption")) }) 
+                 
+    // Return the created collection
+    list 
+</pre>
+<p>I hope this article explained some of the interesting things that you may find in the ASP.NET samples provided with 
+  the F# distribution and I think that the Personal WebSite Sample shows that F# can be used for writing quite complicated
+  web applications as well. Of course, my initial motivation for writing web applications in F# is the possibility of 
+  using meta-programming to develop client-side code (the code that runs on the client as a JavaScript) in F# too, which
+  makes development of modern "Ajax"-style applications easier, so if you're interested in this project you may want to look
+  at F# Web Tools [<a href="#myfsstuff">1</a>].</p>
+
+<h2>Downloads &amp; References <a name="myfsstuff"></a></h2>
+<ul>
+  <li><a href="/articles/aspnet-in-fsharp/databases.zip">Download PWS Database Files</a> (9.65 MB)</li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://tomasp.net/blog/fswebtools-intro.aspx">F# Web Toolkit: "Ajax" applications made simple</a> [<a href="http://tomasp.net/blog/fswebtools-intro.aspx" target="_blank">^</a>] - Blog | TomasP.Net</li>
+  <li>[2] <a href="http://msdn2.microsoft.com/en-us/express/aa700818.aspx#personal">Visual Web Developer Express: Samples and Starter Kits</a> [<a href="http://msdn2.microsoft.com/en-us/express/aa700818.aspx#personal" target="_blank">^</a>] - Microsoft.Com</li>
+</ul>

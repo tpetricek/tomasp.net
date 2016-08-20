@@ -1,0 +1,105 @@
+<!-- [info]
+
+ - date: 2007-03-24T23:13:48.0000000
+ - description: Code which makes it possible to write applications that take advantage of multi-core CPUs by parallelizing F# filter and map functions.
+ - tags: functional,parallel,f#
+ - layout: post
+ - title: Keep your multi-core CPU busy with F#
+ - url: fsparallelops.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>The growth of computer CPU speed is slowly being replaced by the growth of number of CPUs 
+  (or cores) in the computer at least for the close future. This causes a revolution in the way software is 
+  written, because traditional and most widely used way of writing concurrent applications using
+  threads is difficult and brings several serious issues. Some predictions say that within a few
+  years, almost every computer will have about 16 cores, so there is a huge need for programming
+  paradigms or idioms that help developers write concurrent software easily (see also <a href="http://www.gotw.ca/publications/concurrency-ddj.htm">The Free Lunch Is Over</a> 
+  [<a href="http://www.gotw.ca/publications/concurrency-ddj.htm" target="_blank">^</a>] written by Herb Sutter).</p>
+
+<p>Functional programming languages (especially pure functional languages) are interesting from 
+  this point of view, because the program doesn't have side-effects which makes it very easy to 
+  parallelize it (programs in pure functional languages can't have any side-effects by design, in other functional
+  languages like F# the side-effects can be eliminated by following functional programming style). </p>
+
+<p>This article describes the code that makes it possible to parallelize some common F# constructs like the <code>List.map</code> and <code>List.filter</code>...</p>
+[/abstract] -->
+
+<h1>Keep your multi-core CPU busy with F#</h1>
+<p>The growth of computer CPU speed is slowly being replaced by the growth of number of CPUs 
+  (or cores) in the computer at least for the close future. This causes a revolution in the way software is 
+  written, because traditional and most widely used way of writing concurrent applications using
+  threads is difficult and brings several serious issues. Some predictions say that within a few
+  years, almost every computer will have about 16 cores, so there is a huge need for programming
+  paradigms or idioms that help developers write concurrent software easily (see also <a href="http://www.gotw.ca/publications/concurrency-ddj.htm">The Free Lunch Is Over</a> 
+  [<a href="http://www.gotw.ca/publications/concurrency-ddj.htm" target="_blank">^</a>] written by Herb Sutter).</p>
+
+<p>Functional programming languages (especially pure functional languages) are interesting from 
+  this point of view, because the program doesn't have side-effects which makes it very easy to 
+  parallelize it (programs in pure functional languages can't have any side-effects by design, in other functional
+  languages like F# the side-effects can be eliminated by following functional programming style). </p>
+
+<h2>Finding primes example</h2>
+<p>Let's say I want to find all prime numbers between 1 million and 1.1 million (this is example of
+  an operation that can be nicely divided between more processors). First we will need function to test
+  whether <code>n</code> is a prime:</p>
+<pre lang="fsharp">
+// Tests whether n is prime - expects n > 1
+let is_prime n =
+  // calculate how large divisors should we test..
+  let max = int_of_float (Math.Sqrt( float_of_int n ))
+  // try to divide n by 2..max (stops when divisor is found)
+  not ({ 2 .. max } |> Seq.filter ( fun d -> n%d = 0) |> Seq.nonempty)
+</pre>  
+<p>To find all primes in the specified range we could use the following code:</p>
+<pre lang="fsharp">
+let primes = [1000000 .. 1100000] |> List.filter is_prime
+</pre>
+<p>This code subsequently executes the <code>is_prime</code> function for all numbers that we want to test,
+  but with multiple CPU cores it would be nice if the function divided the numbers into 
+  several parts and executed every part on different thread, so application would take benefit from multiple
+  cores available in the system. The <code>is_prime</code> function doesn't have any side-effects so 
+  executing it several times in parallel can't change the result of operation (if the order of primes in the 
+  returned list doesn't change). </p>
+
+<p>I wrote a function that does exactly what I described in the previous paragraph. To execute the operation
+  in parallel, you can use the following code (the only difference is that I replaced <code>List</code> module with
+  my <code>ParallelList</code> module):</p>  
+<pre lang="fsharp">
+let primes = [1000000 .. 1100000] |> ParallelList.filter is_prime
+</pre>
+
+<p>On my notebook (with Intel Core Duo processor) the first code (using <code>List.filter</code>) takes about 
+  <strong>2,3sec</strong> and using <code>ParallelList.filter</code> the operation takes only <strong>1.3sec</strong>.
+  The program isn't 2 times faster, because there is some overhead for creating and synchronizing threads, but in 
+  this case the speed increase is significant.</p>
+  
+<p>Aside from the <code>filter</code> function, the <code>ParallelList</code> module contains also the 
+  <code>map</code> function (which does the same thing as the <code>List.map</code>). There is also
+  a function <code>set_thread_count</code> that you can use to configure how many threads should be used when
+  executing parallel operations (the default value is <code>2</code>).</p>  
+
+<h2>Performance and future work</h2>
+<p>The performance of these functions is the key issue. Currently the <code>ParallelList</code> functions work
+  can't be used for small number of repetitions of simple function, because the overhead is larger than the profit
+  from parallel execution. If the operation takes less than 0.01ms and the number of repetitions is less than 1000 
+  the <code>List</code> functions are usually better, but for operations taking longer time the results of <code>ParallelList</code>
+  are better even with smaller number of repetitions. For operation taking about 0.1ms the <code>ParallelList</code>
+  gives better results for more than 200 repetitions and for operation taking more than 1ms the number of repetitions is 
+  not very important (<code>ParallelList</code> is better even for 10 repetitions). These are inaccurate results that I got
+  on my notebook, so if you're thinking of using the <code>ParallelList</code>, be sure to do some tests in your scenario!
+  You can see some tests that I did in the demo project in <code>stats.fs</code> source file.</p>
+<p>As I said earlier, <code>ParallelList</code> supports only <code>filter</code> and <code>map</code> functions, so implementing
+  more functions would be useful. It would be also useful to provide some alternatives for functions that can't
+  be executed in parallel (like <code>fold_left</code>) that could be used in some situations. I'd also like to implement
+  functions for working with other collection types like <code>Seq</code> (<code>IEnumerable</code>) and <code>array</code>
+  in the future.</p>
+
+<p>I'm interested in your ideas and suggestions, so if you find something that could be improved in the code,
+  or if you have any other idea, let me know!</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/fsparallelops/demo.zip">Download demo application with source code</a> (14 kB)</li>
+  <li><a href="http://tomasp.net/articles/fsparallelops/parallel.zip">Download only ParallelList source</a> (2 kB)</li>
+</ul>

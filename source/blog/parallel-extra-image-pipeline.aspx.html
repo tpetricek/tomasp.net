@@ -1,0 +1,430 @@
+<!-- [info]
+
+ - date: 2010-10-27T11:11:08.0000000
+ - description: In this article, we look at an F# implementation of an image processing pipeline demo from  the Parallel Programming with Microsoft .NET. We'll use message-passing and asynchronous workflows, which leads to a more elegant and similarly efficient code.
+ - tags: functional,parallel,asynchronous,f#
+ - layout: post
+ - title: F# Parallel Extras (I.): Image pipeline using agents
+ - url: parallel-extra-image-pipeline.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In a <a href="http://tomasp.net/blog/fsharp-parallel-samples.aspx">recent blog post series</a>,
+  I wrote about parallel programming samples that accompany the 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a>
+  book by patterns &amp; practices group at Microsoft. The F# translation of the samples that I
+  wrote about mostly followed the style used in the book, so it used patterns that 
+  are typical for C#. However, some of the samples can be written in F# in a more interesting way...</p>
+<p>In this article, we'll take a look at agent-based implementation of the Image pipeline 
+  example (from chapter 7). A <em>pipeline</em> is a useful pattern if you need to process large
+  number of inputs in parallel and the processing consists of multiple phases or steps. In the
+  original implementation, the pipeline was implemented using <code>BlockingCollection&lt;T&gt;</code>
+  and <code>Task&lt;T&gt;</code> types from .NET 4.0.</p>
+<p>In this article, I'll show a 
+  version that uses F# agents and asynchronous workflows. We'll use a <code>BlockingQueueAgent&lt;T&gt;</code> 
+  type, which is <a href="http://tomasp.net/blog/parallel-extra-blockingagent.aspx">discussed in another 
+  article</a>. It represents a queue with limited capacity that asynchronously blocks the process that is adding 
+  values if there is no space in the buffer and blocks the process that reads values when there are no 
+  values. This type can be elegantly used to implement the pipeline pattern. In this article, we'll 
+  demonstrate it by writing a four-phase pipeline that processes images. As you'll see, 
+  the agent-based version of the code is very much easier to write and has similar performance as 
+  the original version.</p>
+[/abstract] -->
+
+<h1>F# Parallel Extras (I.): Image pipeline using agents</h1>
+<p>In a <a href="http://tomasp.net/blog/fsharp-parallel-samples.aspx">recent blog post series</a>,
+  I wrote about parallel programming samples that accompany the 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a>
+  book by patterns &amp; practices group at Microsoft. The F# translation of the samples that I
+  wrote about mostly followed the style used in the book, so it used patterns that 
+  are typical for C#. However, some of the samples can be written in F# in a more interesting way...</p>
+<p>In this article, we'll take a look at agent-based implementation of the Image pipeline 
+  example (from chapter 7). A <em>pipeline</em> is a useful pattern if you need to process large
+  number of inputs in parallel and the processing consists of multiple phases or steps. In the
+  original implementation, the pipeline was implemented using <code>BlockingCollection&lt;T&gt;</code>
+  and <code>Task&lt;T&gt;</code> types from .NET 4.0.</p>
+<p>In this article, I'll show a 
+  version that uses F# agents and asynchronous workflows. We'll use a <code>BlockingQueueAgent&lt;T&gt;</code> 
+  type, which is <a href="http://tomasp.net/blog/parallel-extra-blockingagent.aspx">discussed in another 
+  article</a>. It represents a queue with limited capacity that asynchronously blocks the process that is adding 
+  values if there is no space in the buffer and blocks the process that reads values when there are no 
+  values. This type can be elegantly used to implement the pipeline pattern. In this article, we'll 
+  demonstrate it by writing a four-phase pipeline that processes images. As you'll see, 
+  the agent-based version of the code is very much easier to write and has similar performance as 
+  the original version.</p>
+
+<h2>Image processing pipeline</h2>
+
+<div style="float:right;margin:10px;margin-left:20px; text-align:center">
+<a href="http://tomasp.net/articles/parallel-extra-image-pipeline/pipeline.png" target="_blank"><img src="http://tomasp.net/articles/parallel-extra-image-pipeline/pipeline_sm.png" style="border-style:none;margin-bottom:8px;" /></a><br />
+<small>
+Diagram is from the <a href="http://parallelpatterns.codeplex.com/">Parallel Programming with Microsoft <br />.NET</a> book. Click on the image for a larger version.</small>
+</div>
+
+<p>We start by looking at code that implements the image processing using the 
+  <code>BlockingQueueAgent&lt;T&gt;</code> type (as we'll see, it has a very simple public interface, 
+  so using it is quite easy) and then we'll add some user interface. The image processing works in four 
+  phases that are demonstrated in the diagram on the right. The diagram is taken from Chapter 7 of the 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> book,
+  which discusses the pipeline pattern in more details and presents a C# implementation.</p>
+
+<p>The first phase reads images from the disk and stores them into a temporary buffer. The second phase
+  takes images from the buffer, resizes them and puts them into another buffer. The third phase is similar
+  but it adds noise to the image. Finally, the fourth phase takes images from the last buffer and displays
+  them in the user interface.</p>
+
+<p>The intermediate buffers have only limited capacity. When a buffer is full, it will block the 
+  caller until an item is removed. Similarly, when it is empty, it will block the process that 
+  reads images until an item is added. A pipeline introduces parallelism, because all phases can 
+  run in parallel. The intermediate buffers provide a good way of controlling the process, because
+  some phases may be faster - in that case, we want to block it after it generates enough inputs
+  for the next phase.</p>
+
+<p>We start by creating the three intermediate buffers that are used to transfer inputs between phases.
+  They are represented using <code>BlockingQueueAgent&lt;T&gt;</code>, which we'll discuss later. If you 
+  place a mouse cursor over the type name in the snippet below, you should see its type signature in a tool
+  tip. The type has members <code>AsyncAdd</code> and <code>AsyncGet</code>, which are both asynchronous 
+  (and possibly blocking). </p>
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp1', 1)" onmouseover="showTip(event, 'fspipp1', 1)" class="i">loadedImages</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fspipp2', 2)" onmouseover="showTip(event, 'fspipp2', 2)" class="i">BlockingQueueAgent</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fspipp3', 3)" onmouseover="showTip(event, 'fspipp3', 3)" class="i">queueLength</span>)
+<span class="l">2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp4', 4)" onmouseover="showTip(event, 'fspipp4', 4)" class="i">scaledImages</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fspipp2', 5)" onmouseover="showTip(event, 'fspipp2', 5)" class="i">BlockingQueueAgent</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fspipp3', 6)" onmouseover="showTip(event, 'fspipp3', 6)" class="i">queueLength</span>)    
+<span class="l">3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp5', 7)" onmouseover="showTip(event, 'fspipp5', 7)" class="i">filteredImages</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fspipp2', 8)" onmouseover="showTip(event, 'fspipp2', 8)" class="i">BlockingQueueAgent</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fspipp3', 9)" onmouseover="showTip(event, 'fspipp3', 9)" class="i">queueLength</span>)<a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+<p>Now that we have the intermediate buffers, we can implement phases of the pipe line. Let's first look at 
+  loading and one of the two (similar) processing phases.</p>
+
+<h3>Loading and scaling images</h3>
+<p>We'll implement phases as asynchronous workflows that will read and write items from and to buffers.
+  The loading workflow iterates over all elements in the <code>fileNames</code> sequence (which is
+  an infinite sequence that repeatedly reads all images in the application folder). It uses <code>loadImage</code>
+  function to read the image and then adds it to the first buffer. The processing workflow contains
+  an infinite loop that reads image from one buffer, processes it and adds it to another buffer.
+  Note that asynchronous workflows implicitly support cancellation, so when we want to stop the 
+  process, we'll simply set a cancellation token and the infinite loop will end (but we'll talk 
+  about that later):</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">//</span><span class="c"> </span><span class="c">Phase</span><span class="c"> </span><span class="c">1:</span><span class="c"> </span><span class="c">Load</span><span class="c"> </span><span class="c">images</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">disk</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">put</span><span class="c"> </span><span class="c">them</span><span class="c"> </span><span class="c">into</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">queue</span>
+<span class="l"> 2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp6', 10)" onmouseover="showTip(event, 'fspipp6', 10)" class="i">loadImages</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp7', 11)" onmouseover="showTip(event, 'fspipp7', 11)" class="i">async</span> {
+<span class="l"> 3: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp8', 12)" onmouseover="showTip(event, 'fspipp8', 12)" class="i">clockOffset</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp9', 13)" onmouseover="showTip(event, 'fspipp9', 13)" class="i">Environment</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp10', 14)" onmouseover="showTip(event, 'fspipp10', 14)" class="i">TickCount</span>
+<span class="l"> 4: </span>  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fspipp11', 15)" onmouseover="showTip(event, 'fspipp11', 15)" class="i">numbers</span> <span onmouseout="hideTip(event, 'fspipp12', 16)" onmouseover="showTip(event, 'fspipp12', 16)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp13', 17)" onmouseover="showTip(event, 'fspipp13', 17)" class="i">seq</span> { <span class="k">yield</span> <span onmouseout="hideTip(event, 'fspipp12', 18)" onmouseover="showTip(event, 'fspipp12', 18)" class="i">n</span>; <span class="k">yield!</span> <span onmouseout="hideTip(event, 'fspipp11', 19)" onmouseover="showTip(event, 'fspipp11', 19)" class="i">numbers</span> (<span onmouseout="hideTip(event, 'fspipp12', 20)" onmouseover="showTip(event, 'fspipp12', 20)" class="i">n</span> <span class="o">+</span> <span class="n">1</span>) }
+<span class="l"> 5: </span>  <span class="k">for</span> <span onmouseout="hideTip(event, 'fspipp14', 21)" onmouseover="showTip(event, 'fspipp14', 21)" class="i">count</span>, <span onmouseout="hideTip(event, 'fspipp15', 22)" onmouseover="showTip(event, 'fspipp15', 22)" class="i">img</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fspipp16', 23)" onmouseover="showTip(event, 'fspipp16', 23)" class="i">fileNames</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fspipp17', 24)" onmouseover="showTip(event, 'fspipp17', 24)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp18', 25)" onmouseover="showTip(event, 'fspipp18', 25)" class="i">zip</span> (<span onmouseout="hideTip(event, 'fspipp11', 26)" onmouseover="showTip(event, 'fspipp11', 26)" class="i">numbers</span> <span class="n">0</span>) <span class="k">do</span>
+<span class="l"> 6: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp19', 27)" onmouseover="showTip(event, 'fspipp19', 27)" class="i">info</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp20', 28)" onmouseover="showTip(event, 'fspipp20', 28)" class="i">loadImage</span> <span onmouseout="hideTip(event, 'fspipp15', 29)" onmouseover="showTip(event, 'fspipp15', 29)" class="i">img</span> <span onmouseout="hideTip(event, 'fspipp21', 30)" onmouseover="showTip(event, 'fspipp21', 30)" class="i">sourceDir</span> <span onmouseout="hideTip(event, 'fspipp14', 31)" onmouseover="showTip(event, 'fspipp14', 31)" class="i">count</span> <span onmouseout="hideTip(event, 'fspipp8', 32)" onmouseover="showTip(event, 'fspipp8', 32)" class="i">clockOffset</span>
+<span class="l"> 7: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fspipp1', 33)" onmouseover="showTip(event, 'fspipp1', 33)" class="i">loadedImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp22', 34)" onmouseover="showTip(event, 'fspipp22', 34)" class="i">AsyncAdd</span>(<span onmouseout="hideTip(event, 'fspipp19', 35)" onmouseover="showTip(event, 'fspipp19', 35)" class="i">info</span>) }
+<span class="l"> 8: </span>
+<span class="l"> 9: </span><span class="c">//</span><span class="c"> </span><span class="c">Phase</span><span class="c"> </span><span class="c">2:</span><span class="c"> </span><span class="c">Scale</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">thumbnail</span><span class="c"> </span><span class="c">size</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">add</span><span class="c"> </span><span class="c">frame</span>
+<span class="l">10: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp23', 36)" onmouseover="showTip(event, 'fspipp23', 36)" class="i">scalePipelinedImages</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp7', 37)" onmouseover="showTip(event, 'fspipp7', 37)" class="i">async</span> {
+<span class="l">11: </span>  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> 
+<span class="l">12: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fspipp19', 38)" onmouseover="showTip(event, 'fspipp19', 38)" class="i">info</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp1', 39)" onmouseover="showTip(event, 'fspipp1', 39)" class="i">loadedImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp24', 40)" onmouseover="showTip(event, 'fspipp24', 40)" class="i">AsyncGet</span>()
+<span class="l">13: </span>    <span onmouseout="hideTip(event, 'fspipp25', 41)" onmouseover="showTip(event, 'fspipp25', 41)" class="i">scaleImage</span> <span class="i">info</span>
+<span class="l">14: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fspipp4', 42)" onmouseover="showTip(event, 'fspipp4', 42)" class="i">scaledImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp22', 43)" onmouseover="showTip(event, 'fspipp22', 43)" class="i">AsyncAdd</span>(<span onmouseout="hideTip(event, 'fspipp19', 44)" onmouseover="showTip(event, 'fspipp19', 44)" class="i">info</span>) }<a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>The <code>loadImage</code> workflow is slightly more complicated, because it also adds number to every
+  produced image (in the complete application, this is used for verifying that images were processed in the
+  correct order), but both of the functions are relatively straightforward. As already mentioned, the <code>AsyncGet</code>
+  and <code>AsyncAdd</code> methods are asynchronous (possibly block the workflow) and so we need to call them
+  using <code>let!</code> and <code>do!</code> constructs. </p>
+<p>We'll skip the second processing workflow (named <code>filterPipelinedImages</code>), because it is
+  exactly the same as <code>scalePipelinedImages</code>. The only difference is that it uses different buffers
+  and another work function (which does the actual processing of the bitmap). As a result, we can move to the 
+  last two bits of the implementation...</p>
+
+<h3>Displaying images and starting</h3>
+<p>The last part of the pipeline is an asynchronous workflow <code>displayPipelinedImages</code> that
+  takes images from the last buffer and displays them in the user interface using 
+  <code>displayImage</code> function provided by the caller. The function takes care of dispatching
+  the call to the main GUI thread, so we don't have to call it in any special way. Before displaying
+  the image, we also store the current number of items in all three queues, so that the information
+  can be displayed in the user interface. Finally, the snippet (which is a body of a function) starts 
+  the pipeline by starting all four asynchronous workflows:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">//</span><span class="c"> </span><span class="c">Phase</span><span class="c"> </span><span class="c">4:</span><span class="c"> </span><span class="c">Display</span><span class="c"> </span><span class="c">images</span><span class="c"> </span><span class="c">as</span><span class="c"> </span><span class="c">they</span><span class="c"> </span><span class="c">become</span><span class="c"> </span><span class="c">available</span>
+<span class="l"> 2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipp26', 45)" onmouseover="showTip(event, 'fspipp26', 45)" class="i">displayPipelinedImages</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp7', 46)" onmouseover="showTip(event, 'fspipp7', 46)" class="i">async</span> {
+<span class="l"> 3: </span>  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+<span class="l"> 4: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fspipp19', 47)" onmouseover="showTip(event, 'fspipp19', 47)" class="i">info</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp5', 48)" onmouseover="showTip(event, 'fspipp5', 48)" class="i">filteredImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp24', 49)" onmouseover="showTip(event, 'fspipp24', 49)" class="i">AsyncGet</span>()
+<span class="l"> 5: </span>    <span class="i">info</span><span class="o">.</span><span class="i">QueueCount1</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fspipp1', 50)" onmouseover="showTip(event, 'fspipp1', 50)" class="i">loadedImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp27', 51)" onmouseover="showTip(event, 'fspipp27', 51)" class="i">Count</span>
+<span class="l"> 6: </span>    <span class="i">info</span><span class="o">.</span><span class="i">QueueCount2</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fspipp4', 52)" onmouseover="showTip(event, 'fspipp4', 52)" class="i">scaledImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp27', 53)" onmouseover="showTip(event, 'fspipp27', 53)" class="i">Count</span>
+<span class="l"> 7: </span>    <span class="i">info</span><span class="o">.</span><span class="i">QueueCount3</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fspipp5', 54)" onmouseover="showTip(event, 'fspipp5', 54)" class="i">filteredImages</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp27', 55)" onmouseover="showTip(event, 'fspipp27', 55)" class="i">Count</span>
+<span class="l"> 8: </span>    <span onmouseout="hideTip(event, 'fspipp28', 56)" onmouseover="showTip(event, 'fspipp28', 56)" class="i">displayImage</span> <span class="i">info</span> }
+<span class="l"> 9: </span>
+<span class="l">10: </span><span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">workflows</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">implement</span><span class="c"> </span><span class="c">pipeline</span><span class="c"> </span><span class="c">phases</span>
+<span class="l">11: </span><span onmouseout="hideTip(event, 'fspipp29', 57)" onmouseover="showTip(event, 'fspipp29', 57)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp30', 58)" onmouseover="showTip(event, 'fspipp30', 58)" class="i">Start</span>(<span onmouseout="hideTip(event, 'fspipp6', 59)" onmouseover="showTip(event, 'fspipp6', 59)" class="i">loadImages</span>, <span onmouseout="hideTip(event, 'fspipp31', 60)" onmouseover="showTip(event, 'fspipp31', 60)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp32', 61)" onmouseover="showTip(event, 'fspipp32', 61)" class="i">Token</span>)
+<span class="l">12: </span><span onmouseout="hideTip(event, 'fspipp29', 62)" onmouseover="showTip(event, 'fspipp29', 62)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp30', 63)" onmouseover="showTip(event, 'fspipp30', 63)" class="i">Start</span>(<span onmouseout="hideTip(event, 'fspipp23', 64)" onmouseover="showTip(event, 'fspipp23', 64)" class="i">scalePipelinedImages</span>, <span onmouseout="hideTip(event, 'fspipp31', 65)" onmouseover="showTip(event, 'fspipp31', 65)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp32', 66)" onmouseover="showTip(event, 'fspipp32', 66)" class="i">Token</span>)
+<span class="l">13: </span><span onmouseout="hideTip(event, 'fspipp29', 67)" onmouseover="showTip(event, 'fspipp29', 67)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp30', 68)" onmouseover="showTip(event, 'fspipp30', 68)" class="i">Start</span>(<span onmouseout="hideTip(event, 'fspipp33', 69)" onmouseover="showTip(event, 'fspipp33', 69)" class="i">filterPipelinedImages</span>, <span onmouseout="hideTip(event, 'fspipp31', 70)" onmouseover="showTip(event, 'fspipp31', 70)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp32', 71)" onmouseover="showTip(event, 'fspipp32', 71)" class="i">Token</span>)
+<span class="l">14: </span><span class="k">try</span> <span onmouseout="hideTip(event, 'fspipp29', 72)" onmouseover="showTip(event, 'fspipp29', 72)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp34', 73)" onmouseover="showTip(event, 'fspipp34', 73)" class="i">RunSynchronously</span>(<span onmouseout="hideTip(event, 'fspipp26', 74)" onmouseover="showTip(event, 'fspipp26', 74)" class="i">displayPipelinedImages</span>, <span class="i">cancellationToken</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipp31', 75)" onmouseover="showTip(event, 'fspipp31', 75)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipp32', 76)" onmouseover="showTip(event, 'fspipp32', 76)" class="i">Token</span>)
+<span class="l">15: </span><span class="k">with</span> <span class="o">:?</span> <span onmouseout="hideTip(event, 'fspipp35', 77)" onmouseover="showTip(event, 'fspipp35', 77)" class="i">OperationCanceledException</span> <span class="k">-&gt;</span> () <a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+
+
+
+<p>Note that we pass a cancellation token (<code>cts.Token</code>) from a <code>CancellationTokenSource</code>
+  instance <code>cts</code> to all the computations. When we later want to stop the computation, we'll
+  do that by calling the <code>Cancel</code> method of the <code>cts</code> object. We don't have to do
+  anything else to support cancellation - F# asynchronous workflows automatically check for cancellation
+  flag when performing any asynchronous operation (using <code>let!</code> or <code>do!</code>).</p>
+<p>The snippet shows a body of a function that should block until the pipeline processing completes.
+  To do that, we run the last computation using <code>RunSynchronously</code>, which will block until
+  the workflow completes or is cancelled. In the latter case, the method throws <code>OperationCancelledException</code>,
+  which we need to handle.</p>
+<p>The sample above is much shorter than the original implementation in the book (the F# version of that
+  is also available in the source code you can download below). This is mainly because of the automatic
+  support for cancellation provided by asynchronous workflows. We don't have to explicitly check whether
+  the cancellation token has been set in each iteration of processing loops. In addition, the original
+  sample also handles exceptions in the processing loops, which is ignored here, but would be easy to add
+  using the <code>try</code>...<code>with</code> construct.
+</p>
+
+<h2>Adding user interface</h2>
+<img src="http://tomasp.net/articles/parallel-extra-image-pipeline/gui.png" style="float:right;margin:10px" />
+<p>The original version of the sample uses standard imperative approach to implement the user interface.
+  It keeps some mutable state and implements numerous event handlers that react to actions by updating
+  the mutable state. This was done to keep the code simple, because more advanced approaches (e.g. using
+  the MVVM pattern) often lead to more code. In F#, we'll use asynchronous workflows running on the GUI
+  thread to implement the user interaction. This is a very powerful technique that I described in Chapter
+  16 of <a href="http://manning.com/petricek">Real-World functional Programming</a> book (there is also 
+  <a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx" type="external">a
+  chapter excerpt</a> with some of the information from the book). </p>
+
+<p>Before we start writing asynchronous workflows, we'll use <code>Observable.&lt;...&gt;</code> combinators
+  to create one event value. The application contains a list of <code>RadioButton</code> objects that can be used
+  to select a method used to run the computation (a mode). The original application supports sequential mode and 
+  two pipelined modes using <code>BlockingCollection</code> and we add a mode that uses message passing. The 
+  following snippet creates an aggregate event that is triggered whenever a radio button is selected: </p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">event</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">fires</span><span class="c"> </span><span class="c">when</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">different</span><span class="c"> </span><span class="c">mode</span>
+<span class="l">2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fspipm1', 1)" onmouseover="showTip(event, 'fspipm1', 1)" class="i">checkChanged</span> <span class="o">=</span> 
+<span class="l">3: </span>  [ <span class="k">for</span> <span onmouseout="hideTip(event, 'fspipm2', 2)" onmouseover="showTip(event, 'fspipm2', 2)" class="i">btn</span>, _ <span class="k">in</span> <span onmouseout="hideTip(event, 'fspipm3', 3)" onmouseover="showTip(event, 'fspipm3', 3)" class="i">buttons</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fspipm2', 4)" onmouseover="showTip(event, 'fspipm2', 4)" class="i">btn</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm4', 5)" onmouseover="showTip(event, 'fspipm4', 5)" class="i">CheckedChanged</span> <span class="o">:&gt;</span> <span onmouseout="hideTip(event, 'fspipm5', 6)" onmouseover="showTip(event, 'fspipm5', 6)" class="i">IObservable</span><span class="o">&lt;</span>_<span class="o">&gt;</span> ]
+<span class="l">4: </span>  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fspipm6', 7)" onmouseover="showTip(event, 'fspipm6', 7)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm7', 8)" onmouseover="showTip(event, 'fspipm7', 8)" class="i">reduce</span> <span onmouseout="hideTip(event, 'fspipm8', 9)" onmouseover="showTip(event, 'fspipm8', 9)" class="i">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm9', 10)" onmouseover="showTip(event, 'fspipm9', 10)" class="i">merge</span><a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>The snippet first extracts <code>RadioButton</code> objects from the list and returns their
+  <code>CheckedChanged</code> event value upcast to <code>IObservable&lt;T&gt;</code> type, so that
+  they can be aggregated using <code>Observable.merge</code> combinator. Now that we have the aggregated
+  event, we can look at a more interesting problem...</p>
+
+<p>The user interface will have two distinct states. The application starts in the <code>waiting</code> state,
+  in which it waits until the user clicks on the "Start" button and it listens to the <code>checkChanged</code> 
+  event to update the current computation method. When "Start" is pushed, the application switches to the 
+  <code>processing</code> state. In this state, it starts the image processing pipeline (in the background) and 
+  waits until the user hits the "Cancel" button. Then it waits until the pipeline completes and switches
+  the state back to <code>waiting</code>. In F#, we can encode this state machine using two asynchronous 
+  workflows. We'll later start the workflows on the GUI thread, so we can safely access all WinForms elements
+  from the code:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">'Start'</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">handle</span><span class="c"> </span><span class="c">radiobutton</span><span class="c"> </span><span class="c">selection</span>
+<span class="l"> 2: </span><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fspipm10', 11)" onmouseover="showTip(event, 'fspipm10', 11)" class="i">waiting</span> <span onmouseout="hideTip(event, 'fspipm11', 12)" onmouseover="showTip(event, 'fspipm11', 12)" class="i">mode</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm12', 13)" onmouseover="showTip(event, 'fspipm12', 13)" class="i">async</span> {
+<span class="l"> 3: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'fspipm13', 14)" onmouseover="showTip(event, 'fspipm13', 14)" class="i">evt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm14', 15)" onmouseover="showTip(event, 'fspipm14', 15)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm15', 16)" onmouseover="showTip(event, 'fspipm15', 16)" class="i">AwaitObservable</span>(<span onmouseout="hideTip(event, 'fspipm1', 17)" onmouseover="showTip(event, 'fspipm1', 17)" class="i">checkChanged</span>, <span onmouseout="hideTip(event, 'fspipm16', 18)" onmouseover="showTip(event, 'fspipm16', 18)" class="i">form</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm17', 19)" onmouseover="showTip(event, 'fspipm17', 19)" class="i">buttonStart</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm18', 20)" onmouseover="showTip(event, 'fspipm18', 20)" class="i">Click</span>)
+<span class="l"> 4: </span>  <span class="k">match</span> <span class="i">evt</span> <span class="k">with</span>
+<span class="l"> 5: </span>  | <span onmouseout="hideTip(event, 'fspipm19', 21)" onmouseover="showTip(event, 'fspipm19', 21)" class="i">Choice1Of2</span>(_) <span class="k">-&gt;</span>
+<span class="l"> 6: </span>      <span onmouseout="hideTip(event, 'fspipm20', 22)" onmouseover="showTip(event, 'fspipm20', 22)" class="omitted">(selecting new mode omitted)</span>
+<span class="l"> 7: </span>      <span class="k">return!</span> <span onmouseout="hideTip(event, 'fspipm10', 23)" onmouseover="showTip(event, 'fspipm10', 23)" class="i">waiting</span> <span onmouseout="hideTip(event, 'fspipm11', 24)" onmouseover="showTip(event, 'fspipm11', 24)" class="i">mode</span>
+<span class="l"> 8: </span>  | <span onmouseout="hideTip(event, 'fspipm21', 25)" onmouseover="showTip(event, 'fspipm21', 25)" class="i">Choice2Of2</span>(_) <span class="k">-&gt;</span>
+<span class="l"> 9: </span>      <span class="k">return!</span> <span onmouseout="hideTip(event, 'fspipm22', 26)" onmouseover="showTip(event, 'fspipm22', 26)" class="i">processing</span> <span onmouseout="hideTip(event, 'fspipm11', 27)" onmouseover="showTip(event, 'fspipm11', 27)" class="i">mode</span> }
+<span class="l">10: </span>
+<span class="l">11: </span><span class="c">///</span><span class="c"> </span><span class="c">Starts</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">pipeline</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">waits</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">it</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">canceled</span>
+<span class="l">12: </span><span class="k">and</span> <span onmouseout="hideTip(event, 'fspipm22', 28)" onmouseover="showTip(event, 'fspipm22', 28)" class="i">processing</span> <span onmouseout="hideTip(event, 'fspipm23', 29)" onmouseover="showTip(event, 'fspipm23', 29)" class="i">imageMode</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm12', 30)" onmouseover="showTip(event, 'fspipm12', 30)" class="i">async</span> {
+<span class="l">13: </span>  <span onmouseout="hideTip(event, 'fspipm24', 31)" onmouseover="showTip(event, 'fspipm24', 31)" class="omitted">(initialization omitted)</span>
+<span class="l">14: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">pipeline</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">create</span><span class="c"> </span><span class="c">event</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">triggered</span><span class="c"> </span><span class="c">when</span><span class="c"> </span><span class="c">it</span><span class="c"> </span><span class="c">completes</span>
+<span class="l">15: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fspipm25', 32)" onmouseover="showTip(event, 'fspipm25', 32)" class="i">pipelineCompleted</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fspipm26', 33)" onmouseover="showTip(event, 'fspipm26', 33)" class="i">Event</span><span class="o">&lt;</span>_<span class="o">&gt;</span>()
+<span class="l">16: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fspipm27', 34)" onmouseover="showTip(event, 'fspipm27', 34)" class="i">task</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm12', 35)" onmouseover="showTip(event, 'fspipm12', 35)" class="i">async</span> { 
+<span class="l">17: </span>      <span onmouseout="hideTip(event, 'fspipm28', 36)" onmouseover="showTip(event, 'fspipm28', 36)" class="i">Pipeline</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm29', 37)" onmouseover="showTip(event, 'fspipm29', 37)" class="i">imagePipelineMainLoop</span> <span onmouseout="hideTip(event, 'fspipm30', 38)" onmouseover="showTip(event, 'fspipm30', 38)" class="i">updateFn</span> <span onmouseout="hideTip(event, 'fspipm31', 39)" onmouseover="showTip(event, 'fspipm31', 39)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm32', 40)" onmouseover="showTip(event, 'fspipm32', 40)" class="i">Token</span> <span onmouseout="hideTip(event, 'fspipm23', 41)" onmouseover="showTip(event, 'fspipm23', 41)" class="i">imageMode</span> <span onmouseout="hideTip(event, 'fspipm33', 42)" onmouseover="showTip(event, 'fspipm33', 42)" class="i">errorFn</span>  
+<span class="l">18: </span>      <span onmouseout="hideTip(event, 'fspipm25', 43)" onmouseover="showTip(event, 'fspipm25', 43)" class="i">pipelineCompleted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm34', 44)" onmouseover="showTip(event, 'fspipm34', 44)" class="i">Trigger</span>() }
+<span class="l">19: </span>  <span onmouseout="hideTip(event, 'fspipm14', 45)" onmouseover="showTip(event, 'fspipm14', 45)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm35', 46)" onmouseover="showTip(event, 'fspipm35', 46)" class="i">Start</span>(<span onmouseout="hideTip(event, 'fspipm27', 47)" onmouseover="showTip(event, 'fspipm27', 47)" class="i">task</span>, <span onmouseout="hideTip(event, 'fspipm31', 48)" onmouseover="showTip(event, 'fspipm31', 48)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm32', 49)" onmouseover="showTip(event, 'fspipm32', 49)" class="i">Token</span>)
+<span class="l">20: </span>  
+<span class="l">21: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">user</span><span class="c"> </span><span class="c">selects</span><span class="c"> </span><span class="c">'Stop'</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">trigger</span><span class="c"> </span><span class="c">cancellation</span>
+<span class="l">22: </span>  <span class="k">let!</span> _ <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm16', 50)" onmouseover="showTip(event, 'fspipm16', 50)" class="i">form</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm36', 51)" onmouseover="showTip(event, 'fspipm36', 51)" class="i">buttonStop</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm18', 52)" onmouseover="showTip(event, 'fspipm18', 52)" class="i">Click</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fspipm14', 53)" onmouseover="showTip(event, 'fspipm14', 53)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm15', 54)" onmouseover="showTip(event, 'fspipm15', 54)" class="i">AwaitObservable</span>
+<span class="l">23: </span>  <span onmouseout="hideTip(event, 'fspipm31', 55)" onmouseover="showTip(event, 'fspipm31', 55)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm37', 56)" onmouseover="showTip(event, 'fspipm37', 56)" class="i">Cancel</span>() 
+<span class="l">24: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Wait</span><span class="c"> </span><span class="c">until</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">pipeline</span><span class="c"> </span><span class="c">actually</span><span class="c"> </span><span class="c">completes</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">switch</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">waiting</span>
+<span class="l">25: </span>  <span class="k">let!</span> _ <span class="o">=</span> <span onmouseout="hideTip(event, 'fspipm25', 57)" onmouseover="showTip(event, 'fspipm25', 57)" class="i">pipelineCompleted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm38', 58)" onmouseover="showTip(event, 'fspipm38', 58)" class="i">Publish</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fspipm14', 59)" onmouseover="showTip(event, 'fspipm14', 59)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm15', 60)" onmouseover="showTip(event, 'fspipm15', 60)" class="i">AwaitObservable</span>
+<span class="l">26: </span>  <span class="k">return!</span> <span onmouseout="hideTip(event, 'fspipm10', 61)" onmouseover="showTip(event, 'fspipm10', 61)" class="i">waiting</span> <span onmouseout="hideTip(event, 'fspipm23', 62)" onmouseover="showTip(event, 'fspipm23', 62)" class="i">imageMode</span> }<a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>In the <code>waiting</code> state, we keep the current computation mode as the argument. We use the overloaded 
+  <code>Async.AwaitObservable</code> method (you can find it in downloads below) to wait for the first of two events 
+  - either the <code>checkChanged</code> event or the <code>Click</code> event of the <code>buttonStart</code> button.
+  The operation returns a value of the generic union type <code>Choice&lt;T1, T2&gt;</code> specifying which of the
+  events occurred. In the first case, we get the new computation mode and continue in the <code>waiting</code>
+  state. In the second case, we switch to the <code>processing</code> state and give it the computation mode
+  as an argument.</p>
+<p>The <code>processing</code> workflow doesn't do any looping. It simply waits for a sequence of events. After 
+  some initialization, it creates an event <code>pipelineCompleted</code> that will be triggered when the pipeline
+  processing (running in the background) finishes. Then it creates a workflow to run the pipeline and trigger
+  the <code>pipelineCompleted</code> event at the end. The workflow is started using <code>Async.Start</code>
+  and is passed a cancellation token (that is used later). After starting the workflow, we wait until the 
+  user clicks on the "Cancel" button using the <code>AwaitObservable</code> primitive. When that happens, we cancel
+  the cancellation token and wait for the event we created (to block until the pipeline actually ends) and
+  then we return back to the <code>waiting</code> mode.</p>
+<p>Finally, when the application starts, we need to start the user interface handling in the <code>waiting</code> state:</p>
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'fspipm10', 63)" onmouseover="showTip(event, 'fspipm10', 63)" class="i">waiting</span> <span onmouseout="hideTip(event, 'fspipm39', 64)" onmouseover="showTip(event, 'fspipm39', 64)" class="i">ImageMode</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm40', 65)" onmouseover="showTip(event, 'fspipm40', 65)" class="i">MessagePassing</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fspipm14', 66)" onmouseover="showTip(event, 'fspipm14', 66)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fspipm41', 67)" onmouseover="showTip(event, 'fspipm41', 67)" class="i">StartImmediate</span><a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+<p>We use the <code>StartImmediate</code> primitive, which runs the workflow on the GUI thread until 
+  the first yield point (e.g. <code>let!</code> or <code>do!</code>) and then returns back to the
+  GUI thread using synchronization context. This guarantees that all code in the workflow will run on the
+  GUI thread and so we can safely access user interface elements.</p>
+
+<h2>Summary</h2>
+<p>In this article, we looked at an alternative F# implementation of the pipeline example from 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a>. 
+  The implementation uses agents and in particular, the <code>BlockingQueueAgent&lt;T&gt;</code> 
+  type (<a href="http://tomasp.net/blog/parallel-extra-blockingagent.aspx">discussed in another 
+  article</a>) instead of <code>Task&lt;T&gt;</code> and <code>BlockingCollection&lt;T&gt;</code> types from
+  .NET 4.0. </p>
+
+<p>I tried running various implementations of the pipeline on my dual-core laptop and the performance
+  of the message-passing implementation using workflows is almost as efficient as the original C# version.
+  For a reference, the sequential version needs roughly <strong>182ms</strong> to process a single image. A parallel 
+  version using <code>BlockingCollection&lt;T&gt;</code> and using tasks processes an image in <strong>103ms</strong>.
+  A version presented in this article based on F# agents needs <strong>109ms</strong>, which is only
+  slightly more. Another C# version from the book, which uses more sophisticated load balancing needs
+  about <strong>110ms</strong>, because the F# version of the sample performs one phase faster than
+  C#, so the load balancing is used in a place where it is not needed. If you try to run the sample
+  on a machine with more cores, I'll be interested to hear your statistics!</p>
+
+<p>The implementation of the image processing is done by creating four asynchronous workflows that 
+  communicate via intermediate buffers (the <code>BlockingQueueAgent&lt;T&gt;</code> type). This has the
+  benefit that we don't have to explicitly handle cancellation, because asynchronous workflows 
+  automatically check for cancellation at every yield point (e.g. <code>let!</code> and <code>do!</code>).
+  All we have to do to support cancellation is to pass a cancellation token to the <code>Start</code>
+  or <code>RunSynchronously</code> methods when starting the workflow.</p>
+<p>Finally, the example also demonstrates how to use asynchronous workflows running on the GUI 
+  thread to implement a reactive user interface. When we start a workflow using <code>Async.StartImmediate</code>,
+  the workflow will run only on the thread where it was created. In our case, it runs on the GUI thread,
+  so we can safely access all WinForms elements. Another interesting aspect is the use of
+  <code>Async.AwaitObservable</code> to wait for an event inside asynchronous workflow. This allows us
+  to write state machines in a natural way (as a mutually recursive functions), but without actually
+  blocking any threads.  
+  </p>
+
+<h2>Source Code</h2>
+<ul>
+  <li>Download <a href="http://tomasp.net/articles/parallel-extra/parallelextras.zip">F# Parallel Extras samples</a> (ZIP)</li>
+  <li>Get the latest version of samples from <a href="http://fsharpsamples.codeplex.com/" type="external">F# Community Samples</a> at CodePlex</li></ul>
+  
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fspipm1">val checkChanged : IObservable&lt;EventArgs&gt;
+<br /><br /><em>Create event that fires when the user selects different mode</em><br /></div>
+<div class="tip" id="fspipm2">val btn : RadioButton<br /><br />&#160;&#160;type: RadioButton<br />&#160;&#160;implements: IDropTarget<br />&#160;&#160;implements: ComponentModel.ISynchronizeInvoke<br />&#160;&#160;implements: IWin32Window<br />&#160;&#160;implements: Layout.IArrangedElement<br />&#160;&#160;implements: IBindableComponent<br />&#160;&#160;implements: ComponentModel.IComponent<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: ButtonBase<br />&#160;&#160;inherits: Control<br />&#160;&#160;inherits: ComponentModel.Component<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fspipm3">val buttons : (RadioButton * ImageMode) list<br /><br />&#160;&#160;type: (RadioButton * ImageMode) list<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;List&lt;RadioButton * ImageMode&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;RadioButton * ImageMode&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br /></div>
+<div class="tip" id="fspipm4">event RadioButton.CheckedChanged: IEvent&lt;EventHandler,EventArgs&gt;<br /></div>
+<div class="tip" id="fspipm5">Multiple items
+<br />type IObservable&lt;'T&gt; =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;member Subscribe : System.IObserver&lt;'T&gt; -&gt; System.IDisposable<br />&#160;&#160;end<br /><br />Full name: System.IObservable&lt;_&gt;
+<br /><br />--------------------<br />
+<br />IObservable<br /></div>
+<div class="tip" id="fspipm6">Multiple items
+<br />module List<br /><br />from FSharp.Control
+<br /><br />--------------------<br />
+<br />module List<br /><br />from Microsoft.FSharp.Collections
+<br /><br />--------------------<br />
+<br />type List&lt;'T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of 'T * 'T list<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;interface Collections.IEnumerable<br />&#160;&#160;&#160;&#160;interface Collections.Generic.IEnumerable&lt;'T&gt;<br />&#160;&#160;&#160;&#160;member Head : 'T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; 'T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : 'T list<br />&#160;&#160;&#160;&#160;static member Cons : head:'T * tail:'T list -&gt; 'T list<br />&#160;&#160;&#160;&#160;static member Empty : 'T list<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;<br /><br />&#160;&#160;type: List&lt;'T&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;List&lt;'T&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;'T&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br /></div>
+<div class="tip" id="fspipm7">val reduce : ('a -&gt; 'a -&gt; 'a) -&gt; 'a list -&gt; 'a<br /><br />Full name: Microsoft.FSharp.Collections.List.reduce<br /></div>
+<div class="tip" id="fspipm8">Multiple items
+<br />module Observable<br /><br />from FSharp.Control
+<br /><br />--------------------<br />
+<br />module Observable<br /><br />from Microsoft.FSharp.Control<br /></div>
+<div class="tip" id="fspipm9">val merge : IObservable&lt;'T&gt; -&gt; IObservable&lt;'T&gt; -&gt; IObservable&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Observable.merge<br /></div>
+<div class="tip" id="fspipm10">val waiting : (ImageMode -&gt; Async&lt;'a&gt;)
+<br /><br /><em>Wait until the user selects 'Start' and handle radiobutton selection</em><br /></div>
+<div class="tip" id="fspipm11">val mode : ImageMode<br /><br />&#160;&#160;type: ImageMode<br />&#160;&#160;inherits: Enum<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipm12">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async<br /></div>
+<div class="tip" id="fspipm13">val evt : Choice&lt;EventArgs,EventArgs&gt;<br /><br />&#160;&#160;type: Choice&lt;EventArgs,EventArgs&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;Choice&lt;EventArgs,EventArgs&gt;&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fspipm14">Multiple items
+<br />type Async&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;
+<br /><br />--------------------<br />
+<br />type Async<br />with<br />&#160;&#160;static member AsBeginEnd : computation:('Arg -&gt; Async&lt;'T&gt;) -&gt; ('Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; 'T) * (IAsyncResult -&gt; unit)<br />&#160;&#160;static member AwaitEvent : event:IEvent&lt;'Del,'T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt; (requires delegate and 'Del :&gt; Delegate)<br />&#160;&#160;static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member AwaitTask : task:Task&lt;'T&gt; -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member CancelDefaultToken : unit -&gt; unit<br />&#160;&#160;static member Catch : computation:Async&lt;'T&gt; -&gt; Async&lt;Choice&lt;'T,exn&gt;&gt;<br />&#160;&#160;static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg:'Arg1 * beginAction:('Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * beginAction:('Arg1 * 'Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * arg3:'Arg3 * beginAction:('Arg1 * 'Arg2 * 'Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromContinuations : callback:(('T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member Ignore : computation:Async&lt;'T&gt; -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />&#160;&#160;static member Parallel : computations:seq&lt;Async&lt;'T&gt;&gt; -&gt; Async&lt;'T []&gt;<br />&#160;&#160;static member RunSynchronously : computation:Async&lt;'T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; 'T<br />&#160;&#160;static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartAsTask : computation:Async&lt;'T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;'T&gt;<br />&#160;&#160;static member StartChild : computation:Async&lt;'T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;'T&gt;&gt;<br />&#160;&#160;static member StartChildAsTask : computation:Async&lt;'T&gt; * ?taskCreationOptions:TaskCreationOptions -&gt; Async&lt;Task&lt;'T&gt;&gt;<br />&#160;&#160;static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartWithContinuations : computation:Async&lt;'T&gt; * continuation:('T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member TryCancelled : computation:Async&lt;'T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member CancellationToken : Async&lt;CancellationToken&gt;<br />&#160;&#160;static member DefaultCancellationToken : CancellationToken<br />end<br /><br />Full name: Microsoft.FSharp.Control.Async<br /></div>
+<div class="tip" id="fspipm15">Multiple overloads
+<br />static member Async.AwaitObservable : ev1:IObservable&lt;'a&gt; -&gt; Async&lt;'a&gt;
+<br />static member Async.AwaitObservable : ev1:IObservable&lt;'a&gt; * ev2:IObservable&lt;'b&gt; -&gt; Async&lt;Choice&lt;'a,'b&gt;&gt;
+<br />static member Async.AwaitObservable : ev1:IObservable&lt;'a&gt; * ev2:IObservable&lt;'b&gt; * ev3:IObservable&lt;'c&gt; -&gt; Async&lt;Choice&lt;'a,'b,'c&gt;&gt;<br /></div>
+<div class="tip" id="fspipm16">val form : Gui.MainForm<br /><br />&#160;&#160;type: Gui.MainForm<br />&#160;&#160;implements: IDropTarget<br />&#160;&#160;implements: ComponentModel.ISynchronizeInvoke<br />&#160;&#160;implements: IWin32Window<br />&#160;&#160;implements: IBindableComponent<br />&#160;&#160;implements: Layout.IArrangedElement<br />&#160;&#160;implements: ComponentModel.IComponent<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;implements: IContainerControl<br />&#160;&#160;inherits: Form<br />&#160;&#160;inherits: ContainerControl<br />&#160;&#160;inherits: ScrollableControl<br />&#160;&#160;inherits: Control<br />&#160;&#160;inherits: ComponentModel.Component<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fspipm17">field Gui.MainForm.buttonStart<br /></div>
+<div class="tip" id="fspipm18">event Control.Click: IEvent&lt;EventHandler,EventArgs&gt;<br /></div>
+<div class="tip" id="fspipm19">union case Choice.Choice1Of2: 'T1 -&gt; Choice&lt;'T1,'T2&gt;<br /></div>
+<div class="tip" id="fspipm20">let mode = buttons |&gt; List.pick (fun (btn, mode) -&gt;<br />&#160;&#160;if btn.Checked then Some(mode) else None)<br /></div>
+<div class="tip" id="fspipm21">union case Choice.Choice2Of2: 'T2 -&gt; Choice&lt;'T1,'T2&gt;<br /></div>
+<div class="tip" id="fspipm22">val processing : (ImageMode -&gt; Async&lt;'a&gt;)
+<br /><br /><em>Starts the pipeline and waits until it is canceled</em><br /></div>
+<div class="tip" id="fspipm23">val imageMode : ImageMode<br /><br />&#160;&#160;type: ImageMode<br />&#160;&#160;inherits: Enum<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipm24">// Initialization &amp; reset mutable values<br />updateEnabledStatus Mode.Running imageMode<br />let cts = new CancellationTokenSource()<br />sw.Restart()<br />imagesSoFar &lt;- 0<br />for i in 0 .. totalTime.Length - 1 do totalTime.[i] &lt;- 0<br /></div>
+<div class="tip" id="fspipm25">val pipelineCompleted : Event&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipm26">Multiple items
+<br />module Event<br /><br />from Microsoft.FSharp.Control
+<br /><br />--------------------<br />
+<br />type Event&lt;'Delegate,'Args (requires delegate and 'Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; Event&lt;'Delegate,'Args&gt;<br />&#160;&#160;&#160;&#160;member Trigger : sender:obj * args:'Args -&gt; unit<br />&#160;&#160;&#160;&#160;member Publish : IEvent&lt;'Delegate,'Args&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;
+<br /><br />--------------------<br />
+<br />type Event&lt;'T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; Event&lt;'T&gt;<br />&#160;&#160;&#160;&#160;member Trigger : arg:'T -&gt; unit<br />&#160;&#160;&#160;&#160;member Publish : IEvent&lt;'T&gt;<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_&gt;<br /></div>
+<div class="tip" id="fspipm27">val task : Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipm28">module Pipeline<br /><br />from Microsoft.Practices.ParallelGuideSamples.ImagePipeline<br /></div>
+<div class="tip" id="fspipm29">val imagePipelineMainLoop : (ImageInfo -&gt; unit) -&gt; CancellationToken -&gt; ImageMode -&gt; (exn -&gt; unit) -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.ImagePipeline.Pipeline.imagePipelineMainLoop
+<br /><br /><em>&lt;summary&gt;<br />&#160;&#160;&#160;Runs the image pipeline example. The program goes through the jpg images located in the SourceDir<br />&#160;&#160;&#160;directory and performs a series of steps: it resizes each image and adds a black border and then applies<br />&#160;&#160;&#160;a Gaussian noise filter operation to give the image a grainy effect. Finally, the program invokes <br />&#160;&#160;&#160;a user-provided delegate to the image (for example, to display the image on the user interface).<br />&#160;<br />&#160;&#160;&#160;Images are processed in sequential order. That is, the display delegate will be <br />&#160;&#160;&#160;invoked in exactly the same order as the images appear in the file system.<br />&#160;&lt;/summary&gt;<br /><br />&#160;&lt;param name=&quot;displayFn&quot;&gt;<br />&#160;&#160;&#160;A function that is invoked for each image at the end of the pipeline, <br />&#160;&#160;&#160;for example, to display the image in the user interface.<br />&#160;&lt;/param&gt;<br />&#160;&lt;param name=&quot;algorithmChoice&quot;&gt;<br />&#160;&#160;&#160;The method of calculation. 0=sequential, 1=pipeline, 2=load balanced pipeline<br />&#160;&lt;/param&gt;<br />&#160;&lt;param name=&quot;errorFn&quot;&gt;<br />&#160;&#160;&#160;A function that will be invoked if this method or any of its parallel <br />&#160;&#160;&#160;subtasks observe an exception during their execution.<br />&#160;&lt;/param&gt;<br />&#160;&lt;param name=&quot;token&quot;&gt;A token that can signal an external cancellation request.&lt;/param&gt;</em><br /></div>
+<div class="tip" id="fspipm30">val updateFn : (ImageInfo -&gt; unit)
+<br /><br /><em>Call 'setBitmap' to update info on the GUI thread</em><br /></div>
+<div class="tip" id="fspipm31">val cts : CancellationTokenSource<br /><br />&#160;&#160;type: CancellationTokenSource<br />&#160;&#160;implements: IDisposable<br /></div>
+<div class="tip" id="fspipm32">property CancellationTokenSource.Token: CancellationToken<br /></div>
+<div class="tip" id="fspipm33">val errorFn : (Exception -&gt; unit)
+<br /><br /><em>Display error message when something goes wrong</em><br /></div>
+<div class="tip" id="fspipm34">member Event.Trigger : arg:'T -&gt; unit<br /></div>
+<div class="tip" id="fspipm35">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br /></div>
+<div class="tip" id="fspipm36">field Gui.MainForm.buttonStop<br /></div>
+<div class="tip" id="fspipm37">Multiple overloads
+<br />CancellationTokenSource.Cancel() : unit
+<br />CancellationTokenSource.Cancel(throwOnFirstException: bool) : unit<br /></div>
+<div class="tip" id="fspipm38">property Event.Publish: IEvent&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipm39">type ImageMode =<br />&#160;&#160;|  Sequential  =  0<br />&#160;&#160;|  Pipelined  =  1<br />&#160;&#160;|  LoadBalanced  =  2<br />&#160;&#160;|  MessagePassing  =  3<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.ImagePipeline.Pipeline.ImageMode<br /><br />&#160;&#160;type: ImageMode<br />&#160;&#160;inherits: Enum<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipm40">ImageMode.MessagePassing: ImageMode = 3<br /></div>
+<div class="tip" id="fspipm41">static member Async.StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br /></div>
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fspipp1">val loadedImages : BlockingQueueAgent&lt;Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo&gt;<br /></div>
+<div class="tip" id="fspipp2">type BlockingQueueAgent&lt;'T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : maxLength:int -&gt; BlockingQueueAgent&lt;'T&gt;<br />&#160;&#160;&#160;&#160;member AsyncAdd : v:'T * ?timeout:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;&#160;&#160;member AsyncGet : ?timeout:int -&gt; Async&lt;'T&gt;<br />&#160;&#160;&#160;&#160;member Count : int<br />&#160;&#160;end<br /><br />Full name: Image-pipeline-code.BlockingQueueAgent&lt;_&gt;
+<br /><br /><em>Agent that implements an asynchronous blocking queue</em><br /></div>
+<div class="tip" id="fspipp3">val queueLength : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipp4">val scaledImages : BlockingQueueAgent&lt;Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo&gt;<br /></div>
+<div class="tip" id="fspipp5">val filteredImages : BlockingQueueAgent&lt;Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo&gt;<br /></div>
+<div class="tip" id="fspipp6">val loadImages : Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipp7">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async<br /></div>
+<div class="tip" id="fspipp8">val clockOffset : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipp9">type Environment =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member CommandLine : string<br />&#160;&#160;&#160;&#160;static member CurrentDirectory : string with get, set<br />&#160;&#160;&#160;&#160;static member Exit : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member ExitCode : int with get, set<br />&#160;&#160;&#160;&#160;static member ExpandEnvironmentVariables : string -&gt; string<br />&#160;&#160;&#160;&#160;static member FailFast : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member FailFast : string * System.Exception -&gt; unit<br />&#160;&#160;&#160;&#160;static member GetCommandLineArgs : unit -&gt; string []<br />&#160;&#160;&#160;&#160;static member GetEnvironmentVariable : string -&gt; string<br />&#160;&#160;&#160;&#160;static member GetEnvironmentVariable : string * System.EnvironmentVariableTarget -&gt; string<br />&#160;&#160;&#160;&#160;static member GetEnvironmentVariables : unit -&gt; System.Collections.IDictionary<br />&#160;&#160;&#160;&#160;static member GetEnvironmentVariables : System.EnvironmentVariableTarget -&gt; System.Collections.IDictionary<br />&#160;&#160;&#160;&#160;static member GetFolderPath : SpecialFolder -&gt; string<br />&#160;&#160;&#160;&#160;static member GetFolderPath : SpecialFolder * SpecialFolderOption -&gt; string<br />&#160;&#160;&#160;&#160;static member GetLogicalDrives : unit -&gt; string []<br />&#160;&#160;&#160;&#160;static member HasShutdownStarted : bool<br />&#160;&#160;&#160;&#160;static member Is64BitOperatingSystem : bool<br />&#160;&#160;&#160;&#160;static member Is64BitProcess : bool<br />&#160;&#160;&#160;&#160;static member MachineName : string<br />&#160;&#160;&#160;&#160;static member NewLine : string<br />&#160;&#160;&#160;&#160;static member OSVersion : System.OperatingSystem<br />&#160;&#160;&#160;&#160;static member ProcessorCount : int<br />&#160;&#160;&#160;&#160;static member SetEnvironmentVariable : string * string -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetEnvironmentVariable : string * string * System.EnvironmentVariableTarget -&gt; unit<br />&#160;&#160;&#160;&#160;static member StackTrace : string<br />&#160;&#160;&#160;&#160;static member SystemDirectory : string<br />&#160;&#160;&#160;&#160;static member SystemPageSize : int<br />&#160;&#160;&#160;&#160;static member TickCount : int<br />&#160;&#160;&#160;&#160;static member UserDomainName : string<br />&#160;&#160;&#160;&#160;static member UserInteractive : bool<br />&#160;&#160;&#160;&#160;static member UserName : string<br />&#160;&#160;&#160;&#160;static member Version : System.Version<br />&#160;&#160;&#160;&#160;static member WorkingSet : int64<br />&#160;&#160;&#160;&#160;type SpecialFolderOption =<br />&#160;&#160;&#160;&#160;&#160;&#160;| None = 0<br />&#160;&#160;&#160;&#160;&#160;&#160;| Create = 32768<br />&#160;&#160;&#160;&#160;&#160;&#160;| DoNotVerify = 16384<br />&#160;&#160;&#160;&#160;type SpecialFolder =<br />&#160;&#160;&#160;&#160;&#160;&#160;| ApplicationData = 26<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonApplicationData = 35<br />&#160;&#160;&#160;&#160;&#160;&#160;| LocalApplicationData = 28<br />&#160;&#160;&#160;&#160;&#160;&#160;| Cookies = 33<br />&#160;&#160;&#160;&#160;&#160;&#160;| Desktop = 0<br />&#160;&#160;&#160;&#160;&#160;&#160;| Favorites = 6<br />&#160;&#160;&#160;&#160;&#160;&#160;| History = 34<br />&#160;&#160;&#160;&#160;&#160;&#160;| InternetCache = 32<br />&#160;&#160;&#160;&#160;&#160;&#160;| Programs = 2<br />&#160;&#160;&#160;&#160;&#160;&#160;| MyComputer = 17<br />&#160;&#160;&#160;&#160;&#160;&#160;| MyMusic = 13<br />&#160;&#160;&#160;&#160;&#160;&#160;| MyPictures = 39<br />&#160;&#160;&#160;&#160;&#160;&#160;| Recent = 8<br />&#160;&#160;&#160;&#160;&#160;&#160;| SendTo = 9<br />&#160;&#160;&#160;&#160;&#160;&#160;| StartMenu = 11<br />&#160;&#160;&#160;&#160;&#160;&#160;| Startup = 7<br />&#160;&#160;&#160;&#160;&#160;&#160;| System = 37<br />&#160;&#160;&#160;&#160;&#160;&#160;| Templates = 21<br />&#160;&#160;&#160;&#160;&#160;&#160;| DesktopDirectory = 16<br />&#160;&#160;&#160;&#160;&#160;&#160;| Personal = 5<br />&#160;&#160;&#160;&#160;&#160;&#160;| MyDocuments = 5<br />&#160;&#160;&#160;&#160;&#160;&#160;| ProgramFiles = 38<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonProgramFiles = 43<br />&#160;&#160;&#160;&#160;&#160;&#160;| AdminTools = 48<br />&#160;&#160;&#160;&#160;&#160;&#160;| CDBurning = 59<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonAdminTools = 47<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonDocuments = 46<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonMusic = 53<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonOemLinks = 58<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonPictures = 54<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonStartMenu = 22<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonPrograms = 23<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonStartup = 24<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonDesktopDirectory = 25<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonTemplates = 45<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonVideos = 55<br />&#160;&#160;&#160;&#160;&#160;&#160;| Fonts = 20<br />&#160;&#160;&#160;&#160;&#160;&#160;| MyVideos = 14<br />&#160;&#160;&#160;&#160;&#160;&#160;| NetworkShortcuts = 19<br />&#160;&#160;&#160;&#160;&#160;&#160;| PrinterShortcuts = 27<br />&#160;&#160;&#160;&#160;&#160;&#160;| UserProfile = 40<br />&#160;&#160;&#160;&#160;&#160;&#160;| CommonProgramFilesX86 = 44<br />&#160;&#160;&#160;&#160;&#160;&#160;| ProgramFilesX86 = 42<br />&#160;&#160;&#160;&#160;&#160;&#160;| Resources = 56<br />&#160;&#160;&#160;&#160;&#160;&#160;| LocalizedResources = 57<br />&#160;&#160;&#160;&#160;&#160;&#160;| SystemX86 = 41<br />&#160;&#160;&#160;&#160;&#160;&#160;| Windows = 36<br />&#160;&#160;end<br /><br />Full name: System.Environment<br /></div>
+<div class="tip" id="fspipp10">property Environment.TickCount: int<br /></div>
+<div class="tip" id="fspipp11">val numbers : (int -&gt; seq&lt;int&gt;)<br /></div>
+<div class="tip" id="fspipp12">val n : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipp13">Multiple items
+<br />val seq : seq&lt;'T&gt; -&gt; seq&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq
+<br /><br />--------------------<br />
+<br />type seq&lt;'T&gt; = IEnumerable&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br /><br />&#160;&#160;type: seq&lt;'T&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="fspipp14">val count : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fspipp15">val img : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fspipp16">val fileNames : seq&lt;string&gt;<br /><br />&#160;&#160;type: seq&lt;string&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="fspipp17">Multiple items
+<br />module Seq<br /><br />from Microsoft.Practices.ParallelGuideSamples.ImagePipeline.PipelineStandard
+<br /><br />--------------------<br />
+<br />module Seq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="fspipp18">val zip : seq&lt;'T1&gt; -&gt; seq&lt;'T2&gt; -&gt; seq&lt;'T1 * 'T2&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.zip<br /></div>
+<div class="tip" id="fspipp19">val info : Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo<br /><br />&#160;&#160;type: Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo<br />&#160;&#160;implements: IDisposable<br /></div>
+<div class="tip" id="fspipp20">val loadImage : string -&gt; string -&gt; int -&gt; int -&gt; Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.ImagePipeline.PipelineStandard.loadImage<br /></div>
+<div class="tip" id="fspipp21">val sourceDir : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fspipp22">member BlockingQueueAgent.AsyncAdd : v:'T * ?timeout:int -&gt; Async&lt;unit&gt;
+<br /><br /><em>Asynchronously adds item; blocks if queue is full</em><br /></div>
+<div class="tip" id="fspipp23">val scalePipelinedImages : Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipp24">member BlockingQueueAgent.AsyncGet : ?timeout:int -&gt; Async&lt;'T&gt;
+<br /><br /><em>Asynchronously gets item; blocks if queue is empty</em><br /></div>
+<div class="tip" id="fspipp25">val scaleImage : Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.ImagePipeline.PipelineStandard.scaleImage<br /></div>
+<div class="tip" id="fspipp26">val displayPipelinedImages : Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipp27">property BlockingQueueAgent.Count: int
+<br /><br /><em>Returns the number of items in the queue (immediately)</em><br /></div>
+<div class="tip" id="fspipp28">val displayImage : (Microsoft.Practices.ParallelGuideSamples.ImagePipeline.ImageInfo -&gt; unit)<br /></div>
+<div class="tip" id="fspipp29">Multiple items
+<br />type Async&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;
+<br /><br />--------------------<br />
+<br />type Async<br />with<br />&#160;&#160;static member AsBeginEnd : computation:('Arg -&gt; Async&lt;'T&gt;) -&gt; ('Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; 'T) * (IAsyncResult -&gt; unit)<br />&#160;&#160;static member AwaitEvent : event:IEvent&lt;'Del,'T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt; (requires delegate and 'Del :&gt; Delegate)<br />&#160;&#160;static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member AwaitTask : task:Tasks.Task&lt;'T&gt; -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member CancelDefaultToken : unit -&gt; unit<br />&#160;&#160;static member Catch : computation:Async&lt;'T&gt; -&gt; Async&lt;Choice&lt;'T,exn&gt;&gt;<br />&#160;&#160;static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg:'Arg1 * beginAction:('Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * beginAction:('Arg1 * 'Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * arg3:'Arg3 * beginAction:('Arg1 * 'Arg2 * 'Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromContinuations : callback:(('T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member Ignore : computation:Async&lt;'T&gt; -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />&#160;&#160;static member Parallel : computations:seq&lt;Async&lt;'T&gt;&gt; -&gt; Async&lt;'T []&gt;<br />&#160;&#160;static member RunSynchronously : computation:Async&lt;'T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; 'T<br />&#160;&#160;static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartAsTask : computation:Async&lt;'T&gt; * ?taskCreationOptions:Tasks.TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Tasks.Task&lt;'T&gt;<br />&#160;&#160;static member StartChild : computation:Async&lt;'T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;'T&gt;&gt;<br />&#160;&#160;static member StartChildAsTask : computation:Async&lt;'T&gt; * ?taskCreationOptions:Tasks.TaskCreationOptions -&gt; Async&lt;Tasks.Task&lt;'T&gt;&gt;<br />&#160;&#160;static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartWithContinuations : computation:Async&lt;'T&gt; * continuation:('T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member TryCancelled : computation:Async&lt;'T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member CancellationToken : Async&lt;CancellationToken&gt;<br />&#160;&#160;static member DefaultCancellationToken : CancellationToken<br />end<br /><br />Full name: Microsoft.FSharp.Control.Async<br /></div>
+<div class="tip" id="fspipp30">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br /></div>
+<div class="tip" id="fspipp31">val cts : CancellationTokenSource<br /><br />&#160;&#160;type: CancellationTokenSource<br />&#160;&#160;implements: IDisposable<br /></div>
+<div class="tip" id="fspipp32">property CancellationTokenSource.Token: CancellationToken<br /></div>
+<div class="tip" id="fspipp33">val filterPipelinedImages : Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fspipp34">static member Async.RunSynchronously : computation:Async&lt;'T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; 'T<br /></div>
+<div class="tip" id="fspipp35">type OperationCanceledException =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.SystemException<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;new : string -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;new : string * System.Exception -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;new : System.Threading.CancellationToken -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;new : string * System.Threading.CancellationToken -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;new : string * System.Exception * System.Threading.CancellationToken -&gt; System.OperationCanceledException<br />&#160;&#160;&#160;&#160;member CancellationToken : System.Threading.CancellationToken with get, set<br />&#160;&#160;end<br /><br />Full name: System.OperationCanceledException<br /><br />&#160;&#160;type: OperationCanceledException<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;implements: Runtime.InteropServices._Exception<br />&#160;&#160;inherits: SystemException<br />&#160;&#160;inherits: exn<br /></div>

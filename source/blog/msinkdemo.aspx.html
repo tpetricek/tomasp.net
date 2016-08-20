@@ -1,0 +1,127 @@
+<!-- [info]
+
+ - date: 2005-06-11T03:03:34.0000000
+ - description: V tomto článku naleznete několik ukázek popisujících tvorbu programů pro platformu TabletPC.
+ - tags: 
+ - layout: post
+ - title: WinForms - Vývoj TabletPC aplikací
+ - url: msinkdemo.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto článku naleznete několik ukázek popisujících tvorbu programů pro platformu TabletPC.
+[/abstract] -->
+
+<h1>WinForms - Vývoj TabletPC aplikací</h1>
+<doc version="1"><body><h1>WinForms - Vývoj TabletPC aplikací</h1><h2>Co tento článek ukazuje</h2><ul><li>Úvodní informace o vývoji aplikací pro platformu TabletPC</li><li>Popis nejdůležitějších třid z namespace <code>Microsoft.Ink</code></li><li>Ukázka zpracovávající vstup z pera</li></ul><p>Počítače typu TabletPC (s operačním systémem Windows XP TabletPC Edition)
+    umožňují uživateli ovládat systém pomocí stylusu (pera). Na TabletPC lze
+    samozřejmě spouštět všechny normální programy, ale pokud chcete ve vaší aplikaci
+    využít některé výhody, které tato platforma přináší (například rozeznávání
+    rukou psaného textu) mohou se vám hodit informace v tomto článku.  
+    Pěkným příkladem aplikace podporující TabletPC je součást Microsoft Office s
+    názvem OneNote [<a href="#links">1</a>]. V následujícím článku se dozvíte, že
+    přidat do své .NET aplikace některé funkce pro podporu TabletPC není vůbec tak
+    složité jak se na první pohled zdá.</p><p>Pro vývoj aplikací pro TabletPC vám stačí nainstalovat TabletPC SDK [<a href="#links">2</a>],
+    které pro instalaci vyžaduje Windows XP nebo Windows 2003. Samotné SDK obsahuje
+    několik ukázkových aplikací, které demonstrují základní operace, které lze 
+    na TabletPC provádět.</p><h2>Kreslení a psaní na TabletPC</h2><p>Při kreslení nebo psaní na TabletPC se nakreslené objekty ukládají ve vektorovém
+    formátu. Aplikace může tato data zachytávat a libovolně zpracovávat.
+    Data jsou označována jako inkoust (<code>Ink</code>) a lze s nimi pracovat
+    pomocí managed objektů.</p><h3>InkCollector</h3><p>Základní třídou, která přidává do aplikace podporu psaní rukou je třída 
+    <code>InkCollector</code>. Psaní rukou lze aktivovat na libovolný ovládací prvek
+    nebo celý formulář. Pokud je <code>InkCollector</code> aktivní, tak se při pohybu
+    nad ovládacím prvkem kurzor změní na tečku (tip) a po ovládacím prvku je možno kreslit.
+    K nakresleným čárám lze přistupovat pomocí objektu <code>InkCollector</code> a nebo
+    pomocí událostí (například událost <code>Stroke</code> je vyvolána poté co uživatel
+    nakreslí křivku). Následující ukázka umožní psaní po celém formuláři:</p><pre><span class="c">// Objekt na zachytavani psani a kresleni</span>
+private InkCollector inkCollect;
+
+private void Form_Load(object sender, EventArgs e)
+{
+  <span class="c">// Vytvori objekt na zachytavani psanych textu
+  // parametr urcuje ovladaci prvek/form na ktery se ma psat</span>
+  inkCollect = new InkCollector(this.Handle);
+  inkCollect.Enabled = true;        
+}  </pre><p><small>Kompletní kód naleznete v TabletPC SDK</small></p><h3>Rozeznávání rukopisu</h3><p>Jednou z největších výhod Windows XP TabletPC Edition je rozeznávání rukopisu,
+    které (bohužel zatím ne v české verzi) dokáže rozeznávat rukou napsaný text.
+    Pro tuto funkci je již potřeba operační systém pro TabletPC, protože 
+    objekty pro rozpoznávání textu (<code>Recognizers</code>) nejsou na běžných
+    systémech k dispozici. Následující ukázka doplňuje předcházející fragment
+    kódu o metodu, která rozpozná napsaný text:</p><pre>
+private void btnRecognize_Click(object sender,EventArgs e)
+{
+  <span class="c">// Kontrola jestli je dostupny objekt na rozpoznavani</span>
+  Recognizers rec=new Recognizers();
+  if (rec.Count==0)
+  {
+    MessageBox.Show("Funkce je dostupna pouze na TabletPC.");
+    return;
+  }
+
+  <span class="c">// Prevest nakreslene cary na text</span>
+  string text=inkCollect.Ink.Strokes.ToString();
+  MessageBox.Show(text);
+
+  <span class="c">// Smaze nakreslene cary</span>
+  inkCollect.Ink.DeleteStrokes();
+  Refresh();
+}
+</pre><p><small>Kompletní kód naleznete v TabletPC SDK</small></p><p>V ukázce se nejprve kontroluje zda je v počítači nainstalován nějaký objekt
+    pro rozeznávání a pokud ano převedou se čáry na text pomocí metody <code>ToString</code>.
+    Toto je pouze nejjednodušší příklad. Ke složitějšímu rozeznávání textu lze použít
+    třídu <code>RecognizerContext</code> [<a href="#links">3</a>], pomocí které lze
+    rozeznávání ovlivnit a získat více informací o výsledku.</p><h2>Ukázková aplikace</h2><p>Následující ukázková aplikace je zaměřená spíše na další zpracování nakreslených čar.
+    Funguje tak, že uživateli umožní pomocí objektu <code>InkCollector</code> kreslit 
+    a po nakreslení čáry na ovládací prvek čáru zruší a podle ní vybarví v ovládacím 
+    prvku plochu ohraničenou právě nakreslenou křivku. Funkce TabletPC se tedy
+    používají pouze při kreslení křivek. To je možná mírně netypický příklad,
+    ale všechny typické naleznete v SDK a pokud v aplikaci chcete více než rozeznávání 
+    rukou psaného textu, bude další zpracování nakreslených čar potřeba.</p><div style="margin-left:auto;margin-right:auto;text-align:center;"><img src="http://www.eeeksoft.net/articles/msinkdemo/screenshot.png" style="margin:10px;" /></div><p>Nejprve při inicializaci vytvoříme objekt na kreslení (jako v předcházejícím
+    příkladě) a ještě bitmapu do které se budou kreslit vyplněné plochy
+    (<code>drawBox</code> je ovládací prvek <code>PictureBox</code>, ve kterém 
+    se tato bitmapa bude zobrazovat).</p><pre><span class="c">// Objekt pro zachytavani INK dat</span>
+InkCollector col;
+<span class="c">// Bitmapa na kterou se kresli</span>
+Bitmap tmp;
+
+private void Form1_Load(object sender, System.EventArgs e)
+{
+  <span class="c">// Inicializace bitmapy</span>
+  tmp=new Bitmap(drawBox.Width,drawBox.Height);
+  drawBox.Image=tmp;
+  using(Graphics gr=Graphics.FromImage(tmp))
+	  gr.FillRectangle(Brushes.White,0,0,tmp.Width,tmp.Height);
+
+  <span class="c">// Inicializace objektu pro zachytavani car</span>
+  col=new InkCollector(drawBox);
+  col.Enabled=true;
+  
+  <span class="c">// Udalost, ktera se vyvola po nakresleni cary</span>
+  col.Stroke+=new InkCollectorStrokeEventHandler(col_Stroke);
+}
+</pre><p>Nyní se ještě podíváme na metodu, která zpracovává nakreslenou křivku.
+    Získat pole bodů, kterými křivka prochází je poměrně snadné, ale toto 
+    pole obsahuje body ve vyšším rozlišení než je rozlišení obrazovky,
+    proto je potřeba je před vykreslováním do bitmapy převést
+    do rozlišení obrazovky. Poté se vyplněná křivka pomocí metody 
+    <code>FillClosedCurve</code> nakreslí do bitmapy.</p><pre><span class="c">// Udalost ke ktere dojde pri nakresleni krivky</span>
+private void col_Stroke(object sender, InkCollectorStrokeEventArgs e)
+{
+  <span class="c">// Ziskat body nakreslene krivky a prevest je na pixely</span>
+  Point[] pts=e.Stroke.BezierPoints;
+  <span class="c">// Prevod bodu na rozliseni obrazovky</span>
+  using(Graphics g=CreateGraphics())
+	  col.Renderer.InkSpaceToPixel(g,ref pts);
+
+  <span class="c">// Vybarvit krivku (cernou barvou)</span>
+  using(Graphics gr=Graphics.FromImage(tmp))
+	  gr.FillClosedCurve(Brushes.Black,pts);
+
+  <span class="c">// Vymazat nakreslenou caru</span>
+  col.Ink.DeleteStrokes();
+  drawBox.Refresh();
+}
+</pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://www.microsoft.com/office/onenote/prodinfo/overview.mspx">OneNote 2003 Product overview</a>
+      [<a href="http://www.microsoft.com/office/onenote/prodinfo/overview.mspx" target="_blank">^</a>]</li><li>[2] <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=B46D4B83-A821-40BC-AA85-C9EE3D6E9699&amp;displaylang=en">TabletPC Software Development Kit 1.7</a>
+      [<a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=B46D4B83-A821-40BC-AA85-C9EE3D6E9699&amp;displaylang=en" target="_blank">^</a>] - Microsoft.com </li><li>[3] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tpcsdk10/lonestar/Microsoft.Ink/Classes/recognizercontext/recognizercontext.asp">RecognizerContext class</a>
+      [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tpcsdk10/lonestar/Microsoft.Ink/Classes/recognizercontext/recognizercontext.asp" target="_blank">^</a>] - MSDN</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/msinkdemo/clanek.zip">Stáhnout tento článek v čistém HTML</a> (15 kB)</li><li><a href="http://www.eeeksoft.net/articles/msinkdemo/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (16 kB)</li></ul></body></doc>

@@ -1,0 +1,203 @@
+<!-- [info]
+
+ - date: 2007-09-20T04:33:49.0000000
+ - description: This article describes a few samples available in the F# Samples project at CodePlex that demonstrate how to work with the F# quotations using active patterns.
+ - tags: meta-programming,f#
+ - layout: post
+ - title: F# Quotations Samples on CodePlex
+ - url: fsharp-quotation-samples.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Some time ago, Granville Barnett (see his <a href="http://gbarnett.org/">homepage and old blog</a> [<a href="http://gbarnett.org/" target="_blank">^</a>]
+  or a <a href="http://weblogs.asp.net/gbarnett/">new blog</a> [<a href="http://weblogs.asp.net/gbarnett/" target="_blank">^</a>]) 
+  had a great idea and started a CodePlex project called <a href="http://www.codeplex.com/fsharpsamples">F# Samples</a> [<a href="http://www.codeplex.com/fsharpsamples" target="_blank">^</a>]
+  to host various samples written in F# to demonstrate the most important
+  concepts of both functional programming and F#. I quite like this idea, so I asked Granville if I could join and add some
+  samples that I wrote and today I finally found a time to update what I wanted to upload to the latest version of F# and put it
+  online.</p>
+[/abstract] -->
+
+<h1>F# Quotations Samples on CodePlex</h1>
+<p>Some time ago, Granville Barnett (see his <a href="http://gbarnett.org/">homepage and old blog</a> [<a href="http://gbarnett.org/" target="_blank">^</a>]
+  or a <a href="http://weblogs.asp.net/gbarnett/">new blog</a> [<a href="http://weblogs.asp.net/gbarnett/" target="_blank">^</a>]) 
+  had a great idea and started a CodePlex project called <a href="http://www.codeplex.com/fsharpsamples">F# Samples</a> [<a href="http://www.codeplex.com/fsharpsamples" target="_blank">^</a>]
+  to host various samples written in F# to demonstrate the most important
+  concepts of both functional programming and F#. I quite like this idea, so I asked Granville if I could join and add some
+  samples that I wrote and today I finally found a time to update what I wanted to upload to the latest version of F# and put it
+  online.</p>
+
+<h2>What are F# Quotations?</h2>
+<p>For those who are new to F# and its meta-programming support I will quickly describe what are quotations good for.
+  Basically, the feature that I refer to as <em>quotations</em> allows heterogeneous execution of F# programs - this means
+  that single program written entirely in F# can run not only as a .NET code, but can also run in various other environments
+  and quotations make it possible to "take" part of the program, process it and execute it somewhere else. Of course, you
+  don't have to execute the code - you can perform some analysis of the code, transform it to whatever you like and so on.
+  By the way, if you know C# 3.0 and LINQ than quotations serve for the same purpose as lambda expressions in C#.
+  In C#, the lambda expression can be compiled to an expression tree that can be analyzed and (for example) translated to SQL.
+  The F# quotations are similar - you can access the quoted F# code as a representation similar to C# expression trees and 
+  process it in any way you want.</p>
+
+<p>It may still sound a bit abstract to you, so let me give some examples where this can be useful!
+  First of all, in C# 3.0 similar technique is used for writing database queries in C# and translating them 
+  to SQL (so they can be executed efficiently) and indeed, one of the F# goals was to enable this as well.
+  I already wrote about this topic on my blog [<a href="#fssamplesquotlinks">2</a>], but here is a quick example how the code looks
+  (note that the Unicode quotation symbols used in the sample can be also written as <code>&lt;@@ .. @@&gt;</code>):</p>
+<pre lang="fsharp">
+// Select all customers from UK
+let ukCustomers =
+  SQL « { for c in (§db.Customers) 
+          when c.Country = "UK"
+          -> c } »
+</pre>  
+<p>In this example, a query comprehension (in the curly braces) is wrapped in quotation marks, which allows the <code>SQL</code>
+  function to analyze the F# code and translate it to the appropriate SQL code. Another interesting use is that a
+  code that performs some matrix operations can be executed on GPU (using pixel and vertex shaders). You can imagine writing
+  something like the following:</p>
+<pre lang="fsharp">
+let avgMatrices =
+  « fun a b ->
+      Matrix.init 512 512 (fun x y -> 
+        ((Matrix.get a x y) + (Matrix.get b x y)) / 2) »
+</pre>  
+<p>It would be then possible to translate this code to GPU code and process matrices on the graphics card (BTW: I'd like to write about
+  this in more details soon, because this is quite interesting topic and I looked at it briefly during my MSR visit). Finally,
+  one more use can be found in the F# Web Toolkit project [<a href="#fssamplesquotlinks">3</a>] that I worked on recently - 
+  it uses quotations to allow writing client-side code running in web browser (the code is then translated to JavaScript).
+  An example might look like the following:</p>
+<pre lang="fsharp">
+[&lt;ReflectedDefinition&gt;]
+member x.HandleClientClick() =
+  client
+    { x.btnHello.Text &lt;- "Clicked (client)!"
+      do Window.Alert("Hello world!") }
+
+member x.HandleServerClick() =
+  server
+    { x.btnHello.Text &lt;- "Clicked (server)!" }
+</pre>  
+<p>You might be wondering where the quotation symbols are hiding in this example! Actually, this is using one more 
+  quotations feature (which I personally find very interesting) and that is the <code>ReflectedDefinition</code> attribute.
+  If you mark any code with it, it will be later possible to access the quotation (AST representation of the code) at runtime.
+  This means that in the F# Web Toolkit the runtime analyses the entire web application and finds all the client-side
+  methods dynamically and translates them to JavaScript.</p>
+<p>If you're looking for more information about quotations, you can read the paper about this F# feature written by 
+  Don Syme [<a href="#fssamplesquotlinks">1</a>] - the implementation has now changed a bit, but the paper is still worth 
+  reading, because it describes the approach and gives some more interesting examples.
+</p>
+
+<h2>Quotations in F# Samples</h2>
+<h3>Basic Quotation Demos: Calculator</h3>
+<p>The first things that I added to the CodePlex project are two basic samples that demonstrate how to use F# quotations -
+  you can find them in the <code>Basics/Quotations</code> directory. The first example (the <code>calculator.fs</code> source)
+  demonstrates how to analyze F# quotation and translate it to another representation of the code. It takes a simple
+  numerical expression (something like: <code>« (2*3 + 10/5)/2 - 2 »</code>) and translates it to 
+  the following representation:</p>
+<pre lang="fsharp">
+// Discriminated union representing an expression
+type SimpleExpr =
+  | Int of int
+  | Add of SimpleExpr * SimpleExpr
+  | // ...</pre>
+<p>The code that processes the quotation is a set of recursive functions that use active patterns to match the quotation
+  with the possible patterns:</p>
+<pre lang="fsharp">
+// Parse function converts F# quotation to 'SimpleExpr' representation
+let rec parse x =
+  match x with  
+    | Int32 (x) -> Int(x)
+    | TopDefnApp &lt;@@@@ ( + ) @@@@&gt; [x1;x2] -> Add(parse x1, parse x2)
+    | // ... </pre>
+<p>This sample first uses <code>Int32</code> active pattern (which is simply a guard that can be used in the
+  <code>match</code> expression) to test if the value <code>x</code> contains a quoted integer. The second 
+  active pattern (<code>TopDefnApp</code>) matches the value with the use of a specific top-level value - 
+  in this case a plus operator (as you can see the plus operator is given as an argument to the active pattern - it is quoted using <code>&lt;@@@@ .. @@@@&gt;</code> symbols that return a <em>raw</em> representation of the quotation, which is used when processing quotations programatically). If the value matches the operator, the two arguments are processed recursively
+  and a value representing addition is created. Finally, the sample uses <em>augmentations</em> to add these
+  basic functions to the <code>SimpleExpr</code> type, which means that having a value of <code>SimpleExpr</code>
+  you can for example write <code>se.Eval()</code> to evaluate the value or you can uses static method to create it
+  from an F# quotation: <code>SimpleExpr.Parse(quot)</code>:</p>
+<pre lang="fsharp">
+type SimpleExpr with
+  static member Parse(s) = parse s
+  member x.Eval() = eval x</pre>
+<h3>Basic Quotation Demos: Printer</h3>
+<p>The second sample is based on forum posts at the <a href="http://cs.hubfs.net">F# community site</a> [<a href="http://cs.hubfs.net" target="_blank">^</a>]
+  by me and <a href="http://www.strangelights.com/">Robert Pickering</a> [<a href="http://www.strangelights.com/" target="_blank">^</a>]
+  in which we demonstrated how to write a simple printer for the F# quotations. It demonstrates most of the common active patterns
+  used for processing quotations and it also demonstrates how to work with the <code>ReflectedDefinition</code> attribute.
+  The following sample shows a simplified part of the recursive <code>print</code> function:</p>
+<pre lang="fsharp">
+// Prints F# quotation..
+let rec print spaces expr = 
+  match expr with
+  | Let((var,value), body) -> 
+      // Represents: let [var] = [value] in [body]
+      printf "%slet %s = " spaces (makeNiceVar var.Text)
+      print value
+      printfn " in"
+      print spaces body
+
+  | Lambda(var, body) -> 
+      // Represents lambda function declaration (with one argument)
+      printfn "%s(fun %s -> " spaces (makeNiceVar var.Text)
+      print (spaces + "  ") body
+      printf "\n%s)" spaces
+      
+  | // .. other cases ..</pre>  
+<p>The more interesting part of this example is a code that extracts quotation from a top-level value
+  marked with the <code>ReflectedDefinition</code> attribute. To do this, we first need to get a quotation
+  that represents a reference to the value - this can be easily done by marking the value using quotation
+  symbols:</p>  
+<pre lang="fsharp">
+[&lt;ReflectedDefinition&gt;]
+let expr_topdef () =
+  print_string "Running 'expr_topdef'!"
+
+do  
+  // Get top level definition
+  let quotref = &lt;@@@@ expr_topdef @@@@&gt;
+  let tdd = 
+    match quotref with 
+    | AnyTopDefnUse(td) -> td 
+    | _ -> failwith "Failed to match with top defn"
+  let expr =
+    match (ResolveTopDefinition tdd) with
+    | Some e -> e
+    | None -> failwith "Failed to get quotation!"
+  print "" expr
+</pre>
+<p>Once we have the quoted value, we can match it with a <code>AnyTopDefnUse</code> active pattern, which
+  succeeds when a quotation represents a reference to a global value. This active patterns returns an tuple
+  that represents a 'path' to a value - this is an internal F# representation that can be used as an argument to the
+  <code>ResolveTopDefinition</code> function. And finally, if the function succeeds, then it gives us a quotation
+  of the value!</p>  
+
+<h3>Quotation Visualizer</h3>
+<p>The second sample that I added to the F# Samples project is located in the <code>Samples/QuotationVisualizer</code> directory.
+  It is a new version of a tool that I wrote earlier (and also blogged about it several times on this blog - for example [<a href="#fssamplesquotlinks">4</a>]).
+  The tool is quite similar to the version I wrote about last time, but it is updated to work with the latest F# version, and
+  having worked on a few projects that use F# quotations I can say that it is very useful :-)! It visualizes any given quotation
+  as a tree in a Windows GUI, so you can see how the F# expression is represented:</p>
+<div style="text-align:center; padding:10px;">
+  <img src="/articles/fsharp-quotation-samples/quotvis.png" alt="F# Quotation Visualizer" />
+</div>
+<p>In this screenshot, you can see how is the F# expression <code>1+(2-var)</code> represented. There are two function 
+  applications that apply numeric operators to a two arguments. To view an expression with this tool you can either enter it
+  in the <code>main.fs</code> file and recompile the tool or you can use the <b>Add new quotation</b> link, which opens
+  a window where you can enter an F# code to be visualized (note that you may need to modify the <code>fsc.exe</code> path
+  in the <code>quotvis.exe.config</code> file to use this feature). If you have an assembly produced using the F# compiler that
+  contains some values marked using the <code>ReflectedDefinition</code> attribute, you can use the <b>Open F# assembly</b>
+  to load all quotations from the assembly.</p>
+  
+<h2>Downloads and References</h2>
+<ul>
+  <li>For a source code visit the <a href="http://www.codeplex.com/fsharpsamples">F# Samples</a> [<a href="http://www.codeplex.com/fsharpsamples" target="_blank">^</a>] project at CodePlex</li>
+</ul>
+
+<ul>
+  <li>[1] <a href="https://research.microsoft.com/~dsyme/papers/ml03-syme.pdf">Leveraging .NET Meta-Programming components from F#</a> [<a href="https://research.microsoft.com/~dsyme/papers/ml03-syme.pdf" target="_blank">^</a>] - Don Syme</li>
+  <li>[2] <a href="http://tomasp.net/blog/dynamic-flinq.aspx">Building LINQ Queries at Runtime in F#</a> [<a href="http://tomasp.net/blog/dynamic-flinq.aspx" target="_blank">^</a>] - Blog | TomasP.Net</li>
+  <li>[3] <a href="http://www.codeplex.com/fswebtools">F# WebToolkit</a> [<a href="http://www.codeplex.com/fswebtools" target="_blank">^</a>] - Shared source project at CodePlex</li>
+  <li>[4] <a href="http://tomasp.net/blog/quotvis-reloaded.aspx">F# Quotation Visualizer - Reloaded!</a> [<a href="http://tomasp.net/blog/quotvis-reloaded.aspx" target="_blank">^</a>] - Blog | TomasP.Net</li>
+  
+</ul>

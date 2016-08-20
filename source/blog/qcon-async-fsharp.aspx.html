@@ -1,0 +1,224 @@
+<!-- [info]
+
+ - date: 2012-03-12T01:09:02.0000000
+ - description: Last week, I gave a talk on asynchronous programming in F# at QCon London. I used the one hour slot to implement a Social Rectangle Drawing App - an application that showed the importance of asynchronous workflows on both client-side and server-side.
+ - tags: presentations,functional,asynchronous,f#,links
+ - layout: post
+ - title: Asynchronous client/server in F# (QCon 2012)
+ - url: qcon-async-fsharp.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/qcon-async-fsharp/qcon.png" alt="Qcon" class="rdecor" />
+
+<p>Last week, I gave a talk on asynchronous programming in F# at <a href="http://qconlondon.com/london-2012">London QCon 2012</a>.
+The talk was a part of <a href="http://qconlondon.com/london-2012/tracks/show_track.jsp?trackOID=560">The Rise of Scala &amp; Functional Programming</a> 
+track organized by Charles Humble. Reactive and asynchronous programming was a topic that was repeated
+a couple of times during the whole session - Sadek Drobi talked about <a href="http://qconlondon.com/london-2012/presentation/Non%20blocking,%20composable%20reactive%20web%20programming%20with%20Iteratees%20in%20Play2">non-blocking reactive web framework
+Play2</a>
+and Damien Katz talked about <a href="http://qconlondon.com/london-2012/presentation/Erlang%20in%20the%20real%20world:%20CouchDB">Erlang and CouchDB</a>.</p>
+
+<p>I used the one hour slot to implement "Rectangle Drawing App" - a simple application that 
+shows how to write complete client-server application just using F#. On the
+server-side, I used asynchronous workflows to write HTTP server with an F#
+agent. On the client-side, I used asynchronous workflows to express user
+interface logic and the <a href="http://pitfw.org/">Pit project</a> to run F# code as
+JavaScript that works everywhere. The app definitely had a huge commercial potential:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/qcon-async-fsharp/quote.png" alt="Quote" />
+</div>
+[/abstract] -->
+
+<h1>Asynchronous client/server in F# (QCon 2012)</h1>
+<img src="http://tomasp.net/articles/qcon-async-fsharp/qcon.png" alt="Qcon" class="rdecor" />
+
+<p>Last week, I gave a talk on asynchronous programming in F# at <a href="http://qconlondon.com/london-2012">London QCon 2012</a>.
+The talk was a part of <a href="http://qconlondon.com/london-2012/tracks/show_track.jsp?trackOID=560">The Rise of Scala &amp; Functional Programming</a> 
+track organized by Charles Humble. Reactive and asynchronous programming was a topic that was repeated
+a couple of times during the whole session - Sadek Drobi talked about <a href="http://qconlondon.com/london-2012/presentation/Non%20blocking,%20composable%20reactive%20web%20programming%20with%20Iteratees%20in%20Play2">non-blocking reactive web framework
+Play2</a>
+and Damien Katz talked about <a href="http://qconlondon.com/london-2012/presentation/Erlang%20in%20the%20real%20world:%20CouchDB">Erlang and CouchDB</a>.</p>
+
+<p>I used the one hour slot to implement "Rectangle Drawing App" - a simple application that 
+shows how to write complete client-server application just using F#. On the
+server-side, I used asynchronous workflows to write HTTP server with an F#
+agent. On the client-side, I used asynchronous workflows to express user
+interface logic and the <a href="http://pitfw.org/">Pit project</a> to run F# code as
+JavaScript that works everywhere. The app definitely had a huge commercial potential:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/qcon-async-fsharp/quote.png" alt="Quote" />
+</div>
+
+<h2>Asynchronous programming everywhere</h2>
+
+<p>In the F# asynchronous programming model, you can write code that does not block
+the executing thread, but can be written in the sequential style using standard
+control-flow constructs such as loops and exception handlers. This is quite
+different to what Play2 or Node.js use. These are essentially based on the
+event-based programming model. However, this comes with inversion of control and
+so we cannot use standard language features. With asynchronous programming in F#, 
+you can write <em>parallel code</em> as well as <em>sequential code</em>.</p>
+
+<p>Explaining the importance of asynchronous (non-blocking) code is quite easy. Just
+look at the following slide and you'll see why asynchronous programming should be
+used on both server-side and client-side:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/qcon-async-fsharp/async.png" />
+</div>
+
+<p>To give a longer explanation, here are the key reasons:</p>
+
+<ul>
+<li><p>On the <strong>server-side</strong>, asynchronous programming means that server is able to
+handle a large number of concurrent requests using fewer threads. When performing
+I/O operations (such as using file system or database), other requests can be
+processed on the same thread.</p></li>
+<li><p>On the <strong>client-side</strong>, asynchronous programming makes it easier to express 
+long-running interaction patterns. For example, drawing of a rectangle starts by
+pressing a button, continues by moving a mouse and ends by releasing of the button.
+Asynchronous programming gives you a way to directly encode this description.</p></li>
+</ul>
+
+<p>I already wrote about both of these topics elsewhere, so if you want to learn more,
+look at the following articles:</p>
+
+<ul>
+<li><a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx">Programming user interfaces using F# workflows</a>
+explains how to encode drag&amp;drop or rectangle drawing using F# asynchronous workflows
+(this is an article excerpt from Chapter 16 of <a href="http://manning.com/petricek">my book</a>).</li>
+<li><a href="http://tomasp.net/blog/async-non-blocking-gui.aspx">Writing non-blocking user interfaces in F#</a>
+is my recent blog post that combines user-interface programming and web service calls.</li>
+<li><a href="http://msdn.microsoft.com/en-us/library/hh297112.aspx">Server-side programming with F# agents</a>
+is a series of articles for MSDN that explain asynchronous and agent-based programming in F#.</li>
+</ul>
+
+<h2>Translating F# to JavaScript</h2>
+
+<p>For the client-side part of my demo application, I decided to use F# running as JavaScript using
+the excellent open-source <a href="http://pitfw.org/">F# to JavaScript translator called Pit</a>. If you've been
+following my blog, you know that translating F# to JavaScript is a topic that <a href="http://tomasp.net/blog/fswebtools-intro.aspx">I've been interested
+for a long time</a>.</p>
+
+<p>The Pit project is quite nice, because it does not try to do anything unnecessary. It lets you
+write code in F# and translates it to JavaScript. If you want some advanced abstractions for
+building web pages, you can implement them in F#. Pit project re-implements some of the standard
+F# libraries (e.g. for working with lists). In my demo, I wanted to use asynchronous workflows
+for GUI programming. Asynchronous workflows are not included in Pit, but it turns out that it was
+quite easy to re-implement them (see the source code at the end of the article).</p>
+
+<p>When running as JavaScript, asynchronous workflows aren't useful for parallel programming, but
+they provide a great abstraction for making asynchronous AJAX calls and for implementing
+user-interface logic. To implement social rectangle drawing application, I needed to encode
+the following two state machines:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/qcon-async-fsharp/gui.png" />
+</div>
+
+<p>I won't explain the complete source code in this article. The rectangle drawing sample is already
+discussed in my book (Chapter 16) and in <a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx">this book excerpt</a>.
+The other workflow, which obtains the current state from the server and updates the displayed
+rectangles shows a few interesting aspects of writing client-side code in F# using Pit:</p>
+
+<pre class="fssnip">
+<span class="c">/// Asynchronously download retangles from the server</span>
+<span class="c">/// and decode the JSON format to F# Rectangle record</span>
+<span class="k">let</span> [&lt;<span onmouseout="hideTip(event, 'ft16', 46)" onmouseover="showTip(event, 'ft16', 46)" class="i">Js</span>&gt;] <span onmouseout="hideTip(event, 'ft25', 47)" onmouseover="showTip(event, 'ft25', 47)" class="i">getRectangles</span> () <span class="o">:</span> <span onmouseout="hideTip(event, 'ft26', 48)" onmouseover="showTip(event, 'ft26', 48)" class="i">Async</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft8', 49)" onmouseover="showTip(event, 'ft8', 49)" class="i">Rectangle</span>[]<span class="o">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 50)" onmouseover="showTip(event, 'ft27', 50)" class="i">async</span> {
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft28', 51)" onmouseover="showTip(event, 'ft28', 51)" class="i">req</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft29', 52)" onmouseover="showTip(event, 'ft29', 52)" class="i">XMLHttpRequest</span>()
+  <span onmouseout="hideTip(event, 'ft28', 53)" onmouseover="showTip(event, 'ft28', 53)" class="i">req</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft30', 54)" onmouseover="showTip(event, 'ft30', 54)" class="i">Open</span>(<span class="s">&quot;</span><span class="s">POST</span><span class="s">&quot;</span>, <span class="s">&quot;</span><span class="s">/</span><span class="s">get</span><span class="s">&quot;</span>, <span class="k">true</span>)
+  <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft31', 55)" onmouseover="showTip(event, 'ft31', 55)" class="i">resp</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft28', 56)" onmouseover="showTip(event, 'ft28', 56)" class="i">req</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft32', 57)" onmouseover="showTip(event, 'ft32', 57)" class="i">AsyncSend</span>()
+  <span class="k">return</span> <span onmouseout="hideTip(event, 'ft33', 58)" onmouseover="showTip(event, 'ft33', 58)" class="i">JSON</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft34', 59)" onmouseover="showTip(event, 'ft34', 59)" class="i">parse</span>(<span class="i">resp</span>) }
+
+<span class="c">/// Repeatedly update rectangles after 0.5 sec</span>
+<span class="k">let</span> [&lt;<span onmouseout="hideTip(event, 'ft16', 60)" onmouseover="showTip(event, 'ft16', 60)" class="i">Js</span>&gt;] <span onmouseout="hideTip(event, 'ft35', 61)" onmouseover="showTip(event, 'ft35', 61)" class="i">updateLoop</span> () <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 62)" onmouseover="showTip(event, 'ft27', 62)" class="i">async</span> {
+  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span> 
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'ft26', 63)" onmouseover="showTip(event, 'ft26', 63)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft36', 64)" onmouseover="showTip(event, 'ft36', 64)" class="i">Sleep</span>(<span class="n">500</span>)
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft37', 65)" onmouseover="showTip(event, 'ft37', 65)" class="i">rects</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft25', 66)" onmouseover="showTip(event, 'ft25', 66)" class="i">getRectangles</span>()
+    <span onmouseout="hideTip(event, 'ft38', 67)" onmouseover="showTip(event, 'ft38', 67)" class="i">cleanRectangles</span>()
+    <span class="i">rects</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft39', 68)" onmouseover="showTip(event, 'ft39', 68)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft40', 69)" onmouseover="showTip(event, 'ft40', 69)" class="i">iter</span> <span onmouseout="hideTip(event, 'ft17', 70)" onmouseover="showTip(event, 'ft17', 70)" class="i">createRectangle</span> }</pre>
+
+
+<p>The source code from the talk includes a couple of browser-based asynchronous operations. 
+The first one is <code>AsyncSend</code> method of <code>XMLHttpRequest</code>, which sends the request to the
+server and then waits (without blocking), until the response is received. This means that
+<code>getRectangles</code> is not going to block the browser, but we can still use sequential 
+programming style to implement it. After receiving the response as a string, the function
+calls <code>JSON.parse</code> to parse a standard JSON formatted data into an array of F# record 
+values of type <code>Rectangle</code>.</p>
+
+<p>The <code>updateLoop</code> function is also interesting. We don't want to initiate a new request
+every 0.5 seconds (in case the server is still processing the previous request). With
+asynchronous workflows, this is quite easy - the body of the loop waits 0.5 seconds, then
+asynchronously calls the server and updates the GUI. The next iteration of the loop only
+starts after the previous update completes (which corresponds to the above diagram).</p>
+
+<h2>Audience participation</h2>
+
+<p>A great thing about creating a client/server demo is that people can actually try it 
+live while I was finishing my talk. The fact that the client-side of the demo used just 
+JavaScript means that everybody was able to try it - when I put the link on the slide,
+people opened the site in their smart phones (I could see a few iPhones around) and
+created the following piece of modern <a href="http://en.wikipedia.org/wiki/Digital_art">digital art</a>:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/qcon-async-fsharp/painting.jpg" />
+</div>
+
+<h2>Links and materials</h2>
+
+<p>If you want to play with the sample, create a client-side F# application running
+as JavaScript or look at the slides from the talk, here are some useful links:</p>
+
+<ul>
+<li><a href="https://github.com/tpetricek/Documents/tree/master/Talks%202012/Async%20Client-Server%20(QCon%20London)">Asynchronous, client-server F#</a> - Talk materials at GitHub</li>
+<li><a href="http://www.slideshare.net/tomaspfb/qcon-11955404">Asynchronous programming on the server and the client in F#</a> on SlideShare</li>
+<li><a href="http://pitfw.org/">Pit - F# to JavaScript translator</a> - Project homepage</li>
+<li><a href="https://github.com/fsharp/pitfw">Pit - source code</a> - Available on GitHub</li>
+</ul>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace Pit</div>
+<div class="tip" id="ft2">namespace Pit.Dom</div>
+<div class="tip" id="ft3">namespace Pit.Async</div>
+<div class="tip" id="ft4">namespace Pit.Javascript</div>
+<div class="tip" id="ft5">namespace SocialDrawing</div>
+<div class="tip" id="ft6">module Dom<br /><br />from SocialDrawing</div>
+<div class="tip" id="ft7">module Colors<br /><br />from SocialDrawing</div>
+<div class="tip" id="ft8">type Rectangle =<br />&#160;&#160;{X1: int;<br />&#160;&#160;&#160;Y1: int;<br />&#160;&#160;&#160;X2: int;<br />&#160;&#160;&#160;Y2: int;<br />&#160;&#160;&#160;Color: string;}<br /><br />Full name: Blog.Rectangle<br /><br />&#160;&#160;type: Rectangle<br />&#160;&#160;implements: System.IEquatable&lt;Rectangle&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Rectangle&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft9">Rectangle.X1: int</div>
+<div class="tip" id="ft10">Multiple items<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft11">Rectangle.Y1: int</div>
+<div class="tip" id="ft12">Rectangle.X2: int</div>
+<div class="tip" id="ft13">Rectangle.Y2: int</div>
+<div class="tip" id="ft14">Rectangle.Color: string</div>
+<div class="tip" id="ft15">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="ft16">type Js = ReflectedDefinitionAttribute<br /><br />Full name: Pit.Js<br /><br />&#160;&#160;type: Js<br />&#160;&#160;implements: System.Runtime.InteropServices._Attribute<br />&#160;&#160;inherits: System.Attribute<br /></div>
+<div class="tip" id="ft17">val createRectangle : Rectangle -&gt; unit<br /><br />Full name: Blog.createRectangle</div>
+<div class="tip" id="ft18">val rect : Rectangle<br /><br />&#160;&#160;type: Rectangle<br />&#160;&#160;implements: System.IEquatable&lt;Rectangle&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Rectangle&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="ft19">val el : DomElement<br /><br />&#160;&#160;type: DomElement<br />&#160;&#160;inherits: DomObject<br /></div>
+<div class="tip" id="ft20">val createSelection : unit -&gt; DomElement<br /><br />Full name: SocialDrawing.Dom.createSelection</div>
+<div class="tip" id="ft21">property DomElement.ClassName: string</div>
+<div class="tip" id="ft22">property DomElement.Style: DomStyle</div>
+<div class="tip" id="ft23">property DomStyle.BackgroundColor: string</div>
+<div class="tip" id="ft24">val moveElement : DomElement -&gt; int * int -&gt; int * int -&gt; unit<br /><br />Full name: SocialDrawing.Dom.moveElement</div>
+<div class="tip" id="ft25">val getRectangles : unit -&gt; Async&lt;Rectangle []&gt;<br /><br />Full name: Blog.getRectangles<br /><em><br /><br />&#160;Asynchronously download retangles from the server<br />&#160;and decode the JSON format to F# Rectangle record</em></div>
+<div class="tip" id="ft26">Multiple items<br />namespace Pit.Async<br /><br />--------------------<br />type Async&lt;&#39;T&gt; = | Cont of ((&#39;T -&gt; unit) -&gt; unit)<br /><br />Full name: Pit.Async.Async&lt;_&gt;<br /><br />--------------------<br />type Async =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member AwaitEvent : event:IEvent&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;static member AwaitEvent : event1:IEvent&lt;&#39;T1&gt; * event2:IEvent&lt;&#39;T2&gt; -&gt; Async&lt;Choice&lt;&#39;T1,&#39;T2&gt;&gt;<br />&#160;&#160;&#160;&#160;static member Sleep : milliseconds:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;&#160;&#160;static member StartImmediate : workflow:Async&lt;unit&gt; -&gt; unit<br />&#160;&#160;end<br /><br />Full name: Pit.Async.AsyncTopLevel.Async</div>
+<div class="tip" id="ft27">val async : AsyncBuilder<br /><br />Full name: Pit.Async.AsyncTopLevel.async</div>
+<div class="tip" id="ft28">val req : XMLHttpRequest</div>
+<div class="tip" id="ft29">type XMLHttpRequest =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; XMLHttpRequest<br />&#160;&#160;&#160;&#160;member Abort : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member GetAllResponseHeaders : unit -&gt; string<br />&#160;&#160;&#160;&#160;member GetResponseHeader : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Open : methodType:string * url:string * async:bool -&gt; unit<br />&#160;&#160;&#160;&#160;member Send : data:string -&gt; unit<br />&#160;&#160;&#160;&#160;member SetRequestHeader : key:string * value:string -&gt; unit<br />&#160;&#160;&#160;&#160;member ReadyState : int<br />&#160;&#160;&#160;&#160;member ResponseText : string<br />&#160;&#160;&#160;&#160;member ResponseXML : System.Windows.Browser.ScriptObject<br />&#160;&#160;&#160;&#160;member Status : obj<br />&#160;&#160;&#160;&#160;member StatusText : string<br />&#160;&#160;&#160;&#160;member OnReadyStateChange : (unit -&gt; unit) with set<br />&#160;&#160;end<br /><br />Full name: Pit.Javascript.XMLHttpRequest</div>
+<div class="tip" id="ft30">member XMLHttpRequest.Open : methodType:string * url:string * async:bool -&gt; unit</div>
+<div class="tip" id="ft31">val resp : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="ft32">member XMLHttpRequest.AsyncSend : unit -&gt; Async&lt;string&gt;</div>
+<div class="tip" id="ft33">module JSON<br /><br />from Pit.Javascript</div>
+<div class="tip" id="ft34">val parse : string -&gt; &#39;a<br /><br />Full name: Pit.Javascript.JSON.parse</div>
+<div class="tip" id="ft35">val updateLoop : unit -&gt; Async&lt;unit&gt;<br /><br />Full name: Blog.updateLoop<br /><em><br /><br />&#160;Repeatedly update rectangles after 0.5 sec</em></div>
+<div class="tip" id="ft36">Multiple items<br />static member Async.Sleep : milliseconds:int -&gt; Async&lt;unit&gt;<br /><br />--------------------<br />static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="ft37">val rects : Rectangle []<br /><br />&#160;&#160;type: Rectangle []<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.Collections.IList<br />&#160;&#160;implements: System.Collections.ICollection<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.Collections.Generic.IList&lt;Rectangle&gt;<br />&#160;&#160;implements: System.Collections.Generic.ICollection&lt;Rectangle&gt;<br />&#160;&#160;implements: seq&lt;Rectangle&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;inherits: System.Array<br /></div>
+<div class="tip" id="ft38">val cleanRectangles : unit -&gt; unit<br /><br />Full name: SocialDrawing.Dom.cleanRectangles</div>
+<div class="tip" id="ft39">module Array<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="ft40">val iter : (&#39;T -&gt; unit) -&gt; &#39;T [] -&gt; unit<br /><br />Full name: Microsoft.FSharp.Collections.Array.iter</div>

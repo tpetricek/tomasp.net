@@ -1,0 +1,357 @@
+<!-- [info]
+
+ - date: 2010-11-21T03:15:38.0000000
+ - description: In this article, we look at the internals of asynchronous programming models in F# and a future version of C#. We compare the compilation in C# (based on state machines) and the compilation in F# (based on combinators) and we look at advantages and disadvantages of both of the approaches.
+ - tags: c#,functional,asynchronous,f#
+ - layout: post
+ - title: Asynchronous C# and F# (III.): How does it work?
+ - url: async-compilation-internals.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Some time ago, I started writing a series about the differences between the asynchronous model in F# 
+  (in Visual Studio 2010) and the asynchronous language extensions for C# proposed at PDC 2010.
+  In the <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">first article</a>, I showed
+  how both of the language features look and I highlighted a couple of differences. In the
+  <a href="http://tomasp.net/blog/async-csharp-differences.aspx">second article</a>, I discussed
+  the support for cancellation (available only in F#) and how the two models differ 
+  <em>semantically</em> (i.e. what are differences in the behaviour). However, I didn't talk about more
+  techincal differences and, in particular, how is the asynchronous code compiled. We'll look 
+  at this topic today...</p>
+
+<p>Although the C# asynchronous programming model is very similar to F# asynchronous workflows,
+  the compilation looks quite different. The C# compiler uses a similar technique as when compiling
+  iterators and creates a state machine, while the F# compiler uses an approach based on higher order
+  functions (combinators) that's shared with (most) other computation expressions.</p>
+
+<p>I won't discuss the syntax of F# asynchronous workflows or the C# asynchronous extensions in 
+  this article, so if you're new to one of these, here are links to other articles in this 
+  series: </p>
+<ul>
+  <li><a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">Asynchronous C# and F# (I.): Simultaneous introduction</a></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><strong>Asynchronous C# and F# (III.): How does it work?</strong></li>
+  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+
+<p>Let's start by looking at the mechanism used in the C# compiler. If you already know how
+  iterators work in C# 2.0, then you'll find it quite easy to understand. If you're not familiar
+  with iterators, then don't worry - I'll make the explanation self-contained.</p>
+[/abstract] -->
+
+<h1>Asynchronous C# and F# (III.): How does it work?</h1>
+<p>Some time ago, I started writing a series about the differences between the asynchronous model in F# 
+  (in Visual Studio 2010) and the asynchronous language extensions for C# proposed at PDC 2010.
+  In the <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">first article</a>, I showed
+  how both of the language features look and I highlighted a couple of differences. In the
+  <a href="http://tomasp.net/blog/async-csharp-differences.aspx">second article</a>, I discussed
+  the support for cancellation (available only in F#) and how the two models differ 
+  <em>semantically</em> (i.e. what are differences in the behaviour). However, I didn't talk about more
+  techincal differences and, in particular, how is the asynchronous code compiled. We'll look 
+  at this topic today...</p>
+
+<p>Although the C# asynchronous programming model is very similar to F# asynchronous workflows,
+  the compilation looks quite different. The C# compiler uses a similar technique as when compiling
+  iterators and creates a state machine, while the F# compiler uses an approach based on higher order
+  functions (combinators) that's shared with (most) other computation expressions.</p>
+
+<p>I won't discuss the syntax of F# asynchronous workflows or the C# asynchronous extensions in 
+  this article, so if you're new to one of these, here are links to other articles in this 
+  series: </p>
+<ul>
+  <li><a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">Asynchronous C# and F# (I.): Simultaneous introduction</a></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><strong>Asynchronous C# and F# (III.): How does it work?</strong></li>
+  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+
+<p>Let's start by looking at the mechanism used in the C# compiler. If you already know how
+  iterators work in C# 2.0, then you'll find it quite easy to understand. If you're not familiar
+  with iterators, then don't worry - I'll make the explanation self-contained.</p>
+
+<h2>State-machine async compilation in C#</h2>
+<p>To explain the compilation, I'll use slightly simplified version of code that downloads
+  the contents of a web page from <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx">the first article</a>.
+  I'll omit disposal using the <code>using</code> construct and also exception handling, so that
+  I can show you (roughly) what the C# compiler generates in a few lines of code that can be 
+  explained. If you want to see the translation in its full beauty, then you can use
+  <a href="http://www.red-gate.com/products/reflector/">Reflector</a>. We'll look at the 
+  compilation of the following snippet:</p>
+<pre lang="csharp">
+var request = HttpWebRequest.Create(url);
+var response = await request.GetResponseAsync();
+var stream = response.GetResponseStream();
+
+do {
+  count = await stream.ReadAsync(buffer, 0, buffer.Length);
+  temp.Write(buffer, 0, count);
+} while (count &gt; 0);
+
+temp.Seek(0, SeekOrigin.Begin);
+// (Some code at the end of the method omitted)
+return Tuple.Create(title, html.Length);
+</pre>
+
+<p>Leaving synchronous code aside, the snippet starts by asynchronously getting HTTP response
+  (see the first <code>await</code> keyword). Then it enters a loop in which it asynchronously
+  reads data from a stream (second <code>await</code> point) and then synchronously writes the
+  data to a memory stream. At the end of the loop, it does some (synchronous) processing of the
+  downloaded data.</p>
+
+<p>The C# compiler turns the above method into a class. All local variables of the method
+  are turned into fileds of the class (I also added underscore to the name). This is needed, because
+  when an asynchronous operation is started, the method that starts it returns, so all state needs
+  to be stored on heap (in private fields).</p>
+
+<p>The body of the method is divided into blocks where each block runs some synchronous 
+  code and then starts asynchronous operation. The operation is started in the background and
+  the method that starts it returns immediately after starting it. (After returning, the current
+  thread can do some other work, such as run another asynchronous computation, perform some GUI 
+  update etc.) The individual blocks are all compiled into a single method named <code>MoveNext</code>
+  that contains a big <code>switch</code> that runs the next block (which is stored in a
+  private field <code>_state</code>):</p>
+
+<pre lang="csharp">
+public void MoveNext() {  
+  switch (this._state) {
+  case Initial:
+    // State when the method is called - start getting response
+    this._request = HttpWebRequest.Create(this._url);
+    this._awaitResponse = request.GetResponseAsync();
+    this._awaitResponse.TrySetContinuation(this.MoveNextDelegate);
+    this._state = GotResponse;
+    break;
+
+  case GotResponse:
+    // Got response - obtain the stream and start the loop
+    this._response = this._awaitResponse.GetResult&lt;WebResponse&gt;();
+    this._stream = this._response.GetResponseStream();
+    goto case LoopBodyStart:
+
+  case LoopBodyStart: 
+    // Loop body - start reading next chunk of data to a buffer 
+    this._awaitRead = this._stream.ReadAsync(this._buffer, 0, this._buffer.Length);
+    this._awaitRead.TrySetContinuation(this.MoveNextDelegate);
+    this._state = LoopAfterRead;
+    break;
+
+  case LoopAfterRead: 
+    // Downloading completed - read the result and start writing
+    this._count = this._awaitRead.GetResult&lt;int&gt;();
+    this._temp.Write(this._buffer, 0, this._count);
+    // If the loop has not completed, go to the beginning
+    if (this._count &lt; 0) goto case LoopBodyStart;
+
+    this._temp.Seek(0L, SeekOrigin.Begin);
+    // (Some code at the end of the method omitted)
+    this._state = Returned;
+    this._result = Tuple.Create(this._title, this._html.Length);
+  }
+}
+</pre>
+
+<p>The code is a beautified version of what the C# compiler generates, but the structure
+  of the method is the same. This method is used to generate task that's returned as the result
+  of the <code>async</code> method, but that's not as interesting (you can discover that yourself
+  using Reflector). The interesting aspect is how the code executes:</p>
+
+<ul class="spaces">
+  <li>
+    <p>At the beginning the state of the object (state machine) is <code>Initial</code>. When 
+    an asynchronous method is called, the program actually calls our <code>MoveNext</code> method, which
+    executes the first <code>case</code> of the <code>switch</code>. It (synchronously) creates HTTP
+    web request and then calls the <code>GetResponseAsync</code> method. The result of the call
+    is a <code>Task</code> that starts running in the background.</p>
+    <p>Immediately after the asynchronous operation is started, the method continues executing. It
+    uses <code>TrySetContinuation</code> to register a handler that will be executed after the 
+    background operation completes and it configures the current state to run the next block 
+    (<code>GotResponse</code>) when the <code>MoveNext</code> method is called the next time.</p></li>
+
+  <li>
+    <p>The <code>MoveNextDelegate</code> (set as a continuation in the previous step) refers to the 
+      <code>MoveNext</code> method, so when the first asynchronous operation completes, the shown
+      method will be called again. The current state is <code>GotResponse</code>, so it will execute
+      the second block. In the block, it gets the <code>WebResponse</code> value using 
+      <code>GetResult</code> and synchronously creates stream. Then it jumps to the start of the
+      loop.</p></li>
+
+  <li>
+    <p>The body of the loop is first executed from the <code>GotResponse</code> state. Later, 
+      it may be executed after the asynchronous operation inside the loop body completes in case
+      when there are still some remaining data.</p>
+    <p>Inside the body, we start the asynchronous operation <code>ReadAsync</code>, store
+      the returned task in a local field and register a continuation to be called when the 
+      operation completes. Then we set the state to <code>LoopAfterEnd</code>, so that the next
+      block is executed after the reading completes.</p></li>
+
+  <li>
+    <p>In the <code>LoopAfterRead</code> state, we first get the result of the asynchronous
+      operation and then write the data to a local stream. If there are some remaining data
+      then the execution jumps back to the <code>LoopBodyStart</code> case and starts the next
+      asynchronous operation. Otherwise, it processes the data and returns a result (by 
+      setting the <code>_result</code> field).</p></li>
+</ul>
+
+<p>Probably the most important fact about the asynchronous execution described above is that
+  the <code>MoveNext</code> method (which contains all code from our original method translated
+  into a state machine) is executed repeatedly and it never blocks the calling thread. When running
+  asynchronous operation, it schedules the operation and then returns. When the operation completes,
+  it will use the provided continuation to run <code>MoveNext</code> again to perform the next 
+  step of the asynchronous computation.</p>
+
+<h2>Combinator based compilation in F#</h2> 
+
+<p>The way F# asynchronous workflows are compiled is quite different, but one key aspect is the same.
+  The compiler needs to split the whole expression (or method body) into parts between asynchronous
+  calls. This makes it possible to start an asynchronous operation and then release the current
+  thread.</p>
+
+<p>Let's now look at the same example implemented in F#. In the earlier versions of this code snippet,
+  I used a recursive function to implement the looping. This would be translated to a recursive asynchronous
+  workflow. However I thought it would be more interesting to show exactly the
+  same code snippet that uses <code>while</code> loop in F# too. Here is the implementation of
+  the download:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips1', 1)" onmouseover="showTip(event, 'fstips1', 1)" class="i">request</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips2', 2)" onmouseover="showTip(event, 'fstips2', 2)" class="i">HttpWebRequest</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips3', 3)" onmouseover="showTip(event, 'fstips3', 3)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fstips4', 4)" onmouseover="showTip(event, 'fstips4', 4)" class="i">url</span>)
+<span class="l"> 2: </span><span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips5', 5)" onmouseover="showTip(event, 'fstips5', 5)" class="i">response</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips1', 6)" onmouseover="showTip(event, 'fstips1', 6)" class="i">request</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips6', 7)" onmouseover="showTip(event, 'fstips6', 7)" class="i">AsyncGetResponse</span>()
+<span class="l"> 3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips7', 8)" onmouseover="showTip(event, 'fstips7', 8)" class="i">stream</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips5', 9)" onmouseover="showTip(event, 'fstips5', 9)" class="i">response</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips8', 10)" onmouseover="showTip(event, 'fstips8', 10)" class="i">GetResponseStream</span>()
+<span class="l"> 4: </span><span class="k">while</span> <span class="o">!</span><span onmouseout="hideTip(event, 'fstips9', 11)" onmouseover="showTip(event, 'fstips9', 11)" class="i">count</span> <span class="o">&gt;</span> <span class="n">0</span> <span class="k">do</span>
+<span class="l"> 5: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'fstips10', 12)" onmouseover="showTip(event, 'fstips10', 12)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips7', 13)" onmouseover="showTip(event, 'fstips7', 13)" class="i">stream</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips11', 14)" onmouseover="showTip(event, 'fstips11', 14)" class="i">AsyncRead</span>(<span onmouseout="hideTip(event, 'fstips12', 15)" onmouseover="showTip(event, 'fstips12', 15)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fstips12', 16)" onmouseover="showTip(event, 'fstips12', 16)" class="i">buffer</span><span class="o">.</span><span class="i">Length</span>)
+<span class="l"> 6: </span>  <span onmouseout="hideTip(event, 'fstips13', 17)" onmouseover="showTip(event, 'fstips13', 17)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips14', 18)" onmouseover="showTip(event, 'fstips14', 18)" class="i">Write</span>(<span onmouseout="hideTip(event, 'fstips12', 19)" onmouseover="showTip(event, 'fstips12', 19)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fstips10', 20)" onmouseover="showTip(event, 'fstips10', 20)" class="i">n</span>)
+<span class="l"> 7: </span>  <span onmouseout="hideTip(event, 'fstips9', 21)" onmouseover="showTip(event, 'fstips9', 21)" class="i">count</span> <span class="o">:=</span> <span onmouseout="hideTip(event, 'fstips10', 22)" onmouseover="showTip(event, 'fstips10', 22)" class="i">n</span>
+<span class="l"> 8: </span><span onmouseout="hideTip(event, 'fstips13', 23)" onmouseover="showTip(event, 'fstips13', 23)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips15', 24)" onmouseover="showTip(event, 'fstips15', 24)" class="i">Seek</span>(<span class="n">0L</span>, <span onmouseout="hideTip(event, 'fstips16', 25)" onmouseover="showTip(event, 'fstips16', 25)" class="i">SeekOrigin</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips17', 26)" onmouseover="showTip(event, 'fstips17', 26)" class="i">Begin</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstips18', 27)" onmouseover="showTip(event, 'fstips18', 27)" class="i">ignore</span>
+<span class="l"> 9: </span><span onmouseout="hideTip(event, 'fstips19', 28)" onmouseover="showTip(event, 'fstips19', 28)" class="omitted">(Some code at the end of the method omitted)</span>
+<span class="l">10: </span><span class="k">return</span> <span onmouseout="hideTip(event, 'fstips20', 29)" onmouseover="showTip(event, 'fstips20', 29)" class="i">title</span>, <span onmouseout="hideTip(event, 'fstips21', 30)" onmouseover="showTip(event, 'fstips21', 30)" class="i">html</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips22', 31)" onmouseover="showTip(event, 'fstips22', 31)" class="i">Length</span> <a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>The snippet uses a mutable reference cell <code>count</code> to keep the number of bytes returned
+  by the last <code>AsyncRead</code> call. We need to use a mutable value to be able to check it
+  in the termination condition of the <code>while</code> loop. Otherwise, the code is essentially
+  the same as the C# version. It contains two asynchronous operations written using <code>let!</code>
+  and a single <code>while</code> loop. Let's look at the compiled form...</p>
+
+<p>The essential principle of the compilation of asynchronous operations is that the compiler
+  needs to (somehow) make it possible to start the operation in the background and specify the 
+  rest of the method as a <em>continuation</em> that can be called when the operation completes.
+  In C#, the <em>continuation</em> is the <code>MoveNext</code> method of some object (where the
+  <code>_state</code> field of the object remembers the current location in the method body).
+  In F#, the <em>continuation</em> is a (lambda) function that directly contains the rest of the
+  body to be executed.</p>
+
+<p>When compiling F# asynchronous workflows, the compiler turns each non-standard operation into
+  a call to some primitive of the computation builder (e.g. <code>async</code>) and transforms the
+  rest of the code into a continuation:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span onmouseout="hideTip(event, 'fstips23', 32)" onmouseover="showTip(event, 'fstips23', 32)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips24', 33)" onmouseover="showTip(event, 'fstips24', 33)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> 
+<span class="l"> 2: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips1', 34)" onmouseover="showTip(event, 'fstips1', 34)" class="i">request</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips2', 35)" onmouseover="showTip(event, 'fstips2', 35)" class="i">HttpWebRequest</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips3', 36)" onmouseover="showTip(event, 'fstips3', 36)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fstips4', 37)" onmouseover="showTip(event, 'fstips4', 37)" class="i">url</span>)
+<span class="l"> 3: </span>  <span onmouseout="hideTip(event, 'fstips23', 38)" onmouseover="showTip(event, 'fstips23', 38)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips25', 39)" onmouseover="showTip(event, 'fstips25', 39)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'fstips1', 40)" onmouseover="showTip(event, 'fstips1', 40)" class="i">request</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips6', 41)" onmouseover="showTip(event, 'fstips6', 41)" class="i">AsyncGetResponse</span>(), <span class="k">fun</span> <span onmouseout="hideTip(event, 'fstips5', 42)" onmouseover="showTip(event, 'fstips5', 42)" class="i">response</span> <span class="k">-&gt;</span>
+<span class="l"> 4: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips7', 43)" onmouseover="showTip(event, 'fstips7', 43)" class="i">stream</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips5', 44)" onmouseover="showTip(event, 'fstips5', 44)" class="i">response</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips8', 45)" onmouseover="showTip(event, 'fstips8', 45)" class="i">GetResponseStream</span>()
+<span class="l"> 5: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Combine</span><span class="c"> </span><span class="c">two</span><span class="c"> </span><span class="c">asynchronous</span><span class="c"> </span><span class="c">computations</span>
+<span class="l"> 6: </span>    <span onmouseout="hideTip(event, 'fstips23', 46)" onmouseover="showTip(event, 'fstips23', 46)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips26', 47)" onmouseover="showTip(event, 'fstips26', 47)" class="i">Combine</span>(
+<span class="l"> 7: </span>      <span class="c">//</span><span class="c"> </span><span class="c">Build</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">representing</span><span class="c"> </span><span class="c">while</span><span class="c"> </span><span class="c">loop</span>
+<span class="l"> 8: </span>      <span onmouseout="hideTip(event, 'fstips23', 48)" onmouseover="showTip(event, 'fstips23', 48)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips27', 49)" onmouseover="showTip(event, 'fstips27', 49)" class="i">While</span>( (<span class="k">fun</span> () <span class="k">-&gt;</span> <span class="o">!</span><span onmouseout="hideTip(event, 'fstips9', 50)" onmouseover="showTip(event, 'fstips9', 50)" class="i">count</span> <span class="o">&gt;</span> <span class="n">0</span>),
+<span class="l"> 9: </span>        <span onmouseout="hideTip(event, 'fstips23', 51)" onmouseover="showTip(event, 'fstips23', 51)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips25', 52)" onmouseover="showTip(event, 'fstips25', 52)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'fstips7', 53)" onmouseover="showTip(event, 'fstips7', 53)" class="i">stream</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips11', 54)" onmouseover="showTip(event, 'fstips11', 54)" class="i">AsyncRead</span>(<span onmouseout="hideTip(event, 'fstips12', 55)" onmouseover="showTip(event, 'fstips12', 55)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fstips12', 56)" onmouseover="showTip(event, 'fstips12', 56)" class="i">buffer</span><span class="o">.</span><span class="i">Length</span>), <span class="k">fun</span> <span onmouseout="hideTip(event, 'fstips10', 57)" onmouseover="showTip(event, 'fstips10', 57)" class="i">n</span> <span class="k">-&gt;</span>
+<span class="l">10: </span>          <span onmouseout="hideTip(event, 'fstips13', 58)" onmouseover="showTip(event, 'fstips13', 58)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips14', 59)" onmouseover="showTip(event, 'fstips14', 59)" class="i">Write</span>(<span onmouseout="hideTip(event, 'fstips12', 60)" onmouseover="showTip(event, 'fstips12', 60)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fstips10', 61)" onmouseover="showTip(event, 'fstips10', 61)" class="i">n</span>)
+<span class="l">11: </span>          <span onmouseout="hideTip(event, 'fstips9', 62)" onmouseover="showTip(event, 'fstips9', 62)" class="i">count</span> <span class="o">:=</span> <span onmouseout="hideTip(event, 'fstips10', 63)" onmouseover="showTip(event, 'fstips10', 63)" class="i">n</span>
+<span class="l">12: </span>          <span onmouseout="hideTip(event, 'fstips23', 64)" onmouseover="showTip(event, 'fstips23', 64)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips28', 65)" onmouseover="showTip(event, 'fstips28', 65)" class="i">Zero</span>() ) ),
+<span class="l">13: </span>      <span class="c">//</span><span class="c"> </span><span class="c">Build</span><span class="c"> </span><span class="c">(a</span><span class="c"> </span><span class="c">delayed)</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">follows</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">loop</span>
+<span class="l">14: </span>      <span onmouseout="hideTip(event, 'fstips23', 66)" onmouseover="showTip(event, 'fstips23', 66)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips24', 67)" onmouseover="showTip(event, 'fstips24', 67)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span>
+<span class="l">15: </span>        <span onmouseout="hideTip(event, 'fstips13', 68)" onmouseover="showTip(event, 'fstips13', 68)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips15', 69)" onmouseover="showTip(event, 'fstips15', 69)" class="i">Seek</span>(<span class="n">0L</span>, <span onmouseout="hideTip(event, 'fstips16', 70)" onmouseover="showTip(event, 'fstips16', 70)" class="i">SeekOrigin</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips17', 71)" onmouseover="showTip(event, 'fstips17', 71)" class="i">Begin</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstips18', 72)" onmouseover="showTip(event, 'fstips18', 72)" class="i">ignore</span>
+<span class="l">16: </span>        <span onmouseout="hideTip(event, 'fstips19', 73)" onmouseover="showTip(event, 'fstips19', 73)" class="omitted">(Some code at the end of the method omitted)</span>
+<span class="l">17: </span>        <span onmouseout="hideTip(event, 'fstips23', 74)" onmouseover="showTip(event, 'fstips23', 74)" class="i">async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips29', 75)" onmouseover="showTip(event, 'fstips29', 75)" class="i">Return</span>(<span onmouseout="hideTip(event, 'fstips20', 76)" onmouseover="showTip(event, 'fstips20', 76)" class="i">title</span>, <span onmouseout="hideTip(event, 'fstips21', 77)" onmouseover="showTip(event, 'fstips21', 77)" class="i">html</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips22', 78)" onmouseover="showTip(event, 'fstips22', 78)" class="i">Length</span>) ))))<a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>Compared to the state machine compilation done by the C# compiler, the transformation 
+  performed by the F# compiler is quite simple. It follows these rules:</p>
+<ul>
+  <li><code>let!</code> bindings are translated to calls to the <code>Bind</code> member. The
+    asynchronous operation is passed as the first argument and a continuation is passed as the 
+    second argument.</li>
+  <li><code>while</code> loop containing asynchronous operation is translated to a call to the 
+    <code>While</code> member. The first argument is a function that evaluates the termination
+    condition and the second parameter is the body (which can be executed repeatedly).</li>
+  <li>Sequence of expressions (e.g. <code>while</code> loop and the expression that follows it)
+    is combined using the <code>Combine</code> member that takes two workflows and returns a 
+    single one that runs both of them in a sequence.</li>
+  <li>The whole computation is wrapped inside <code>Delay</code> (so that it doesn't start
+    running the first few (synchronous) lines when creating an asynchronous workflow)</li>
+</ul>
+
+<p>The translated version of the code doesn't reveal anything about how F# asynchronous workflows
+  run (when started using <code>Async.Start</code> or other method). The behavior is all encapsulated
+  in the primitive members that are used to build the workflow (such as <code>Bind</code> and
+  <code>While</code>). However, the execution proceeds similarly to the corresponding C# example.</p>
+
+<ul>
+  <li>When the workflow is started, it runs the function passed as an argument to <code>Delay</code>.
+    The function calls <code>AsyncGetResponse</code> to create a workflow representing the operation and
+    passes it to <code>Bind</code>.</li>
+  <li><code>Bind</code> starts the operation and provides it a continuation (our lambda function)
+    that will be called after the operation completes. Then the <code>Bind</code> member returns
+    and so the calling thread can do some other work.</li>
+  <li>When the lambda function is called (with <code>response</code> as an argument), it synchronously
+    gets the response stream. Then it constructs a workflow that will be executed next by 
+    combining a <code>while</code> loop with consecutive code.</li>
+  <li>The workflow returned by the <code>Combine</code> combinators starts the first workflow
+    (constructed by <code>While</code>). It repeatedly runs the body of the loop (which is itself
+    an asynchronous workflow) until the termination condition returns <code>false</code>.</li>
+  <li>When the workflow constructed by <code>While</code> completes, the code generated by
+    <code>Combine</code> calls the second workflow, which performs some (synchronous) processing
+    and then constructs &amp; returns a workflow that reports the result (using <code>Return</code>).</li>
+</ul>
+
+<h2>Comparison</h2>
+<p>The approaches used by C# and F# are quite different and both have pros and cons. The key advantage
+  of the state machine compilation is that it generates more efficient code. However, this is probably
+  not a big concern for asynchronous code, which spends most of the time waiting for some 
+  I/O operation or an external event. However, if you used <code>async</code> to write CPU bound code, 
+  then there will probably be some difference in the performance. Currently, the F# compiler
+  performs similar translation when compiling <em>sequence expressions</em> (where efficiency depends
+  more on the compilation). I remember talking about the compilation of asynchronous workflows with 
+  Don Syme during my second internship (two years ago :-)), so this may eventually be added to F# too.</p>
+
+<p>The key advantage of the compilation based on combinators is that it is very flexible. The 
+  implementation is hidden in a library that can be easily changed. This also makes it possible
+  to implement more complicated behavior - for example, the support for cancellation. Moreover, 
+  F# asynchronous workflows are just an example of <em>computation expressions</em>, which means that
+  the compiler doesn't know anything about them. The same mechanism can be used to implement
+  a wide range of other interesting computations (e.g. my <a href="http://tomasp.net/blog/imperative-ii-break.aspx">
+  article about implementing <code>break</code> in F#</a>).</p>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fstips1">val request : WebRequest<br /><br />&#160;&#160;type: WebRequest<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;inherits: System.MarshalByRefObject<br /></div>
+<div class="tip" id="fstips2">type HttpWebRequest =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Net.WebRequest<br />&#160;&#160;&#160;&#160;member Abort : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Accept : string with get, set<br />&#160;&#160;&#160;&#160;member AddRange : int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : string * int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : string * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member Address : System.Uri<br />&#160;&#160;&#160;&#160;member AllowAutoRedirect : bool with get, set<br />&#160;&#160;&#160;&#160;member AllowWriteStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member AutomaticDecompression : System.Net.DecompressionMethods with get, set<br />&#160;&#160;&#160;&#160;member BeginGetRequestStream : System.AsyncCallback * obj -&gt; System.IAsyncResult<br />&#160;&#160;&#160;&#160;member BeginGetResponse : System.AsyncCallback * obj -&gt; System.IAsyncResult<br />&#160;&#160;&#160;&#160;member ClientCertificates : System.Security.Cryptography.X509Certificates.X509CertificateCollection with get, set<br />&#160;&#160;&#160;&#160;member Connection : string with get, set<br />&#160;&#160;&#160;&#160;member ConnectionGroupName : string with get, set<br />&#160;&#160;&#160;&#160;member ContentLength : int64 with get, set<br />&#160;&#160;&#160;&#160;member ContentType : string with get, set<br />&#160;&#160;&#160;&#160;member ContinueDelegate : System.Net.HttpContinueDelegate with get, set<br />&#160;&#160;&#160;&#160;member CookieContainer : System.Net.CookieContainer with get, set<br />&#160;&#160;&#160;&#160;member Credentials : System.Net.ICredentials with get, set<br />&#160;&#160;&#160;&#160;member EndGetRequestStream : System.IAsyncResult -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member EndGetRequestStream : System.IAsyncResult * System.Net.TransportContext -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member EndGetResponse : System.IAsyncResult -&gt; System.Net.WebResponse<br />&#160;&#160;&#160;&#160;member Expect : string with get, set<br />&#160;&#160;&#160;&#160;member GetRequestStream : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member GetRequestStream : System.Net.TransportContext -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member GetResponse : unit -&gt; System.Net.WebResponse<br />&#160;&#160;&#160;&#160;member HaveResponse : bool<br />&#160;&#160;&#160;&#160;member Headers : System.Net.WebHeaderCollection with get, set<br />&#160;&#160;&#160;&#160;member IfModifiedSince : System.DateTime with get, set<br />&#160;&#160;&#160;&#160;member KeepAlive : bool with get, set<br />&#160;&#160;&#160;&#160;member MaximumAutomaticRedirections : int with get, set<br />&#160;&#160;&#160;&#160;member MaximumResponseHeadersLength : int with get, set<br />&#160;&#160;&#160;&#160;member MediaType : string with get, set<br />&#160;&#160;&#160;&#160;member Method : string with get, set<br />&#160;&#160;&#160;&#160;member Pipelined : bool with get, set<br />&#160;&#160;&#160;&#160;member PreAuthenticate : bool with get, set<br />&#160;&#160;&#160;&#160;member ProtocolVersion : System.Version with get, set<br />&#160;&#160;&#160;&#160;member Proxy : System.Net.IWebProxy with get, set<br />&#160;&#160;&#160;&#160;member ReadWriteTimeout : int with get, set<br />&#160;&#160;&#160;&#160;member Referer : string with get, set<br />&#160;&#160;&#160;&#160;member RequestUri : System.Uri<br />&#160;&#160;&#160;&#160;member SendChunked : bool with get, set<br />&#160;&#160;&#160;&#160;member ServicePoint : System.Net.ServicePoint<br />&#160;&#160;&#160;&#160;member Timeout : int with get, set<br />&#160;&#160;&#160;&#160;member TransferEncoding : string with get, set<br />&#160;&#160;&#160;&#160;member UnsafeAuthenticatedConnectionSharing : bool with get, set<br />&#160;&#160;&#160;&#160;member UseDefaultCredentials : bool with get, set<br />&#160;&#160;&#160;&#160;member UserAgent : string with get, set<br />&#160;&#160;&#160;&#160;static member DefaultCachePolicy : System.Net.Cache.RequestCachePolicy with get, set<br />&#160;&#160;&#160;&#160;static member DefaultMaximumErrorResponseLength : int with get, set<br />&#160;&#160;&#160;&#160;static member DefaultMaximumResponseHeadersLength : int with get, set<br />&#160;&#160;end<br /><br />Full name: System.Net.HttpWebRequest<br /><br />&#160;&#160;type: HttpWebRequest<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;inherits: WebRequest<br />&#160;&#160;inherits: System.MarshalByRefObject<br /></div>
+<div class="tip" id="fstips3">Multiple overloads
+<br />WebRequest.Create(requestUri: System.Uri) : WebRequest
+<br />WebRequest.Create(requestUriString: string) : WebRequest<br /></div>
+<div class="tip" id="fstips4">val url : string<br /><br />Full name: Untitled.url<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips5">val response : WebResponse<br /><br />&#160;&#160;type: WebResponse<br />&#160;&#160;implements: System.Runtime.Serialization.ISerializable<br />&#160;&#160;implements: System.IDisposable<br />&#160;&#160;inherits: System.MarshalByRefObject<br /></div>
+<div class="tip" id="fstips6">member WebRequest.AsyncGetResponse : unit -&gt; Async&lt;WebResponse&gt;<br /></div>
+<div class="tip" id="fstips7">val stream : Stream<br /><br />&#160;&#160;type: Stream<br />&#160;&#160;implements: System.IDisposable<br />&#160;&#160;inherits: System.MarshalByRefObject<br /></div>
+<div class="tip" id="fstips8">WebResponse.GetResponseStream() : Stream<br /></div>
+<div class="tip" id="fstips9">val count : int ref<br /><br />Full name: Untitled.count<br /><br />&#160;&#160;type: int ref<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Ref&lt;int&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fstips10">val n : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fstips11">Multiple overloads
+<br />member Stream.AsyncRead : count:int -&gt; Async&lt;byte []&gt;
+<br />member Stream.AsyncRead : buffer:byte [] * ?offset:int * ?count:int -&gt; Async&lt;int&gt;<br /></div>
+<div class="tip" id="fstips12">val buffer : 'a []<br /><br />Full name: Untitled.buffer<br /></div>
+<div class="tip" id="fstips13">val temp : MemoryStream<br /><br />Full name: Untitled.temp<br /><br />&#160;&#160;type: MemoryStream<br />&#160;&#160;implements: System.IDisposable<br />&#160;&#160;inherits: Stream<br />&#160;&#160;inherits: System.MarshalByRefObject<br /></div>
+<div class="tip" id="fstips14">Stream.Write(buffer: byte [], offset: int, count: int) : unit<br /></div>
+<div class="tip" id="fstips15">Stream.Seek(offset: int64, origin: SeekOrigin) : int64<br /></div>
+<div class="tip" id="fstips16">type SeekOrigin =<br />&#160;&#160;| Begin = 0<br />&#160;&#160;| Current = 1<br />&#160;&#160;| End = 2<br /><br />Full name: System.IO.SeekOrigin<br /><br />&#160;&#160;type: SeekOrigin<br />&#160;&#160;inherits: System.Enum<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fstips17">field SeekOrigin.Begin = 0<br /></div>
+<div class="tip" id="fstips18">val ignore : 'T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore<br /></div>
+<div class="tip" id="fstips19">let html = (new StreamReader(temp)).ReadToEnd()<br />let title = regTitle.Match(html).Groups.[1].Value, html.Length <br /></div>
+<div class="tip" id="fstips20">val title : string * int<br /></div>
+<div class="tip" id="fstips21">val html : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips22">property System.String.Length: int<br /></div>
+<div class="tip" id="fstips23">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async<br /></div>
+<div class="tip" id="fstips24">member AsyncBuilder.Delay : generator:(unit -&gt; Async&lt;'T&gt;) -&gt; Async&lt;'T&gt;<br /></div>
+<div class="tip" id="fstips25">member AsyncBuilder.Bind : computation:Async&lt;'T&gt; * binder:('T -&gt; Async&lt;'U&gt;) -&gt; Async&lt;'U&gt;<br /></div>
+<div class="tip" id="fstips26">member AsyncBuilder.Combine : computation1:Async&lt;unit&gt; * computation2:Async&lt;'T&gt; -&gt; Async&lt;'T&gt;<br /></div>
+<div class="tip" id="fstips27">member AsyncBuilder.While : guard:(unit -&gt; bool) * computation:Async&lt;unit&gt; -&gt; Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fstips28">member AsyncBuilder.Zero : unit -&gt; Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fstips29">member AsyncBuilder.Return : value:'T -&gt; Async&lt;'T&gt;<br /></div>

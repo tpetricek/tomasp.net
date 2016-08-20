@@ -1,0 +1,419 @@
+<!-- [info]
+
+ - date: 2011-03-14T17:14:49.0000000
+ - description: Formlets are elegant functional abstraction for describing web forms encapsulating both rendering and functionality. In this article, we look how to write formlets in C#. Although formlets are not monads, we can still use elegant LINQ syntax. Interestingly, using the join clause...
+ - tags: c#,research
+ - layout: post
+ - title: Beyond the Monad fashion (II.): Creating web forms with LINQ
+ - url: formlets-in-linq.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/formlets-in-linq/screen.png" style="margin:15px;float:right;" />
+<p>The LINQ query syntax can be used for various things. Aside from writing queries, you can 
+  also use it to encode any <em>monads</em>. This has become a fashionable topic, so you can learn
+  more about it at many .NET conferences (for example <a href="http://gotocon.com/cph-2011/tracks/show_track.jsp?trackOID=434">GOTO 2011</a>).
+  There are also many blog posts on this topic and I explained it in details in Chapter 12 of <a href="http://manning.com/petricek">my book</a>, which
+  is available as a <a href="http://manning.com/petricek/SampleChapter12.pdf">free sample chapter</a> (PDF).</p>
+
+<p>However, you can also use LINQ syntax for writing different types of computations. In a 
+  <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous blog post</a>, I introduced <em>idioms</em>
+  (also called <em>applicative functors</em>) and I demonstrated how to use the <code>join</code> syntax in LINQ
+  to write computations based on idioms. We looked at a slightly boring, but simple example - zipping of lists - and
+  we also implemented matrix transposition.</p>
+ 
+<p>In this blog post, we look at a more exciting example. I explain <em>formlets</em>, which is an <em>idiom</em>
+  for building web forms. Formlets give us an elegant functional way to create reusable components that encapsulate
+  both visual aspect (HTML) and behavior (processing of requests). You can think of them as functional ASP.NET controls.
+  Formlets come from the <a href="http://groups.inf.ed.ac.uk/links/formlets/">Links project</a> and they are now used in commercial products like
+  <a href="http://www.websharper.com/tutorials/GettingStartedWithFormlets.aspx">WebSharper</a>. In this article, you'll see that we can (mis)use LINQ to get a nicer syntax
+  for writing code using formlets. My C# implementation of formlets is based on a nice <a href="http://bugsquash.blogspot.com/2011/01/simple-implementation-of-formlets-in-f.html">F# formlets by Mauricio
+  Scheffer</a>.</p>
+[/abstract] -->
+
+<h1>Beyond the Monad fashion (II.): Creating web forms with LINQ</h1>
+<img src="http://tomasp.net/articles/formlets-in-linq/screen.png" style="margin:15px;float:right;" />
+<p>The LINQ query syntax can be used for various things. Aside from writing queries, you can 
+  also use it to encode any <em>monads</em>. This has become a fashionable topic, so you can learn
+  more about it at many .NET conferences (for example <a href="http://gotocon.com/cph-2011/tracks/show_track.jsp?trackOID=434">GOTO 2011</a>).
+  There are also many blog posts on this topic and I explained it in details in Chapter 12 of <a href="http://manning.com/petricek">my book</a> [<a href="#csformletsl">1</a>], which
+  is available as a <a href="http://manning.com/petricek/SampleChapter12.pdf">free sample chapter</a> (PDF).</p>
+
+<p>However, you can also use LINQ syntax for writing different types of computations. In a 
+  <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous blog post</a>, I introduced <em>idioms</em>
+  (also called <em>applicative functors</em>) and I demonstrated how to use the <code>join</code> syntax in LINQ
+  to write computations based on idioms. We looked at a slightly boring, but simple example - zipping of lists - and
+  we also implemented matrix transposition.</p>
+ 
+<p>In this blog post, we look at a more exciting example. I explain <em>formlets</em>, which is an <em>idiom</em>
+  for building web forms. Formlets give us an elegant functional way to create reusable components that encapsulate
+  both visual aspect (HTML) and behavior (processing of requests). You can think of them as functional ASP.NET controls.
+  Formlets come from the <a href="http://groups.inf.ed.ac.uk/links/formlets/">Links project</a> [<a href="#csformletsl">2</a>] and they are now used in commercial products like
+  <a href="http://www.websharper.com/tutorials/GettingStartedWithFormlets.aspx">WebSharper</a> [<a href="#csformletsl">3</a>]. In this article, you'll see that we can (mis)use LINQ to get a nicer syntax
+  for writing code using formlets. My C# implementation of formlets is based on a nice <a href="http://bugsquash.blogspot.com/2011/01/simple-implementation-of-formlets-in-f.html">F# formlets by Mauricio
+  Scheffer</a> [<a href="#csformletsl">4</a>].</p>
+
+<h2>The idea of formlets</h2>
+
+<p>The key of formlets is simple. A formlet is some object of type <code>Formlet&lt;T&gt;</code> that represents
+  a part of a HTML form that is used for entering values of type <code>T</code>. For example, a simple HTML <code>&lt;input /&gt;</code>
+  will be represented as <code>Formlet&lt;string&gt;</code>. A more sophisticated component for selecting a date will be 
+  represented as <code>Formlet&lt;DateTime&gt;</code>.</p>
+
+<p>Now, what does it mean to represent a part of an HTML form? As already mentioned, there are two aspects of 
+  a HTML form that we'd like to encapsulate in a formlet:</p>
+<ul>
+  <li style="margin-bottom:5px"><strong>Visual</strong> - A formlet needs to know how to render HTML markup of the form.
+    It needs to generate <code>id</code> of form elements in some clever way so that we can use one formlet multiple
+    times in a single form.</li>
+  <li><strong>Behavior</strong> - When a response is received from a client, the formlet (<code>Formlet&lt;T&gt;</code>)
+    needs to be able to produce a value of type <code>T</code> when we give it a name-value collection
+    with form values received from the client.</li>
+</ul>
+
+<h3>Abstract formlet type</h3>
+<img src="http://tomasp.net/articles/formlets-in-linq/formlet.png" style="float:right;margin:0px 5px 15px 15px" />
+<p>Let's look how to model the two aspects using a simple F# type and we'll look at actual C# implementation later.
+  To get some intuition about formlets, you can take a look at the diagram on the right.
+  The two aspects of formlets can be modeled as two separate functions. For simplicity, we group them in a record:</p>
+<pre lang="fsharp" style="margin-right:170px">
+type Formlet&lt;'T&gt; = 
+  { // Takes counter and generates XML together with new counter
+    Render   : int -&gt; XElement * int
+    // Takes counter and form values and generates result with new counter
+    Evaluate : int * NameValueCollection -&gt; 'T * int }
+</pre>
+<p>The first function is used to render the formlet. When the page is loaded for the first time, we don't
+  have any form values, so the rendering phase shouldn't rely on any inputs. The function just needs to produce
+  some HTML output (stored as <code>XElement</code>). To be able to compose formlets,
+  we pass around an <code>int</code> value that is used to generate unique <code>id</code> attributes. </p>
+<p>The second function represents is used to process the next request from the client. When the
+  user submits a form, we get <code>NameValueCollection</code> storing the form values. The <code>Evaluate</code>
+  function turns the collection into a value of type <code>'T</code> (e.g. <code>string</code> or <code>DateTime</code>).
+  We need to know the generated <code>id</code> to pick values from the collection, so we pass around an
+  <code>int</code> counter in the same way as during rendering.</p>
+
+<h3>Why are formlets interesting?</h3>
+<p>The key thing that makes formlets interesting is that they are not <em>monads</em>. The operation
+  that determines this is composition. A typical scenario is that we have some basic formlets (e.g.
+  <code>Formlet.Input(label)</code> that generates <code>&lt;input&gt;</code> with a specified label)
+  and we want to compose them. When composing formlets, the second formlet must not depend on the value
+  produced by the first formlet. Using nested <code>from</code> clauses in LINQ (or using monads), we could write:</p>
+<pre lang="csharp">
+Formlet&lt;DateTime&gt; dateFormlet = 
+  from day in Formlet.Input("Enter day:")
+  from month in Formlet.Input("Enter month (selected day is {0}):", day)
+  select new DateTime(day, month, 2011); 
+</pre>
+<p>The tricky thing in the snippet above is that we're using the variable <code>day</code> (representing
+  value obtained from the first input) when creating the second input. If you think about it,
+  this cannot possibly work, because there is no way the <code>Render</code> method could work.
+  When rendering the form, we don't have form values, so we cannot assign any value to the 
+  <code>day</code> variable.</p>
+<p>This demonstrates an important property of monads - when composing two monads, we can use the
+  value generated by the first one when creating the second one. This is also how <code>from</code>
+  clause behaves in LINQ and why it doesn't work in our example.</p>
+<p>On the other hand, when composing formlets we can only use the values produced by formlets 
+  after we specify all the formlets that we want to compose. This code will not be executed during
+  rendering (rendering will just render all formlets), but it will be used when processing
+  the second request. Interestingly, it is still possible to write formlets using LINQ...</p>
+
+<h2>Creating booking form with formlets</h2>
+<p>In this section, we look at an example that uses formlets to create a simple booking form consisting
+  of input for entering name and two controls for entering date (using drop-down boxes for selecting date,
+  month and a year). We start by looking how to write this using LINQ and then we'll gradually explain how
+  the solution works under the cover.</p>
+
+<h3>Writing formlets using LINQ</h3>
+<p>As I explained in a <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous blog post</a>,
+  we can encode idioms (such as formlets) using the LINQ syntax. We've seen that we cannot use <code>from</code>
+  clause (as when encoding monads), but we can do that using the <code>join</code> clause (and providing
+  some dummy key selectors such as <code>on 1 equals 1</code>).</p>
+
+<p>The following example uses this trick to create a formlet. We use a simple library with formlets for 
+  basic HTML elements. The <code>Formlet.DropDownRange</code> method creates formlet that represents 
+  drop-down containing numbers specified by the range (HTML <code>&lt;select&gt;</code>) and <code>Formlet.DropDown</code>
+  fills the drop-down using a specified collection of key-value pairs; <code>Formlet.Tag</code> creates a simple HTML tag 
+  and <code>Formlet.Input</code> creates a HTML text-box.</p>
+
+<p>The following LINQ snippet creates the form shown on the screenshot at the beginning of the article:</p>
+
+<pre lang="csharp">
+Formlet&lt;DateTime&gt; dateSelector =
+  from day in Formlet.DropDownRange(1, 31)
+  join month in Formlet.DropDown(monthNames) on 1 equals 1
+  let monthNum = Int32.Parse(month)
+  join year in Formlet.DropDownRange(1960, 50) on 1 equals 1
+  select new DateTime(year, monthNum, day);
+
+Formlet&lt;Booking&gt; formlet =
+  from name in Formlet.Input()
+  join o1 in Formlet.Tag("br") on 1 equals 1
+  join departureDate in dateSelector on 1 equals 1
+  join o2 in Formlet.Tag("br") on 1 equals 1
+  join returnDate in dateSelector on 1 equals 1
+  select new Booking { Name = name, Departure = departureDate, Return = returnDate };
+</pre>
+
+<p>The first expression creates a formlet that can be used for entering dates. It renders three drop-down
+  controls for entering day, month and a year. When writing the first one, we start the query with the 
+  <code>from</code> clause. To add the other two, we use <code>join</code>. We also use <code>let</code> 
+  inside the query to parse the string obtained from a drop-down. This is fine, but the LINQ syntax doesn't
+  allow us to use the <code>monthNum</code> variable inside the next <code>join</code>. The <code>let</code>
+  declaration is only useful to keep logically related things nearby, but it is always possible to 
+  move all calculations to the last <code>select</code> clause.</p>
+
+<p>The second expression creates a formlet for entering the whole booking. It starts with an usual input 
+  element and then it re-uses the formlet for generating date selector two times. The types of 
+  <code>departureDate</code> and <code>returnDate</code> are both <code>DateTime</code>, so this gives
+  us a nice way of composing forms in a statically type-safe way. We also use a couple of <code>Tag</code>
+  formlets to add line breaks (we still have to assign the result to some variable, but we can then 
+  ignore them).</p>
+
+<p>I hope you'll agree that the syntax is quite neat. You can get a complete sample (integrated in an
+  ASP.NET MVC application) at the end of the article. Before writing a few things about the ASP.NET MVC 
+  integration, let's look how the same formlet could be created using idiom primitives.</p>
+
+<h3>Writing formlets explicitly</h3>
+<p>As discussed in the previous blog post, every idiom needs to provide three primitive operations: 
+  <code>Return</code>, <code>Merge</code> and <code>Select</code>. We can rewrite the previous example
+  using the two latter ones. The <code>Merge</code> operation is used to combine two idioms (e.g. formlets) 
+  into a single one that produces tuple containing values produced by both. <code>Select</code> gives
+  us a way to apply some calculation to transform the carried value:</p>
+
+<pre lang="csharp">
+Formlet&lt;DateTime&gt; dateSelector =
+  Formlet.DropDownRange(1, 31).Merge
+    (Formlet.DropDown(monthNames).Select(Int32.Parse)).Merge
+    (Formlet.DropDownRange(1960, 50)).Select(tup =>
+  new DateTime(tup.Item1.Item1, tup.Item1.Item2, tup.Item2));
+</pre>
+
+<p>The snippet composes three formlets using <code>Merge</code>. The first and the third formlets are
+  simply generated using <code>DropDownRange</code>. The second one generates a drop-down for selecting
+  months and we transform it using <code>Select</code> to get a formlet that produces the number of 
+  month as an <code>int</code> (corresponding to <code>let</code> in earlier LINQ query). The type of 
+  the composed formlet is <code>Formlet&lt;Tuple&lt;int, Tuple&lt;int, int&gt;&gt;</code> and we use
+  <code>Select</code> to turn the (ugly) nested tuple into a (nice) <code>DateTime</code> value.</p>
+
+<h3>ASP.NET MVC Integration</h3>
+<p>To make the article complete, I'll just briefly demonstrates how can formlets be integrated
+  into an ASP.NET MVC application. After we declare a formlet (either in a separate file or as part
+  of a controller class), we can use it in two view pages. In a first page, we want to render the
+  formlet. To do this, we can simply assign the formlet to the <code>Model</code> property of the
+  page. The ASP.NET markup for rendering the formlet looks like this:
+</p>
+<pre lang="aspx">
+&lt;%@@ Page Language="C#" Inherits="ViewPage&lt;Formlet&lt;Booking&gt;&gt;" %&gt;
+
+&lt;!-- Standard HTML markup --&gt;  
+&lt;% using (Html.BeginForm("Booking", "Home")) { %&gt;
+  &lt;%= Model.Render() %&gt;
+  &lt;input type="submit" value="Submit" /&gt;
+&lt;% } %&gt;
+</pre>
+
+<p>In the <code>@@ Page</code> directive, we specify that the model of the page is a formlet,
+  so that we can access it via the <code>Model</code> property in a typed way. The page can
+  contain any standard HTML markup. To include our form in the page, we create an HTML form
+  (in a standard way) and then call <code>Model.Render()</code> to render the formlet. The method
+  returns <code>XDocument</code> which will be printed to the output. (Earlier, we said that the
+  method also takes an integer, but we can create an overload that calls the full version with
+  0 as an argument).</p>
+
+<p>When the form is submitted to a separate page (as specified by the 
+  HTML form), we want to obtain the <code>Booking</code> object from the formlet. The values
+  of generated HTML elements are stored in <code>Request.Form</code> (which is a 
+  <code>NameValueCollection</code>). We can call <code>Evaluate</code> method of the formlet
+  as follows:</p>
+<pre lang="csharp">
+Booking res = formlet.Evaluate(Request.Form);
+ViewData.Model = res;
+</pre>
+
+<p>In the C# code of the page, we can use the <code>Evaluate</code> method. Just like in the
+  previous snippet, we're using a slightly simplified version of the method. This overload takes
+  just a <code>NameValueCollection</code> with the form values and gives us a result of type
+  <code>Booking</code> (because our formlet has a type <code>Formlet&lt;Booking&gt;</code>).</p>
+
+<p>The purpose of this short section was just to demonstrate that you can use formlets like 
+  this as part of a real application. As already mentioned, you can find source code for this 
+  sample at the end of the article. Now that you've seen an example of working with formlets,
+  let's look how C# formlets are implemented...</p>
+
+<h2>Looking under the cover</h2>
+<p>As already mentioned, the implementation I'm using is based on an <a href="http://bugsquash.blogspot.com/2011/01/simple-implementation-of-formlets-in-f.html">F# 
+  formlets by Mauricio Scheffer</a> [<a href="#csformletsl">4</a>]. His implementation uses
+  slightly different definition of idioms, but the idea is the same. In the next section, we start
+  by looking at the actual definition of <code>Formlet&lt;T&gt;</code> type.
+</p>
+
+<h3>Defining the Formlet type</h3>
+<p>When introducing formlets earlier, I wrote that formlets can be viewed as two functions
+  (one for rendering and one for evaluation). We needed to pass around <code>int</code> value 
+  as a counter in both of the functions. The actual implementation uses a slightly different
+  representation. Here, a formlet contains just a single function that takes <code>int</code>
+  and produces <code>FormletResult&lt;T&gt;</code>. The result consists of a rendered XML
+  and a function that can be used (when evaluating) to turn form inputs into a value
+  (I'm using <code>Environment</code> as an alias for <code>NameValueCollection</code>):</p>
+<pre lang="csharp">
+class FormletResult&lt;T&gt; {
+  // Rendered form stored as a list of XML elements
+  public IEnumerable&lt;XNode&gt; Elements { get; set; }
+  // Function (created by formlet) for processing form inputs
+  public Func&lt;Environment, T&gt; Collector { get; set; }
+  // Counter value after processing the formlet
+  public int Counter { get; set; }
+}
+
+class Formlet&lt;T&gt; {
+  // Function that runs the formlet when given an 'int' value
+  public Func&lt;int, FormletResult&lt;T&gt;&gt; Func { get; set; }
+  
+  // Phase 1: Use formlet to create HTML of a form  
+  public XDocument Render() {
+    return new XDocument(new XElement("div", Func(0).Elements));
+  }
+  // Phase 2: Use formlet to process form inputs
+  public T Evaluate(Environment env) {
+    return Func(0).Collector(env);
+  }
+}
+</pre>
+
+<p>The type declarations are fairly simple. The <code>FormletResult&lt;T&gt;</code>
+  type simply stores rendered elements, function for evaluation and a new counter. 
+  For simplicity, I'm using mutable properties, but we'll use the type in an immutable
+  fashion (we will use setter only when creating the object).</p>
+
+<p>The <code>Formlet&lt;T&gt;</code> type is also quite simple. It contains a function that
+  can be called with initial counter as an argument and produces <code>FormletResult&lt;T&gt;</code>.
+  The function is called when we want to render the formlet as well as when we want to 
+  process form inputs. In the first case (the <code>Render</code> method), we simply call 
+  the function and wrap all generated XML elements inside a single <code>&lt;div&gt;</code> element.
+  In the second case (<code>Evaluate</code>), we first run the function and then use the
+  constructed function (named <code>Collector</code>) to actually process the inputs. Note
+  again that we don't need the form inputs to render the formlet!
+  </p>
+
+<p>In the implementation, we also declare a static method <code>Formlet.Create</code> (in a
+  static non-generic class), so that we can create formlets and benefit from the C# type
+  inference for generic method calls. The next section gives some examples...</p>
+
+<h3>Building primitive formlets</h3>
+<p>When creating complex formlets such as the date selection or the booking form above, we
+  can use LINQ query syntax and compose them from simpler formlets. However, elementary formlets
+  such as <code>Formlet.Input()</code> need to be created explicitly. This is also a good way to 
+  understand how formlets work:</p>
+
+<pre lang="csharp">
+public static Formlet&lt;string&gt; Input() {
+  return Formlet.Create(counter =&gt; new FormletResult&lt;string&gt; {
+    Elements = new List&lt;XElement&gt; {
+      new XElement("input", new XAttribute("name", "frmel" + counter))
+    },
+    Counter = counter + 1
+    Collector = env =&gt; env["frmel" + counter],
+  });
+}
+</pre>
+<p>To create a formlet for input, we need to write a function that constructs 
+  <code>FormletResult&lt;string&gt;</code> when given an integer (counter). In this simple
+  example, we set <code>Elements</code> to a list containing a single <code>&lt;input&gt;</code>
+  element. The <code>id</code> attribute of the element is set to some generated name that
+  includes the current value of <code>counter</code>. The <code>Counter</code> property is set
+  to the successor of <code>counter</code>, because we used a single ID. This way, we can 
+  compose two <code>Input</code> formlets and they will use different <code>id</code>.
+</p>
+<p>Finally, we also need to construct the <code>Collector</code> function. This is quite simple.
+  When given an environment (a <code>NameValueCollection</code> value), the function performs
+  a lookup using the same <code>id</code> that it used during rendering. The value from the 
+  collection is a string, so it can be returned as a result.</p>
+
+<h3>Implementing idiom operations</h3>
+<p>As mentioned earlier, formlets are <em>idioms</em>, which is a type of computation that
+  I introduced in the <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous blog post</a>. 
+  Every idiom needs to provide three operations: <code>Merge</code>, <code>Select</code> and 
+  <code>Return</code> (using these operations, we can also implement <code>Join</code> extension
+  method that is used by LINQ when translating the <code>join</code> clause). The types of the 
+  three methods that we need to implement for formlets are explained in the previous article.
+  Once we have the types, writing the actual implementation is quite easy (I omitted the
+  <code>Return</code> operation, because it isn't particularly useful for formlets):</p>
+
+<pre lang="csharp">
+// Create formlet that composes two formlets. The formlets are rendered
+// in in sequence and their values are merged into a tuple.
+public static Formlet&lt;Tuple&lt;T1, T2&gt;&gt; Merge&lt;T1, T2&gt;
+    (this Formlet&lt;T1&gt; first, Formlet&lt;T2&gt; second) {
+  return Formlet.Create(i =&gt; {
+    var v1 = first.Func(i);
+    var v2 = second.Func(v1.Counter);
+    return new FormletResult&lt;Tuple&lt;T1, T2&gt;&gt; {
+      Elements = Enumerable.Concat(v1.Elements, v2.Elements),
+      Collector = env =&gt; 
+        Tuple.Create(v1.Collector(env), v2.Collector(env)),
+      Counter = v2.Counter
+    };
+  });
+}
+
+// Create formlet that transforms value created by the original formlet;
+// rendering just returns elements of the original formlet.
+public static Formlet&lt;R&gt; Select&lt;T, R&gt;
+    (this Formlet&lt;T&gt; source, Func&lt;T, R&gt; func) {
+  return Formlet.Create(i =&gt; {
+    var value = source.Func(i);
+    return new FormletResult&lt;R&gt; {
+      Elements = value.Elements,
+      Collector = env =&gt; func(value.Collector(env)),
+      Counter = value.Counter
+    };
+  });
+}
+</pre>
+<p>When combining two formlets using <code>Merge</code>, we run the functions
+  that define them in sequence. We pass initial counter to the first formlet and then
+  pass the returned (incremented) counter to the second formlet. To build the result,
+  we simply concatenate all generated XML elements. The <code>Collector</code> function
+  runs <code>Collector</code> function of both original formlets and returns a tuple
+  carrying both values together.</p>
+
+<p>The <code>Select</code> operation builds formlet that behaves similarly to the 
+  original formlet. The only difference is that the <code>Collector</code> function
+  transforms the value using a provided function. This is how we turn the tuple values created
+  by <code>Merge</code> into the final result of a formlet (such as <code>DateTime</code>).</p>
+
+<p>Now that we have the idiom operations, it is very easy to support the LINQ syntax
+  using the <code>join</code> clause. We just need to implement the <code>Join</code>
+  method in terms of <code>Merge</code> and <code>Select</code>. This implementation 
+  is exactly the same for all idioms, so you can find it in the 
+  <a href="http://tomasp.net/blog/idioms-in-linq.aspx">previous article</a>.</p>
+
+<h2>Summary</h2>
+<p>In this article we looked how to use the concept of formlets in C# using the LINQ
+  query syntax. Formlets is a nice functional abstraction for HTML forms. They 
+  encapsulate two aspects of HTML forms - request processing and form rendering - in 
+  a single composable type.</p>
+<p>Formlets are interesting because they are <em>idioms</em>. This is an abstract type
+  of computations  (just like pupular <em>monads</em>). Interestingly, formlets cannot 
+  be treated as monads, because we cannot use value produced by formlet as argument to 
+  a second formlet in composition. This may be a bit confusing, but when you'll try to 
+  implement <code>SelectMany</code> for formlets, you'll see the problem.</p>
+
+<p>The fact that the structure of formlet cannot depend on the values is an essential aspect 
+  of idioms. However, even though formlets are not monads, we can use a nice LINQ query
+  syntax to write them. In a sense this controverts the general sense that LINQ is a monad.
+  The trick is that we build our syntax on the <code>join</code> clause which is handled
+  using different rules than nested <code>from</code> clauses (usually used for monads).</p>
+
+<a name="csformletsl"></a>
+<h2>References &amp; Downloads</h2>
+<ul>
+  <li>Browse the <a href="https://github.com/tpetricek/Documents/tree/master/Blog%202011/Formlets%20using%20LINQ">source on GitHub</a> or download sample project as a <a href="https://github.com/tpetricek/Documents/raw/master/Blog%202011/Formlets%20using%20LINQ/formlets.zip">ZIP file</a>.</li>
+</ul>
+<ul>
+  <li>[1] <a href="http://manning.com/petricek/SampleChapter12.pdf" type="external">Chapter 12: Sequence expressions and alternative workflows</a> - Real-World Functional Programming</li>
+  <li>[2] <a href="http://groups.inf.ed.ac.uk/links/formlets/" type="external">The essence of form abstraction</a> - Ezra Cooper, Sam Lindley, Philip Wadler, Jeremy Yallop</li>
+  <li>[3] <a href="http://www.websharper.com/tutorials/GettingStartedWithFormlets.aspx">Getting started with formlets</a> - WebSharper</li>
+  <li>[4] <a href="http://bugsquash.blogspot.com/2011/01/simple-implementation-of-formlets-in-f.html">A simple implementation of formlets in F#</a> - Bug Squash by Mauricio Scheffer</li>
+</ul>

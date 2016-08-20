@@ -1,0 +1,489 @@
+<!-- [info]
+
+ - date: 2011-05-26T22:51:48.0000000
+ - description: This article is a summary of a talk about accessing loosely structured data from F# and C# that I gave at GOTO Copenhagen 2011. The article contains examples how to bridge the gap between external data sources and programming language at various scales.
+ - tags: c#,presentations,f#
+ - layout: post
+ - title: Accessing loosely structured data from F# and C# (GOTO 2011)
+ - url: goto-loosely-structured-data.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/fsharp-loosely-typed/goto.png" style="float:right;margin:0px 0px 15px 15px;" />
+
+<p>About two weeks ago, I gave a talk at <a href="http://gotocon.com/cph-2011/">GOTO Conference</a> in
+  Copenhagen at a very interesting .NET session organized by <a href="http://blog.ploeh.dk /">Mark Seemann</a>.
+  In my talk, I focused on the impedance mismatch between the data structures that are used
+  in programming languages (such as classes in C# or records and discriminated unions in F#)
+  and the data structures that we need to access (such as database, XML files and REST services).
+   </p>
+
+<p>Clearly, both of the sides have <em>some structure</em> (otherwise, it wouldn't be possible
+  to write any code against them!). Even an XML file that is returned by a REST service has some
+  structure - although the only way to find out about the structure may be to call the service
+  and then look at the result. In this article, I'll briefly summarize the ideas that I 
+  presented in the talk. Here are links to the slides as well as the source code from the 
+  talk: </p>
+
+<ul>
+  <li>You can browse the slides <a href="http://slidesha.re/llTgVk">at SlideShare</a> or you
+    can download them from GitHub in the <a href="https://github.com/tpetricek/Documents/raw/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)/data.ppt">PPT format</a>.</li>
+  <li>The source code is in my <a href="https://github.com/tpetricek/Documents/tree/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)">GitHub repository</a>
+    and can be downloaded as a single <a href="https://github.com/tpetricek/Documents/raw/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)/demos.zip">ZIP file</a>.  
+  </li>
+</ul>
+[/abstract] -->
+
+<h1>Accessing loosely structured data from F# and C# (GOTO 2011)</h1>
+<img src="http://tomasp.net/articles/fsharp-loosely-typed/goto.png" style="float:right;margin:0px 0px 15px 15px;" />
+
+<p>About two weeks ago, I gave a talk at <a href="http://gotocon.com/cph-2011/">GOTO Conference</a> in
+  Copenhagen at a very interesting .NET session organized by <a href="http://blog.ploeh.dk /">Mark Seemann</a>.
+  In my talk, I focused on the impedance mismatch between the data structures that are used
+  in programming languages (such as classes in C# or records and discriminated unions in F#)
+  and the data structures that we need to access (such as database, XML files and REST services).
+   </p>
+
+<p>Clearly, both of the sides have <em>some structure</em> (otherwise, it wouldn't be possible
+  to write any code against them!). Even an XML file that is returned by a REST service has some
+  structure - although the only way to find out about the structure may be to call the service
+  and then look at the result. In this article, I'll briefly summarize the ideas that I 
+  presented in the talk. Here are links to the slides as well as the source code from the 
+  talk: </p>
+
+<ul>
+  <li>You can browse the slides <a href="http://slidesha.re/llTgVk">at SlideShare</a> or you
+    can download them from GitHub in the <a href="https://github.com/tpetricek/Documents/raw/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)/data.ppt">PPT format</a>.</li>
+  <li>The source code is in my <a href="https://github.com/tpetricek/Documents/tree/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)">GitHub repository</a>
+    and can be downloaded as a single <a href="https://github.com/tpetricek/Documents/raw/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)/demos.zip">ZIP file</a>.  
+  </li>
+</ul>
+
+
+<h2>Accessing data at different scales</h2>
+<p>No matter what technology we use for accessing data, someone, somewhere needs to somehow 
+  specify how to map data from the source to a structure that can be used in the programming
+  language. I think there are three options:</p>
+<div style="text-align:center;margin:20px 0px 20px 0px;">
+<img src="http://tomasp.net/articles/fsharp-loosely-typed/diagram.png" />
+</div>
+
+<ul>
+  <li><strong>Expression scale</strong> - When using dynamic typing, the program specifies
+    that some object is expected to contain a member (such as database column or XML node) 
+    of a specified name. The program also specifies the expected type of the member - for
+    example a primitive type or another object.</li>
+  <li><strong>Program scale</strong> - The previous technique is local and is scattered around
+    the code that works with data. When the data source is used in multiple places in the program
+    (e.g. database), it makes sense to specify the expected structure and the mapping at once.
+    This is used for example in LINQ to SQL (the structure is given by generated domain model).</li>
+  <li><strong>Internet scale</strong> - Describing the expected structure is reasonable if 
+    the data source is small. However, what if the program wants to access a data source with
+    thousands of types? In that case, we need some automatic way for translating between the
+    language used by the data source and the programming language. This is what F# type providers
+    do.</li>
+</ul>
+
+<p>The talk included several examples from every category. Unfortunately, F# type providers
+  are not yet publicly available, so the source code for the talk doesn't include this example.
+  The following three sections give a brief summary of some of the examples:</p>
+
+<h2>Using dynamic typing in C# and F#</h2>
+<p>The first approach is to specify the structure locally at the expression level. In C#,
+  this can be done using the <code>dynamic</code> type. In F#, similar thing can be achieved
+  using the <code>?</code> operator. The compiler translates expressions like <code>obj?Foo</code>
+  to an operator call <code>(?) obj "Foo"</code> where the name of the member becomes a string.
+  There are some interesting differences between the two approaches..</p>
+
+<h3>Accessing World Bank in C#</h3>
+<p>To demonstrate the dynamic typing in C#, I created an example that uses 
+  <code>dynamic</code> for accessing data provided by the <a href="http://www.worldbank.org/">World Bank</a>.
+  The following snippet gets a list of regions (such as OECD countries, EU countries, Middle East
+  etc.):</p>
+
+<pre lang="csharp">
+dynamic wb = new DynamicWorldBank();
+dynamic regions = wb.Region(new { PerPage = 100 });
+foreach (var reg in regions.Regions.Region) {
+  Console.WriteLine("{0} ({1})", reg.Name.Value, reg.Code.Value);
+}
+</pre>
+
+<p>The snippet creates <code>DynamicWorldBank</code> instance, which supports dynamic invocation
+  of operations. It is assigned to a variable of type <code>dynamic</code>, which allows us to 
+  write <code>wb.Region</code> even though the compiler cannot verify that there is 
+  such member. At runtime, the name <code>Region</code> is mapped to a web service request.
+  The example also uses C# anonymous types to specify additional arguments for the
+  call. Anonymous types are handy, because they can be used to specify both the name of the
+  argument and the value. The call will be translated to a web request to an URL like
+  <code>http://api.worldbank.org/regions?per_page=100</code>.</p>
+
+<p>The result of the call is some XML document that can be also accessed using the dynamic
+  typing. The expression <code>regions.Regions.Region</code> returns a collection of all
+  <code>&lt;region&gt;</code> elements nested in the root <code>&lt;regions&gt;</code> element.
+  The member access <code>reg.Name.Value</code> gets the textual content of a sub-element named
+  <code>&lt;name&gt;</code>. The dynamic access to XML elements is implemented using a 
+  fairly simple dynamic wrapper named <code>DynamicXml</code> that is built on top of
+  the LINQ to XML library.</p>
+
+<h3>Accessing Database in F# (First Try)</h3>
+<p>To demonstrate the F# dynamic operator (<code>?</code>), let's look at an example that 
+  accesses SQL database using stored procedures. This example is based on my earlier blog 
+  post about <a href="http://tomasp.net/blog/dynamic-sql.aspx">reading data from SQL database</a>.
+  It is just a first try, because the second method (discussed below) makes this code even 
+  nicer. Anyway, the example needs to read the information from database and store them in 
+  the following F# record:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Data</span><span class="c"> </span><span class="c">returned</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">model</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">view</span>
+<span class="l">2: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips1', 1)" onmouseover="showTip(event, 'fstips1', 1)" class="i">PollOption</span> <span class="o">=</span>
+<span class="l">3: </span>  { <span onmouseout="hideTip(event, 'fstips2', 2)" onmouseover="showTip(event, 'fstips2', 2)" class="i">ID</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips3', 3)" onmouseover="showTip(event, 'fstips3', 3)" class="i">int</span>
+<span class="l">4: </span>    <span onmouseout="hideTip(event, 'fstips4', 4)" onmouseover="showTip(event, 'fstips4', 4)" class="i">Votes</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips3', 5)" onmouseover="showTip(event, 'fstips3', 5)" class="i">int</span>
+<span class="l">5: </span>    <span onmouseout="hideTip(event, 'fstips5', 6)" onmouseover="showTip(event, 'fstips5', 6)" class="i">Percentage</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips6', 7)" onmouseover="showTip(event, 'fstips6', 7)" class="i">float</span>
+<span class="l">6: </span>    <span onmouseout="hideTip(event, 'fstips7', 8)" onmouseover="showTip(event, 'fstips7', 8)" class="i">Title</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips8', 9)" onmouseover="showTip(event, 'fstips8', 9)" class="i">string</span> }</pre>
+
+<p>We can use the dynamic operator for two things. The first is to use a nice member access
+  syntax for calling a SQL stored procedure (<code>db.Query?GetOptions</code> calls a procedure
+  named <code>GetOptions</code> with no arguments) and the second is to access columns from the 
+  returned data set (<code>row?Title</code> accesses the <code>Title</code> column):</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Call</span><span class="c"> </span><span class="c">&#39;GetOptions&#39;</span><span class="c"> </span><span class="c">procedure</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">load</span><span class="c"> </span><span class="c">collection</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">options</span>
+<span class="l">2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips9', 10)" onmouseover="showTip(event, 'fstips9', 10)" class="i">load</span>() <span class="o">=</span> 
+<span class="l">3: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips10', 11)" onmouseover="showTip(event, 'fstips10', 11)" class="i">db</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips11', 12)" onmouseover="showTip(event, 'fstips11', 12)" class="i">DynamicDatabase</span>(<span onmouseout="hideTip(event, 'fstips12', 13)" onmouseover="showTip(event, 'fstips12', 13)" class="i">connectionString</span>)
+<span class="l">4: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips13', 14)" onmouseover="showTip(event, 'fstips13', 14)" class="i">options</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips10', 15)" onmouseover="showTip(event, 'fstips10', 15)" class="i">db</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips14', 16)" onmouseover="showTip(event, 'fstips14', 16)" class="i">Query</span><span class="o">?</span><span class="i">GetOptions</span>()
+<span class="l">5: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Loop</span><span class="c"> </span><span class="c">over</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">set</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">create</span><span class="c"> </span><span class="c">&#39;PollOption&#39;</span><span class="c"> </span><span class="c">values</span>
+<span class="l">6: </span>  [ <span class="k">for</span> <span onmouseout="hideTip(event, 'fstips15', 17)" onmouseover="showTip(event, 'fstips15', 17)" class="i">row</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fstips13', 18)" onmouseover="showTip(event, 'fstips13', 18)" class="i">options</span> <span class="k">do</span>
+<span class="l">7: </span>      <span class="k">yield</span> { <span class="i">ID</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips15', 19)" onmouseover="showTip(event, 'fstips15', 19)" class="i">row</span><span class="o">?</span><span class="i">ID</span>; <span class="i">Votes</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips15', 20)" onmouseover="showTip(event, 'fstips15', 20)" class="i">row</span><span class="o">?</span><span class="i">Votes</span>;
+<span class="l">8: </span>              <span class="i">Title</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips15', 21)" onmouseover="showTip(event, 'fstips15', 21)" class="i">row</span><span class="o">?</span><span class="i">Title</span>; <span class="i">Percentage</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips15', 22)" onmouseover="showTip(event, 'fstips15', 22)" class="i">row</span><span class="o">?</span><span class="i">Percentage</span> } ]</pre>
+
+<p>When you perform any operation using the C# <code>dynamic</code> type, the result will always be
+  of type <code>dynamic</code>. The F# dynamic operator works differently - it is statically resolved to
+  some <code>?</code> operator that has a well-known return type. You can see that by exploring the types
+  in the above snippet (using tooltips). The type of <code>options</code> is <code>seq&lt;Row&gt;</code>,
+  which represents a sequence of rows obtained from the database. </p>
+
+<p>The <code>Row</code> type also provides
+  the <code>?</code> operator, which can be used to read individual columns. The return type of this
+  operator is a generic type parameter and F# type inference specifies the type argument based on the
+  context. When assigning the result of <code>row?ID</code> to a record field of type <code>int</code>,
+  the operator is called with <code>int</code> as a type argument and so it can cast the column value
+  to the right type. This nicely reduces the boilerplate code that needs to be written, because casting
+  is inserted automatically.</p>
+
+<p>As I mentioned, accessing database data can be even easiers if we use the second approach...</p>
+
+<h2>Matching data to a structure</h2>
+<p>In the previous examples, the structure was specified when accessing individual elements such as
+  methods of the World Bank, XML document elements or database columns. However, we can also specify
+  the structure all at once - by defining classes that represent the data and annotating them 
+  (e.g. using .NET attributes) to describe how to build the classes using the data.</p>
+<p>This approach is used, for example, by LINQ to SQL - the (generated) classes come with attributes
+  that specify how to map database data to .NET objects. However, the same idea can be used for
+  accessing any data source. In my earlier blog post, I used this for <a href="http://tomasp.net/blog/ducktyping-in-phalaner.aspx">
+  calling PHP code from C#</a> using Phalanger. Anyway, I used two other F# examples in my GOTO talk.</p>
+
+<h3>Accessing Database in F# (Second Try)</h3>
+<p>First, let's revisit the example with accessing databases. Look again at the previous snippet
+  that creates a value of the <code>PollOptions</code> type from the <code>row</code> object loaded
+  from database. The snippet seems quite redundant. It just dynamically assigns columns of a row
+  to fields of record with the same name. In fact, the record type <code>PollOptions</code>
+  fully specifies the structure that we want to get!</p>
+
+<p>Using F# reflection, we can write a library that loads data from the SQL database and 
+  loads them into a record type that is specified by the caller. A function to load data and a 
+  function to cast a vote can then look like this:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Call</span><span class="c"> </span><span class="c">&#39;GetOptions&#39;</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">automtically</span><span class="c"> </span><span class="c">convert</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">collection</span>
+<span class="l">2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips16', 23)" onmouseover="showTip(event, 'fstips16', 23)" class="i">load</span>() <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips17', 24)" onmouseover="showTip(event, 'fstips17', 24)" class="i">seq</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstips1', 25)" onmouseover="showTip(event, 'fstips1', 25)" class="i">PollOption</span><span class="o">&gt;</span> <span class="o">=</span> 
+<span class="l">3: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips10', 26)" onmouseover="showTip(event, 'fstips10', 26)" class="i">db</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips18', 27)" onmouseover="showTip(event, 'fstips18', 27)" class="i">DynamicDatabase</span>(<span onmouseout="hideTip(event, 'fstips19', 28)" onmouseover="showTip(event, 'fstips19', 28)" class="i">connectionString</span>)
+<span class="l">4: </span>  <span onmouseout="hideTip(event, 'fstips10', 29)" onmouseover="showTip(event, 'fstips10', 29)" class="i">db</span><span class="o">?</span><span class="i">GetOptions</span>()
+<span class="l">5: </span>
+<span class="l">6: </span><span class="c">///</span><span class="c"> </span><span class="c">Call</span><span class="c"> </span><span class="c">&#39;Vote&#39;</span><span class="c"> </span><span class="c">procedure</span><span class="c"> </span><span class="c">without</span><span class="c"> </span><span class="c">returning</span><span class="c"> </span><span class="c">any</span><span class="c"> </span><span class="c">value</span>
+<span class="l">7: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips20', 30)" onmouseover="showTip(event, 'fstips20', 30)" class="i">vote</span>(<span onmouseout="hideTip(event, 'fstips21', 31)" onmouseover="showTip(event, 'fstips21', 31)" class="i">id</span><span class="o">:</span><span onmouseout="hideTip(event, 'fstips3', 32)" onmouseover="showTip(event, 'fstips3', 32)" class="i">int</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips22', 33)" onmouseover="showTip(event, 'fstips22', 33)" class="i">unit</span> <span class="o">=</span> 
+<span class="l">8: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips10', 34)" onmouseover="showTip(event, 'fstips10', 34)" class="i">db</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fstips18', 35)" onmouseover="showTip(event, 'fstips18', 35)" class="i">DynamicDatabase</span>(<span onmouseout="hideTip(event, 'fstips19', 36)" onmouseover="showTip(event, 'fstips19', 36)" class="i">connectionString</span>)
+<span class="l">9: </span>  <span onmouseout="hideTip(event, 'fstips10', 37)" onmouseover="showTip(event, 'fstips10', 37)" class="i">db</span><span class="o">?</span><span class="i">Vote</span>(<span onmouseout="hideTip(event, 'fstips21', 38)" onmouseover="showTip(event, 'fstips21', 38)" class="i">id</span>)</pre>
+
+<p>The snippet shows two functions. In both of the declarations, the return type is specified
+  explicitly using type annotations. The first function returns a sequence of <code>PollOption</code>
+  values, while the second one just updates the database and returns <code>unit</code>.</p>
+<p>If you look at the type of the <code>?</code> operator implemented by the <code>DynamicDatabase</code>
+  type used in this example, you'll see that it takes <code>string</code> and returns a generic
+  function <code>'T -&gt; 'R</code>. The type for both of the parameters is automatically provided
+  by the F# compiler. The type of the argument was just <code>unit</code> (in the first example)
+  and <code>int</code> (in the second example). The return type is the same as the return type of
+  the function (specified using type annotations).</p>
+<p>The implementation of the <code>?</code> operator uses the type argument <code>'R</code> to 
+  decide what it should do. When the type is <code>unit</code>, it simply calls the stored procedure
+  without returning a result. The second case is more interesting - when the return type is 
+  <code>seq&lt;SomeRecord&gt;</code>, the operator matches the data obtained from the database to 
+  this type. It enumerates over the returned data set and creates <code>SomeRecord</code> values
+  from the data.</p>
+
+<p>In this case the record type <code>PollOptions</code> specifies the structure of the data and
+  the library coerces the result set from SQL database to this structure.</p>
+
+<h3>Specifying the XML structure</h3>
+<p>The approach used in the previous example is quite obvious - just fill the fields of an F# record
+  with the data returned from a database. However, the same technique can be used when working with 
+  XML data as well. The second example that you can find in the sources uses F# discriminated unions
+  to specify the structure of an XML file. For example, the following types define the structure
+  of an RSS feed:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">//</span><span class="c"> </span><span class="c">Specifies</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">expected</span><span class="c"> </span><span class="c">structure</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">XML</span><span class="c"> </span><span class="c">document</span>
+<span class="l"> 2: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips27', 49)" onmouseover="showTip(event, 'fstips27', 49)" class="i">Title</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips27', 50)" onmouseover="showTip(event, 'fstips27', 50)" class="i">Title</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips8', 51)" onmouseover="showTip(event, 'fstips8', 51)" class="i">string</span>
+<span class="l"> 3: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips28', 52)" onmouseover="showTip(event, 'fstips28', 52)" class="i">Link</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips28', 53)" onmouseover="showTip(event, 'fstips28', 53)" class="i">Link</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips8', 54)" onmouseover="showTip(event, 'fstips8', 54)" class="i">string</span>
+<span class="l"> 4: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips29', 55)" onmouseover="showTip(event, 'fstips29', 55)" class="i">Description</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips29', 56)" onmouseover="showTip(event, 'fstips29', 56)" class="i">Description</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips8', 57)" onmouseover="showTip(event, 'fstips8', 57)" class="i">string</span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span><span class="c">///</span><span class="c"> </span><span class="c">Item</span><span class="c"> </span><span class="c">contains</span><span class="c"> </span><span class="c">title,</span><span class="c"> </span><span class="c">link</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">description</span>
+<span class="l"> 7: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips30', 58)" onmouseover="showTip(event, 'fstips30', 58)" class="i">Item</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips30', 59)" onmouseover="showTip(event, 'fstips30', 59)" class="i">Item</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips27', 60)" onmouseover="showTip(event, 'fstips27', 60)" class="i">Title</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips28', 61)" onmouseover="showTip(event, 'fstips28', 61)" class="i">Link</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips29', 62)" onmouseover="showTip(event, 'fstips29', 62)" class="i">Description</span>
+<span class="l"> 8: </span><span class="c">///</span><span class="c"> </span><span class="c">Channel</span><span class="c"> </span><span class="c">contains</span><span class="c"> </span><span class="c">information</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">list</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">(nested)</span><span class="c"> </span><span class="c">items</span>
+<span class="l"> 9: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips31', 63)" onmouseover="showTip(event, 'fstips31', 63)" class="i">Channel</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips31', 64)" onmouseover="showTip(event, 'fstips31', 64)" class="i">Channel</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips27', 65)" onmouseover="showTip(event, 'fstips27', 65)" class="i">Title</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips28', 66)" onmouseover="showTip(event, 'fstips28', 66)" class="i">Link</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips29', 67)" onmouseover="showTip(event, 'fstips29', 67)" class="i">Description</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips32', 68)" onmouseover="showTip(event, 'fstips32', 68)" class="i">list</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstips30', 69)" onmouseover="showTip(event, 'fstips30', 69)" class="i">Item</span><span class="o">&gt;</span>
+<span class="l">10: </span><span class="c">///</span><span class="c"> </span><span class="c">Root</span><span class="c"> </span><span class="c">element</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">&#39;rss&#39;</span><span class="c"> </span><span class="c">containing</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">channel</span>
+<span class="l">11: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips33', 70)" onmouseover="showTip(event, 'fstips33', 70)" class="i">Rss</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips33', 71)" onmouseover="showTip(event, 'fstips33', 71)" class="i">Rss</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fstips31', 72)" onmouseover="showTip(event, 'fstips31', 72)" class="i">Channel</span></pre>
+
+<p>The first three declarations specify that title, link and description are simple XML elements 
+  (for example <code>&lt;title&gt;</code>) containing text. The name of the discriminated union case
+  corresponds to the name of XML element. The <code>&lt;item&gt;</code> element contains three other
+  elements, which is expressed using union case with multiple arguments. The <code>Channel</code> type
+  demonstrates another feature - it is possible to use the F# list type to express the fact that 
+  another item can appear repeatedly as a child element of some XML element.</p>
+
+<p>The above example didn't answer why we used discriminated unions in the first place. The reason is
+  that some elements may contain one of several different elements. For example, a <code>&lt;div&gt;</code>
+  element in XHTML may contain <code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code>, another <code>&lt;div&gt;</code>
+  or many other different elements. These can be represented as multiple cases (see the sample source code
+  for a complete example).</p>
+
+<p>However, back to the RSS example. Once we defined the source data structure (how the data is represented
+  in XML), we can also define a target data structure (how we want to pass the data to the view of a web
+  application). This is a simple F# record type:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="c">///</span><span class="c"> </span><span class="c">Represents</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">collection</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">news</span><span class="c"> </span><span class="c">(title,</span><span class="c"> </span>
+<span class="l">2: </span><span class="c">///</span><span class="c"> </span><span class="c">description,</span><span class="c"> </span><span class="c">url)</span><span class="c"> </span><span class="c">with</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">media</span><span class="c"> </span><span class="c">name</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">link</span>
+<span class="l">3: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fstips23', 39)" onmouseover="showTip(event, 'fstips23', 39)" class="i">Listing</span> <span class="o">=</span> 
+<span class="l">4: </span>  { <span onmouseout="hideTip(event, 'fstips24', 40)" onmouseover="showTip(event, 'fstips24', 40)" class="i">Name</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips8', 41)" onmouseover="showTip(event, 'fstips8', 41)" class="i">string</span>
+<span class="l">5: </span>    <span onmouseout="hideTip(event, 'fstips25', 42)" onmouseover="showTip(event, 'fstips25', 42)" class="i">Link</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips8', 43)" onmouseover="showTip(event, 'fstips8', 43)" class="i">string</span>
+<span class="l">6: </span>    <span onmouseout="hideTip(event, 'fstips26', 44)" onmouseover="showTip(event, 'fstips26', 44)" class="i">Items</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fstips17', 45)" onmouseover="showTip(event, 'fstips17', 45)" class="i">seq</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fstips8', 46)" onmouseover="showTip(event, 'fstips8', 46)" class="i">string</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips8', 47)" onmouseover="showTip(event, 'fstips8', 47)" class="i">string</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstips8', 48)" onmouseover="showTip(event, 'fstips8', 48)" class="i">string</span><span class="o">&gt;</span> }</pre>
+
+<p>Now we can use the F# library that matches XML data to a specified discriminated union type. Then we
+  can process the data and turn the RSS feed into <code>Listing</code> value:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Loads</span><span class="c"> </span><span class="c">news</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">Guardian</span><span class="c"> </span><span class="c">using</span><span class="c"> </span><span class="c">RSS</span><span class="c"> </span><span class="c">feed</span>
+<span class="l"> 2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstips34', 73)" onmouseover="showTip(event, 'fstips34', 73)" class="i">loadGuardian</span>() <span class="o">=</span>
+<span class="l"> 3: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Download</span><span class="c"> </span><span class="c">data</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">convert</span><span class="c"> </span><span class="c">them</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">&#39;Rss&#39;</span><span class="c"> </span><span class="c">structure</span>
+<span class="l"> 4: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips35', 74)" onmouseover="showTip(event, 'fstips35', 74)" class="i">url</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">feeds</span><span class="s">.</span><span class="s">guardian</span><span class="s">.</span><span class="s">co</span><span class="s">.</span><span class="s">uk</span><span class="s">/</span><span class="s">theguardian</span><span class="s">/</span><span class="s">world</span><span class="s">/</span><span class="s">rss</span><span class="s">&quot;</span>
+<span class="l"> 5: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips36', 75)" onmouseover="showTip(event, 'fstips36', 75)" class="i">doc</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips37', 76)" onmouseover="showTip(event, 'fstips37', 76)" class="i">StructuralXml</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips38', 77)" onmouseover="showTip(event, 'fstips38', 77)" class="i">Load</span>(<span onmouseout="hideTip(event, 'fstips35', 78)" onmouseover="showTip(event, 'fstips35', 78)" class="i">url</span>, <span class="i">LowerCase</span> <span class="o">=</span> <span class="k">true</span>)
+<span class="l"> 6: </span>  <span class="k">let</span> (<span onmouseout="hideTip(event, 'fstips33', 79)" onmouseover="showTip(event, 'fstips33', 79)" class="i">Rss</span>(<span onmouseout="hideTip(event, 'fstips31', 80)" onmouseover="showTip(event, 'fstips31', 80)" class="i">Channel</span>(<span onmouseout="hideTip(event, 'fstips27', 81)" onmouseover="showTip(event, 'fstips27', 81)" class="i">Title</span> <span onmouseout="hideTip(event, 'fstips39', 82)" onmouseover="showTip(event, 'fstips39', 82)" class="i">title</span>, <span onmouseout="hideTip(event, 'fstips28', 83)" onmouseover="showTip(event, 'fstips28', 83)" class="i">Link</span> <span onmouseout="hideTip(event, 'fstips40', 84)" onmouseover="showTip(event, 'fstips40', 84)" class="i">link</span>, _, <span onmouseout="hideTip(event, 'fstips41', 85)" onmouseover="showTip(event, 'fstips41', 85)" class="i">items</span>))) <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips36', 86)" onmouseover="showTip(event, 'fstips36', 86)" class="i">doc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstips42', 87)" onmouseover="showTip(event, 'fstips42', 87)" class="i">Root</span> 
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Create</span><span class="c"> </span><span class="c">F#</span><span class="c"> </span><span class="c">&#39;Listing&#39;</span><span class="c"> </span><span class="c">type</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">parsed</span><span class="c"> </span><span class="c">XML</span>
+<span class="l"> 9: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fstips43', 88)" onmouseover="showTip(event, 'fstips43', 88)" class="i">items</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips17', 89)" onmouseover="showTip(event, 'fstips17', 89)" class="i">seq</span> { 
+<span class="l">10: </span>    <span class="k">for</span> (<span onmouseout="hideTip(event, 'fstips30', 90)" onmouseover="showTip(event, 'fstips30', 90)" class="i">Item</span>(<span onmouseout="hideTip(event, 'fstips27', 91)" onmouseover="showTip(event, 'fstips27', 91)" class="i">Title</span> <span onmouseout="hideTip(event, 'fstips39', 92)" onmouseover="showTip(event, 'fstips39', 92)" class="i">title</span>, <span onmouseout="hideTip(event, 'fstips28', 93)" onmouseover="showTip(event, 'fstips28', 93)" class="i">Link</span> <span onmouseout="hideTip(event, 'fstips40', 94)" onmouseover="showTip(event, 'fstips40', 94)" class="i">link</span>, <span onmouseout="hideTip(event, 'fstips29', 95)" onmouseover="showTip(event, 'fstips29', 95)" class="i">Description</span> <span onmouseout="hideTip(event, 'fstips44', 96)" onmouseover="showTip(event, 'fstips44', 96)" class="i">descr</span>)) <span class="k">in</span> <span onmouseout="hideTip(event, 'fstips41', 97)" onmouseover="showTip(event, 'fstips41', 97)" class="i">items</span> <span class="k">do</span>
+<span class="l">11: </span>      <span class="k">yield</span> <span onmouseout="hideTip(event, 'fstips39', 98)" onmouseover="showTip(event, 'fstips39', 98)" class="i">title</span>, <span onmouseout="hideTip(event, 'fstips40', 99)" onmouseover="showTip(event, 'fstips40', 99)" class="i">link</span>, <span onmouseout="hideTip(event, 'fstips45', 100)" onmouseover="showTip(event, 'fstips45', 100)" class="i">stripHtml</span> <span onmouseout="hideTip(event, 'fstips44', 101)" onmouseover="showTip(event, 'fstips44', 101)" class="i">descr</span> }
+<span class="l">12: </span>  { <span class="i">Name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips39', 102)" onmouseover="showTip(event, 'fstips39', 102)" class="i">title</span>; <span onmouseout="hideTip(event, 'fstips28', 103)" onmouseover="showTip(event, 'fstips28', 103)" class="i">Link</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips40', 104)" onmouseover="showTip(event, 'fstips40', 104)" class="i">link</span>; <span class="i">Items</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fstips43', 105)" onmouseover="showTip(event, 'fstips43', 105)" class="i">items</span> }</pre>
+
+<p>The parsing of XML documents into a structure defined using F# discriminated unions is implemented
+  using the <code>StructuralXml.Load</code> method. The method has a type argument that specifies the
+  target structure. We didn't write it explicitly, because the result is then assigned to a pattern
+  that involves the <code>Rss(...)</code> constructor, so F# infers the type from the context.</p>
+
+<p>Once the snippet transforms XML document into the required F# <code>Rss</code> type, it is quite 
+  easy to transform the value to the <code>Listing</code> type. The snippet iterates over all the
+  <code>Items</code> (corresponding to XML <code>&lt;item&gt;</code> element) and creates a sequence
+  of triples containing article title, link and a description.</p>
+
+<h2>Generating structure from the data</h2>
+<img src="http://tomasp.net/articles/fsharp-loosely-typed/worldbank.png" style="float:right;margin:0px 0px 10px 20px;" />
+<p>The approach discussed in the previous section relies on the fact that the developer
+  defines the expected structure of the data (using some C# or F# types, possibly with 
+  .NET attributes or other hints). In some cases (e.g. LINQ to SQL), this structure can
+  be generated by a tool, but it still needs to be there.</p>
+<p>There are two problems with this approach. Firstly, explicitly declaring the structure
+  may be a bit tedious. Secondly, some online data sources simply have too many types - 
+  a web service dictionary may contain types for thousands of web services and each of
+  them has several types.</p>
+
+<p>The solution that will be available in a future version of F# is called <em>type providers</em>.
+  The idea is simple - instead of declaring the types explicitly, we can create a plugin
+  that tells the F# compiler what would a .NET representation of the data source look like.
+  The Visual Studio IntelliSense can then display these (fake) types as if they were real
+  types and they can be used to write F# program just like ordinary types. When the program
+  is compiled, the F# compiler calls the plugin again to deal with these types. The plugin
+  can replace their uses with some other F# expression or actually generate real .NET types.</p>
+
+<h3>Type provider for World Bank data</h3>
+<p>The following snippet is an example that I demonstrated during the talk. It uses a 
+  type provider for accessing the <a href="http://www.worldbank.org/">WorldBank</a> API
+  (using a simple REST) service. The snippet also uses <a href="http://blogs.msdn.com/b/fsharpteam/archive/2011/04/15/getting-started-with-fsharpchart.aspx">the FSharpChart 
+  charting library</a> to generate a chart showing the central government debt for 
+  several EU countries (screenshot above):</p>
+
+<pre lang="fsharp">
+#r @@"WorldBank\Samples.WorldBank.TypeProvider.dll"
+#load @@"FSharpChart\FSharpChart.fsx"
+
+open Samples.Charting
+open System.Drawing
+open System.Windows.Forms.DataVisualization.Charting
+
+// Represents properties of a chart grid
+let dashGrid = Grid(LineColor = Color.Gainsboro, LineDashStyle = ChartDashStyle.Dash)
+
+// Create a list of countries we're interested in
+let countries = 
+  [ WorldBank.Countries.Greece; WorldBank.Countries.Ireland; 
+    WorldBank.Countries.Denmark; WorldBank.Countries.``United Kingdom``;
+    WorldBank.Countries.``Czech Republic`` ]
+
+
+// Generate line chart with debt data series for every country 
+// then combine the lines into a single combined chart 
+FSharpChart.Combine
+  [ for country in countries do
+      let data = country.``Central government debt, total (% of GDP)``|> Seq.sortBy fst 
+      yield upcast FSharpChart.Line(data, Name=unbox country) ]
+|> FSharpChart.WithLegend(Docking = Docking.Left)
+|> FSharpChart.WithArea.AxisY(MajorGrid = dashGrid) 
+|> FSharpChart.WithArea.AxisX(MajorGrid = dashGrid)
+</pre>
+
+<p>The type provider is a .NET assembly (<code>Samples.WorldBank.TypeProvider.dll</code>) that 
+  contains a plugin for the compiler. Note that it doesn't actually contain any types that are used
+  in the snippet - instead, it generates them based on the data it downloads from the World Bank.
+  The type provider generates types in the <code>WorldBank</code> namespace. The snippet first
+  uses a type <code>WorldBank.Countries</code> that contains all countries known to the World Bank
+  as static members. The snippet creates a list containing some of the countries.</p>
+
+<p>The <code>country</code> value has a large number of properties that represent individual 
+  indicators that the World Bank provides. The number of indicators is incredible (about 4 thousands),
+  so imagine generated (or even handwritten) class that needs to be included in every assembly
+  that uses the World Bank. The type provider used in this example creates a fake type with 
+  all the properties (see screenshot below), but when you actually compile your code, the type
+  will be replaced with some simple representation.</p>
+
+<div style="text-align:center;margin:10px 0px 10px 0px;">
+<img src="http://tomasp.net/articles/fsharp-loosely-typed/tooltip.png" />
+</div>
+
+<p>After getting the debt data, the snippet uses the FSharpChart library to generate a chart.
+  It creates a list of line charts using <code>FSharpChart.Line</code> and combines them
+  into a single chart using <code>FShparChart.Combine</code>. Then it calls a couple of 
+  <code>With</code> functions to configure the chart. In particular, it adds a legend and
+  specifies the color of grid lines.</p>
+
+<h2>Summary</h2>
+<p>In this article, I briefly summarized the key points from my GOTO 2011 talk about accessing 
+  loosely structured data from C# and F#. You can find the materials in <a href="https://github.com/tpetricek/Documents/tree/master/Talks%202011/Data%20Access%20(GOTO%20Copenhagen)">
+  my GitHub repository</a> and the slides are also available <a href="http://slidesha.re/llTgVk">at SlideShare</a>.
+  The talks discussed technologies that can bridge the gap between structure defined in a 
+  programming language (classes, records or discriminated unions) and the structure that is 
+  present in the data (XML or database schema). I discussed three options:</p>
+<ul>
+  <li>Using C# <code>dynamic</code> type or the F# <code>?</code> operator to specify the
+    structure locally.</li>
+  <li>Describing the structure using classes or F# types and mapping data to the structure using reflection.</li>
+  <li>Generating types automatically using F# type providers (from the data or external schema).</li>
+</ul>
+
+<p>The source code for examples that demonstrate the first two techniques are available in the
+  GitHub repository. The example showing how to access World Bank data using type providers
+  will be released as soon as Microsoft releases some beta of F# with type providers.</p>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fstips1">type PollOption =<br />&#160;&#160;{ID: int;<br />&#160;&#160;&#160;Votes: int;<br />&#160;&#160;&#160;Percentage: float;<br />&#160;&#160;&#160;Title: string;}<br /><br />Full name: FSharp.PollOption<br /><br />&#160;&#160;type: PollOption<br />&#160;&#160;implements: System.IEquatable&lt;PollOption&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;PollOption&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />
+<br /><br /><em>Data returned from the model to a view</em><br /></div>
+<div class="tip" id="fstips2">PollOption.ID: int<br /></div>
+<div class="tip" id="fstips3">Multiple items
+<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int
+<br /><br />--------------------<br />
+<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fstips4">PollOption.Votes: int<br /></div>
+<div class="tip" id="fstips5">PollOption.Percentage: float<br /></div>
+<div class="tip" id="fstips6">Multiple items
+<br />val float : &#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float
+<br /><br />--------------------<br />
+<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br /><br />&#160;&#160;type: float&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;float&gt;<br />&#160;&#160;implements: System.IEquatable&lt;float&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fstips7">PollOption.Title: string<br /></div>
+<div class="tip" id="fstips8">Multiple items
+<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string
+<br /><br />--------------------<br />
+<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips9">val load : unit -&gt; PollOption list<br /><br />Full name: FSharp.DynamicDemo.load
+<br /><br /><em>Call &#39;GetOptions&#39; procedure to load collection of options</em><br /></div>
+<div class="tip" id="fstips10">val db : DynamicDatabase<br /></div>
+<div class="tip" id="fstips11">type DynamicDatabase =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : connectionString:string -&gt; DynamicDatabase<br />&#160;&#160;&#160;&#160;member NonQuery : DatabaseNonQuery<br />&#160;&#160;&#160;&#160;member Query : DatabaseQuery<br />&#160;&#160;end<br /><br />Full name: FSharp.Dynamic.DynamicDatabase<br /></div>
+<div class="tip" id="fstips12">val connectionString : string<br /><br />Full name: FSharp.DynamicDemo.connectionString<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips13">val options : seq&lt;Row&gt;<br /><br />&#160;&#160;type: seq&lt;Row&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips14">property DynamicDatabase.Query: DatabaseQuery<br /></div>
+<div class="tip" id="fstips15">val row : Row<br /></div>
+<div class="tip" id="fstips16">val load : unit -&gt; seq&lt;PollOption&gt;<br /><br />Full name: FSharp.StructuralDemo.load
+<br /><br /><em>Call &#39;GetOptions&#39; and automtically convert result to a collection</em><br /></div>
+<div class="tip" id="fstips17">Multiple items
+<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq
+<br /><br />--------------------<br />
+<br />type seq&lt;&#39;T&gt; = System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips18">type DynamicDatabase =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : connectionString:string -&gt; DynamicDatabase<br />&#160;&#160;&#160;&#160;member private ConnectionString : string<br />&#160;&#160;&#160;&#160;static member ( ? ) : x:DynamicDatabase * name:string -&gt; (&#39;T -&gt; &#39;R)<br />&#160;&#160;end<br /><br />Full name: FSharpWeb.Core.DynamicDatabase<br /></div>
+<div class="tip" id="fstips19">val connectionString : string<br /><br />Full name: FSharp.StructuralDemo.connectionString<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips20">val vote : int -&gt; unit<br /><br />Full name: FSharp.StructuralDemo.vote
+<br /><br /><em>Call &#39;Vote&#39; procedure without returning any value</em><br /></div>
+<div class="tip" id="fstips21">val id : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fstips22">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br /><br />&#160;&#160;type: unit<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="fstips23">type Listing =<br />&#160;&#160;{Name: string;<br />&#160;&#160;&#160;Link: string;<br />&#160;&#160;&#160;Items: seq&lt;string * string * string&gt;;}<br /><br />Full name: FSharp.Listing<br /><br />&#160;&#160;type: Listing<br />&#160;&#160;implements: System.IEquatable&lt;Listing&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />
+<br /><br /><em>Represents a collection of news (title, <br />&#160;description, url) with a media name and a link</em><br /></div>
+<div class="tip" id="fstips24">Listing.Name: string<br /></div>
+<div class="tip" id="fstips25">Listing.Link: string<br /></div>
+<div class="tip" id="fstips26">Listing.Items: seq&lt;string * string * string&gt;<br /></div>
+<div class="tip" id="fstips27">Multiple items
+<br />union case Title.Title: string -&gt; Title
+<br /><br />--------------------<br />
+<br />type Title = | Title of string<br /><br />Full name: FSharp.Model.Title<br /><br />&#160;&#160;type: Title<br />&#160;&#160;implements: System.IEquatable&lt;Title&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Title&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fstips28">Multiple items
+<br />union case Link.Link: string -&gt; Link
+<br /><br />--------------------<br />
+<br />type Link = | Link of string<br /><br />Full name: FSharp.Model.Link<br /><br />&#160;&#160;type: Link<br />&#160;&#160;implements: System.IEquatable&lt;Link&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Link&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fstips29">Multiple items
+<br />union case Description.Description: string -&gt; Description
+<br /><br />--------------------<br />
+<br />type Description = | Description of string<br /><br />Full name: FSharp.Model.Description<br /><br />&#160;&#160;type: Description<br />&#160;&#160;implements: System.IEquatable&lt;Description&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Description&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fstips30">Multiple items
+<br />union case Item.Item: Title * Link * Description -&gt; Item
+<br /><br />--------------------<br />
+<br />type Item = | Item of Title * Link * Description<br /><br />Full name: FSharp.Model.Item<br /><br />&#160;&#160;type: Item<br />&#160;&#160;implements: System.IEquatable&lt;Item&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Item&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />
+<br /><br /><em>Item contains title, link and description</em><br /></div>
+<div class="tip" id="fstips31">Multiple items
+<br />union case Channel.Channel: Title * Link * Description * Item list -&gt; Channel
+<br /><br />--------------------<br />
+<br />type Channel = | Channel of Title * Link * Description * Item list<br /><br />Full name: FSharp.Model.Channel<br /><br />&#160;&#160;type: Channel<br />&#160;&#160;implements: System.IEquatable&lt;Channel&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Channel&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />
+<br /><br /><em>Channel contains information and a list of (nested) items</em><br /></div>
+<div class="tip" id="fstips32">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;<br /><br />&#160;&#160;type: &#39;T list<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;List&lt;&#39;T&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />&#160;&#160;implements: System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips33">Multiple items
+<br />union case Rss.Rss: Channel -&gt; Rss
+<br /><br />--------------------<br />
+<br />type Rss = | Rss of Channel<br /><br />Full name: FSharp.Model.Rss<br /><br />&#160;&#160;type: Rss<br />&#160;&#160;implements: System.IEquatable&lt;Rss&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;Rss&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />
+<br /><br /><em>Root element is &#39;rss&#39; containing a channel</em><br /></div>
+<div class="tip" id="fstips34">val loadGuardian : unit -&gt; Listing<br /><br />Full name: FSharp.Model.loadGuardian
+<br /><br /><em>Loads news from the Guardian using RSS feed</em><br /></div>
+<div class="tip" id="fstips35">val url : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips36">val doc : StructuralXml&lt;Rss&gt;<br /></div>
+<div class="tip" id="fstips37">type StructuralXml&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;private new : url:string * ns:string option * lowerCase:bool -&gt; StructuralXml&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Root : &#39;T<br />&#160;&#160;&#160;&#160;static member Load : url:string * ?Namespace:string * ?LowerCase:bool -&gt; StructuralXml&lt;&#39;T&gt;<br />&#160;&#160;end<br /><br />Full name: FSharpWeb.Core.StructuralXml&lt;_&gt;
+<br /><br /><em>Provides an easy access to XML data</em><br /></div>
+<div class="tip" id="fstips38">static member StructuralXml.Load : url:string * ?Namespace:string * ?LowerCase:bool -&gt; StructuralXml&lt;&#39;T&gt;
+<br /><br /><em>Load XML data from the specified URI and dynamically match them<br />&#160;to a structure described by the discriminated union &#39;T. Optional<br />&#160;arguments can be used to specify default XML namespace and to <br />&#160;specify that case names should be treated as lower case.</em><br /></div>
+<div class="tip" id="fstips39">val title : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips40">val link : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips41">val items : Item list<br /><br />&#160;&#160;type: Item list<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;List&lt;Item&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />&#160;&#160;implements: System.Collections.Generic.IEnumerable&lt;Item&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips42">property StructuralXml.Root: Rss
+<br /><br /><em>Returns the parsed XML data structure as a value of the user-specified type</em><br /></div>
+<div class="tip" id="fstips43">val items : seq&lt;string * string * string&gt;<br /><br />&#160;&#160;type: seq&lt;string * string * string&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fstips44">val descr : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fstips45">val stripHtml : string -&gt; string<br /><br />Full name: FSharp.Model.stripHtml
+<br /><br /><em>Helper function that strips HTML from a <br />&#160;string and takes first 200 characters</em><br /></div>

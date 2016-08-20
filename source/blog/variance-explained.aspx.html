@@ -1,0 +1,348 @@
+<!-- [info]
+
+ - date: 2012-06-19T14:24:52.0000000
+ - description: Covariance and contravariance are two useful features of generics in C# 4.0. Most of the time you don't see them. They just let you write code that you'd expect to work. Actually understanding how they work is more difficult. In this article, I explain that, together with some theory where the two concepts come from.
+ - tags: c#,research
+ - layout: post
+ - title: The theory behind covariance and contravariance in C# 4
+ - url: variance-explained.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/variance-explained/icon.png" title="Category theory is sometimes called 'general abstract nonsense', but it can actually be useful!" class="rdecor" />
+
+<p>In C# 4.0, we can annotate generic type parameters with <code>out</code> and <code>in</code> annotations to 
+specify whether they should behave <em>covariantly</em> or <em>contravariantly</em>. This is mainly
+useful when using already defined standard interfaces. Covariance means that you can use
+<code>IEnumerable&lt;string&gt;</code> in place where <code>IEnumerable&lt;object&gt;</code> is expected. Contravariance
+allows you to pass <code>IComparable&lt;object&gt;</code> as an argument of a method taking <code>IComparable&lt;string&gt;</code>.</p>
+
+<p>So far, so good. If you already learned about covariance and contravariance in C# 4, then 
+the above two examples are probably familiar. If you're new to the concepts, then 
+the examples should make sense (after a bit of thinking, but I'll say more about them). 
+However, there is still a number of questions. Is there some easy way to explain the 
+two concepts? Why one option makes sense for some types and the other for different types? 
+And why the hell is it called <em>covariance</em> and <em>contravariance</em> anyway?</p>
+
+<p>In this blog post, I'll explain some of the mathematics that you can use to think 
+about covariance and contravariance.</p>
+[/abstract] -->
+
+<h1>The theory behind covariance and contravariance in C# 4</h1>
+<img src="http://tomasp.net/articles/variance-explained/icon.png" title="Category theory is sometimes called 'general abstract nonsense', but it can actually be useful!" class="rdecor" />
+
+<p>In C# 4.0, we can annotate generic type parameters with <code>out</code> and <code>in</code> annotations to 
+specify whether they should behave <em>covariantly</em> or <em>contravariantly</em>. This is mainly
+useful when using already defined standard interfaces. Covariance means that you can use
+<code>IEnumerable&lt;string&gt;</code> in place where <code>IEnumerable&lt;object&gt;</code> is expected. Contravariance
+allows you to pass <code>IComparable&lt;object&gt;</code> as an argument of a method taking <code>IComparable&lt;string&gt;</code>.</p>
+
+<p>So far, so good. If you already learned about covariance and contravariance in C# 4, then 
+the above two examples are probably familiar. If you're new to the concepts, then 
+the examples should make sense (after a bit of thinking, but I'll say more about them). 
+However, there is still a number of questions. Is there some easy way to explain the 
+two concepts? Why one option makes sense for some types and the other for different types? 
+And why the hell is it called <em>covariance</em> and <em>contravariance</em> anyway?</p>
+
+<p>In this blog post, I'll explain some of the mathematics that you can use to think 
+about covariance and contravariance.</p>
+
+<h2>Covariance and contravariance in C#</h2>
+
+<img src="http://tomasp.net/articles/variance-explained/oodiagram.png" class="rdecor" />
+
+<p>Let's say that we have a hierarchy of classes as shown in the diagram on the right.
+All types are subclasses of the .NET <code>object</code> type. Then we have <code>Animal</code> which has 
+two subclasses <code>Cat</code> and <code>Fish</code> and finally, there is also some other .NET type <code>Random</code>.</p>
+
+<h3>Covariance</h3>
+
+<p>Let's start by looking what <em>covariance</em> means. Assuming that every <code>Animal</code>
+has a <code>Name</code>, we can write the following function that prints names of all
+animals in some collection:</p>
+
+<pre lang="csharp">void PrintAnimals(IEnumerable&lt;Animal&gt; animals) {
+  for(var animal in animals)
+    Console.WriteLine(animal.Name);
+}</pre>
+
+<p>It is important to note that <code>IEnumerable&lt;Animal&gt;</code> can be only used to read <code>Animal</code>
+values from the collection (using the <code>Current</code> property of <code>IEnumerator&lt;Animal&gt;</code>). There
+is no way we could write <code>Animal</code> back to the collection - it is read-only. Now, if we
+create a collection of cats, can we use <code>PrintAnimals</code> to print their names?</p>
+
+<pre lang="csharp">IEnumerable&lt;Cat&gt; cats = new List&lt;Cat&gt; { new Cat(&quot;Troublemaker&quot;) };
+PrintAnimals(cats);</pre>
+
+<p>If you compile and run this sample, you'll see that the C# compiler accepts it and the
+program runs fine. When calling <code>PrintAnimals</code>, the compiler uses <em>covariance</em> to convert
+<code>IEnumerable&lt;Cat&gt;</code> to <code>IEnumerable&lt;Animal&gt;</code>. This is correct, because the <code>IEnumerable</code> 
+interface is marked as <em>covariant</em> using the <code>out</code> annotation. When you run the program,
+the <code>PrintAnimals</code> method cannot cause anything wrong, because it can only <em>read</em> animals
+from the collection. Using a collection of cats as an argument is fine, because all 
+cats are animals.</p>
+
+<h3>Contravariance</h3>
+
+<p><em>Contravariance</em> works the other way than <em>covariance</em>. Let's say we have a method that
+creates some cats and compares them using a provided <code>IComparer&lt;Cat&gt;</code> object. In a more
+realistic example, the method might, for example, sort the cats:</p>
+
+<pre lang="csharp">void CompareCats(IComparer&lt;Cat&gt; comparer) {
+  var cat1 = new Cat(&quot;Otto&quot;);
+  var cat2 = new Cat(&quot;Troublemaker&quot;);
+  if (comparer.Compare(cat2, cat1) &gt; 0) 
+    Console.WriteLine(&quot;Troublemaker wins!&quot;);
+}</pre>
+
+<p>The <code>comparer</code> object takes cats as arguments, but it never returns a cat as the result.
+You could say that it is a write-only in the way in which it uses the generic type parameter.
+Now, thanks to <em>contravariance</em>, we can create a comparer that can compare animals and
+use it as an argument to <code>CompareCats</code>:</p>
+
+<pre lang="csharp">IComparator&lt;Animal&gt; compareAnimals = new AnimalSizeComparator();
+CompareCats(compareAnimals);</pre>
+
+<p>The compiler accepts this code because the <code>IComparer</code> interface is <em>contravariant</em> and its
+generic type parameter is marked with the <code>in</code> annotation. When you run the program, it
+also makes sense. The <code>compareAnimals</code> object that we created knows how to compare animals
+and so it can certainly also compare two cats. A problem would be if we could read a <code>Cat</code>
+from <code>IComparer&lt;Cat&gt;</code> (because we couldn't get <code>Cat</code> from <code>IComparer&lt;Animal&gt;</code>!), but that
+is not possible, because <code>IComparer</code> is write-only.</p>
+
+<h2>Categories and classes</h2>
+
+<p>Like surprisingly many other programming language concepts, the terms <em>covariance</em> and
+<em>contravariance</em> come from an abstract branch of mathematics called <a href="http://en.wikipedia.org/wiki/Category_theory">category theory</a>.
+Category theory has a reputation for being very abstract - in fact, <a href="http://en.wikipedia.org/wiki/Category_theory">the category theory wikipedia page</a> 
+mentions that some call it "general abstract nonsense". The theory starts with a fairly
+simple definition and then builds more and more abstractions on top of the previous layer, so
+it is easy to lose track. However, we do not need to go very far to explain <em>covariance</em> and 
+<em>contravariance</em>.</p>
+
+<h3>Category of classes</h3>
+
+<img src="http://tomasp.net/articles/variance-explained/category.png" class="rdecor" />
+
+<p>Let's take another look at the diagram that relates different classes in our example (beginning
+of the previous section). We can read an arrow from <em>A</em> to <em>B</em> in the diagram as <em>it is possible 
+to use A where B is expected</em>. For example, it is possible to use <code>Cat</code> where an <code>Animal</code> is 
+expected and it is possible to use <code>Animal</code> where an <code>object</code> is expected.</p>
+
+<p>To make the diagram complete, we need to add a couple of arrows (see the new version on the right).</p>
+
+<ul>
+<li><p>Firstly, any class <em>A</em> can be used where a class <em>A</em> is expected (obviously!), so we 
+need to add an arrow from each class to itself. These are showed as dotted lines.</p></li>
+<li><p>Secondly, if we can use class <em>A</em> where <em>B</em> is expected and <em>B</em> where <em>C</em> is expected, then we
+can also use <em>A</em> where <em>C</em> is expected. This means that if there is an arrow from <code>Cat</code> to
+<code>Animal</code> and from <code>Animal</code> to <code>object</code>, we should also draw an arrow from <code>Cat</code> to <code>object</code>.
+These are shown as dashed lines.</p></li>
+</ul>
+
+<p>What I described in this section is essentially what category theorists call a <em>category</em> - 
+objects connected with arrows that satisfy the two properties above. Let's look at the 
+definition more formally...</p>
+
+<div style="margin:0px 30px 15px 30px; background:#f0f0f0; padding:10px 15px 5px 15px;">
+
+<p><strong>Side-note.</strong> If you want to learn even more category theory, then note that the class
+<code>object</code> is interesting, because there is exactly one arrow from every other class in the
+hierarchy (any type can be used where <code>object</code> is expected). In category theory, this is
+called <a href="http://en.wikipedia.org/wiki/Initial_and_terminal_objects">terminal object</a>.</p>
+
+</div>
+
+<h3>Definition of category</h3>
+
+<p>A <em>category</em> is defined as a set of <em>objects</em> together with <em>arrows</em> between them. You can 
+visualize it as a diagram with dots or boxes (representing objects) and arrows between them.
+We can compose arrows between objects, so if we have an arrow from <em>A</em> to <em>B</em> and an arrow
+from <em>B</em> to <em>C</em>, there is also an arrow from <em>A</em> to <em>C</em> (which can be constructed from the
+two arrows). In addition, there are two requirements about arrows:</p>
+
+<ul>
+<li><p>For every object <em>A</em>, there is an arrow from <em>A</em> to <em>A</em> 
+(this is called <em>identity</em>).</p></li>
+<li><p>If we have arrows <em>A -> B</em>, <em>B -> C</em> and <em>C -> D</em>, then composing
+<em>A -> B</em> with <em>B -> C</em> and then composing the result with <em>C -> D</em> is
+the same arrow as composing <em>B -> C</em> with <em>C -> D</em> first and then
+adding <em>A -> B</em> at the beginning (this is called <em>associativity</em>).</p></li>
+</ul>
+
+<p>Category theory is very abstract, because it does not tell us anything about the objects and
+arrows involved. They could be just <em>anything</em>. You can create a category by taking numbers and 
+drawing arrow between <em>a</em> and <em>b</em> if <em>a</em> is greater than or equal to <em>b</em>, but you can also create a 
+category from classes and draw arrows where a class can be used in place of another.</p>
+
+<h2>Functors and depth in hierarchy</h2>
+
+<p>There is one more idea from category theory that we need to understand <em>covariance</em> and <em>contravariance</em>
+and that is a <em>functor</em>. Let's say that we want to count the depth of the inheritance for objects in our
+class hierarchy. For example, <code>object</code> has depth zero; <code>Animal</code> and <code>Random</code> both have a single parent
+<code>object</code>. Finally, <code>Fish</code> and <code>Cat</code> both have depth two, since they have parent <code>Animal</code>, which has another
+parent <code>object</code>.</p>
+
+<p>We can draw this as a transformation from our category of classes to a category of numbers - that is,
+a category with numbers 1, 2, 3, ... and an arrow between <em>a</em> and <em>b</em> if <em>a >= b</em>:</p>
+
+<div style="text-align:center">
+<img src="http://tomasp.net/articles/variance-explained/functor.png" />
+</div>
+
+<p>To be completely precise, we need to map <em>objects</em> as well as <em>arrows</em> of the category.</p>
+
+<ul>
+<li><p>For <strong>objects</strong> the mapping is as described above: <code>object</code> is mapped to 0; <code>Animal</code> and 
+<code>Random</code> are mapped to 1; finally <code>Cat</code> and <code>Fish</code> are mapped to 2.</p></li>
+<li><p>For <strong>arrows</strong> the mapping maps an arrow representing the inheritance relation to an 
+arrow that "proves" that the parent is actually a parent (and shows how far in the hierarchy
+it is). So, the arrows from <code>Cat</code> to <code>object</code> and from <code>Fish</code> to <code>object</code> are mapped to
+the arrow <em>2 >= 0</em> (and so on). Identity arrows (i.e. from <code>Random</code> to <code>Random</code>) are mapped to
+arrows <em>a >= a</em> (for <code>Random</code>, this is the arrow <em>1 >= 1</em>).</p></li>
+</ul>
+
+<p>Note that the mapping has some interesting properties. All <em>identity</em> arrows on the left are 
+mapped to the <em>identity</em> arrows on the right. Also, if we compose an arrow on the left (i.e. from
+<code>Fish</code> to <code>Animal</code> with an arrow from <code>Animal</code> to <code>object</code>) and then map it, we get the same arrow
+as if we first mapped the two arrows and then composed the result (arrow <em>2 >= 1</em> with an arrow 
+<em>1 >= 0</em>, which composes to an arrow <em>2 >= 0</em>).</p>
+
+<h3>Definition of a functor</h3>
+
+<p>The mapping that we just described is exactly what category theorists call <em>functor</em>. To make
+this blog post fancier, let's look at the <a href="http://en.wikipedia.org/wiki/Functor">formal definition</a>. Assuming that we 
+have two categories <em>C</em> and <em>D</em> (i.e. our classes and numbers) a functor <em>F</em> from <em>C</em> to <em>D</em> is
+a mapping that:</p>
+
+<ul>
+<li><p>to each object from <em>C</em> assigns an object from <em>D</em>; if <em>A</em> is an object in <em>C</em>, we 
+write <em>F(A)</em> for the assigned object in <em>D</em> (in our example, <em>F(Cat) = 2</em> and <em>F(object) = 0</em>).</p></li>
+<li><p>to each arrow from <em>A</em> to <em>B</em> in category <em>C</em>, a functor assigns an arrow from <em>F(A)</em> to <em>F(B)</em>
+in the category <em>D</em> (in our example, this is simple, because we only have a single arrow between
+two numbers; in general there may be multiple arrows - to demonstrate the concept, given an
+arrow from <code>Cat</code> to <code>Animal</code>, we assign it an arrow from 2 to 1, which is an arrow labelled
+with <em>2 >= 1</em>).</p></li>
+</ul>
+
+<p>In addition, two conditions must hold. Firstly, the arrow assigned to the identity arrow 
+(arrow from <em>A</em> to <em>A</em> in category <em>C</em>) needs to be the identity arrow of the object <em>F(A)</em>. 
+Secondly, if we compose arrows and then map the composed arrow, the result should be the 
+same as if we first map the arrows and then compose the result. The two conditions are
+exactly the same as the ones I mentioned at the end of the previous section. Although these
+are important in theory, we don't need to worry about them (because I will not cheat and 
+when I say that something is a functor, it will actually obey these two laws!)</p>
+
+<h2>Functors and generic types</h2>
+
+<p>So far, I explained what a <em>functor</em> is and we looked at an example - mapping from a category of
+classes to a category of numbers that assigns the <em>depth</em> in a class hierarchy to every class.
+The example was interesting, because it mapped more complex structure (tree of classes) to a 
+flat structure (just ordered numbers). In general, functors can do fairly complicated things.
+To explain <em>covariance</em> and <em>contravariance</em>, we need to look at pretty simple functors though.</p>
+
+<h3>Covariant functors</h3>
+
+<p>The definition of <em>functor</em> that I described earlier is actually a <em>covariant functor</em>. The
+<em>covariant</em> label means that it keeps the same orientation of arrows when mapping them. To an
+arrow <em>A -> B</em>, the functor assigns an arrow <em>F(A) -> F(B)</em>. So, how does this relate to 
+covariant generic types?</p>
+
+<p>We can understand <code>IEnumerable&lt;T&gt;</code> as a functor that takes classes such as <code>Cat</code> or <code>Animal</code> to
+enumerable interfaces <code>IEnumerable&lt;Cat&gt;</code> and <code>IEnumerable&lt;Animal&gt;</code>, respectively:</p>
+
+<div style="text-align:center;margin:10px 0px 15px 0px;">
+<img src="http://tomasp.net/articles/variance-explained/covariant.png" />
+</div>
+
+<p>The mapping between objects is quite simple. Given a type named <code>Cat</code>, the mapping gives us
+back a type <code>IEnumerable&lt;Cat&gt;</code> (and similarly for all other types). The mapping of arrows is
+also straightforward. If we have a type <code>Cat</code> that can be used in place of <code>Animal</code> (that is,
+we have an arrow <em>Cat -> Animal</em>), then the arrow is mapped to an arrow between <code>IEnumerable&lt;Cat&gt;</code> and
+<code>IEnumerable&lt;Animal&gt;</code>. This means that the mapping preserves orientation of arrows and so 
+we can use <code>IEnumerable&lt;Cat&gt;</code> where an <code>IEnumerable&lt;Animal&gt;</code> is expected!</p>
+
+<p>Okay, I bet you can already guess what is going to happen with the picture when we look at
+contravariant generic types such as <code>IComparable</code>...</p>
+
+<h3>Contravariant functors</h3>
+
+<p>The definition of <em>functor</em> that I showed earlier is actually a definition of <em>covariant functor</em>, but
+category theory also defines <em>contravariant functors</em>. The only difference is that <em>contravariant</em>
+functor reverses the orientation of all arrows. So, if we have a contravariant functor <em>G</em> from 
+category <em>C</em> to <em>D</em>, it means that:</p>
+
+<ul>
+<li><p>to each object from <em>C</em> assigns an object from <em>D</em> (same as previously)</p></li>
+<li><p>to each arrow from <em>A</em> to <em>B</em> in category <em>C</em>, a functor assigns an arrow from <em>F(B)</em> to <em>F(A)</em>
+in the category <em>D</em> (note that the arrow between <em>F(B)</em> and <em>F(A)</em> is now in the opposite
+direction!)</p></li>
+</ul>
+
+<p>Let's look at an example. The <code>IComparer&lt;T&gt;</code> type is a <em>contravariant functor</em>. For objects,
+the mapping is quite simple. Given <code>Animal</code>, the functor gives us a type <code>IComparer&lt;Animal&gt;</code>
+(and similarly for other types). However, the mapping on arrows is interesting. If we have an arrow
+from <code>Cat</code> to <code>Animal</code> (saying that <code>Cat</code> can be used where <code>Animal</code> is expected), the mapped 
+arrow is reversed, so we get an arrow from <code>IComparer&lt;Animal&gt;</code> to <code>IComparer&lt;Cat&gt;</code>. This corresponds
+to the C# example in the first section - we can use comparer on animals to compare cats.
+The following diagram shows how <em>contravariant functor</em> reverses arrows in our category of classes:</p>
+
+<div style="text-align:center;margin:10px 0px 15px 0px;">
+<img src="http://tomasp.net/articles/variance-explained/contravariant.png" />
+</div>
+
+<p>The diagram tells us some interesting things. By reversing the arrows, there is now an arrow
+from <code>IComparer&lt;object&gt;</code> to any other <code>IComparer</code> in the diagram. This means that we can use
+<code>IComparer&lt;object&gt;</code> to compare anything! (In the <em>covariant</em> case, any <code>IEnumerable</code> could have
+been used as an argument to method taking <code>IEnumerable&lt;object&gt;</code>.) Also, there is no <em>terminal
+object</em> so we cannot write a method that will take any <code>IComparer</code> as an argument. (This does not
+really have any practical implications, but it is interesting nevertheless!)</p>
+
+<h2>Summary</h2>
+
+<p>If you followed the article up to this point, then congratulations and thanks for staying with me! 
+You learned quite a few concepts from <em>general abstract nonsense</em> branch of mathematics, but I hope
+you could see that they nicely correspond to features in C# 4.0. We started by looking at the
+definition of <em>category</em> and how it corresponds to class hierarchies (with classes as <em>objects</em>
+and inheritance as <em>arrows</em>). Then we looked at <em>functors</em> and how <em>covariant functors</em> model
+covariant generic types like <code>IEnumerable&lt;T&gt;</code> and <em>contravariant functors</em> model contravariant
+types like <code>IComparer&lt;T&gt;</code>.</p>
+
+<h3>Why category theory matters?</h3>
+
+<p>This may be an interesting intelectual exercise, but why should we care? Firstly, I think that 
+reading this article gives you a better intuition about <em>covariance</em> and <em>contravariance</em>, which 
+are quite hard to understand concepts.</p>
+
+<p>If you're just going to use C# 4, then you don't really need to worry about category theory. If you
+do something wrong, the compiler will tell you (and will keep telling you until you get it right).
+Luckilly, the C# language designers understood the theory for us! 
+However, even if you're not designing a language, knowing the theory might help you understand 
+complex C# code. For example, take a look at the following example:</p>
+
+<pre lang="csharp">static void CallWithPrinter(Action&lt;Action&lt;Animal&gt;&gt; animalGenerator) {
+  animalGenerator(animal =&gt; Console.WriteLine(animal.Name));
+}</pre>
+
+<p>The method takes an <code>Action</code> delegate (which is contravariant) that takes another <code>Action</code> delegate
+as the input and does something. This nested delegate accepts any argument of type <code>Animal</code>. 
+The method invokes the delegate and gives it a lambda function that takes an animal and prints its name.
+Now, the question is, can we use <code>Action&lt;Action&lt;Cat&gt;&gt;</code> as an argument to <code>CallWithPrinter</code>?</p>
+
+<pre lang="csharp">Action&lt;Action&lt;Cat&gt;&gt; catGenerator = handler =&gt; handler(new Cat(&quot;Otto&quot;));
+CallWithPrinter(catGenerator);</pre>
+
+<p>The sample creates a lambda function that takes a handler of type <code>Action&lt;Cat&gt;</code> and calls it with
+a sample cat as an argument. If you try to write this code in C# 4, it will compile and run fine.
+Why is that the case? Because we are applying <code>Action&lt;T&gt;</code> delegate two times and so we reverse
+the arrows twice! See the following diagram:</p>
+
+<div style="text-align:center;margin:10px 0px 15px 0px;">
+<img src="http://tomasp.net/articles/variance-explained/actions.png" />
+</div>
+
+<p>Understanding why the previous code snippet is correct just using the C# specification could be 
+quite hard. The example is quite simple, so you might intuitively expect it to work (and hope that
+the compiler agrees), but intuition can be sometimes tricky. Understanding the theory gives you a 
+powerful tool that you can use to better understand what is going on, even in complicated situations
+that combine covariant and contravariant types in crazy ways!</p>

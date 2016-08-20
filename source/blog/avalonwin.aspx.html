@@ -1,0 +1,174 @@
+<!-- [info]
+
+ - date: 2005-03-22T01:53:33.0000000
+ - description: Tento článek se snaží shrnout pár základních principů v Avalonu, což je framework pro tvorbu uživatelského rozhraní v nadcházející verzi Windows (Longhorn).
+ - tags: 
+ - layout: post
+ - title: Avalon - Okna a panely v XAML
+ - url: avalonwin.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek se snaží shrnout pár základních principů v Avalonu, což je framework pro tvorbu uživatelského rozhraní v nadcházející verzi Windows (Longhorn).
+[/abstract] -->
+
+<h1>Avalon - Okna a panely v XAML</h1>
+<doc version="1"><body><h1>Avalon - Okna a panely v XAML</h1><h2>Co to je XAML?</h2><p>Odpověď na poměrně jednoduchou otázku je trochu složitá, protože kolem
+      <span title="eXtensible Application Markup Language" class="t">XAML</span> vzniká celkem dost zmatků. Přesná, ale docela nicneříkající definice [<a href="#links">1</a>] je:
+      "XAML je jazyk založený na XML, který definuje objektový model." Je možné říct, že
+      tento jayzk slouží hlavně k popisu uživatelského rozhraní (ale XAML lze použít i 
+      pro vytváření objektů které nemají s uživatelským rozhraním nic společného).
+      Tvrzení, že XAML slouží k popisu uživatelského rozhraní v nadcházející verzi Windows
+      je jesště nepřesnější (existují projekty, které umožňují používat XAML již dnes viz [<a href="#links">2</a>]),
+      ale na druhou stranu podle mě nejvíce vystihuje to, k čemu vlastně XAML je a bude.</p><p>Ještě je dobré pochopit jeden rozdíl mezi XAML a HTML. Ač by se mohlo na první pohled
+      zdát, že se jedná o jazyk založený na podobném principu je tu myslím jeden základní rozdíl.
+      HTML je jazyk, který popisuje uživatelské rozhraní (ikdyž je zaměřený hlavně na formátování textu)
+      a má předem určenou strukturu a tagy. Je založený na tom, že tam jsou 
+      nějaké tagy a neskrývá se za nimi nic hlubšího (ikdyž o XHTML, které je rozšiřitelné to už tak úplně neplatí).
+      Narozdíl od toho XAML popisuje objektový model. Za každým jeho tagem se skrývá objekt a
+      hlavním účelem XAML je tedy ne popisovat vzhled, ale zjednodušit vytváření objektů, které
+      tvoří uživatelské rozhraní. To tedy znamená, že XAML vůbec není nutné používat, a že je možné
+      celé uživatelské rozhraní vytvářet přímo z kódu (ikdyž je to pěkná hloupost :-)).
+    </p><h2>Co lze použít jako základ pro aplikaci</h2><p> 
+      V Avalonu je možné vytvářet buď 'normálně' vypadající aplikace, které jsou spuštěny v okně a 
+      nebo aplikace, které mají navigační panel (tlačítko zpět a vpřed) a člověk se může pohybovat 
+      mezi jednotlivými XAML stránkami. Navigace mezi jednotlivými stránkami neotevírá, pokud to není
+      v XAML stránce určeno nové okno, tekže při procházení člověk zůstává pořád v jednom okně.
+      Tyto aplikace je také možné upravit tak, aby byly spustitelné v Internet Exploreru.
+      Oba dva přístupy je možné kombinovat, takže aplikace s navigačním panelem
+      může otevírat okna a naopak. To jak se bude XAML stránka chovat (tedy jestli se otevře jako okno, nebo
+      jako stránka v okně s navigačním panelem) je určeno typem objektu od kterého je odvozená.
+      Toto se pozná podle kořenového tagu v XAML souboru.</p><p>Podobně jako v Asp.Net je zde možné ke XAML stránce připojit nějaký CodeBehind soubor
+      se zdrojovým kódem. Pokud tomu tak je, tak v tomto CodeBehind souboru musí být <code>partitial</code>
+      třída (odvozená od třídy určené kořenovým tagem v XAML souboru), jejíž druhá část vznikne při 
+      kompilaci z XAML souboru (není to ale tak, že by XAML soubor zpracoval kompilátor, 
+      jenom z něj vygeneruje druhou část třídy aby bylo možné pracovat s ovládacími prvky 
+      na stránce pomocí jejich ID).
+    </p><p>Následující obrázky ukazují jak vypadá Avalon aplikace s vlasním oknem a aplikace 
+      spuštěná v okně s navigačním panelem (zdrojový kód této ukázkové aplikace naleznete <a href="#app">na konci článku</a>):</p><div style="text-align:center; margin-left:auto; margin-right:auto; padding:10px;"><a href="http://blog.vyvojar.cz/dnroot/tomas/avalonwin/navwin.jpg" target="_blank"><img style="border:0px;" src="http://blog.vyvojar.cz/dnroot/tomas/avalonwin/navwin_sm.jpg" alt="Okno s navigačním panelem" /></a><a href="http://blog.vyvojar.cz/dnroot/tomas/avalonwin/stdwin.jpg" target="_blank"><img style="margin:0px 0px 15px 10px; border:0px;" src="http://blog.vyvojar.cz/dnroot/tomas/avalonwin/stdwin_sm.jpg" alt="Normální okno" /></a><p style="font-style:italic;">(Klikněte pro původní velikost)</p></div><p>Už pomalu nadešel čas pro nějaký zdrojový kód, takže zde je ukázka XAML souborů, které stojí 
+      za výše uvedenými screenshoty. CodeBehind soubor zatím vynechám a ukážu pouze to co je potřeba
+      pro vytvoření uživatelského rozhraní.</p><pre><span class="c">&lt;-- jako korenovy tag je zde pouzit Canvas --&gt;</span>
+&lt;Canvas xmlns="http://schemas.microsoft.com/2003/xaml"&gt;
+
+  <span class="c">&lt;-- a nekolik ovladacich prvku.. --&gt;</span>
+  &lt;Text Canvas.Top="25" Canvas.Left="20"&gt;<span style="color:#800080">Click this button -&amp;gt;</span> &lt;/Text&gt;
+  &lt;Button Canvas.Top="10" Canvas.Left="120" Height="30px" Width="100px"&gt;
+    <span style="color:#800080">Click Me</span>
+  &lt;/Button&gt;
+  &lt;HyperLink Canvas.Top="50" Canvas.Left="120"&gt;
+    <span style="color:#800080">What is your name?</span>
+  &lt;/HyperLink&gt;
+  
+&lt;/Canvas&gt;</pre><p>Z tohoto XAML souboru vznikne aplikaci na obrázku vlevo (tedy s navigačním panelem).
+      Jako bázová třída je zde použita třída <code>Canvas</code>. Možností je poměrně dost 
+      a několika z nich se ještě budu věnovat. Pokud chcete kód upravit tak, aby vznikla 
+      aplikace běžící v normálním okně stačí kód upravit takto:</p><pre><span class="c">&lt;-- zde je objekt Canvas vlozeny do okna (Window) --&gt;</span>
+&lt;Window xmlns="http://schemas.microsoft.com/2003/xaml"&gt;
+&lt;Canvas&gt;
+        
+  <span class="c">&lt;-- a nekolik ovladacich prvku.. --&gt;</span>
+  &lt;Text Canvas.Top="25" Canvas.Left="20"&gt;<span style="color:#800080">Click this button -&amp;gt;</span> &lt;/Text&gt;
+  &lt;Button Canvas.Top="10" Canvas.Left="120" Height="30px" Width="100px"&gt;
+    <span style="color:#800080">Click Me</span>
+  &lt;/Button&gt;
+  &lt;HyperLink Canvas.Top="50" Canvas.Left="120"&gt;
+    <span style="color:#800080">What is your name?</span>
+  &lt;/HyperLink&gt;
+  
+&lt;/Canvas&gt;
+&lt;/Window&gt;</pre><h3>Možné bázové třídy</h3><p>Jako bázovou třídu lze použít v podstatě cokoliv :-) a následující ukázka je 
+      (teoreticky) použítelný XAML soubor (při spuštění se otevře okno s navigačním panelem
+      a v něm jeden veliký button):</p><pre>&lt;Button xmlns="http://schemas.microsoft.com/2003/xaml" /&gt;</pre><p>Toto má však použití pouze výjmečně. Existuje však několik tříd, které jsou
+      velmi vhodné jako bázové třídy a jsou k tomu určené.</p><ul><li><b>Window</b> - Již výše uvedené okno je jediná bázová třída, kterou 
+        můžete použít když chcete aby se aplikace spustila v normálním okně. Ve všech ostatních
+        případech se otevře okno s navigačním panelem. Pokud dojde v aplikaci k navigaci z jiné stránky
+        na stránku která má jako bázovou třídu Window, otevře se vždy nové okno.</li><li><b>NavigationWindow</b> - Stejně jako Window otevírá vždy nové okno, ale s tím
+        rozdílem, že nově otevřené okno obsahuje navigační panel (tlačítka zpět a vpřed).</li><li><b>Pane</b> je třída, která umožňuje měnit vzhled okna (aniž by otevřela nové okno)
+        ve kterém je, takže dovoluje např. změnit titulek okna - tím se liší od níže uvedených objektů
+        Canvas, DockPanel atd. Je to asi nejvhodnější třída pokud chcete vytvořit normální stránku. </li><li><b>ObjectPageFunction</b> - tento objekt slouží jako základ pro stránky, které vracejí
+        nějaký výsledek, jedná se tedy o obdobu modálního dialogu. Příklad by mohla být například
+        stránka, kde uživatel vyplní informace o nějakém produktu, který chce přidat do databáze a 
+        stránka by zadané informace vracela jako objekt stránce, která jí otevřela.
+        Ke stejnému účelu jsou ještě třídy PageFunction (které vrací libovolný objekt pomocí generics) a
+        třídy BooleanPageFunction, StringPageFunction a Int32PageFunction (návratové hodnoty zřejmé z názvu).</li><li><b>Canvas, DockPanel, ...</b> tyto objekty sice již nejsou primárně
+        určeny jako základ pro stránku, ale lze je tak použít. Jedná se o objekty pomocí
+        kterých se vytváří layout stránek a bude o nich řeč později.</li></ul><h2>Panely, panely, panely...</h2><p>Podobně jako v Jave je v Avalonu poměrně komplikovaný systém na tvorbu layoutu. Ač jsem s Javou
+      nikdy pořádně nepracoval, tak o jejích panelech pomocí kterých by mělo vytvořit
+      rozumné uspořádání ovládacích prvků jsem slyšel mnoho (a nejednalo se zrovna o slova chvály).
+      Po chvíli hraní s Avalonem jsem nabyl dojmu, že ani v Avalonu nejsou panely 
+      vymyšlené tak, aby tvorba UI byla snadná a výsledek krásně funkční. Dobrá zpráva 
+      ale je, že existuje panel, který umožňuje zadávat pozice objektů ve starých dobrých pixelech.</p><p>Hlavním důvodem ke změně fungujícího systému z WinForms je pravděpodobně to, že uživatelské
+      rozhraní v Avalonu je poměrně razantně obohaceno a současný systém by neumožňoval vše 
+      potřebné. Nicméně panely jsou pravděpodobně jednou z věcí, které se do finální 
+      verze úplně změní, protože v uvolněné verzi jsou některé panely, které zatím nelze
+      použít s odkazem na <a href="http://www.winfx247.com/247reference/msgs/0/2430.aspx">"new layout model"</a>
+      [<a href="http://www.winfx247.com/247reference/msgs/0/2430.aspx">^</a>].
+      Zatím tedy jenom takový krátký přehled těch panelů, které zatím v Avalonu jsou a podařilo se mi pochopit k čemu jsou:</p><ul><li><b>Canvas</b> - tento panel umožňuje absolutní pozicování (odsazení zleva, zprava, shora a zdola)</li><li><b>DockPanel</b> - umožňuje ovládací prvky ukotvit k okrajům panelu</li><li><b>FlowPanel</b> - skládá ovládací prvky za sebe a to buď horizontálně nebo vertikálně.</li><li><b>Grid</b> - je hodně komplikovaný, ale principem připomíná HTML tabulky (tedy umožňuje udělat 
+        několik řádek a sloupců a v něm vložené ovládací prvky se mohou roztahovat i na více buněk)</li></ul><h3>Attached properties</h3><p>Attached properties je označení pro vlastnosti, které k ovládacím prvkům
+      přidává panel do kterého jsou vkládány. V předchozím příkladu je názorně vidět jak 
+      se tyto vlastnosti dají zapsat v XAML (jedná se například o <code>Canvas.Left="120"</code>).
+      Stačí před název vlastnost přidat typ panelu ke kterému se tato vlastnost vztahuje. 
+      Pokud budete objekty vytvářet z kódu bude nastavení pozice prvku vypadat takto:</p><pre><span class="c">// Lehce zjednoduseny priklad z dokumentace k Avalonu [<a href="#links">3</a>]
+// Vytvori Canvas a nastavi mu velikost 100%</span>
+Canvas canvas = new Canvas();
+canvas.Width = new Length(100f,UnitType.Percent);
+canvas.Height = new Length(100f,UnitType.Percent);
+
+<span class="c">// Pridani textoveho elementu</span>
+Text hello = new System.Windows.Controls.Text();
+hello.TextContent = "Hello World!";
+
+<span class="c">// Nastaveni pozice vuci objektu Canvas</span>
+System.Windows.Controls.Canvas.SetTop(hello,new System.Windows.Length(10));
+System.Windows.Controls.Canvas.SetLeft(hello,new System.Windows.Length(40));
+canvas.Children.Add(hello);</pre><h2>Navigace</h2><p>Navigace mezi stránkami je v aplikaci založené na XAML velmi důležitá. Navigovat je 
+      možné za prvé na adresu xaml souboru a za druhé na objekt uživatelského rozhraní 
+      (<code>UIElement</code>), což je například stránka nebo okno. Co se týká stránek, které
+      vracejí hodnotu, tak na ty se provádí navigace úplně stejným způsobem jako na ostatní
+      a objekt vrácený po zavření stránky se předává pomocí události <code>Return</code>.</p><p>Navigaci mezi stránkami umožňují objekty implementující rozhraní <code>INavigator</code>.
+      Takovým objektem je <code>NavigationWindow</code> [<a href="#links">4</a>], který lze získat vždy když je 
+      aktuálně otevřené okno v aplikaci okno s navigačním panelem. Navigaci na nějakou XAML
+      stránku lze tedy provést pomocí následujícího kódu:</p><pre><span class="c">// Ziska objekt okna ktery umoznuje navigaci..</span>
+NavigationWindow win=(NavigationWindow)
+  System.Windows.Application.Current.MainWindow;
+
+<span class="c">// .. a navigace na XAML stranku</span>
+win.Navigate(new Uri(true,"about.xaml"));</pre><h2>Demo aplikace</h2><a name="app"></a><p>Vše co jsem tu sepsal demonstruje jednoduchá (a jak je na ukázkovou aplikaci zvykem 
+      naprosto nesmyslná) aplikace, kterou si samozřejmě můžete prohlédnout. Pro spuštění aplikace
+      je potřeba mít nainstalovaný Avalon [<a href="#links">5</a>], což může být vzhledem
+      k fázi vývoje v které se nachází poměrně riskantní. Já osobně jsem ho neinstaloval
+      ve VirtualPC, ale na notebooka na kterém už je pochybných betaverzí plno a funguje
+      celkem v pořádku, ale rozhodně to nelze doporučit!</p><ul class="download"><li><a href="http://blog.vyvojar.cz/dnroot/tomas/avalonwin/hello.zip">Ukázková aplikace včetně zdrojových kódů</a> (20,5 kB)</li></ul><h2>Všemožné dojmy</h2><p>Uživatelské rozhraní v Avalonu je tedy celkem razantně předělané a je to jedna z mála
+      věcí kolem Windows Longhorn, která začíná nabývat jasné podoby. Rozhodně se tu k Avalonu 
+      ještě vrátím, protože objevování nových věcí mě baví :-). 
+      Řekl bych, že Avalon tvorbu uživatelského rozhraní zjednodušuje a některé často potřebné
+      úkony lze provést mnohem pohodlněji než dříve (hezky udělaný se mi zdá DataBinding, ale 
+      o tom až příště).     
+      Na druhou stranu nové uživatelské rozhraní a jeho definování pomocí XAML
+      je trošku obtížné (ale hodně záleží na tom jaké k němu budou ve vývojovém prostředí nástroje).
+      Některé věci jako možnost definovat vzhled různých ovládacích prvků
+      jednotně pro celou aplikaci (tj. něco jako CSS) jsou sice pěkné, ale z dosavadních 
+      zkušeností mi to přijde nepraktické (ale možností to skrývá hodně, takže se to možná 
+      po důvěrnějším seznámení zlepší).
+    </p><p>Celkem by mě zajímalo jak je to myšlené s aplikacemi založenými na navigaci mezi 
+      XAML stránkami, protože takových "wizard-like" aplikací zase tolik neznám a ani mě
+      nenapadá moc případů, kde by toto bylo vhodné použít. Jednou z vyjímek by mohly
+      být front-end aplikace komunikující s nějakým databázovým systémem. To že by taková
+      aplikace mohla fungovat zároveň i na různých mobilních zařízeních, nebo přes web
+      bez nějakých zásadních úprav mi ale zatím přijde hodně nepravděpodobné.
+    </p><p>Ještě si neodpustím jednu menší poznámku k organizaci tříd. Nové avaloní třídy jsou ve jmenných prostorech
+      System.Windows a System.Windows.* (za hvězdičku se dá dosadit docela dost věcí např.: Controls, Shapes).
+      Podmnožinou jsou tedy i System.Windows.Forms (a v Avalonu lze i nadále používat WinForms ovládací prvky). Nepříjemné je,
+      že pokud zadáte do indexu v dokumentaci třeba "Panel" vylezou již čtyři různé třídy 
+      (<code>System.­Web.­UI.­MobileControls</code>, <code>System.­Web.­UI.­WebControls</code>, 
+        <code>System.­Windows.­Controls</code> a <code>System.­Windows.­Forms</code>),
+      což může člověka, který se v MSDN příliš nevyzná docela solidně poplést.
+      </p><h2>Odkazy na související stránky</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://longhornblogs.com/akinney/archive/2004/11/04/6706.aspx">Adam Kinney on Longhorn - What is XAML?</a>
+    		[<a href="http://longhornblogs.com/akinney/archive/2004/11/04/6706.aspx" target="_blank">^</a>] (Definice XAML)</li><li>[2] Projekty umožňující používat XAML: <a href="http://www.xamalon.com">Xamalon</a>
+    		[<a href="http://www.xamalon.com" target="_blank">^</a>] a <a href="http://myxaml.com">MyXaml</a>
+    		[<a href="http://myxaml.com" target="_blank">^</a>]</li><li>[3] WinFX SDK: <a href="http://winfx.msdn.microsoft.com/?//winfx.msdn.microsoft.com/winfx/ref/ns/system.windows.controls/c/canvas/canvas.aspx">Canvas Class | Canvas Element</a>
+        [<a href="http://winfx.msdn.microsoft.com/?//winfx.msdn.microsoft.com/winfx/ref/ns/system.windows.controls/c/canvas/canvas.aspx" target="_blank">^</a>]</li><li>[4] WinFX SDK: <a href="http://winfx.msdn.microsoft.com/?//winfx.msdn.microsoft.com/winfx/ref/ns/system.windows.navigation/c/navigationwindow/m/navigate.aspx">NavigationWindow.Navigate Method</a>
+        [<a href="http://winfx.msdn.microsoft.com/?//winfx.msdn.microsoft.com/winfx/ref/ns/system.windows.navigation/c/navigationwindow/m/navigate.aspx" target="_blank">^</a>]</li><li>[5] <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=C8F904E1-B4CA-402B-ACCF-AAA2BD60DA74&amp;displaylang=en">
+        Public November 2004 "Avalon" Community Technology Preview Including WinFX™ SDK</a>
+        [<a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=C8F904E1-B4CA-402B-ACCF-AAA2BD60DA74&amp;displaylang=en" target="_blank">^</a>]
+        (Download)</li></ul></body></doc>

@@ -1,0 +1,247 @@
+<!-- [info]
+
+ - date: 2008-11-19T19:57:15.0000000
+ - description: In the second part of the series about reactive programming, I introduction the Reactive LINQ project, which allows writing event processing code in C# using LINQ queries.
+ - tags: functional,c#
+ - layout: post
+ - title: Reactive programming (II.) - Introducing Reactive LINQ
+ - url: reactive-ii-csevents.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In this article I'm going to introduce my project <strong>Reactive LINQ</strong>. This is largely inspired
+  by the ideas that come from functional reactive programming in the Haskell language and from 
+  functionality that's available for working in events in F#. I introduced these ideas in my previous article
+  in this mini-series, so if you're interested in learning more about these interesting technologies, you 
+  should definitely read the previous article about <a href="reactive-i-fsevents.aspx">First class events in F#</a>.</p>
+<p>In this article, we're going to look how to apply the same ideas to the C# language and how 
+  to use LINQ queries for processing events. This article is <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">just</a>&#160;<a href="http://tomasp.net/blog/csharp-async.aspx">another</a> my article that shows how to implement some 
+  idea from functional programmin in C#. I believe this will once again show that the new features
+  in the C# 3.0 aren't just about querying databases, but are more widely useful even in situations 
+  that are not directly related to data-processing. </p>
+[/abstract] -->
+
+<h1>Reactive programming (II.) - Introducing Reactive LINQ</h1>
+<p>In this article I'm going to introduce my project <strong>Reactive LINQ</strong>. This is largely inspired
+  by the ideas that come from functional reactive programming in the Haskell language and from 
+  functionality that's available for working in events in F#. I introduced these ideas in my previous article
+  in this mini-series, so if you're interested in learning more about these interesting technologies, you 
+  should definitely read the previous article about <a href="/blog/reactive-i-fsevents.aspx">First class events in F#</a>.</p>
+<p>In this article, we're going to look how to apply the same ideas to the C# language and how 
+  to use LINQ queries for processing events. This article is <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">just</a>&#160;<a href="http://tomasp.net/blog/csharp-async.aspx">another</a> my article that shows how to implement some 
+  idea from functional programming in C#. I believe this will once again show that the new features
+  in the C# 3.0 aren't just about querying databases, but are more widely useful even in situations 
+  that are not directly related to data-processing. </p>  
+
+<h3>The idea: Event is a stream</h3>
+<p>The key idea that is important for the project is that we can look at .NET events in a different way.
+  We can say that events are actually streams that carry some values, even though these values are not 
+  available all the time. They appear in the stream once in a while when the event occurs.
+  Let's take for example a <code>MouseDown</code> event. This can be viewed as a stream that contains 
+  information about mouse clicks - the button together with X and Y location. A new value in the stream 
+  appears every time user clicks on the control. Now that we have a stream of values, you can see that 
+  this is quite similar to for example a collection of values. 
+</p>
+
+<h2>Processing events with queries</h2>
+<img src="/articles/reactive/maze_screen.png" alt="Form with a maze bitmap" style="float:right; margin:15px;"/>
+<p>I'll show you a simple example first and then we're going to look how things work behind the scene.
+  We'll write a very simple game - the form will show you a maze (just like the one you can see on the
+  screenshot) and your goal will be to move the mouse cursor from the starting point (on the left) to the 
+  target point (on the right). You have to follow the white path and if you move the cursor on the grass, 
+  the game ends.</p>
+<p>Our implementation will be very simple - it will load the bitmap into the memory and every time 
+  you move the mouse, it will check whether the mouse is still on the path (I guess you could cheat if 
+  you moved the mouse quickly, but that's not the point now!)</p>  
+<p>In the usual C# programming style, you'd register an event handler for the <code>MouseMove</code>
+  event and implemented a method that reads the color from the bitmap and tests whether the 
+  color is white. If not, it would show a message and set some flat to end the game. Then it would check 
+  whether we're close to the target point and if yes, it would display some congratulations box.
+  We'll implement the same thing using two <strong>Reactive LINQ</strong> queries.</p>
+  
+<h3>Following the path</h3>  
+<p>The first query will test whether the cursor is still on the path (by checking the color below the cursor).
+  This means that we'll take the event stream coming from the <code>MouseMove</code> event. A value will
+  appear in the stream whenever the cursor position changes. In the first part, we're interested only in
+  the cases where the cursor moved out of the path, so we'll use the <code>where</code> clause to filter
+  values that are on the path. Let's take a look at the first part of the code:</p>
+<pre lang="csharp">
+// Move cursor to the start location and load the bitmap
+Cursor.Position = this.PointToScreen(new Point(150, 200));
+Bitmap bmp = (Bitmap)this.BackgroundImage;
+
+// Create stream for the 'MouseMove' event and
+// filter events when the mouse cursor is on the path
+var eOut =
+  from me in this.AttachEvent&lt;MouseEventArgs&gt;("MouseMove")
+  let clr = bmp.GetPixel(me.X, me.Y)
+  where clr.R != 255 || clr.G != 255 || clr.B != 255
+  select "Oops!\nYou stepped on the grass!";
+</pre>  
+<p>We start by loading the bitmap and by moving the cursor to the starting position in the maze.
+  The second statement is much more interesting. It is a LINQ query that processes values called
+  <code>me</code>. The type of <code>me</code> is <code>MouseEventArgs</code>, which suggests that
+  the value is created every time the user moves the mouse. The source of these values is
+  created using <code>AttachEvent</code> method. In an ideal world, we could just write 
+  <code>this.MouseMove</code>, but in C# you can't use event as an object (for example as a method argument),
+  so the  <code>AttachEvent</code> method contains some reflection code to create a value that 
+  represents the event. I'll talk about these values in a second.</p>
+<p>Once we have <code>MouseEventArgs</code> value available, we can use its properties to
+  check whether the cursor is still following the path. We first use the LINQ <code>let</code> clause to 
+  store the color in a variable <code>clr</code> and then use <code>where</code> to test whether the 
+  color is other than white. Once the user moves the mouse out of the path, this becomes true and
+  the <code>select</code> clause is triggered. It simply returns a message that we want to show 
+  to the user.</p>
+<h3>Reactive LINQ under the hood</h3>  
+<p>Under the hood, this is translated to an expression that calls <code>Where</code> and <code>Select</code>
+  LINQ operators and looks roughly like this (the <code>let</code> clause makes it a bit difficult, but
+  we don't have to care about that, because we're interested only in the structure):</p>
+<pre lang="csharp">
+var eOut = 
+  this.AttachEvent&lt;MouseEventArgs&gt;("MouseMove")
+    .Where(args =&gt; /* some lambda expression */ )
+    .Select(args =&gt; /* some lambda expression */ );          
+</pre>  
+<p>This means, that we create some representation of event using <code>AttachEvent</code> and the 
+  <strong>Reactive LINQ</strong> library provides standard LINQ query operators for this representation.
+  Both <code>Where</code> and <code>Select</code> take an event and a function as arguments and return
+  a new event. The type that I use for representing events is an interface type called <code>IEvent&lt;T&gt;</code>.
+  This interface has methods for adding and removing event handlers, but you'll typically never use them directly,
+  because you can work with it using operators like <code>Where</code> and others.</p>
+<p>The <code>AttachEvent</code> method is added as an extension method to Windows Forms controls and takes 
+  a name of the event as an argument. You also have to specify the specific <code>EventArgs</code> type used
+  with this event. The result in our previous example is <code>IEvent&lt;MouseEventArgs&gt;</code>.
+  This represents an event that gives us <code>MouseEventArgs</code> value when it is triggered. Then we
+  use two LINQ operators that do the following thing:</p>  
+<ul>
+  <li><strong>Where</strong> takes an event that gives us value of type <code>TValue</code> and a delegate 
+    (lambda expression). The result of this operator is an event that contains the same value <code>TValue</code>,
+    but it is triggered only when the delegate returns true. In our maze example, the event returned by <code>Where</code>
+    will be triggered only when user moves out of the path.</li>
+  <li><strong>Select</strong> transforms an event that gives values of type <code>TSource</code> into an 
+    event that gives values of type <code>TTarget</code>. It takes a function that knows how to create the 
+    target value from the source value. The returned event is triggered each time the source one is triggered.
+    In our example, the function simply returns the same <code>string</code> value and ignores the 
+    <code>MouseEventArgs</code> that it gets as an argument.</li>
+</ul>
+<p>This means that the overall result of the LINQ query from the previous example is <code>IEvent&lt;string&gt;</code>.
+  This event is triggered when the user mouse the cursor out of the path and it will contain a string value (a message)
+  that we want to show to the user. We'll do this in the next section.</p>
+
+<h3>Reacting to events</h3>  
+<p>We'll first implement a handler that will show a message box when the user fails and later we'll finish the 
+  second part of the game, which is testing whether the cursor is close to the target point. Adding handler to 
+  the event value <code>eOut</code> is quite easy:</p>  
+<pre lang="csharp">
+eOut.Listen(str =&gt; MessageBox.Show(str));
+</pre>
+<p></p>
+
+<p>This uses another operator (extension method) available for the <code>IEvent&lt;T&gt;</code> type, which is 
+  called <code>Listen</code>. Similarly as <code>Event.listen</code> in F# (see the previous part of this series)
+  this can be used at the end of the event query. It will be called when the event is raised and it can 
+  react to the event in any way. In our example, we use a lambda expression that takes the string 
+  (that is the message coming from the event) and displays it using <code>MessageBox.Show</code>.</p>
+
+<h2>Combining multiple events</h2>
+<img src="/articles/reactive/maze_win.png" alt="Message after finishing the maze" style="float:right; margin:15px;"/>
+<p>The code for testing whether the mouse is close to the target point will be very similar to the 
+  query we've seen earlier. Only the condition that tests whether the event should be triggered 
+  (written using <code>where</code>) will differ. Again, we'll write this as an event that gives
+  us a <code>string</code> value when it occurs, so it makes a good sense to reuse the part that 
+  shows the message to the user.</p>
+
+<h3>Testing the target point</h3>
+<p>Let's start with the query. Similarly as in the first case, it'll query values comming from the
+  <code>MouseMove</code> event. Next, it calculates the distance between the target point, which is 
+  <code>(450, 250)</code> and the current mouse location <code>(me.X, me.Y)</code>. We'll test 
+  whether this distance is small enough and if yes, we'll trigger the event with a message that 
+  the game was successfully completed:</p>
+
+<pre lang="csharp">
+// Filter events when mouse is far from the target
+// if the cursor is close, we return a message 
+var eFinish =
+  from me in this.AttachEvent&lt;MouseEventArgs&gt;("MouseMove")
+  let dist = Math.Pow(450 - me.X, 2) + 
+             Math.Pow(250 - me.Y, 2)
+  where dist &lt; 250
+  select "Congratulations!\nYou made it to the end!";
+</pre>
+<p>As I mentioned earlier, the query is essentially the same as the first one, with the exception
+  that it has a different condition and returns a different message. An important thing to note is 
+  that the <code>eFinish</code> value has the same type as the <code>eOut</code> value - both of 
+  them are <code>IEvent&lt;string&gt;</code>.</p>
+
+<h3>Merging events</h3>
+<p>So far, we have two events - one that gives us a message when the user fails and the second one 
+  that gives us a message when the user succeeds. The reaction to both of the events will be exactly
+  the same. We'll display the message and then stop further processing of the events, because we 
+  don't want to show the messages again (we ignored this issue in the first version).</p>
+<p>Because we want to use a single handler for both of the events, we'd like to combine 
+  them into a single event in some way. This can be done using <code>Merge</code> method 
+  from the static class <code>Reactive</code>. This class contains various other methods
+  for working with events and we'll talk about some of them in later parts of this series.
+  Once we combine the events, we can again use <code>Listen</code> to write the code that
+  reacts to the event. Note that if you're writing the code, you'll need to remove the previous line 
+  where we implemented a reaction to the <code>eOut</code> event, because now we'll react
+  to both of the events at once:</p>  
+
+<pre lang="csharp">
+// Wait for either of the events
+// then stop all processing and show the message
+var eMerged = Reactive.Merge(eOut, eFinish);
+eMerged.First().Listen(str =&gt; MessageBox.Show(str));
+</pre>
+<p>We start by merging the events into an event called <code>eMerged</code>. This event has again a type
+  <code>IEvent&lt;string&gt;</code>. It will be triggered whenever <em>either</em> of the two merged events 
+  is triggered. This means that the <code>eMerged</code> event will be triggered when the user moves outside
+  of the path or when the cursor is close to the target point (possibly several times).
+  However, we're only interested in the first occurrence. Once either of these two occurs, we 
+  just want to show the message box and we're not interested in any further events. This can 
+  be written using another LINQ operator called <code>First</code>. The event returned 
+  by <code>First</code> will be triggered only once, so we can react to this event using 
+  <code>Listen</code>.</p>  
+
+<h2>Summary</h2>
+<p>In this article, we've looked at the basic examples of my <strong>Reactive LINQ</strong> project.
+  This project is largely inspired by functional reactive programming in Haskell [<a href="#react2links">1</a>]
+  and also by first-class events in the F# language [<a href="#react2links">2</a>]. I wrote about the 
+  F# implementation in the previous series, so if you skipped that, you may want to read it too.</p>
+<p>We looked at the basic query operators that <strong>Reactive LINQ</strong> provides for events.
+  In particular, we've looked at <code>Where</code> and <code>Select</code> that can be accessed 
+  using the nice LINQ query syntax and at combinators like <code>First</code> (for selecting the first event),
+  <code>Merge</code> (for merging a couple of events) and <code>Listen</code> (for reacting to an event).
+  In the next series, we're going to look at some more very useful operators for working with events and 
+  in particular at <em>switching</em> operators that allow us to change the way events are handled 
+  dynamically.</p>
+<h3>Downloads and implementation notes</h3>
+<p>The current implementation is really just a prototype to demonstrate the idea. This means that it 
+  probably still contains many issues. One of the possible issues is with removing event handlers 
+  when they are not needed anymore. For example, after the <code>First</code> operator is triggered 
+  for the first time, it needs to unregister itself from the source event, because it doesn't need
+  to listen to them anymore. Currently, this is implemented using reference-counting like technique. 
+  This means that events count how many listeners they have and they unregister when there is no 
+  listener. This is of course problematic, because you may create loops. In the future, I'd like 
+  to make the implementation more stable and I'm planning to take a look at the Weak Event Pattern [<a href="#react2links">3</a>], 
+  which is used in WPF. Since this is a prototype, feel free to do anything with it and let me know 
+  if you have any suggestions or ideas how it could be improved! </p>  
+
+<ul>
+  <li><a href="/articles/reactive/reactive2.zip">Download the examples including the <strong>Reactive LINQ</strong> source</a> (156 kB)</li>
+</ul>
+
+<h3>Series links</h3>
+<ul>
+  <li><a href="/blog/reactive-i-fsevents.aspx">Reactive programming (I.) - First class events in F#</a></li>
+  <li>Reactive programming (II.) - Introducing Reactive LINQ</li>
+  <li><a href="/blog/reactive-iii-linqoperators.aspx">Reactive Programming (III.) - Useful Reactive LINQ Operators</a></li>
+  <li><a href="/blog/reactive-iv-reactivegame.aspx">Reactive Programming (IV.) - Developing reactive game in Reactive LINQ</a></li>
+</ul>
+
+<h2>References<a name="react2links"></a></h2>
+<ul>
+  <li>[1] <a href="http://www.haskell.org/frp/" type="external">Functional Reactive Programming Research</a> - Haskell Web Page</li>
+  <li>[2] <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx" type="external">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a> - Don Syme's WebLog on the F# Language and Related Topics</li>
+  <li>[3] <a href="http://msdn.microsoft.com/en-us/library/aa970850.aspx" type="external">Weak Event Patterns</a> - Windows Presentation Foundation at MSDN</li>
+</ul>

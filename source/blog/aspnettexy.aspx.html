@@ -1,0 +1,155 @@
+<!-- [info]
+
+ - date: 2007-02-12T00:45:45.0000000
+ - description: This article describes how to compile Texy! with Phalanger and how to use the produced assembly in ASP.NET application written in C#.
+ - tags: phalanger
+ - layout: post
+ - title: Compiling Texy! with Phalanger
+ - url: aspnettexy.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Texy! [<a href="#texyphallinks">1</a>] is a convertor from text format (similar to formats used in some wiki applications) 
+  to valid XHTML code written in PHP. The syntax is described at Texy! web page [<a href="#texyphallinks">2</a>]. Unfortunately, it is only in 
+  Czech language, but the syntax is very straightforward, so you can understand it without learning Czech :-).</p><p>
+  In this article, we'll examine how to compile Texy! using Phalanger in pure mode. In this mode it is possible to use objects from PHP like any other .NET objects, so we can later used the compiled assembly for example in the following C# code:</p>
+<pre>
+<span class="c">// Create instance of Texy! parser</span>
+Texy t = <span class="k">new</span> Texy();
+<span class="c">// Call the 'process' method and cast result to string</span>
+<span class="k">string</span> parsed = (<span class="k">string</span>)t.process(txtTexy.Text);
+<span class="c">// Display parsed text using literal</span>
+ltrOutput.Text = parsed;
+</pre>
+[/abstract] -->
+
+<h1>Compiling Texy! with Phalanger</h1>
+<p>Texy! [<a href="#texyphallinks">1</a>] is a convertor from text format (similar to formats used in some wiki applications) 
+  to valid XHTML code written in PHP. The syntax is described at Texy! web page [<a href="#texyphallinks">2</a>]. Unfortunately, it is only in 
+  Czech language, but the syntax is very straightforward, so you can understand it without learning Czech :-).
+  In this article, I'll show how to compile Texy! using Phalanger and how to use it in another .NET application written in C#.</p>
+
+<p>Phalanger has two compilation modes, <strong>legacy mode</strong> which is compatible with any existing PHP code and <strong>pure mode</strong> which has
+  some additional restrictions, but provides much better result in terms of .NET interoperability. You can find more details
+  in the article <em>Phalanger for .NET developers</em> at our website [<a href="#texyphallinks">3</a>]. For compiling Texy! I
+  choose the <strong>pure mode</strong>, because this will produce assembly that is easy to use from C#. Texy! is also written in 
+  elegant object oriented manner, so it won't be difficult to modify it to fulfil additional code restrictions.
+  First, what we have to do to make Texy! compatible with the Phalanger pure mode? The restrictions are following:</p> 
+<ul>
+  <li>No global code is allowed (all code has to be placed in function or class member function)</li>
+  <li>No inclusions are allowed (you have to specify all source files during compilation and files are merged automatically)</li>
+</ul>
+
+<h2>Compiling</h2>
+<p>You can also use Phalanger Visual Studio Extensions if you don't want to compile it using command line. In this case create
+  new <strong>Class Library</strong> Phalanger project and add all Texy! source files. If you want to use the command line,
+  you can use the following command (you'll need to list all source files):</p>
+<pre>phpc /target:dll /pure /lang:CLR texy.php (other php sources...)</pre>
+<p>The <code>target</code> modifier specifies that Phalanger should produce .NET dll library, <code>pure</code> specifies
+  that we're using pure compilation mode and finally, <code>lang:CLR</code> enables Phalanger language extensions that
+  we will use (I'll talk about this later).</p>
+
+<h2>Modifying Texy!</h2>
+<p>If you try to compile it without any modifications, you'll get a few compiler errors consisting of the two kinds of errors.
+  First error says <em>"inclusions are not allowed in the pure unit"</em> and the second says <em>"global code is not allowed in the pure unit"</em>.
+  These two errors are caused by pure mode limitations descibed earlier, so we'll need to modify the source code a bit to meet
+  this two rules. Fortunately, Texy! contains only a few lines of global code, so it won't be very difficult. Moreover most of the global code lines are
+  the following code:</p>
+<pre>if (!<span class="k">defined</span>(<span class="s">'TEXY'</span>)) <span class="k">die</span>();</pre>  
+<p>This code is here to ensure that script is used correctly if included, so you can safely remove these lines. You can also remove all 
+  includes from the <code>texy.php</code> file, because all source files are compiled together in pure mode. The includes in the source
+  look like the following line:</p>
+<pre><span class="k">equire_once</span> TEXY_DIR.<span class="s">'...some file....php'</span>;</pre>  
+<p>We have to do one last modification to make the source code compile correctly. Texy! uses several constants that are defined mostly in <code>constants.php</code>.
+  Two constants are in <code>texy.php</code> and finally there is one more line of global code in <code>html.php</code> file. To make
+  Texy! compatible with the pure mode we will move all constants and initialization code to one global function:</p>
+<pre>
+<span class="k">function</span> initTexy()
+{
+  <span class="c">// from 'html.php'</span>
+  TexyHtml::$valid = array_merge(TexyHtml::$block, TexyHtml::$inline);
+
+  <span class="c">// from 'texy.php'</span>
+  <span class="k">define</span>(<span class="s">'TEXY'</span>, <span class="s">'Version 1.2 for PHP5 $Revision: 45 $'</span>);
+  <span class="c">/* there was also a TEXY_DIR constant, but you can ignore it,
+  because it was used only for inclusions */</span>
+	
+  <span class="c">// from 'constants.php'</span>
+  <span class="k">define</span>(<span class="s">'TEXY_CHAR'</span>, <span class="s">'A-Za-z\x86-\xff'</span>);
+  <span class="c">/* ... more constants ... */</span>
+}
+</pre>  
+<p>Now we have a function that performs the initialization and the source code can be successfuly compiled, but we'll do two little 
+  tweaks to make it easilly usable from C#. First, we'll mark the <code>Texy</code> class (which is used by library users) with the
+  <code>Export</code> attribute which instructs the compiler to generate class that can be used from languages other than PHP
+  (this is part of the PHP/CLR extensions available in Phalanger):</p>
+<pre>
+[Export]
+<span class="k">class</span> Texy
+{
+  <span class="c">/* .. class source .. */</span>
+}
+</pre>  
+<p>The second tweak will be adding automatic call to the <code>initTexy</code> function to the <code>Texy</code> class
+  constructor, so that the function doesn't need to be called manually. Because we want to call it only once for application
+  we'll add static field to the class to indicate whether we already performed the initialization:</p>
+<pre>
+<span class="k">static private</span> $initalized = <span class="k">false</span>;
+
+<span class="k">public function</span> __construct()
+{
+  if (!$initialized) { initTexy(); $initialized=<span class="k">true</span>; }
+  <span class="c">/* ... rest of the constructor ... */</span>
+}
+</pre>  
+<p>And that's all :-). If you compile the project now, you'll get assembly that can be simply used from any other .NET language!</p>
+<h2>Using Texy! in C#</h2>
+<p>To demonstrate using Texy! in C# application I wrote little ASP.NET demo. After creating new web application, we'll need to 
+  copy the library produced by Phalanger to the <code>bin</code> directory, where ASP.NET automatically locates it. Now add the following
+  controls to the <code>default.aspx</code>:</p>
+<pre>
+&lt;asp:TextBox Columns="60" Rows="10" runat="server" 
+  ID="txtTexy" TextMode="MultiLine" /&gt;&lt;br /&gt;
+&lt;asp:Button runat="server" ID="btnOk" OnClick="btnOk_Click" Text=" OK " /&gt;
+&lt;hr /&gt;
+&lt;asp:Literal runat="server" ID="ltrOutput" /&gt;
+</pre>  
+<p>In the code-behind file, we need to add event handler called when user clicks on the OK button:</p>
+<pre>
+<span class="k">protected void</span> btnOk_Click(<span class="k">object</span> sender, EventArgs e)
+{
+  <span class="c">// Create instance of Texy! parser</span>
+  Texy t = <span class="k">new</span> Texy();
+  <span class="c">// Call the 'process' method and cast result to string</span>
+  <span class="k">string</span> parsed = (<span class="k">string</span>)t.process(txtTexy.Text);
+  <span class="c">// Display parsed text using literal</span>
+  ltrOutput.Text = parsed;
+}
+</pre>
+<p>The demo application should be ready now! You can even examine all methods of the <code>Texy</code> class in the
+  Visual Studio intellisense. The only overhead when calling PHP classes compiled using pure mode is that you 
+  have to cast the returned object to the correct type due to the dynamic nature of PHP language. In PHP you can't
+  specify what type method returns, so when Phalanger compiles member function to .NET it declares return
+  and parameter types as the <code>object</code> type. </p>
+
+<ul>
+  <li>Try it now - <a href="http://php-compiler.net/demos/texy/default.aspx">Live ASP.NET + Texy! demo</a>
+    [<a href="http://php-compiler.net/demos/texy/default.aspx" target="_blank">^</a>]</li>
+  <li>Downlaod sources - <a href="/articles/aspnettexy/demos.zip">ASP.NET demo and modified Texy!</a> (139 kB)
+    </li>
+</ul>  
+
+<h2>Limitations</h2>
+<p>The biggest limitation of this example is the fact that you need FullTrust permission to execute the PHP code
+  compiled using Phalanger, which means that you can't use this Texy! library on most of the shared webhostings.
+  We're however examining options for removing this limitation. Second problem is that there are a few issues with
+  regular expression functions in latest Phalanger build. All the bugs are fixed now, but it will take some time
+  before we'll release next beta version (but we'll do the best we can!). If you don't want to wait you can 
+  download Phalanger source code from the CodePlex and build it yourself.</p>
+
+<h2>Links and references <a name="texyphallinks"></a></h2>
+<ul>
+  <li>[1] <a href="http://texy.info/">Texy! Homepage </a> [<a href="http://texy.info/" target="_blank">^</a>]</li>
+  <li>[2] <a href="http://texy.info/cs/syntax">Texy! Syntax </a> [<a href="http://texy.info/cs/syntax" target="_blank">^</a>]</li>
+  <li>[3] <a href="http://php-compiler.net/doku.php?id=core%3aphalanger_for_.net_developers">Phalanger for .NET developers</a> [<a href="http://php-compiler.net/doku.php?id=core%3aphalanger_for_.net_developers" target="_blank">^</a>]</li>
+</ul>

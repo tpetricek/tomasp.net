@@ -1,0 +1,354 @@
+<!-- [info]
+
+ - date: 2012-02-17T13:10:29.0000000
+ - description: Joinads is a research extension of the F# compiler that makes computation expressions more expressive. In this article, we look how to use the match! notation for working with tasks. The examples include simple parallel map, but also more powerful speculative parallelism.
+ - tags: research,f#,parallel,joinads
+ - layout: post
+ - title: TryJoinads (II.): Task-based parallelism
+ - url: joinad-tasks.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>The implementation of joinad operations for the <code>Task&lt;'T&gt;</code> type is quite similar to the 
+implementation of <code>Async&lt;'T&gt;</code>, because the two types have similar properties. They both
+produce at most one value (or an exception) and they both take some time to complete.</p>
+
+<p>Just like for asynchronous workflows, pattern matching on multiple computations using 
+<code>match!</code> gives us a parallel composition (with the two tasks running in parallel) and
+choice between clauses is non-deterministic, depending on which clause completes first.</p>
+
+<p>Unlike asynchronous workflows, the <code>Task&lt;'T&gt;</code> type does not require any support for
+aliasing. A value of type <code>Task&lt;'T&gt;</code> represents a <em>running</em> computation that can be
+accessed from multiple parts of program. In this sense, the type <code>Async&lt;'T&gt;</code> is more
+similar to a function <code>unit -&gt; Task&lt;'T&gt;</code> than to the type <code>Task&lt;'T&gt;</code> itself.</p>
+
+<p>The key difference between tasks and asynchronous workflows is that the latter provides
+better support for writing non-blocking computations that involve <em>asynchronous</em> 
+long-running operations such as I/O or waiting for a certain event. Tasks are more
+suitable for high-performance CPU-intensive computations.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/tasks.html">view the article on TryJoinads</a>.</em></p>
+[/abstract] -->
+
+<h1>TryJoinads (II.): Task-based parallelism</h1>
+<p>The implementation of joinad operations for the <code>Task&lt;'T&gt;</code> type is quite similar to the 
+implementation of <code>Async&lt;'T&gt;</code>, because the two types have similar properties. They both
+produce at most one value (or an exception) and they both take some time to complete.</p>
+
+<p>Just like for asynchronous workflows, pattern matching on multiple computations using 
+<code>match!</code> gives us a parallel composition (with the two tasks running in parallel) and
+choice between clauses is non-deterministic, depending on which clause completes first.</p>
+
+<p>Unlike asynchronous workflows, the <code>Task&lt;'T&gt;</code> type does not require any support for
+aliasing. A value of type <code>Task&lt;'T&gt;</code> represents a <em>running</em> computation that can be
+accessed from multiple parts of program. In this sense, the type <code>Async&lt;'T&gt;</code> is more
+similar to a function <code>unit -&gt; Task&lt;'T&gt;</code> than to the type <code>Task&lt;'T&gt;</code> itself.</p>
+
+<p>The key difference between tasks and asynchronous workflows is that the latter provides
+better support for writing non-blocking computations that involve <em>asynchronous</em> 
+long-running operations such as I/O or waiting for a certain event. Tasks are more
+suitable for high-performance CPU-intensive computations.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/tasks.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Parallel list processing</h2>
+
+<p>The main example in this article is a tree processing function that can be used to test
+whether all values in leafs satisfy a given predicate. However, we'll build the 
+example step-by-step, exploring several other examples along the way.</p>
+
+<p>To generate inputs for testing, we will calculate a list containing several large prime
+numbers. We will use functional <code>map</code> and <code>filter</code> combinators, but we first implement
+parallel version of <code>map</code> (in practice, this is already available in F# libraries or in
+the <a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a>, but it is an interesting example
+of using joinads:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">Threading</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">Tasks</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">Extensions</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">Joinads</span>
+
+<span class="c">/// Applies the specified function to all </span>
+<span class="c">/// elements of the input list in parallel.</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">parallelMap</span> (<span onmouseout="hideTip(event, 'ft8', 8)" onmouseover="showTip(event, 'ft8', 8)" class="i">f</span><span class="o">:</span><span class="o">&#39;</span><span class="i">T</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">R</span>) <span onmouseout="hideTip(event, 'ft9', 9)" onmouseover="showTip(event, 'ft9', 9)" class="i">input</span> <span class="o">=</span> 
+  <span class="c">// Recursively process list and spawn tasks</span>
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft10', 10)" onmouseover="showTip(event, 'ft10', 10)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft9', 11)" onmouseover="showTip(event, 'ft9', 11)" class="i">input</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft11', 12)" onmouseover="showTip(event, 'ft11', 12)" class="i">future</span> {
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft9', 13)" onmouseover="showTip(event, 'ft9', 13)" class="i">input</span> <span class="k">with</span> 
+    | [] <span class="k">-&gt;</span> <span class="k">return</span> []
+    | <span onmouseout="hideTip(event, 'ft12', 14)" onmouseover="showTip(event, 'ft12', 14)" class="i">x</span><span class="o">::</span><span onmouseout="hideTip(event, 'ft13', 15)" onmouseover="showTip(event, 'ft13', 15)" class="i">xs</span> <span class="k">-&gt;</span> 
+       <span class="c">// Process current element &amp; the rest of the list</span>
+       <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft11', 16)" onmouseover="showTip(event, 'ft11', 16)" class="i">future</span> { <span class="k">return</span> <span onmouseout="hideTip(event, 'ft8', 17)" onmouseover="showTip(event, 'ft8', 17)" class="i">f</span> <span onmouseout="hideTip(event, 'ft12', 18)" onmouseover="showTip(event, 'ft12', 18)" class="i">x</span> }, <span onmouseout="hideTip(event, 'ft10', 19)" onmouseover="showTip(event, 'ft10', 19)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft13', 20)" onmouseover="showTip(event, 'ft13', 20)" class="i">xs</span> <span class="k">with</span>
+       | <span onmouseout="hideTip(event, 'ft14', 21)" onmouseover="showTip(event, 'ft14', 21)" class="i">y</span>, <span onmouseout="hideTip(event, 'ft15', 22)" onmouseover="showTip(event, 'ft15', 22)" class="i">ys</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft14', 23)" onmouseover="showTip(event, 'ft14', 23)" class="i">y</span><span class="o">::</span><span onmouseout="hideTip(event, 'ft15', 24)" onmouseover="showTip(event, 'ft15', 24)" class="i">ys</span> }
+
+  <span class="c">// Start the work and wait until it completes</span>
+  (<span onmouseout="hideTip(event, 'ft10', 25)" onmouseover="showTip(event, 'ft10', 25)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft9', 26)" onmouseover="showTip(event, 'ft9', 26)" class="i">input</span>)<span class="o">.</span><span class="i">Result</span></pre>
+
+
+<p>The function <code>parallelMap</code> contains a nested recursive function <code>loop</code> that returns
+a task, which is processing a part of the list in parallel. The declaration of 
+<code>loop</code> uses a computation builder <code>future { ... }</code> (which is defined in the 
+<code>FSharp.Extensions.Joinads</code> namespace).</p>
+
+<p>The <code>loop</code> function uses ordinary <code>match</code> to handle the end of the list. If the
+list is non-empty, it uses <code>match!</code> to perform two tasks in parallel:</p>
+
+<ul>
+<li>First, it runs a computation that evaluates <code>f x</code></li>
+<li>Second, it recursively calls <code>loop xs</code> to process the rest of the list</li>
+</ul>
+
+<p>When both computations complete, the body of the clause constructs a list
+to be returned. The return type of <code>loop</code> is <code>Task&lt;list&lt;'T&gt;&gt;</code>, so the
+body of <code>parallelMap</code> uses the <code>Result</code> property to obtain the processed list.</p>
+
+<p>The following snippet defines a function that tests whether a number is
+prime and compares the performance of sequential and parallel <code>map</code> function:</p>
+
+<pre class="fssnip">
+<span class="c">// Create a list containing 1000 big numbers</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft16', 27)" onmouseover="showTip(event, 'ft16', 27)" class="i">nums</span> <span class="o">=</span> [ <span class="k">for</span> <span onmouseout="hideTip(event, 'ft17', 28)" onmouseover="showTip(event, 'ft17', 28)" class="i">i</span> <span class="k">in</span> <span class="n">0L</span> <span class="o">..</span> <span class="n">1000L</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft17', 29)" onmouseover="showTip(event, 'ft17', 29)" class="i">i</span> <span class="o">+</span> <span class="n">5000000000000L</span> ]
+
+<span class="c">/// Tests whether the specified 64 bit int is a prime</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft18', 30)" onmouseover="showTip(event, 'ft18', 30)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft19', 31)" onmouseover="showTip(event, 'ft19', 31)" class="i">num</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'ft20', 32)" onmouseover="showTip(event, 'ft20', 32)" class="i">seq</span> { <span class="n">2L</span> <span class="o">..</span> <span onmouseout="hideTip(event, 'ft21', 33)" onmouseover="showTip(event, 'ft21', 33)" class="i">int64</span> (<span onmouseout="hideTip(event, 'ft22', 34)" onmouseover="showTip(event, 'ft22', 34)" class="i">sqrt</span> (<span onmouseout="hideTip(event, 'ft23', 35)" onmouseover="showTip(event, 'ft23', 35)" class="i">float</span> <span onmouseout="hideTip(event, 'ft19', 36)" onmouseover="showTip(event, 'ft19', 36)" class="i">num</span>)) } 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft24', 37)" onmouseover="showTip(event, 'ft24', 37)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft25', 38)" onmouseover="showTip(event, 'ft25', 38)" class="i">forall</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft26', 39)" onmouseover="showTip(event, 'ft26', 39)" class="i">div</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft19', 40)" onmouseover="showTip(event, 'ft19', 40)" class="i">num</span> <span class="o">%</span> <span onmouseout="hideTip(event, 'ft26', 41)" onmouseover="showTip(event, 'ft26', 41)" class="i">div</span> <span class="o">&lt;&gt;</span> <span class="n">0L</span>)
+
+<span class="c">// Turn on the timing and compare the performance</span>
+<span class="prep">#time</span>
+<span onmouseout="hideTip(event, 'ft27', 42)" onmouseover="showTip(event, 'ft27', 42)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 43)" onmouseover="showTip(event, 'ft28', 43)" class="i">map</span> <span onmouseout="hideTip(event, 'ft18', 44)" onmouseover="showTip(event, 'ft18', 44)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft16', 45)" onmouseover="showTip(event, 'ft16', 45)" class="i">nums</span>
+<span onmouseout="hideTip(event, 'ft7', 46)" onmouseover="showTip(event, 'ft7', 46)" class="i">parallelMap</span> <span onmouseout="hideTip(event, 'ft18', 47)" onmouseover="showTip(event, 'ft18', 47)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft16', 48)" onmouseover="showTip(event, 'ft16', 48)" class="i">nums</span></pre>
+
+
+<p>When you load the code in F# Interactive, you can select and run the <code>#time</code> 
+directive to enable simple performance measuring. F# Interactive then prints
+the result of every entered command, together with the time it took to calculate
+it. On the author's machine, the time needed to run the sequential version is
+about 8 seconds and the time of the parallel version is about 4.5 seconds.</p>
+
+<h2>Building a ballanced tree</h2>
+
+<p>Before we can look at tree processing, we need to define a list type and
+we need to write a function for constructing lists. The following snippet shows
+a standard binary tree declaration together with a function <code>ballancedOfList</code> that
+creates ballanced tree from a non-empty list:</p>
+
+<pre class="fssnip">
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft29', 49)" onmouseover="showTip(event, 'ft29', 49)" class="i">Tree</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span> 
+  | <span onmouseout="hideTip(event, 'ft30', 50)" onmouseover="showTip(event, 'ft30', 50)" class="i">Leaf</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">T</span> 
+  | <span onmouseout="hideTip(event, 'ft31', 51)" onmouseover="showTip(event, 'ft31', 51)" class="i">Node</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft29', 52)" onmouseover="showTip(event, 'ft29', 52)" class="i">Tree</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ft29', 53)" onmouseover="showTip(event, 'ft29', 53)" class="i">Tree</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>
+
+<span class="c">/// Creates a ballanced tree from a non-empty list</span>
+<span class="c">/// (odd elements are added to the left and even to the right)</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft32', 54)" onmouseover="showTip(event, 'ft32', 54)" class="i">ballancedOfList</span> <span onmouseout="hideTip(event, 'ft33', 55)" onmouseover="showTip(event, 'ft33', 55)" class="i">list</span> <span class="o">=</span>
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'ft33', 56)" onmouseover="showTip(event, 'ft33', 56)" class="i">list</span> <span class="k">with</span> 
+  | [] <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft34', 57)" onmouseover="showTip(event, 'ft34', 57)" class="i">failwith</span> <span class="s">&quot;</span><span class="s">Cannot</span><span class="s"> </span><span class="s">create</span><span class="s"> </span><span class="s">tree</span><span class="s"> </span><span class="s">of</span><span class="s"> </span><span class="s">empty</span><span class="s"> </span><span class="s">list</span><span class="s">&quot;</span>
+  | [<span onmouseout="hideTip(event, 'ft35', 58)" onmouseover="showTip(event, 'ft35', 58)" class="i">n</span>] <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft30', 59)" onmouseover="showTip(event, 'ft30', 59)" class="i">Leaf</span> <span onmouseout="hideTip(event, 'ft35', 60)" onmouseover="showTip(event, 'ft35', 60)" class="i">n</span>
+  | _ <span class="k">-&gt;</span> 
+      <span class="c">// Split the elements into odd and even using their index</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'ft36', 61)" onmouseover="showTip(event, 'ft36', 61)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft37', 62)" onmouseover="showTip(event, 'ft37', 62)" class="i">right</span> <span class="o">=</span>
+        <span onmouseout="hideTip(event, 'ft33', 63)" onmouseover="showTip(event, 'ft33', 63)" class="i">list</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 64)" onmouseover="showTip(event, 'ft27', 64)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 65)" onmouseover="showTip(event, 'ft38', 65)" class="i">mapi</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft39', 66)" onmouseover="showTip(event, 'ft39', 66)" class="i">i</span> <span onmouseout="hideTip(event, 'ft40', 67)" onmouseover="showTip(event, 'ft40', 67)" class="i">v</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft39', 68)" onmouseover="showTip(event, 'ft39', 68)" class="i">i</span>, <span onmouseout="hideTip(event, 'ft40', 69)" onmouseover="showTip(event, 'ft40', 69)" class="i">v</span>)
+             <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 70)" onmouseover="showTip(event, 'ft27', 70)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft41', 71)" onmouseover="showTip(event, 'ft41', 71)" class="i">partition</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'ft39', 72)" onmouseover="showTip(event, 'ft39', 72)" class="i">i</span>, <span onmouseout="hideTip(event, 'ft40', 73)" onmouseover="showTip(event, 'ft40', 73)" class="i">v</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft39', 74)" onmouseover="showTip(event, 'ft39', 74)" class="i">i</span><span class="o">%</span><span class="n">2</span> <span class="o">=</span> <span class="n">0</span>)
+      <span class="c">// Create ballanced trees for both parts</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'ft42', 75)" onmouseover="showTip(event, 'ft42', 75)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft43', 76)" onmouseover="showTip(event, 'ft43', 76)" class="i">right</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 77)" onmouseover="showTip(event, 'ft27', 77)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 78)" onmouseover="showTip(event, 'ft28', 78)" class="i">map</span> <span onmouseout="hideTip(event, 'ft44', 79)" onmouseover="showTip(event, 'ft44', 79)" class="i">snd</span> <span onmouseout="hideTip(event, 'ft36', 80)" onmouseover="showTip(event, 'ft36', 80)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft27', 81)" onmouseover="showTip(event, 'ft27', 81)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 82)" onmouseover="showTip(event, 'ft28', 82)" class="i">map</span> <span onmouseout="hideTip(event, 'ft44', 83)" onmouseover="showTip(event, 'ft44', 83)" class="i">snd</span> <span onmouseout="hideTip(event, 'ft43', 84)" onmouseover="showTip(event, 'ft43', 84)" class="i">right</span>
+      <span onmouseout="hideTip(event, 'ft31', 85)" onmouseover="showTip(event, 'ft31', 85)" class="i">Node</span>(<span onmouseout="hideTip(event, 'ft32', 86)" onmouseover="showTip(event, 'ft32', 86)" class="i">ballancedOfList</span> <span onmouseout="hideTip(event, 'ft42', 87)" onmouseover="showTip(event, 'ft42', 87)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft32', 88)" onmouseover="showTip(event, 'ft32', 88)" class="i">ballancedOfList</span> <span onmouseout="hideTip(event, 'ft43', 89)" onmouseover="showTip(event, 'ft43', 89)" class="i">right</span>)</pre>
+
+
+<p>The function is quite simple and it is only shown to make the sample complete.
+We use it to construct two trees that we'll later want to process. The first
+tree is generated by taking all primes from the <code>nums</code> list shown earlier and
+the other contains several additional non-prime numbers:</p>
+
+<pre class="fssnip">
+<span class="c">// Create a list with large prime numbers</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft45', 90)" onmouseover="showTip(event, 'ft45', 90)" class="i">primes</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'ft16', 91)" onmouseover="showTip(event, 'ft16', 91)" class="i">nums</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft7', 92)" onmouseover="showTip(event, 'ft7', 92)" class="i">parallelMap</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'ft46', 93)" onmouseover="showTip(event, 'ft46', 93)" class="i">v</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft18', 94)" onmouseover="showTip(event, 'ft18', 94)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft46', 95)" onmouseover="showTip(event, 'ft46', 95)" class="i">v</span>, <span onmouseout="hideTip(event, 'ft46', 96)" onmouseover="showTip(event, 'ft46', 96)" class="i">v</span>) 
+       <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 97)" onmouseover="showTip(event, 'ft27', 97)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft47', 98)" onmouseover="showTip(event, 'ft47', 98)" class="i">filter</span> <span onmouseout="hideTip(event, 'ft48', 99)" onmouseover="showTip(event, 'ft48', 99)" class="i">fst</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft27', 100)" onmouseover="showTip(event, 'ft27', 100)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft28', 101)" onmouseover="showTip(event, 'ft28', 101)" class="i">map</span> <span onmouseout="hideTip(event, 'ft44', 102)" onmouseover="showTip(event, 'ft44', 102)" class="i">snd</span>
+<span class="c">// Create a list with some additional non-primes</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft49', 103)" onmouseover="showTip(event, 'ft49', 103)" class="i">mixed</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft45', 104)" onmouseover="showTip(event, 'ft45', 104)" class="i">primes</span> <span class="o">@@</span> [ <span class="n">2L</span> <span class="o">..</span> <span class="n">20L</span> ]
+
+<span class="c">// Created ballanced trees from both lists</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft50', 105)" onmouseover="showTip(event, 'ft50', 105)" class="i">primeTree</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft32', 106)" onmouseover="showTip(event, 'ft32', 106)" class="i">ballancedOfList</span> <span onmouseout="hideTip(event, 'ft45', 107)" onmouseover="showTip(event, 'ft45', 107)" class="i">primes</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft51', 108)" onmouseover="showTip(event, 'ft51', 108)" class="i">mixedTree</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft32', 109)" onmouseover="showTip(event, 'ft32', 109)" class="i">ballancedOfList</span> <span onmouseout="hideTip(event, 'ft49', 110)" onmouseover="showTip(event, 'ft49', 110)" class="i">mixed</span></pre>
+
+
+<p>The <code>primeTree</code> tree contains only large prime numbers, so checking if it
+contains only prime numbers will take relatively long. The <code>mixedTree</code> contains
+several additional numbers, some of them are not primes. This means that
+running <code>isPrime</code> on all of the values would take longer, but if we can
+return the result immediately after we find a non-prime, the processing is 
+likely to complete quite quickly.</p>
+
+<h2>Parallel tree processing</h2>
+
+<p>Let's now implement a <code>forall</code> function that takes a tree and a predicate
+and tests whether the predicate holds for all leafs. We use the <code>future { ... }</code>
+computation builder and we use <code>match!</code> to handle the <code>Node</code> case by 
+checking both sub-trees in parallel:</p>
+
+<pre class="fssnip">
+<span class="c">/// Checks whether the specified predicate &#39;f&#39;</span>
+<span class="c">/// holds for all Leaf elements of the tree.</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft52', 111)" onmouseover="showTip(event, 'ft52', 111)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft53', 112)" onmouseover="showTip(event, 'ft53', 112)" class="i">f</span> <span onmouseout="hideTip(event, 'ft54', 113)" onmouseover="showTip(event, 'ft54', 113)" class="i">tree</span> <span class="o">=</span> 
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft55', 114)" onmouseover="showTip(event, 'ft55', 114)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft54', 115)" onmouseover="showTip(event, 'ft54', 115)" class="i">tree</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft11', 116)" onmouseover="showTip(event, 'ft11', 116)" class="i">future</span> { 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft54', 117)" onmouseover="showTip(event, 'ft54', 117)" class="i">tree</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft30', 118)" onmouseover="showTip(event, 'ft30', 118)" class="i">Leaf</span> <span onmouseout="hideTip(event, 'ft40', 119)" onmouseover="showTip(event, 'ft40', 119)" class="i">v</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft53', 120)" onmouseover="showTip(event, 'ft53', 120)" class="i">f</span> <span onmouseout="hideTip(event, 'ft40', 121)" onmouseover="showTip(event, 'ft40', 121)" class="i">v</span> 
+    | <span onmouseout="hideTip(event, 'ft31', 122)" onmouseover="showTip(event, 'ft31', 122)" class="i">Node</span>(<span onmouseout="hideTip(event, 'ft56', 123)" onmouseover="showTip(event, 'ft56', 123)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft57', 124)" onmouseover="showTip(event, 'ft57', 124)" class="i">right</span>) <span class="k">-&gt;</span>
+        <span class="c">// Process left and right branch in parallel</span>
+        <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft55', 125)" onmouseover="showTip(event, 'ft55', 125)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft56', 126)" onmouseover="showTip(event, 'ft56', 126)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft55', 127)" onmouseover="showTip(event, 'ft55', 127)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft57', 128)" onmouseover="showTip(event, 'ft57', 128)" class="i">right</span> <span class="k">with</span>
+        | <span onmouseout="hideTip(event, 'ft58', 129)" onmouseover="showTip(event, 'ft58', 129)" class="i">l</span>, <span onmouseout="hideTip(event, 'ft59', 130)" onmouseover="showTip(event, 'ft59', 130)" class="i">r</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft58', 131)" onmouseover="showTip(event, 'ft58', 131)" class="i">l</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'ft59', 132)" onmouseover="showTip(event, 'ft59', 132)" class="i">r</span> }
+  <span class="c">// Start the recursive processing &amp; wait for the result</span>
+  (<span onmouseout="hideTip(event, 'ft55', 133)" onmouseover="showTip(event, 'ft55', 133)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft54', 134)" onmouseover="showTip(event, 'ft54', 134)" class="i">tree</span>)<span class="o">.</span><span class="i">Result</span>
+
+<span class="c">// Test processing on two sample trees</span>
+<span onmouseout="hideTip(event, 'ft52', 135)" onmouseover="showTip(event, 'ft52', 135)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft18', 136)" onmouseover="showTip(event, 'ft18', 136)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft51', 137)" onmouseover="showTip(event, 'ft51', 137)" class="i">mixedTree</span>
+<span onmouseout="hideTip(event, 'ft52', 138)" onmouseover="showTip(event, 'ft52', 138)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft18', 139)" onmouseover="showTip(event, 'ft18', 139)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft50', 140)" onmouseover="showTip(event, 'ft50', 140)" class="i">primeTree</span></pre>
+
+
+<p>If you run the processing on both <code>mixedTree</code> and <code>primeTree</code>, they will 
+take similarly long time to complete. However, a sequential version of
+the function would be faster for <code>mixedTree</code>, because it would return
+<code>false</code> immediately after finding the first non-prime number.</p>
+
+<h3>Adding short-circuiting</h3>
+
+<p>Implementing the same functionality using <code>Task&lt;'T&gt;</code> sounds difficult, 
+but using joinads, the problem becomes quite simple. We add two additional 
+clauses that handle the case when one branch completes returning <code>false</code>.</p>
+
+<p>Aside from this simple change, we also need to make sure that all remaining
+tasks, which are not required to complete, get cancelled. 
+The cancellation is implemented by creating a .NET <code>CancellationTokenSource</code> 
+before starting the recursive processing. In the body of <code>loop</code> we then check
+if the processing has completed and we throw an exception if it has:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 141)" onmouseover="showTip(event, 'ft1', 141)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 142)" onmouseover="showTip(event, 'ft2', 142)" class="i">Threading</span>
+
+<span class="c">/// Behaves like previous &#39;forall&#39; function, but returns</span>
+<span class="c">/// immediately when one of the branches returns &#39;false&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft60', 143)" onmouseover="showTip(event, 'ft60', 143)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft53', 144)" onmouseover="showTip(event, 'ft53', 144)" class="i">f</span> <span onmouseout="hideTip(event, 'ft54', 145)" onmouseover="showTip(event, 'ft54', 145)" class="i">tree</span> <span class="o">=</span> 
+  <span class="c">// Create cancellation token for checking</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft61', 146)" onmouseover="showTip(event, 'ft61', 146)" class="i">cts</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft62', 147)" onmouseover="showTip(event, 'ft62', 147)" class="i">CancellationTokenSource</span>()
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ft55', 148)" onmouseover="showTip(event, 'ft55', 148)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft54', 149)" onmouseover="showTip(event, 'ft54', 149)" class="i">tree</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft11', 150)" onmouseover="showTip(event, 'ft11', 150)" class="i">future</span> { 
+    <span class="c">// Stop processing if the function already returned</span>
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'ft61', 151)" onmouseover="showTip(event, 'ft61', 151)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft63', 152)" onmouseover="showTip(event, 'ft63', 152)" class="i">Token</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft64', 153)" onmouseover="showTip(event, 'ft64', 153)" class="i">IsCancellationRequested</span> <span class="k">then</span> 
+        <span onmouseout="hideTip(event, 'ft34', 154)" onmouseover="showTip(event, 'ft34', 154)" class="i">failwith</span> <span class="s">&quot;</span><span class="s">cancelled</span><span class="s">&quot;</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft54', 155)" onmouseover="showTip(event, 'ft54', 155)" class="i">tree</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft30', 156)" onmouseover="showTip(event, 'ft30', 156)" class="i">Leaf</span> <span onmouseout="hideTip(event, 'ft40', 157)" onmouseover="showTip(event, 'ft40', 157)" class="i">v</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft53', 158)" onmouseover="showTip(event, 'ft53', 158)" class="i">f</span> <span onmouseout="hideTip(event, 'ft40', 159)" onmouseover="showTip(event, 'ft40', 159)" class="i">v</span> 
+    | <span onmouseout="hideTip(event, 'ft31', 160)" onmouseover="showTip(event, 'ft31', 160)" class="i">Node</span>(<span onmouseout="hideTip(event, 'ft56', 161)" onmouseover="showTip(event, 'ft56', 161)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft57', 162)" onmouseover="showTip(event, 'ft57', 162)" class="i">right</span>) <span class="k">-&gt;</span>
+        <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft55', 163)" onmouseover="showTip(event, 'ft55', 163)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft56', 164)" onmouseover="showTip(event, 'ft56', 164)" class="i">left</span>, <span onmouseout="hideTip(event, 'ft55', 165)" onmouseover="showTip(event, 'ft55', 165)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft57', 166)" onmouseover="showTip(event, 'ft57', 166)" class="i">right</span> <span class="k">with</span>
+        | <span class="k">false</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">false</span>
+        | <span class="o">?</span>, <span class="k">false</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">false</span>
+        | <span onmouseout="hideTip(event, 'ft58', 167)" onmouseover="showTip(event, 'ft58', 167)" class="i">l</span>, <span onmouseout="hideTip(event, 'ft59', 168)" onmouseover="showTip(event, 'ft59', 168)" class="i">r</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft58', 169)" onmouseover="showTip(event, 'ft58', 169)" class="i">l</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'ft59', 170)" onmouseover="showTip(event, 'ft59', 170)" class="i">r</span> }
+
+  <span class="c">// Wait for the result &amp; cancel all pending work</span>
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'ft65', 171)" onmouseover="showTip(event, 'ft65', 171)" class="i">res</span> <span class="o">=</span> (<span onmouseout="hideTip(event, 'ft55', 172)" onmouseover="showTip(event, 'ft55', 172)" class="i">loop</span> <span onmouseout="hideTip(event, 'ft54', 173)" onmouseover="showTip(event, 'ft54', 173)" class="i">tree</span>)<span class="o">.</span><span class="i">Result</span>
+  <span onmouseout="hideTip(event, 'ft61', 174)" onmouseover="showTip(event, 'ft61', 174)" class="i">cts</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft66', 175)" onmouseover="showTip(event, 'ft66', 175)" class="i">Cancel</span>()
+  <span onmouseout="hideTip(event, 'ft65', 176)" onmouseover="showTip(event, 'ft65', 176)" class="i">res</span>
+
+<span class="c">// Processing &#39;mixedTree&#39; is significanlty faster,</span>
+<span class="c">// because it returns after first non-prime is found!</span>
+<span onmouseout="hideTip(event, 'ft60', 177)" onmouseover="showTip(event, 'ft60', 177)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft18', 178)" onmouseover="showTip(event, 'ft18', 178)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft51', 179)" onmouseover="showTip(event, 'ft51', 179)" class="i">mixedTree</span>
+<span onmouseout="hideTip(event, 'ft60', 180)" onmouseover="showTip(event, 'ft60', 180)" class="i">forall</span> <span onmouseout="hideTip(event, 'ft18', 181)" onmouseover="showTip(event, 'ft18', 181)" class="i">isPrime</span> <span onmouseout="hideTip(event, 'ft50', 182)" onmouseover="showTip(event, 'ft50', 182)" class="i">primeTree</span></pre>
+
+
+<p>The changes required to implement short-circuiting are quite small. As already
+mentioned, we added two clauses with patterns <code>false, ?</code> and <code>?, false</code>. These
+will match when one of the computation completes and returns <code>false</code> while the
+other is still running. When that happens, the function <code>loop</code> can return the
+final result, but the other task may still continue running.</p>
+
+<p>To actually save CPU power, we need to cancel the other task. This is done using
+the standard .NET mechanism. After the task that processes the entire tree 
+completes, we call <code>cts.Cancel()</code> to trigger the cancellation. All tasks that
+are started from that point will throw an exception (which is okay, because 
+non-deterministic choice ignores exceptions if the first computation succeeds).</p>
+
+<p>As a result, the processing of <code>mixedTree</code> is now significantly faster than the
+processing of <code>primeTree</code>. On the author's machine, the first one requires about
+0.3s, while the second takes 4 seconds to complete. You can easily test the performance
+for different inputs yourself using the <code>#time</code> directive.</p>
+
+<h2>Summary</h2>
+
+<p>In principle, the implementation of joinad operations for the <code>Task&lt;'T&gt;</code> type is
+very similar to the implementation for asynchronous workflows as discussed in the
+<a href="http://tomasp.net/blog/joinads-async-prog.aspx">previous article</a>. The main difference is that the underlying type is
+different - tasks are designed for CPU-intensive computations. Therefore the applications
+in this article were quite different. We used tasks to write a parallel <code>map</code>
+operation for lists and then to implement <code>forall</code> function for trees. The second
+was particularly interesting, because joinads make it very easy to implement 
+<em>shortcircuiting</em> behaviour thanks to the non-deterministic choice between clauses.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace System</div>
+<div class="tip" id="ft2">namespace System.Threading</div>
+<div class="tip" id="ft3">namespace System.Threading.Tasks</div>
+<div class="tip" id="ft4">namespace FSharp</div>
+<div class="tip" id="ft5">namespace FSharp.Extensions</div>
+<div class="tip" id="ft6">namespace FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft7">val parallelMap : (&#39;T -&gt; &#39;R) -&gt; &#39;T list -&gt; &#39;R list<br /><br />Full name: TryJoinads.parallelMap<br /><em><br /><br />&#160;Applies the specified function to all <br />&#160;elements of the input list in parallel.</em></div>
+<div class="tip" id="ft8">val f : (&#39;T -&gt; &#39;R)</div>
+<div class="tip" id="ft9">val input : &#39;T list<br />&#160;&#160;type: &#39;T list<br /></div>
+<div class="tip" id="ft10">val loop : (&#39;T list -&gt; Task&lt;&#39;R list&gt;)</div>
+<div class="tip" id="ft11">val future : FutureBuilder<br /><br />Full name: FSharp.Extensions.Joinads.TopLevelValues.future</div>
+<div class="tip" id="ft12">val x : &#39;T</div>
+<div class="tip" id="ft13">val xs : &#39;T list<br />&#160;&#160;type: &#39;T list<br /></div>
+<div class="tip" id="ft14">val y : &#39;R</div>
+<div class="tip" id="ft15">val ys : &#39;R list<br />&#160;&#160;type: &#39;R list<br /></div>
+<div class="tip" id="ft16">val nums : int64 list<br /><br />Full name: TryJoinads.nums<br />&#160;&#160;type: int64 list<br /></div>
+<div class="tip" id="ft17">val i : int64<br />&#160;&#160;type: int64<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft18">val isPrime : int64 -&gt; bool<br /><br />Full name: TryJoinads.isPrime<br /><em><br /><br />&#160;Tests whether the specified 64 bit int is a prime</em></div>
+<div class="tip" id="ft19">val num : int64<br />&#160;&#160;type: int64<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft20">Multiple items<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq<br /><br />--------------------<br />type seq&lt;&#39;T&gt; = System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="ft21">Multiple items<br />val int64 : &#39;T -&gt; int64 (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int64<br /><br />--------------------<br />type int64&lt;&#39;Measure&gt; = int64<br /><br />Full name: Microsoft.FSharp.Core.int64&lt;_&gt;<br />&#160;&#160;type: int64&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int64 = System.Int64<br /><br />Full name: Microsoft.FSharp.Core.int64<br />&#160;&#160;type: int64<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft22">val sqrt : &#39;T -&gt; &#39;U (requires member Sqrt)<br /><br />Full name: Microsoft.FSharp.Core.Operators.sqrt</div>
+<div class="tip" id="ft23">Multiple items<br />val float : &#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br />&#160;&#160;type: float&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br />&#160;&#160;type: float<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft24">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="ft25">val forall : (&#39;T -&gt; bool) -&gt; seq&lt;&#39;T&gt; -&gt; bool<br /><br />Full name: Microsoft.FSharp.Collections.Seq.forall</div>
+<div class="tip" id="ft26">val div : int64<br />&#160;&#160;type: int64<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft27">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of &#39;T * &#39;T list<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;interface System.Collections.IEnumerable<br />&#160;&#160;&#160;&#160;interface System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Head : &#39;T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;static member Empty : &#39;T list<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;<br />&#160;&#160;type: List&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft28">val map : (&#39;T -&gt; &#39;U) -&gt; &#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="ft29">type Tree&lt;&#39;T&gt; =<br />&#160;&#160;| Leaf of &#39;T<br />&#160;&#160;| Node of Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br /><br />Full name: TryJoinads.Tree&lt;_&gt;<br />&#160;&#160;type: Tree&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft30">union case Tree.Leaf: &#39;T -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="ft31">union case Tree.Node: Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="ft32">val ballancedOfList : &#39;a list -&gt; Tree&lt;&#39;a&gt;<br /><br />Full name: TryJoinads.ballancedOfList<br /><em><br /><br />&#160;Creates a ballanced tree from a non-empty list<br />&#160;(odd elements are added to the left and even to the right)</em></div>
+<div class="tip" id="ft33">Multiple items<br />val list : &#39;a list<br />&#160;&#160;type: &#39;a list<br /><br /><br />--------------------<br />type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;<br />&#160;&#160;type: &#39;T list<br /></div>
+<div class="tip" id="ft34">val failwith : string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith</div>
+<div class="tip" id="ft35">val n : &#39;a</div>
+<div class="tip" id="ft36">val left : (int * &#39;a) list<br />&#160;&#160;type: (int * &#39;a) list<br /></div>
+<div class="tip" id="ft37">val right : (int * &#39;a) list<br />&#160;&#160;type: (int * &#39;a) list<br /></div>
+<div class="tip" id="ft38">val mapi : (int -&gt; &#39;T -&gt; &#39;U) -&gt; &#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.mapi</div>
+<div class="tip" id="ft39">val i : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft40">val v : &#39;a</div>
+<div class="tip" id="ft41">val partition : (&#39;T -&gt; bool) -&gt; &#39;T list -&gt; &#39;T list * &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.partition</div>
+<div class="tip" id="ft42">val left : &#39;a list<br />&#160;&#160;type: &#39;a list<br /></div>
+<div class="tip" id="ft43">val right : &#39;a list<br />&#160;&#160;type: &#39;a list<br /></div>
+<div class="tip" id="ft44">val snd : (&#39;T1 * &#39;T2) -&gt; &#39;T2<br /><br />Full name: Microsoft.FSharp.Core.Operators.snd</div>
+<div class="tip" id="ft45">val primes : int64 list<br /><br />Full name: TryJoinads.primes<br />&#160;&#160;type: int64 list<br /></div>
+<div class="tip" id="ft46">val v : int64<br />&#160;&#160;type: int64<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft47">val filter : (&#39;T -&gt; bool) -&gt; &#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.filter</div>
+<div class="tip" id="ft48">val fst : (&#39;T1 * &#39;T2) -&gt; &#39;T1<br /><br />Full name: Microsoft.FSharp.Core.Operators.fst</div>
+<div class="tip" id="ft49">val mixed : int64 list<br /><br />Full name: TryJoinads.mixed<br />&#160;&#160;type: int64 list<br /></div>
+<div class="tip" id="ft50">val primeTree : Tree&lt;int64&gt;<br /><br />Full name: TryJoinads.primeTree<br />&#160;&#160;type: Tree&lt;int64&gt;<br /></div>
+<div class="tip" id="ft51">val mixedTree : Tree&lt;int64&gt;<br /><br />Full name: TryJoinads.mixedTree<br />&#160;&#160;type: Tree&lt;int64&gt;<br /></div>
+<div class="tip" id="ft52">val forall : (&#39;a -&gt; bool) -&gt; Tree&lt;&#39;a&gt; -&gt; bool<br /><br />Full name: TryJoinads.Parallel.forall<br /><em><br /><br />&#160;Checks whether the specified predicate &#39;f&#39;<br />&#160;holds for all Leaf elements of the tree.</em></div>
+<div class="tip" id="ft53">val f : (&#39;a -&gt; bool)</div>
+<div class="tip" id="ft54">val tree : Tree&lt;&#39;a&gt;<br />&#160;&#160;type: Tree&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft55">val loop : (Tree&lt;&#39;a&gt; -&gt; Task&lt;bool&gt;)</div>
+<div class="tip" id="ft56">val left : Tree&lt;&#39;a&gt;<br />&#160;&#160;type: Tree&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft57">val right : Tree&lt;&#39;a&gt;<br />&#160;&#160;type: Tree&lt;&#39;a&gt;<br /></div>
+<div class="tip" id="ft58">val l : bool<br />&#160;&#160;type: bool<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft59">val r : bool<br />&#160;&#160;type: bool<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft60">val forall : (&#39;a -&gt; bool) -&gt; Tree&lt;&#39;a&gt; -&gt; bool<br /><br />Full name: TryJoinads.Shortcircuiting.forall<br /><em><br /><br />&#160;Behaves like previous &#39;forall&#39; function, but returns<br />&#160;immediately when one of the branches returns &#39;false&#39;</em></div>
+<div class="tip" id="ft61">val cts : CancellationTokenSource<br />&#160;&#160;type: CancellationTokenSource<br /></div>
+<div class="tip" id="ft62">type CancellationTokenSource =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface System.IDisposable<br />&#160;&#160;&#160;&#160;new : unit -&gt; CancellationTokenSource<br />&#160;&#160;&#160;&#160;member Cancel : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Token : CancellationToken<br />&#160;&#160;&#160;&#160;static member CreateLinkedTokenSource : token1:CancellationToken * token2:CancellationToken -&gt; CancellationTokenSource<br />&#160;&#160;end<br /><br />Full name: System.Threading.CancellationTokenSource<br />&#160;&#160;type: CancellationTokenSource<br /></div>
+<div class="tip" id="ft63">property CancellationTokenSource.Token: CancellationToken</div>
+<div class="tip" id="ft64">property CancellationToken.IsCancellationRequested: bool</div>
+<div class="tip" id="ft65">val res : bool<br />&#160;&#160;type: bool<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft66">member CancellationTokenSource.Cancel : unit -&gt; unit</div>

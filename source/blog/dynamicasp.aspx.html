@@ -1,0 +1,140 @@
+<!-- [info]
+
+ - date: 2005-05-05T23:24:15.0000000
+ - description: Tento tutoriál vysvětluje, jakým způsobem lze z kódu stránky dynamicky vytvářet ovládací prvky a jak lze uchovávat nastavení těchto prvků.
+ - tags: 
+ - layout: post
+ - title: ASP.NET - Dynamické vytváření ovládacích prvků
+ - url: dynamicasp.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento tutoriál vysvětluje, jakým způsobem lze z kódu stránky dynamicky vytvářet ovládací prvky a jak lze uchovávat nastavení těchto prvků.
+[/abstract] -->
+
+<h1>ASP.NET - Dynamické vytváření ovládacích prvků</h1>
+<doc version="1"><body><h1>ASP.NET - Dynamické vytváření ovládacích prvků</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak lze dynamicky vytvářet ovládací prvky</li><li>Jak přímo přistupovat k datům z HTML formuláře</li><li>Jak je možné ovlivnit ukládání ViewState</li></ul><p>Při tvorbě webových aplikací se můžete dostat do situace, kdy nevíte kolik
+    ovládacích prvků budete potřebovat na stránce zobrazit (např. pokud chcete uživateli
+    zobrazit CheckBoxy s možnostmi, které jsou uložené v databázi). V této situaci je potřeba
+    vytvářet ovládací prvky dynamicky, tedy z kódu stránky.</p><div style="text-align:center;padding:10px;"><img src="http://www.eeeksoft.net/articles/dynamicasp/buttons.png" alt="Ukázková aplikace" style="margin-left:auto; margin-right:auto;" /><br /></div><h2>Vytváření ovládacích prvků</h2><p>Pokud chcete vytvářet ovládací prvky dynamicky je potřeba tyto prvky vytvořit
+    dříve, než dojde k načtení stránky (pokud je budete vytvářet později, prvky
+    se sice zobrazí, ale po provedení postbacku se ztratí v nich uložená data).
+    Obvykle je nejlepší řešení vytvářet ovládací prvky v metodě <code>OnInit</code>.
+    Vytvořené ovládací prvky si ASP.NET při post-backu automaticky nepamatuje
+    a proto je potřeba vytvářet ovládací prvky ne jednou, ale při každém dotazu 
+    na stránku. Při vytváření ovládacích prvků je také potřeba vědět kam se prvky 
+    mají na stránku vkládat (je také důležité, aby se prvky vkládaly mezi <code>form</code>,
+    který má nastavený atribut <code>runat=server</code>). K tomuto účelu je v ASP.NET
+    ovládací prvek <code>PlaceHolder</code>, do kterého je možné pouze vkládat 
+    vytvářené ovládací prvky.</p><p>Kód, který vytvoří v metodě <code>OnInit</code> několik tlačítek a přidá je do 
+    PlaceHolderu <code>placeCtrls</code> vypadá takto:</p><pre><span class="c">// Vytvori 5 buttonu a prida je do placeCtrls</span>
+override protected void OnInit(EventArgs e)
+{
+  for(int i=1; i&lt;=5; i++)
+  {
+    <span class="c">// Vytvori ovladaci prvek..</span>
+    Button btn=new Button();
+    btn.ID=string.Format("btn{0}",i);
+    btn.Text=string.Format("Cudlik {0}",i);
+    <span class="c">// .. a prida ho do placeCtrls</span>
+    placeCtrls.Controls.Add(btn);
+  }
+  
+  <span class="c">// Volani nutne pro Asp.Net</span>
+  InitializeComponent();
+  base.OnInit(e);
+}</pre><h3>Zpracování událostí</h3><p>Pokud již vytváříte nějaké ovládací prvky, budete také pravděpodobně potřebovat
+    k těmto ovládacím prvkům nějak přistupovat a nebo zachytávat jejich události.
+    Nejprve se podíváme jak lze rozšířit předchozí ukázku tak, aby aplikace po stisknutí 
+    tlačítka vypsala jaké tlačítko bylo stisknuto. Nejprve je potřeba přidat kód,
+    který přiřadí kliknutí na tlačítko nějakou událost. Pokud tuto událost přiřadíte
+    všem generovaným tlačítkům, budete při její vyvolání potřebovat rozlišit, které
+    tlačítko ji vyvolalo. Kvůli tomu předává ASP.NET jako první parametr události objekt 
+    který událost vyvolal (v našem případě stisknuté tlačítko).</p><pre><span class="c">// Prirazeni udalosti - 
+// radku pridejte ke kodu generujicimu tlacitka</span>
+btn.Click+=new EventHandler(btn_Click);
+...
+
+<span class="c">// Metoda ktera zpracovava kliknuti</span>
+private void btn_Click(object sender, EventArgs e)
+{
+  <span class="c">// Zjisti objekt stisknuteho tlacitka</span>
+  Button clicked=(Button)sender;
+  <span class="c">// Vypise text zobrazeny na tlacitku</span>
+  lblMessage.Text="Klikli jste na tlacitko: "+clicked.Text;
+}
+  </pre><h2>Přídávání ovládacích prvků</h2><p>Kód ukázaný v předchozí ukázce ve většině případů plně postačuje. Občas je ale
+    potřeba aby počet (typ a nebo nějaké jiné nastavení) ovládacích prvků mohl
+    uživatel při práci se stránkou měnit. Tím se situace zkomplikuje hned ze dvou
+    důvodů. Za prvé si stránka musí nějakým způsobem ukládat toto nastavení aby
+    mohla při načítání vytvářet příslušné ovládací prvky a za druhé je potřeba
+    aby aplikace nepřidávala ovládací prvky při zpracování nějaké události ale dříve
+    (Například pokud uživatel klikne na tlačítko, které má přidat textové pole,
+    je potřeba toto pole přidat ještě dříve než se událost ve skutečnosti vyvolá).
+    Naznačení, jak řešit tyto problémy naleznete ve zbývající části článku, pro
+    kompletní řešení se podívejte do <a href="#links">zdrojových kódů</a>.</p><div style="text-align:center;padding:10px;"><img src="http://www.eeeksoft.net/articles/dynamicasp/controls.png" alt="Ukázková aplikace" style="margin-left:auto; margin-right:auto;" /><br /><small>Aplikace, která umožňuje přídávání textových polí</small></div><h3>Přidávání textových polí</h3><p>Nejprve se podíváme na druhý problém, tedy jak při kliknutí na tlačítko Přidat (<code>btnAdd</code>) 
+    vytvořit textové pole dříve než dojde k vyvolání události. Vzhledem k tomu,
+    že ASP.NET generuje tlačítka jako <code>input type="submit"</code>, lze k
+    zachycení události využít vlastnosti HTML forumláře. Při kliknutí 
+    na submit tlačítko se předává v kolekci <code>Request.Form</code> jeho hodnota
+    a tato kolekce je přístupná již v metodě <code>OnInit</code>. Pokud tedy máme na stránce
+    tlačítko (<code>btnAdd</code>) a textové pole (<code>txtName</code>), je možné 
+    zjistit zda uživatel kliknul na tlačítko a jaký zadal text následujícím způsobem:</p><pre>
+override protected void OnInit(EventArgs e)
+{
+  <span class="c">// Pokud uzivatel kliknul na tlacitko
+  // bude zde vyplneno jmeno tlacitka</span>
+  if (Request.Form["btnGenerate"]!=null)
+  {
+    <span class="c">// Jmeno je nutne zjistit take pres Form,
+    // protoze Asp.Net data jeste nenacetlo</span>
+    string jmeno=Request.Form["txtName"];
+    ...
+  }
+  InitializeComponent();
+  base.OnInit(e);
+}
+</pre><h3>Ukládání nastavení ovládacích prvků</h3><p>Druhým problémem, o kterém jsem se zmiňoval je potřeba ukládat nastavení
+    o generovaných ovládacích prvcích. V ukázkové aplikaci (viz obrázek) je 
+    potřeba ukládat jména checkboxů, které se dynamicky vytvářejí. Když se podíváte,
+    v jakém pořadí se zpracovávají ASP.NET stránky (viz [<a href="#links">1</a>])
+    je vidět, že toto nastavní se musí nastavit před načítáním dat ovládacích
+    prvků (Process postback data). Pokud chceme toto nastavení ukládat do <code>ViewState</code>
+    (což je nejrozumnější místo) tak ale nemůžeme ovládací prvky vytvářet již
+    při <code>OnInit</code>, protože <code>ViewState</code> se načítá až později.
+    Potřebujeme tedy nějakou metodu, která se volá pří, nebo po druhém kroku
+    (Load view state). Tato metoda se (kupodivu) jmenuje <code>LoadViewState</code>,
+    spolu s metodou <code>SaveViewState</code> je pomocí těchto dvou metod možné
+    ovlivnit způsob jakým se ukládá ViewState stránky.</p><p>V ukázkové aplikaci bude tedy nastavení checkboxů ukládaáno v <code>SaveViewState</code>
+    a toto nastavení budeme načítat ve volání <code>LoadViewState</code> (v tento okamžik
+    je možné vytvářet ovládací prvky). Tyto metody obstarávají v ASP.NET stránce
+    celé ukládání ViewState, takže při jejich úpravě je potřeba volat metodu předka,
+    která zajišťuje zpracování ViewState všech ovládacích prvků na stránce.</p><small>Následující ukázka obsahuje pouze nejdůležitější část kódu, komletní příklad si <a href="#links">můžete stáhnout</a></small><pre><span class="c">// Zde si pri nacteni ulozime nastaveni</span>
+string gen="";
+
+<span class="c">// Uklada nastaveni do view state
+// Metoda musi take ulozit nastaveni cele stranky</span>
+protected override object SaveViewState()
+{
+  object[] vs=new object[2];
+  <span class="c">// Do pole se ulozi nastaveni ovladacich prvku</span>
+  vs[1]=gen;
+  <span class="c">// .. a puvodni ViewState</span>
+  vs[0]=base.SaveViewState();
+  return vs;
+}
+
+<span class="c">// Nacita nastaveni z view state
+// Jako parametr Asp.Net predava cela data ve ViewState</span>
+protected override void LoadViewState(object savedState)
+{
+  object[] vs=(object[])savedState;
+  string savedGen=(string)vs[1];
+  ...
+  VytvoritOvladaciPrvkyPodleNastaveni(savedGen);
+  ...
+  <span class="c">// Nacist puvodni ViewState pro zbytek stranky</span>
+  base.LoadViewState(vs[0]);
+}
+</pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpconcontrolexecutionlifecycle.asp">Control Execution Lifecycle</a>
+    [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpconcontrolexecutionlifecycle.asp" target="_blank">^</a>] - MSDN Library</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/dynamicasp/clanek.zip">Stáhnout tento článek v čistém HTML</a> (63 kB)</li><li><a href="http://www.eeeksoft.net/articles/dynamicasp/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (23 kB)</li></ul></body></doc>

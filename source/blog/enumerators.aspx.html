@@ -1,0 +1,205 @@
+<!-- [info]
+
+ - date: 2006-05-21T03:14:53.0000000
+ - description: V tomto článku se podíváme na psaní vlastních kolekcí, které implementují rozhraní IEnumerable a lze je tedy procházet pomocí příkazu foreach.
+ - tags: 
+ - layout: post
+ - title: .NET, C# - Používání a psaní enumerátorů
+ - url: enumerators.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto článku se podíváme na psaní vlastních kolekcí, které implementují rozhraní IEnumerable a lze je tedy procházet pomocí příkazu foreach.
+[/abstract] -->
+
+<h1>.NET, C# - Používání a psaní enumerátorů</h1>
+<doc version="1"><body><h1>.NET, C# - Používání a psaní enumerátorů</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak lze procházet prvky kolekcí pomoci enumerátorů</li><li>Jak se píšou vlastní enumerátory pro procházení vlastních kolekcí</li><li>A jak vše zjednodušuje klíčové slovo <code>yield return</code> (v C# 2.0)</li></ul><p>V .NETu je celá řada kolekcí, do kterých lze ukládat větší počet
+    objektů stejného typu. O tom jaké různé kolekce v .NET Frameworku naleznete
+    jsem psal již dřive [<a href="#links">1</a>], nejznámějším je jistě obyčejné
+    pole, dále třída <code>ArrayList</code> a od verze .NET 2.0 i generické 
+    třídy, jako například <code>List&lt;T&gt;</code>. U generických kolekcí je
+    místo <code>T</code> možné doplnit nějaký konkrétní typ a získáte tak 
+    kolekci která má ve všech metodách (přidávání, získávání prvků) přímo váš 
+    typ, takže odpadá přetypovávání, které například u třídy <code>ArrayList</code>
+    bylo nutné používat.</p><p>Všechny tyto kolekce umožňují jednotným způsobem přistupovat k prvkům 
+    v kolekci a to pomocí takzvaných enumerátorů. Kolekce, která tento přistup
+    podporuje implementuje rozhraní <code>IEnumerable</code> (to vrací jednotlivé
+    položky jako typ <code>object</code>) a nebo modernější (od .NET 2.0) rozhraní
+    <code>IEnumerable&lt;T&gt;</code>, které umožňuje přistupovat k položkám
+    přes jejich skutečný typ.</p><p>Enumerátor je jednoduchý objekt, který je vrácen metodou <code>GetEnumerator</code> z kolekce.
+    Tento objekt obsahuje referenci na aktuální prvek v kolekci (při vytvoření
+    ukazuje před začátek kolekce) a pomocí metody <code>MoveNext</code> se dokáže
+    posouvat na další prvky. Tyto enumerátory vnitřně používá i příkaz <code>foreach</code> v jazyce C#,
+    takže pomocí tohoto příkazu lze procházet libovolnou kolekci, která 
+    implementuje <code>IEnumerable</code>.</p><h2>IEnumerator a foreach</h2><p>Nejprve se tedy podíváme jak se s enumerátory pracuje. Jako příklad
+    použijeme pole (které implementuje negenerickou verzi rozhraní <code>IEnumerable</code>)
+    a třídu <code>List&lt;int&gt;</code>, tedy generický seznam čísel.</p><pre><span class="c">// Pole implementuje IEnumerable</span>
+int[] collection1 = new int[] { 1,2,3,4,5 };
+
+<span class="c">// List&lt;T&gt; implementuje IEnumerable&lt;T&gt;</span>
+List&lt;int&gt; collection2 = new List&lt;int&gt;();
+collection2.Add(1);
+collection2.Add(2);
+collection2.Add(3);
+collection2.Add(4);
+collection2.Add(5);
+
+<span class="c">// prochazeni kolekce pomoci foreach</span>
+foreach(int n in collection1)<span class="c"></span>
+{
+  Console.Write(n);
+}
+</pre><p>Teď máme vytvořené dvě kolekce pro testovací účely. Procházení kolekcí 
+    pomocí příkazu <code>foreach</code> v předcházející ukázkce jistě není pro 
+    nikoho nové. Ve skutečnosti je ale <code>foreach</code> pouze zkratka za 
+    konstrukci, kterou můžete vidět v následujícím příkladě:</p><pre>
+IEnumerator&lt;int&gt; enumerator2 = collection2.GetEnumerator();
+while(enumerator2.MoveNext())
+{
+  Console.Write(enumerator2.Current);
+}
+</pre><p>Je vidět, že pro procházení se pomocí metody <code>GetEnumerator</code> nejprve
+    vytvoří instance enumerátoru. Tento objekt má metodu <code>MoveNext()</code>,
+    pomocí které se posouvá na další prvek v kolekci a vlastnost <code>Current</code>,
+    přes kterou lze přistupovat k aktuálnímu prvku na který enumerátor odkazuje.
+    Po vytvoření enumerátor ukazuje před začátek kolekce a až prvním voláním metody
+    <code>MoveNext()</code> se dostane na první prvek v kolekci. Procházení kolekce
+    skončí ve chvíli, kdy tato metoda vrátí <code>false</code>, což znamená, že 
+    jsme došli na konec seznamu.</p><h2>Vlastní kolekce a enumerátory</h2><p>Pokud píšete vlastní kolekci pro ukládání dat a chcete aby s ním bylo možné
+    pracovat standardním způsobem (tedy například procházet pomocí konstrukce <code>foreach</code>),
+    tak budete potřebovat vytvořit také enumerátor. V současné době existují dva způsoby
+    jak toto udělat. První, který vám dává plnou kontrolu nad tím, jak se enumerátor
+    chová, je napsat vlastní třídu implementující rozhraní <code>IEnumerable</code>. 
+    Tento způsob je poměrně zdlouhavý a proto v C# 2 přibyla druhá možnost 
+    a to napsat pouze metodu, která vrací postupně jednotlivé prvky z kolekce.</p><p>Protože cílem tohoto článku je vysvětlit jak enumerátory fungují, podíváme
+    se nejprve na zdlouhavější metodu, kterou bylo potřeba používat až do 
+    příchodu C# 2. Pro příklad vytvoříme kolekci, která ukládá čísla v zřetězeném seznamu.
+    Seznam je složený z objektů typu <code>Node</code>, které v sobě obsahují
+    nějaká data (číslo) a odkaz na další buňku seznamu. Struktura pro jednotlivé
+    buňky vypadá následujícím způsobem:</p><pre>
+class Node
+{
+  <span class="c">// data v node</span>
+  public int Value;
+  <span class="c">// dalsi node v retezu</span>
+  public Node Next;
+}
+</pre><p>Kompletní implementaci seznamu naleznete v přiložených zdrojových kódech. 
+    Pro tento článek důležitá část kódu kolekce je implementace rozhraní 
+    <code>IEnumerable</code> tedy metody <code>GetEnumerator()</code>, která vrací
+    enumerátor:</p><pre>
+class CustomCollection1 : IEnumerable&lt;int&gt;
+{
+  <span class="c">// prvni node</span>
+  Node _first;
+
+  <span class="c">// Vytvari kolekci z pole integeru</span>
+  public CustomCollection1(int[] prvky)
+  {
+    <span class="c">// ...</span>
+  }
+
+  <span class="c">// Vraci enumerator - tedy objekt pomoci ktereho se
+  // bude prochazet prez prvky kolekce</span>
+  public IEnumerator&lt;int&gt; GetEnumerator()
+  {
+    return new MyEnumerator(_first);
+  }
+
+  <span class="c">// Z duvodu zpetne kompatibility je krom rozhrani 
+  // IEnumerable&lt;int&gt; implementovat i IEnumerable</span>
+  IEnumerator IEnumerable.GetEnumerator()
+  {
+    return GetEnumerator();
+  }
+}
+</pre><p>Tato ukázkové kolekce implementuje generickou verzi rozhraní a proto je 
+    potřeba implementovat metodu, která vrací enumerátor implementující
+    <code>IEnumerator&lt;T&gt;</code>. Kromě této metody je ale z důvodu 
+    zpětné kompatibility potřeba přidat i negenerickou verzi metody. 
+    Její implementace je ale velmi jednoduchá, protože stačí vracet objekt
+    vytvářený generickou metodou. Tento příklad tedy ukazuje jakým způsobem lze
+    napsat kolekci, ale stále ještě chybí to nejdůležitější - to jest objekt
+    implementující enumerátor. V kódu se již vyskytuje objekt <code>MyEnumerator</code>,
+    který v konstruktoru bere jako parametr referenci na první prvek seznamu.
+    Nyní se tedy podíváme, jak lze implementovat tento objekt a jakým způsobem
+    v něm projít všechny prvky.</p><pre><span class="c">// Enumerator ktery prochazi kolekci objektu </span>
+class MyEnumerator : IEnumerator&lt;int&gt;
+{
+  <span class="c">// Reference na prvni a aktualni prvek seznamu</span>
+  Node _first, _current=null;
+  
+  <span class="c">// Vytvari enumerator - parametr je reference na zacatek kolekce</span>
+  public MyEnumerator(Node node)
+  {
+    _first = node;
+  }
+
+  <span class="c">// Vraci aktualni prvek</span>
+  public int Current 
+  {
+    get { return _current.Value; } 
+  }
+
+  <span class="c">// Vraci aktualni prvek jako objekt (kvuli .NET 1.0 enumeratorum)</span>
+  object IEnumerator.Current 
+  {
+    get { return Current; } 
+  }
+
+  <span class="c">// Posouva enumerator na dalsi hodnotu
+  // Pri prvnim volani by mela nastavit Current na prvni hodnotu</span>
+  public bool MoveNext()
+  {
+    if (_current == null) 
+      <span class="c">// prvni volani</span>
+      _current = _first;
+    else
+      <span class="c">// posun na dalsi prvek</span>
+      _current = _current.Next;
+
+    return _current != null;
+  }
+
+  <span class="c">// Reset enumeratoru pred zacatek</span>
+  public void Reset()
+  {
+    _current = null;
+  }
+
+  <span class="c">// Enumeratory jsou IDisposable</span>
+  public void Dispose() {}
+}
+</pre><h2>Enumerátory v C# 2</h2><p>Nyní jsme si ukázali jak lze napsat vlastní kolekci s vlastním enumerátorem,
+    takže je na procházení kolekcí možné používat příkaz <code>foreach</code>. To
+    že psaní takovéto třídy není úplně nejjednodušší si uvědomili i autoři jazyka
+    C# a proto v nové verzi poskytují mnohem lepší způsob pro psaní enumerátorů.
+    Řešení ukázané výše samozřejmě lze použít i v C# 2, ale kromě něj přibyla 
+    druhá možnost.</p><p>Pokud si pozorně prohlédnete kód, který je potřeba pro psaní enumerátoru,
+    zjistíte, že jediná skutečně důležitá část kódu je funkce <code>MoveNext</code>,
+    která posouvá enumerátor na další prvek. V C# 2 existuje možnost, napsat 
+    funkci, která vrací <code>IEnumerator</code>, ale místo toho, aby vracela
+    instanci nějakého objektu vrací postupně jednotlivé prvky z kolekce. Kompilátor
+    poté vygeneruje třídu - enumerátor za vás. Následující kód ukazuje 
+    enumerátor z předcházejícího příkladu napsaný v C# 2:</p><pre><span class="c">// Vraci postupne vsechny prvky kolekce</span>
+public IEnumerator&lt;int&gt; GetEnumerator()
+{
+  Node current = _first;
+  while(current != null) 
+  {
+    <strong>yield return</strong> current.Value;
+    current = current.Next;
+  }
+}
+</pre><p>Tím se příklad celkem podstatně zjednodušuje. Používá se zde nové klíčové 
+    "dvouslovo" <code>yield return</code>, pomocí kterého lze postupně vracet
+    jednotlivé prvky. Prvky se vracejí až ve chvíli kdy jsou potřeba, takže 
+    pokud budete takovouto kolekci procházet pomocí <code>foreach</code>, 
+    doběhne program k prvnímu volání <code>yield return</code>, poté se 
+    provede kód uvnitř <code>foreach</code> cyklu a následně se, při načítání
+    dalšího prvku z enumerátoru, opět vrátí program do této funkce a proběhne další
+    cyklus v enumerátoru až do dalšího volání <code>yield return</code>. 
+    Celé procházení se opakuje až dokud metoda <code>GetEnumerator</code> neskončí,
+    protože poté vygenerovaný enumerátor vrátí z metody <code>MoveNext</code> hodnotu
+    <code>false</code> a procházení kolekce je tím ukončeno. </p><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://www.tomasp.net/articles/collections.aspx">Kolekce a seznamy objektů</a>
+      [<a href="http://www.tomasp.net/articles/collections.aspx" target="_blank">^</a>]</li></ul><ul class="externallinks"><li><a href="http://www.tomasp.net/articles/enumerators/clanek.zip">Stáhnout tento článek v čistém HTML</a> (4 kB)</li><li><a href="http://www.tomasp.net/articles/enumerators/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (4 kB)</li></ul></body></doc>

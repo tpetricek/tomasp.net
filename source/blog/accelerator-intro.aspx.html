@@ -1,0 +1,297 @@
+<!-- [info]
+
+ - date: 2009-12-21T03:21:03.0000000
+ - description: This article shows how to write F# programs that run in parallel as shader programs on GPU or on multi-core CPU using Microsoft Research Accelerator project.
+ - tags: functional,academic,meta-programming,accelerator,f#,math and numerics
+ - layout: post
+ - title: Accelerator and F# (I.): Introduction and calculating PI
+ - url: accelerator-intro.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/accelerator-intro/montecarlo.png" alt="Calculating Pi using Monte-Carlo" style="float:left; margin:10px" />
+<p>I already wrote about two projects that I worked on during an internship at
+  MSR back in 2007 (<a href="http://tomasp.net/blog/aspnet-in-fsharp.aspx" type="external">ASP.NET support in F#</a> and
+  <a href="http://tomasp.net/blog/fswebtools-intro.aspx" type="external">F# WebTools</a>).
+  Even though this was more than 2 years ago (and I did one more internship at MSR in the meantime),
+  I still have one more project that I never published on the web. The folks from the F# team
+  reminded me of this project recently, so I thought I could finally publish it. The project 
+  used Microsoft Research Accelerator [<a href="#accelfsh1links">1</a>, <a href="#accelfsh1links">2</a>], 
+  which is a C# library for developing array-based computations and executing them on a GPU. 
+  More recently, the Accelerator team at MSR published Accelerator v2 [<a href="#accelfsh1links">3</a>],
+  which was a good motivation to update my original project...</p>
+  
+<p>In this article, we'll look at the simplest way of using Accelerator from F#. Accelerator
+  provides a managed interface that can be naturally used from both C# and F#. We can use
+  a mix of method calls and overloaded operators to describe a computation. In F#, we'll also 
+  define our additional custom operators to make the code a bit nicer. After we introduce
+  Accelerator using a simple C# demo, we'll look how to calculate an approximate value of
+  the PI number using a Monte-Carlo method.</p>
+<p>This article is the first one from a series about using Accelerator from F#. The list
+  of articles may change, but here is a list of articles that I'm currently planning to write:</p>
+<ul>
+  <li><strong>Accelerator and F# (I.): Introduction and calculating PI</strong></li>
+  <li><a href="http://tomasp.net/blog/accelerator-life-game.aspx">Accelerator and F# (II.): The Game of Life on GPU</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-dataparallel.aspx">Accelerator and F# (III.): Data-parallel programs using F# quotations</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-quotations.aspx">Accelerator and F# (IV.): Composing computations with quotations</a></li>
+</ul>
+[/abstract] -->
+
+<h1>Accelerator and F# (I.): Introduction and calculating PI</h1>
+<img src="/articles/accelerator-intro/montecarlo.png" alt="Calculating Pi using Monte-Carlo" style="float:left; margin:10px" />
+<p>I already wrote about two projects that I worked on during an internship at
+  MSR back in 2007 (<a href="http://tomasp.net/blog/aspnet-in-fsharp.aspx" type="external">ASP.NET support in F#</a> and
+  <a href="http://tomasp.net/blog/fswebtools-intro.aspx" type="external">F# WebTools</a>).
+  Even though this was more than 2 years ago (and I did one more internship at MSR in the meantime),
+  I still have one more project that I never published on the web. The folks from the F# team
+  reminded me of this project recently, so I thought I could finally publish it. The project 
+  used Microsoft Research Accelerator [<a href="#accelfsh1links">1</a>, <a href="#accelfsh1links">2</a>], 
+  which is a C# library for developing array-based computations and executing them on a GPU. 
+  More recently, the Accelerator team at MSR published Accelerator v2 [<a href="#accelfsh1links">3</a>],
+  which was a good motivation to update my original project...</p>
+  
+<p>In this article, we'll look at the simplest way of using Accelerator from F#. Accelerator
+  provides a managed interface that can be naturally used from both C# and F#. We can use
+  a mix of method calls and overloaded operators to describe a computation. In F#, we'll also 
+  define our additional custom operators to make the code a bit nicer. After we introduce
+  Accelerator using a simple C# demo, we'll look how to calculate an approximate value of
+  the PI number using a Monte-Carlo method.</p>
+<p>This article is the first one from a series about using Accelerator from F#. The list
+  of articles may change, but here is a list of articles that I'm currently planning to write:</p>
+<ul>
+  <li><strong>Accelerator and F# (I.): Introduction and calculating PI</strong></li>
+  <li><a href="/blog/accelerator-life-game.aspx">Accelerator and F# (II.): The Game of Life on GPU</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-dataparallel.aspx">Accelerator and F# (III.): Data-parallel programs using F# quotations</a></li>
+  <li><a href="http://tomasp.net/blog/accelerator-quotations.aspx">Accelerator and F# (IV.): Composing computations with quotations</a></li></ul>  
+
+<h2>Introducing Accelerator</h2>  
+<p>Accelerator v2 is implemented in native code, but ships with a managed wrapper that 
+  allows us to use it elegantly from C# and other managed languages as well. The library
+  exposes various types that can be used for creating data-parallel computations that 
+  process 1D or 2D arrays of data. In this article, we'll work with <code>FloatParallelArray</code>,
+  which represents a computation that returns a 1D array of floats (<code>float[]</code> in C#).</p>
+<p>Accelerator provides overloaded operators for point-wise operations with arrays,
+  so you can for example write <code>res = nums1 * nums2</code> which represents a point-wise
+  multiplication of two arrays (<code>res[i] = nums1[i] * nums2[i]</code> for each <code>i</code>). 
+  Aside from overloaded operators, we can use other operations with arrays that are available
+  as static methods in the <code>ParallelArrays</code> class. For example the <code>Shift</code>
+  method moves elements of the array to the left or to the right. Shifting elements of an array
+  <code>[1; 2; 3; 4]</code> to the right by 1 will result in <code>[1; 1; 2; 3]</code> (the first
+  element is left unchanged).</p>
+<p>When writing code that calculates with the <code>FloatParallelArray</code> type, it is 
+  important to realize, that we're not actually running any computations yet! The type 
+  <em>represents</em> a computation and doesn't perform it. This means that when you write
+  a computation that adds some arrays and performs a few other operations, Accelerator only
+  remembers what do you want to do with the data. The computation is executed later
+  when we create a <em>target</em> that knows how to perform the operations. If you're 
+  familiar with LINQ to SQL, you already know this idea - writing calculation with the
+  <code>FloatParallelArray</code> type is just like writing a LINQ query. Executing the
+  computation later corresponds to running the LINQ query as a SQL code. The two 
+  available targets allow us to run the code on a multi-core CPU (only on 64bit) and on 
+  a GPU using DirectX 9 (in this case, the code is translated to shader code).</p>
+
+<p>Enough with theory for now and let's look at some actual example. I'll start with a very 
+  brief code that shows how to use Accelerator in C# and then we'll look at some more interesting
+  F# code. Assume we have an array of <code>float</code> values named <code>nums</code>. 
+  The following example builds a computation that calculates an average value of an element 
+  and two its neighbors for each element in the array:</p>
+<pre lang="csharp">
+var input = new FloatParallelArray(nums);
+var sum = 
+  ParallelArrays.Shift(input, 1) + input + 
+  ParallelArrays.Shift(input, -1);
+var output = sum / 3.0f;
+</pre>
+<p>We start by creating a new <code>FloatParallelArray</code> instance that stores the
+  input data for the program (this represents a constant computation). Then we write a 
+  calculation that adds three arrays - the input array and the input array shifted 
+  by 1 both to the left and to the right. Finally, on the last line, we divide the 
+  array by 3. This is also a point-wise operation, so it actually divides each element
+  of the array by 3. Now that we have a <code>FloatParallelArray</code> named <code>output</code>,
+  which represents the computation, we can run it using GPU:</p>
+<pre lang="csharp">
+var target = new DX9Target();
+var res = target.ToArray1D(output);
+</pre>
+<p>The code to run the computation is quite simple. We first initialize a <em>target</em>.
+  We're using <code>DX9Target</code>, which executes computations using GPU. If we wanted
+  to run the operation using multi-core CPU, we could use <code>X64MulticoreTarget</code>
+  (but note that this works only on x64). If you run the code, you'll get results like this:</p>
+<pre>
+7, 5, 5, 1, 5, 1, 0, 7, 6, 5
+6, 6, 4, 4, 2, 2, 3, 4, 6, 5
+</pre>
+<p>If you know a little bit about F#, you probably wouldn't have any troubles 
+  using Accelerator from F#. Since F# is a fully-compatible managed language, 
+  we can use any .NET libraries in a very similar way as in C#. However, we 
+  can use a couple of tricks to make the F# code nicer and more readable than the 
+  corresponding C# version...</p>
+
+<h2>Calculating PI in F#</h2>
+<p>Before we look at the calculation itself, we'll write a few lines of code
+  that will make the rest of program nicer. This will be shared with the
+  upcoming articles in the series and in principle, we could encapsulate
+  the functionality in an F# library. However, I'll make the code as simple
+  as possible and just write it again in each project.</p>
+
+<h3>Using Accelerator from F#</h3>
+<p>First of all, we'll need to add reference to the <code>Microsoft.Accelerator.dll</code>
+  assembly. This is just a managed wrapper for a native library that also needs to 
+  be copied to the output directory. You'll need to find an appropriate version of
+  native <code>Accelerator.dll</code> in the Accelerator installation directory 
+  (either x86 or x64 version) and copy it to <code>bin/Debug</code> in your project.
+  Then we can start by writing a couple of helpers:
+</p>
+<pre lang="fsharp">
+open Microsoft.ParallelArrays
+
+type PA = Microsoft.ParallelArrays.ParallelArrays
+type FPA = Microsoft.ParallelArrays.FloatParallelArray
+
+// Initialization of constant 2D arrays
+let gridSize = 4096
+let shape = [| gridSize; gridSize; |]
+let zero, one = new FPA(0.0f, shape), new FPA(1.0f, shape)
+</pre>
+<p>We start by opening the namespace that contains all the Accelerator functionality.
+  To make the code a little bit more succinct, we also define two type aliases. The
+  <code>FPA</code> type represents a computation that returns an array of floats when
+  executed. The <code>PA</code> type represents the static class which contains 
+  operations for working with these computations.</p>
+<p>Next, we specify the size of the array we'll use during the computation - we'll
+  work with 2D arrays of the size 4096x4096. Under the cover, this will be used
+  as a size of a texture on the GPU that's used to perform the computation using
+  shaders. Even though we could work with one-dimensional arrays as well, using
+  2D arrays is a good idea, because it can be easier processed on the GPU.</p>  
+<p>We'll also create two simple <code>FPA</code> instances that represent 
+  constant computations. The first one contains zeros and the second one contains
+  ones. The second parameter of the constructor specifies the size of the array
+  we're creating (using an array of integers with two elements). Since many of the
+  operations that Accelerator can perform are point-wise, we'll need the two
+  constants (<code>zero</code> and <code>one</code>) when encoding the algorithm.</p>
+<p>As the last thing before looking at the actual computation, we'll also write
+  three functions that wrap functionality that's available using static methods 
+  in C# (we could of course use static methods directly, but using functions 
+  will lead to a more idiomatic F# code):</p>  
+<pre lang="fsharp">
+// Calculating with 2D float arrays 
+let sqrt (a:FPA) = PA.Sqrt(a)
+let sum (a:FPA) = PA.Sum(a)
+let select (cond:FPA) (a:FPA) (b:FPA) = PA.Select(cond,a,b)
+</pre>
+<p>The <code>sqrt</code> function is a point-wise operation that calculates
+  square roots of all elements of the array. <code>sum</code> is a little bit more
+  interesting - it adds all numbers from the source array and returns an array that
+  contains just a single element, which is the sum (for example sum of <code>[1; 2; 3; 4]</code>
+  will be an array <code>[10]</code>).</p>
+<p>The most interesting operation is probably the <code>select</code> function.
+  Just like others, it is a point-wise operation. It takes three arrays of floats 
+  and expects arrays of the same size. It compares the value of the first array (<code>cond</code>)
+  with zero. If the value is greater than or equal to zero, it returns a value from 
+  the first array (<code>a</code>), otherwise it returns value from <code>b</code>
+  For a one-dimensional array, this corresponds to the following C# code:
+  <code>res[i] = cond[i]&gt;=0 ? a[i] : b[i]</code> (for each index <code>i</code>).
+  Now, let's finally move on to the PI number calculation...</p>
+
+<h3>Calculating PI using Monte Carlo</h3>
+<p>We'll implement the PI calculation using a <a href="http://en.wikipedia.org/wiki/Monte_Carlo_method" type="external">Monte 
+  Carlo</a> method. The idea of the algorithm is that we'll generate a large number of 
+  random points in a square and then count how many of them are inside a circle inscribed
+  in the square. You can get a better idea by looking at the image at the beginning
+  of the article - the image shows a circle inside a window and a large number of 
+  randomly generated points. Points inside the circle are in green and other points
+  are in red. We'll need to count the fraction of points that are inside the circle.</p>
+<p>To start, we'll need to generate a large number of random points. We'll generate 
+  two 2D arrays with random values to represent X and Y coordinates of points. This can 
+  be done using <code>Array2D.init</code> function, which initializes an array 
+  using the function that calculates an element value (in our example, the function
+  is called <code>generator</code>):</p>  
+<pre lang="fsharp">
+let rnd = new Random()
+let generator x y = float32(rnd.NextDouble())
+
+let px = new FPA(Array2D.init gridSize gridSize generator)
+let py = new FPA(Array2D.init gridSize gridSize generator)
+</pre>
+<p>Once we have .NET arrays with random values, we use them to create
+  constant computations represented as the <code>FloatParallelArray</code> type
+  from Accelerator. Next, we'll write a function that takes a <em>target</em>
+  (an object that knows how to evaluate <code>FloatParallelArray</code> computations)
+  and calculates an approximate value of PI using our random points:</p>
+
+<pre lang="fsharp">
+let calculatePi (target:Target) =
+  // Calculate distances of points from the center
+  let pxc, pyc = (px - 0.5f) * 2.0f, (py - 0.5f) * 2.0f
+  let distances = sqrt ((pxc * pxc) + (pyc * pyc))
+
+  // Count points with distance less than one
+  let inCircle = select (one - distances) one zero
+  let count = sum(inCircle)
+
+  // Evaluate the count and calculate PI
+  let result = target.ToArray1D(count)
+  result.[0] / (float32(gridSize * gridSize) / 4.0f)
+</pre>
+
+<p>The first two blocks of code work with the <code>FPA</code> type, which
+  means that we're just composing a computation, which we'll execute later.
+  We start by adjusting the random values a little bit. The numbers are
+  in range 0 to +1, so we subtract 0.5 and multiply the values by 2, to get
+  arrays with values in range -1 to +1. Next, we create a new array that
+  represents distances of points from the point (0, 0). Note that each 
+  <code>i, j</code> coordinate in the 2D array represents a single point.</p>
+
+<p>Once we have the <code>distances</code> value, we want to count the 
+  number of points that are inside the circle - this means points with
+  distance less than or equal to 1. This can be implemented using a trick.
+  We subtract <code>distances</code> from <code>one</code> and get an array
+  with value larger than or equal to 0 when the point is inside the circle.  
+  Then we use the <code>select</code> function to get 1 for points inside
+  the circle and 0 for all other points (as a reminder - this use of
+  the  <code>select</code> function corresponds to the following C# code:
+  <code>(one - distances)[i] >= 0 ? one[i] : zero[i]</code>). If we
+  then sum all values inside the 2D array, we'll get the count of points
+  for which the result was 1 (meaning points inside the circle).</p>  
+
+<p>As the last step, we need to calculate PI from the number of points
+  inside the circle and the total number of points inside the square. The result
+  of summing is stored in an array, because Accelerator works with arrays.
+  However, it contains only one element, so we get the value using <code>result.[0]</code>.
+  Then we divide it by the total number of points and also by 4, because our 
+  square was of size 2 by 2 (values ranging from -1 to +1). And that's our
+  value of PI! The last step is to actually run the computation using
+  Accelerator:</p>
+
+<pre lang="fsharp">
+let dxTarget = new DX9Target()
+let pi = calculatePi(dxTarget)  
+printfn "Approximate PI value: %f" pi
+</pre>
+
+<p>As you can see, running the calculation is now pretty simple. We created an
+  instance of <code>DX9Target</code> to run the computation on GPU and passed it 
+  to our function that does all the work. Alternatively, we could also use <code>X64MulticoreTarget</code>
+  to run the computation in parallel on a multi-core CPU.</p>
+
+<h2>Summary</h2>
+<p>This article was a brief introduction of a very interesting Accelerator library
+  and a demonstration of using this library from F# in the simples possible way.
+  We've seen how to use the <code>FloatParallelArray</code>, which is a core type 
+  representing a computation in Accelerator and we've implemented a PI calculation
+  using it. In the next article of this series we'll look at one more example - a 
+  famous Conway's Game of Life. Later, we'll also look how to run "usual" F# code
+  (meaning, code that doesn't use <code>FloatParallelArray</code> explicitly) with
+  Accelerator using F# quotations.</p>
+
+<h2>Downloads and References<a name="accelfsh1links">&#160;</a></h2>  
+<ul>
+  <li><a href="/articles/accelerator-intro/accelerator-intro.zip">Download the PI calculation sample</a> (ZIP, 5.5kB)</li>
+</ul>
+<ul>
+  <li>[1] <a type="external" href="http://research.microsoft.com/pubs/70250/tr-2005-184.pdf">Accelerator: Using Data Parallelism to Program GPUs for General-Purpose Uses</a> - Microsoft Research</li>
+  <li>[2] <a type="external" href="http://research.microsoft.com/en-us/projects/Accelerator/">Accelerator Project Homepage</a> - Microsoft Research</li>
+  <li>[3] <a type="external" href="http://connect.microsoft.com/acceleratorv2">Microsoft Research Accelerator v2</a> - Microsoft Connect</li>
+  <li>[4] <a href="http://en.wikipedia.org/wiki/Monte_Carlo_method" type="external">Monte Carlo method</a> - Wikipedia.org</li>
+  <li>[5] <a type="external" href="http://blogs.msdn.com/satnam_singh/archive/2009/12/15/gpgpu-and-x64-multicore-programming-with-accelerator-from-f.aspx">GPGPU and x64 Multicore Programming with Accelerator from F#</a> - Satnam Singh's blog at MSDN</li>
+</ul>

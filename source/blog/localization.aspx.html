@@ -1,0 +1,173 @@
+<!-- [info]
+
+ - date: 2005-07-17T17:00:55.0000000
+ - description: V druhé části tutoriálu o lokalizaci a globalizaci aplikací se dočtete o tom jak vytvářet více-jazyčné aplikace.
+ - tags: 
+ - layout: post
+ - title: .NET - Globalizace a lokalizace aplikací (2.)
+ - url: localization.aspx
+
+[/info] -->
+<!-- [abstract]
+V druhé části tutoriálu o lokalizaci a globalizaci aplikací se dočtete o tom jak vytvářet více-jazyčné aplikace.
+[/abstract] -->
+
+<h1>.NET - Globalizace a lokalizace aplikací (2.)</h1>
+<doc version="1"><body><h1>.NET - Globalizace a lokalizace aplikací (2.)</h1><p>Toto je druhá část tutoriálu, ve kteý se zabývá
+    globalizovatelnými a lokalizovatelnými aplikacemi. V <a href="http://www.eeeksoft.net/articles/globalization.aspx">
+    prvním díle</a> jsem psal o globalizaci aplikací, což znamená že aplikace funguje
+    korektně v libovolném prostředí a také se podle tohoto nastavení chová.</p><p>V tomto druhém díle se dočtete o tom jak vytvářet lokalizovatelné aplikace, které 
+    lze snadno překládat do různých jazyků (tedy lokalizovat), protože takovéto aplikace 
+    mají oddělené zdroje, které jsou závislé na jazyce od samotného kódu.</p><p>Více o probíraných tématech naleznete například v MSDN v sekci 
+    Planning World-Ready Applications [<a href="#links">1</a>].</p><h2>Co se dočtete v této části tutoriálu</h2><ul><li>Možné postupy při lokalizování webových aplikací</li><li>Práce s resources pomocí třidy <code>ResourceManager</code></li><li>Lokalizace WinForms aplikací</li></ul><h2>Lokalizace webových aplikací</h2><p>Při lokalizaci webových aplikací lze zvolit několik možných přístupů podle typu aplikace.
+    Pokud se jedná o aplikaci s větším množstvím statických textů, je nejjednodušší možností 
+    zkopírovat <code>aspx</code> a <code>ascx</code> soubory s textovým obsahem do adresářů
+    podle jazyka a přeložit jejich obsah. Pokud je kód aplikace psán v codebehind souborech
+    a nejsou v nich žádné texty, není ani potřeba aby pro každý jazyk existovala webová 
+    aplikace, protože stačí nechat zkompilovanou <code>dll</code> knihovnu v adresáři <code>bin</code>
+    a jednotlivé lokalizované stránky uložit například do adresářů <code>en</code> a <code>cs</code>.</p><p>Pokud se jedná o aplikaci kde nejsou příliš rozsáhlé texty, ale může být i velmi rozsáhlá
+    a komplikovaná je nejlepší možností uložení jazykově specifických zdrojů do takzvaných satellite 
+    assemblies. Jedná se o <code>dll</code> soubory, které jsou uloženy v adresářové struktuře
+    určené jazyky v adresáři <code>bin</code>. K textům uloženým v těchto satellite assemblies 
+    lze poté přistupovat pomocí objektu ResourceManager.</p><h3>Detekce jazyka</h3><p>Ať již ve vaší aplikaci zvolíte kterýkoliv z možných přístupů, budete potřebovat
+    detekovat jaký jazyk má uživatel nastaven jako výchozí. K tomu lze požít HTTP hlavičku
+    <code>Accept-Languages</code> (která by měla obsahovat uživatelem preferované jazyky). 
+    V ASP.NET je možné tyto jazyky zjišťovat pomocí pole <code>Request.UserLanguages</code>,
+    které obsahuje kódy jednotlivých jazyků. Pokud chcete tedy ve vaší aplikaci rozlišit
+    české a ostatní uživatele, můžete toho dosáhnout následujícím kódem:</p><pre><span class="c">// Pokud ma uzivatel nastavenou cestinu..</span>
+foreach(string lang in Request.UserLanguages)
+{
+  if (lang==<span class="s">"cs"</span>) 
+  {
+    <span class="c">// .. provede se redirect na ceskou verzi</span> 
+    Response.Redirect(<span class="s">"cs/default.aspx"</span>);
+    return;
+  }
+}
+<span class="c">// .. ostatnim uzivatelum se zobrazi anglicka</span> 
+Response.Redirect(<span class="s">"en/default.aspx"</span>);</pre><p>Pokud chcete tento příklad otestovat, tak ve všech prohlížečích naleznete někde v nastavení
+    volbu jazyka. Internet Explorer přebírá toto nastavení z Windows, Firefox má po nainstalování
+    nastavený jazyk na angličtinu (alespoň anglická verze).</p><h2>Lokalizace pomocí resources</h2><p>V následující části vytvoříme jednoduchý projekt na kterém se pokusím demonstrovat základní
+    postupy při tvorbě lokalizovatelných webových aplikací, které mají texty uložené v 
+    resources. Visual studio umí vygenerovat satellite assemblies automaticky, pokud do projektu
+    přidáte soubor <code>*.resx</code> s textovými zdroji a jak jsem již zmiňoval lze k nim 
+    přistupovat pomocí třidy <code>ResourceManager</code>. Vytváření <code>resx</code> souborů
+    není ve VS.Net 2003 příliš pohodlné a proto doporučuji například plugin Resource Editor (viz [<a href="#links">2</a>] ).
+    </p><p>Nejprve do projektu přidáme soubory <code>Texts.resx</code> (výchozí jazyk) a <code>Texts.cs.resx</code>
+    (texty v českém jazyce). V následující ukázce se podíváme jak lze z těchto resource souborů
+    získat texty:</p><pre>
+public string GetText(string key)
+{
+  <span class="c">// 'LocalizationWeb' je vychozi namespace projektu</span>
+  ResourceManager rm=new ResourceManager(<span class="s">"LocalizationWeb.Texts"</span>,
+    System.Reflection.Assembly.GetExecutingAssembly());
+    
+  <span class="c">// Pokud neni zadano jinak tak ResourceManager 
+  // pouziva jazyk urceny v CurrentUICulture
+  // Zde se nastavi CurrentUICulture podle nastaveni uzivatele</span>
+  Thread.CurrentThread.CurrentUICulture=
+    new CultureInfo(Request.UserLanguages[0]);
+
+  <span class="c">// .. zjistuje text se zadanym klicem</span>
+  return rm.GetString(key);
+}
+</pre><p>Metoda <code>GetString</code> umožňuje jako druhý parametr předat objekt typu
+    <code>CultureInfo</code> kterým se bude řídit při hledání textu. Pokud zadáte například
+    <code>en-US</code>, tak se nejprve pokousí nalézt text, který byl zadán v souboru 
+    <code>Texts.en-US.resx</code>, pokud neexistuje tak <code>Texts.en.resx</code>
+    a naposledy <code>Texts.resx</code>.</p><p>Protože toto načítání textů vyžaduje vytváření objektů a nějaké další 
+    operace s nimi nebylo by příliš pohodlné opisovat tento kód pokaždé když potřebujete
+    načítat text z resources. Proto je dobré vytvořit si pomocnou třídu, která přístup
+    k resources zjednoduší. V ukázkové aplikaci (kterou naleznete ke stažení na 
+    konci článku) jednu takovou naleznete. Navíc je v ní ještě implementována
+    možnost změnit jazyk (toto nastavení se ukládá do cookie a je testováno 
+    dříve než se jazyk načte z <code>Request.UserLanguages</code>).</p><p>Další velké usnadnění, které umožní snadno vkládat texty z resources do
+    <code>aspx</code> stránek je vytvořit si následující bázovou stránku a od ní
+    podědit všechny stránky v projektu:</p><pre><span class="c">// Bazova stranka umoznujici pristup k resources</span>
+public class ResPage : System.Web.UI.Page
+{
+  <span class="c">// Metoda pro nacitani resources - viz predchozi priklad</span>
+  protected string GetText(string key)
+  {
+    <span class="c">// ...</span>
+  }
+}
+</pre><p>Tato bázová třída vám totiž umožní vkládat texty z resources do stránky takto:</p><pre><span class="a">&lt;%@@ Page language="c#" Inherits="LocalizationWeb.ResPage" %&gt;</span>
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h1&gt;<span class="a">&lt;%=GetText("pageHeader") %&gt;</span>&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre><p>V přiložené ukázce jsou všechny soubory s přeloženými texty (<code>resx</code>) součástí 
+    projektu a to není nejlepší řešení pokud potřebujete podporu pro další jayzky přidávat
+    bez překompilování projektu. Lokalizované texty lze ukládat i mimo projekt, ale není to
+    úplně snadné. Pro více informací se můžete podívat na článek, který k tomuto tématu vyšel 
+    na serveru <a href="http://interval.cz" target="_blank">Interval.cz</a> (viz [<a href="#links">3</a>] ).</p><h2>Lokalizace WinForms aplikací</h2><p>Lokalizace WinForms aplikací je jednodušší díky zabudované podpoře ve VisualStudiu.Net. 
+    Designer ve kterém se tvoří návrh formulářů totiž umožňuje ukládat automaticky hodnoty
+    vlastností, které se v něm nastavují do resources (<code>resx</code> souborů), které
+    se dále zkompilují do satellite assemblies obdobně jako tomu bylo v předcházejícím
+    příkladu u webových aplikací. Pokud tedy vytvoříte WinForms aplikaci a chcete přeložit
+    formulář do jiného jazyka stačí ve vlastnostech formuláře nastavit <code>Localizable</code>
+    na hodnotu <code>true</code>. Poté můžete zvolit jazyk (<code>Language</code>)
+    a pokud poté provedete nějaké změny (například změnu textu), tak se změny uloží 
+    pouze pro právě vybraný jazyk.</p><div style="text-align:center;margin:10px;"><img src="http://www.eeeksoft.net/articles/localization/properties.png" style="margin-bottom:15px;" alt="Nastavení vlastností" /><img src="http://www.eeeksoft.net/articles/localization/projexplorer.png" style="margin-left:60px;" alt="Zobrazení souborů" /></div><p>Na obrázku vlevo je naznačeno jak umožnit formuláři aby byl lokalizovatelný. Na obrázku 
+    v pravo je poté vidět jakou strukturu resource soubourů Visual Studio vytváří. V souboru
+    <code>MainForm.resx</code> je výchozí nastavení (které se použije pro všechny jazyky pro
+    které neexistuje specifický <code>resx</code> soubor). V <code>MainForm.cs.resx</code> a 
+    <code>MainForm.en.resx</code> jsou uloženy změny, které byly provedeny v době, kdy byla
+    vybrána jako jazyk čeština (respektive angličtina).</p><p>Pokud se podíváte do vygenerovaného zdrojového kódu, naleznete přibližně toto 
+    (bez připsaných komentářů):</p><pre>
+private void InitializeComponent()
+{
+  <span class="c">// Zde se vytvori resource manager pro formular MainForm</span>
+  System.Resources.ResourceManager resources=
+    new System.Resources.ResourceManager(typeof(MainForm));
+  <span class="c">// ... vytvareni ovladacich prvku ...</span><span class="c">// Lokalizovane vlastnosti se nacitaji z resources</span>
+  this.label1.Enabled = ((bool)(resources.GetObject("label1.Enabled")));
+  this.label1.Font = ((System.Drawing.Font)(resources.GetObject("label1.Font")));
+  this.label1.Text = resources.GetString("label1.Text");
+  <span class="c">// ... </span>
+}
+  </pre><img src="http://www.eeeksoft.net/articles/localization/samplewinform.gif" style="float:right;margin:10px;" alt="Ukázková aplikace" /><p>Lokalizace tedy používá již známý objekt <code>ResourceManager</code>.
+    Nejedná se tedy o nic tajemného, ale je to velmi přijemné zjdednodušení práce.
+    Pokud ve vaší aplikaci potřebujete načítat nějaké další texty (například
+    chybová hlášení), můžete postupovat stejně jako u webových aplikací tak, že
+    přidáte další <code>resx</code> soubor (a jeho jazykové mutace) ve kterém budete
+    ukládat vaše texty.</p><p>Na obrázku v pravo vidíte, jak se ukázková aplikace zobrazí ve dvou různých jazycích.
+    Abych mohl takvýto screenshot pořídit přidal jsem do aplikace ještě možnost změnit
+    před spuštěním jazyk. Stejně jako u webových aplikací i zde načítá objekt 
+    <code>ResourceManager</code> data z resources podle nastavení <code>CurrentUICulture</code>.
+    Můžete tedy ve vaší aplikaci měnit <code>CurrentUICulture</code> a tak změnit jazyk
+    ve kterém se aplikace spustí. Tuto změnu je ale potřeba provést před tím, než se
+    spustí metoda <code>InitializeComponent</code>, tj. v metodě <code>Main</code>
+    před voláním <code>Application.Run</code>:</p><pre>
+static void Main() 
+{
+  <span class="c">// Umozni uzivateli zmenit jazyk..</span>
+  DialogResult ret=MessageBox.Show(
+    <span class="s">"Click 'Yes' if you want to run english version of application.\n"</span>+
+    <span class="s">"Kliknete na 'Ne' pokud chcete spustit ceskou verzi aplikace.\n"</span>+
+    <span class="s">"Pokud kliknete na 'Cancel' pouzije se aktualni nastaveni"</span>,
+    "Localization",MessageBoxButtons.YesNoCancel);
+		
+  if (ret==DialogResult.Yes)
+  {
+    <span class="c">// zmenime CurrentUICulture na anglictinu</span>
+    Thread.CurrentThread.CurrentUICulture=
+      CultureInfo.CreateSpecificCulture(<span class="s">"en"</span>);
+  } 
+  else if (ret==DialogResult.No)
+  {
+    <span class="c">// zmenime CurrentUICulture na cestinu</span>
+    Thread.CurrentThread.CurrentUICulture=
+      CultureInfo.CreateSpecificCulture(<span class="s">"cs"</span>);
+  }
+
+  <span class="c">// a spustit aplikaci v danem jazyce..</span>
+  Application.Run(new MainForm());
+} 
+  </pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vsent7/html/vxconwhydesigninternationalsoftware.asp">Overview of Globalization and Localization</a>
+      [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vsent7/html/vxconwhydesigninternationalsoftware.asp" target="_blank">^</a>] - MSDN</li><li>[2] <a href="http://www.codeproject.com/dotnet/ResourceEditor.asp#xx798271xx">Resource Editor for VS.NET 2003</a>
+      [<a href="http://www.codeproject.com/dotnet/ResourceEditor.asp#xx798271xx" target="_blank">^</a>] - CodeProject.com a 
+       <a href="http://weblogs.asp.net/gmilano/archive/2004/04/21/117438.aspx">novější verze</a> [<a href="http://weblogs.asp.net/gmilano/archive/2004/04/21/117438.aspx" target="_blank">^</a>] - Weblog autora</li><li>[3] <a href="http://interval.cz/clanek.asp?article=3773">Vícejazyčné aplikace a autodetekce preferovaného jazyka v ASP.NET</a>
+      [<a href="http://interval.cz/clanek.asp?article=3773" target="_blank">^</a>] - Interval.cz</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/localization/clanek.zip">Stáhnout tento článek v čistém HTML</a> (32 kB)</li><li><a href="http://www.eeeksoft.net/articles/localization/sources.zip">Stáhnout zdrojové kódy ukázkových aplikací</a> (58 kB)</li></ul></body></doc>

@@ -1,0 +1,250 @@
+<!-- [info]
+
+ - date: 2007-04-30T01:26:24.0000000
+ - description: In this article we present new features in the Phalanger beta 4 which make it possible to use objects from any PHP script in C# using type-safe way.
+ - tags: phalanger
+ - layout: post
+ - title: Using PHP objects from C# in a type-safe way
+ - url: ducktyping-in-phalaner.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>When you want to call PHP scripts from mainstream .NET languages, like C# you can follow two different ways.
+  First you can use the pure mode as I demonstrated in one of the earlier articles 
+  on PHP application called Texy!. This approach can be used only for
+  some specific applications, because pure mode has several restrictions - the two most important restrictions
+  are that no global code or inclusions are allowed (you have to specify all source files during the
+  compilation), but thanks to this restrictions Phalanger is able to produce classes that are compatible
+  with .NET and can be called from C#. Second option is to create object dynamically by its name and
+  perform all method invocations by name too. This approach can be used with any PHP scripts, but
+  it isn't very convenient. In this article we present new features in the Phalanger beta 4 which 
+  extend the second approach and make it possible to use objects from any PHP script in C# using 
+  type-safe way.</p>
+[/abstract] -->
+
+<h1>Using PHP objects from C# in a type-safe way</h1>
+<p>When you want to call PHP scripts from mainstream .NET languages, like C# you can follow two different ways.
+  First you can use the pure mode as I demonstrated in one of the earlier articles 
+  on PHP application called Texy! [<a href="#phpinteroplinks">1</a>]. This approach can be used only for
+  some specific applications, because pure mode has several restrictions - the two most important restrictions
+  are that no global code or inclusions are allowed (you have to specify all source files during the
+  compilation), but thanks to this restrictions Phalanger is able to produce classes that are compatible
+  with .NET and can be called from C#. Second option is to create object dynamically by its name and
+  perform all method invocations by name too. This approach can be used with any PHP scripts, but
+  it isn't very convenient. In this article we present new features in the Phalanger beta 4 which 
+  extend the second approach and make it possible to use objects from any PHP script in C# using 
+  type-safe way.</p>
+<h2>Duck typing introduction</h2>
+<p>Let's start with a simple PHP object:</p>
+<pre lang="php">
+class SampleObj {
+  public $Message = "Hello world!";
+  function Add($a, $b) {
+    return $a + $b;
+  }
+}
+</pre>
+<p>To compile this fairly simple PHP code using Phalanger, use either Visual Studio or the
+  following simple command:</p>
+<pre>
+phpc /target:dll /out:PhpClassLib.dll main.php
+</pre>  
+<p>Now, let's get to the interesting part - how to create instance of <code>SampleObj</code> from C# and how to 
+  read it's member field <code>Message</code> or call the <code>Add</code> function. The new technique
+  in Phalanger is based on principle called <strong>duck typing</strong> (kind of structural typing system),
+  which says that object is compatible with an interface if it has all methods and properties required by 
+  the interface, regardless whether the object actually implements the interface or not. This is very interesting
+  principle that contrasts with the approach in languages like C# or Java, where
+  you can't cast object to an interface if the object doesn't implement the interface even though the object
+  may have all the methods required by the interface and so accessing to the object through this
+  interface couldn't harm encapsulation of the objects in any way.</p>
+<p>From the description you could have guessed that we will first declare C# interface which will
+  correspond to the <code>SampleObj</code> and later we will create instance of this object and cast it
+  to the declared interface using duck typing type coercion to get an view of the object allowing us
+  to easily call are required PHP methods and access PHP fields:</p>
+<pre lang="csharp">
+[DuckType]
+public interface ISampleObj
+{
+  string Message { get; set; }
+  int Add(int i1, int i2);
+}
+</pre>  
+<p>First we need to load the PHP library in the C# application:</p>
+<pre lang="csharp">
+// Get current PHP script context, set output to the console
+ScriptContext ctx = ScriptContext.CurrentContext;
+ctx.Output = Console.Out;
+
+// Load the PhpClassLib library and include the "main.php" source
+Type library_representative = typeof(PhpClassLib);
+ctx.IncludeScript("main.php", library_representative);
+</pre>
+<p>Now we need to get an instance of the <code>SampleObj</code> class and coerce it to the
+  C# <code>ISampleObj</code> interface:</p>
+<pre lang="php">
+// Create instance of object 'SampleObj' declared in PHP
+ISampleObj so = ctx.NewObject&lt;ISampleObj&gt;("SampleObj");
+
+// Set and then read the 'Message' property
+so.Message = "Hello from C# (via PHP)!";
+Console.WriteLine(so.Message);
+
+// Call add method with integers as an arguments
+int r1 = so.Add(24, 18);
+Console.WriteLine("Math: 24 + 18 = {0}", r1);
+</pre>
+<p>As you can see in this example, once you defined the interface, calling PHP objects is
+  amazingly simple! You use the interface as a type parameter of the <code>NewObject</code>
+  method and it behind the scene creates an object that implements it, so you can use it
+  for calling PHP member functions of the object. You have to be careful when declaring the 
+  interface, because if you declared a method that doesn't exist in the PHP object you will
+  get and runtime error (following the same pattern as if you called member function that doesn't exist
+  from PHP), but once the interface is declared you get all the comfort including Visual Studio
+  IntelliSense.</p>
+<h2>More Duck Typing Samples</h2>
+<p>In the previous sample we restricted the <code>Add</code> function to parameters of type <code>int</code>,
+  but this is of course not restriction in the PHP code, because the <code>Add</code> function can
+  be called with floating point numbers as a parameter and it will add them and return result as a
+  floating point number. It isn't difficult to get the same functionality in C#, because you can
+  include more overloaded versions of the method in the interface:</p>
+<pre lang="csharp">
+[DuckType]
+public interface ISampleObj
+{
+  string Message { get; set; }
+  int Add(int i1, int i2);
+  double Add(double d1, double d2);
+}
+</pre>
+<p>Another interesting situation is when the PHP object returns another PHP object as a result of the 
+  method, but as you would expect - everything you need to support this scenario is to add another
+  interface, annotate it with the <code>DuckType</code> attribute and use it as a return type of the
+  method. In this situation you can see why are interfaces need to be annotated using the attribute, 
+  because when returning object from a method, Phalanger needs to decide whether object should be 
+  treated as an direct implementation of the interface (for example when you return some .NET type)
+  or as a PHP object that should be dynamically casted to the interface using duck typing.
+</p>
+<p>To make the following sample even more interesting, we will use one more dynamic PHP feature - 
+  the magic functions <code>__call</code> and <code>__get</code>. These two functions are invoked
+  when script calls a member function or a member field that isn't explicitly declared.</p>
+<pre lang="php">
+class MagicSample {
+  function __call($name, $args) {
+    echo "Calling unknown function '$name' with ".count($args)." arguments.\n";
+  }
+  
+  function __get($name) {
+    return "Reading unknown '$name' value.";
+  }
+}
+
+class SampleObj {
+  function NewMagic() {
+    return new MagicSample;
+  }
+}
+</pre>  
+<p>Typically, you use the magic functions, because you want to make the object flexible and it is easier 
+  to implement some functionality using these magic functions, but in the C# code you'll typically
+  know the name of the function you want to call (we'll show more real-world example later). If you 
+  want to call function <code>SomeMethod</code> and read the field <code>SomeProp</code> from C#, 
+  you will need to define interfaces as follows:</p>
+<pre lang="csharp">
+[DuckType]
+public interface ISampleObj {
+  ISecondSample NewMagic();
+}
+
+[DuckType]
+public interface IMagicSample {
+  void SomeMethod(int p1, int p2, int p3);
+  string SomeProp { get; }
+}
+</pre>  
+<p>Using this two objects gives the same results you would expect when using them directly from PHP:</p>
+<pre lang="csharp">
+// Create instance of object 'SampleObj' declared in PHP
+ISampleObj so = ctx.NewObject&lt;ISampleObj&gt;("SampleObj");
+
+// Returning PHP objects from PHP
+IMagicSample mag = so.NewMagic();
+
+// Call unknown method
+mag.SomeMethod(1, 2, 3);
+
+// Read unknown field
+Console.WriteLine(mag.SomeProp);
+</pre>
+<p>Executing this program prints:</p>
+<pre>
+Calling unknown function 'SomeMethod' with 3 arguments.
+Reading unknown 'SomeProp' value.
+</pre>
+
+<h2>Working with XML using Duck Typing</h2>
+<p>Now, let's look at one slightly more complicated sample. In this example we will use the 
+  PHP SimpleXML extension for working with RSS feeds. When opening XML document using SimpleXML 
+  the elements and attributes can be accessed directly as a member fields, so to make it possible
+  to access these fields from C# we will need to define a few interfaces first (the following
+  sample includes only a few of all the required interfaces, the complete sample is attached and 
+  you can download it):</p>
+<pre lang="csharp">
+[DuckType]
+public interface IRssRssNode {
+  IRssChannelNode channel { get; }
+}
+
+[DuckType]
+public interface IRssChannelNode {
+  string title { get; }
+  
+  [DuckName("item")]
+  IDuckEnumerable&lt;IRssItemNode&gt; items { get; }
+}
+
+[DuckType]
+public interface IRssItemNode {
+  string title { get; }
+}
+</pre>
+<p>This sample contains two new features that were not mentioned earlier - first we used 
+  <code>DuckName</code> attribute to rename field, which was called <code>item</code> in the original
+  PHP object, but we wanted to expose it as a <code>items</code> in the C# code. Second thing
+  is the usage of the <code>IDuckEnumerable</code> interface, which is very useful when it is possible
+  to iterate over the object using PHP <code>foreach</code> statement. By using <code>IDuckEnumerable</code>,
+  you'll get exactly the same functionality in C# as well! In this example we used <code>IDuckEnumerable&lt;IRssItemNode&gt;</code>,
+  where <code>IRssItemNode</code> is another interface marked using <code>DuckType</code>, which means that
+  when iterating over the elements, every element will be coerced to the interface representing the item in RSS document.
+  The following sample uses interfaces declared above to read sample RSS feed:</p>
+<pre lang="csharp">
+IRssXml xml = ctx.Call&lt;IRssXml&gt;("simplexml_load_file", 
+  "http://www.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+Console.WriteLine("Title: {0}", xml.rss.channel.title);
+
+// Iterate over items in the channel node:
+foreach (IRssItemNode item in xml.rss.channel.items) {
+  Console.WriteLine(" - {0}", item.title);
+}
+</pre>
+<h2>Conclusion</h2>
+<p>Duck typing is a very powerful approach for the interoperability between PHP (and in general any dynamic languages 
+  running on .NET Framework) and statically typed languages that require all methods and types to be known during
+  the compilation. The need to declare the interface that defines the structure of the PHP object is of course not as 
+  fast as using the object directly from PHP, but thanks to the Visual Studio it is very easy (you can just type the
+  name of the method and let IDE to generate the method for you). Also thanks to this technique you can easily create
+  .NET wrappers for any PHP library and use it from your .NET application or even distribute it with your PHP library,
+  because using it from .NET will be very convenient and you can also use C# XML comments to generate technical documentation
+  for the exported interfaces. </p>
+<p><em>Now we only need to find a way how to generate these interfaces automatically from the PHP source code :-), hmm... </em></p>  
+
+<h2>Links and downloads<a name="phpinteroplinks"></a></h2>
+<ul>
+  <li><a href="/articles/ducktyping-in-phalanger/ducktyping.zip">Download Duck Typing samples</a> (6 kB)</li>
+</ul>
+<ul>
+  <li>[1] <a href="http://tomasp.net/blog/aspnettexy.aspx">Compiling Texy! with Phalanger</a>
+    [<a href="http://tomasp.net/blog/aspnettexy.aspx" target="_blank">^</a>]</li>
+  <li>[2] <a href="http://php-compiler.net/doku.php?id=interop-with-other-languages">Using PHP Library from C#</a>
+    [<a href="http://php-compiler.net/doku.php?id=interop-with-other-languages" target="_blank">^</a>]</li>
+</ul>

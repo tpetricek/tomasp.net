@@ -1,0 +1,179 @@
+<!-- [info]
+
+ - date: 2005-04-01T00:19:58.0000000
+ - description: Tento úvod vysvětluje jak lze v .Net aplikaci umožnit rozšiřování pomocí pluginů a jak přistupovat k nastavení v konfiguračním souboru.
+ - tags: 
+ - layout: post
+ - title: WinForms - Aplikace s podporou pluginů
+ - url: pluginsarch.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento úvod vysvětluje jak lze v .Net aplikaci umožnit rozšiřování pomocí pluginů a jak přistupovat k nastavení v konfiguračním souboru.
+[/abstract] -->
+
+<h1>WinForms - Aplikace s podporou pluginů</h1>
+<doc version="1"><body><h1>WinForms - Aplikace s podporou pluginů</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak tvořit aplikace rozšiřitelné pomocí pluginů</li><li>Jak načítat vlastní nastavení z konfiguračního souboru</li><li>Jak vytvářet objekty dynamicky pomocí reflection</li></ul><div style="text-align:center;"><img src="pluginsarch/pluginsarch.gif" alt="Ukázková aplikace" style="margin:10px;" /></div><h2>Úvod o pluginech (v .Netu)</h2><p>Pluginy slouží k tomu, aby dodávali již hotové aplikaci nějakou novou funkcionalitu
+    aniž by bylo potřeba mít přístup ke zdrojovým kódům aplikace a nějak do nich zasahovat.
+    Aplikace, které podporují pluginy jsou snadno rozšiřitelné, což je velká výhoda,
+    protože tak umožňují ostatním programátorům snadno vylepšovat aplikaci.
+    Pěkným příkladem takto rozšiřitelné aplikace je Microsoft Visual Studio.Net, které
+    samo o sobě neobsahuje prostředí pro žádný programovací jazyk, ale při instalaci
+    si uživatel volí jaké rozšíření (programovací jazyky) chce instalovat.
+    Krom toho je možné do Visual Studia nové vývojové nástroje doinstalovat i později.
+    Jiným typickým příkladem pluginů jsou obrázkové efekty v grafických editorech.</p><p>Aby bylo vůbec možné tvořit pluginy pro nějakou aplikaci musí aplikace 
+    jasným způsobem určit jak bude s pluginem komunikovat. V případě grafického editoru
+    musí tvůrci aplikace říct: "Já tímto způsobem předám bitmapu tobě, ty jí jak chceš uprav
+    a vrať mi jí takhle a takhle." Pod platformou .Net lze toto rozhraní popsat pomocí
+    bázové třidy (nebo rozhraní), od které budou odvozeny třídy jednotlivých pluginů. 
+    Tato bázová třída (případně rozhraní) musí být v oddělené dll knihovně, aby jí mohly 
+    používat pluginy bez závislosti na hlavní části aplikace. 
+    Bázová třída pro obrázkový efekt do grafického editoru by mohla vypadat takto:</p><pre><span class="c">// Trida je abstract, protoze samotna nic nemuze delat</span>
+public abstract class BaseEffect 
+{
+  <span class="c">// Tato metoda provede efekt s predanou bitmapou</span>
+  public abstract void DoEffect(Bitmap bitmapa);
+}</pre><p>Následující diagram znázorňuje jak je možné rozdělit aplikaci, která má 
+    podporovat rozšiřování pomocí pluginů do více knihoven (v .Netu assemblies). 
+    Bázová třída, která určuje podobu pluginů se nachází ve zvláštní assembly 
+    (<code>Core.dll</code>). Aplikace má referenci na tuto základní knihovnu
+    (z ní si bere bázovou třidu pluginů) a při spuštění projde všechny pluginy
+    (odvozené třídy od <code>PluginBase</code>) a pomocí reflection si za běhu
+    vytvoří objekty pluginů.</p><div style="text-align:center; font-size:80%; padding:10px;"><img src="pluginsarch/architecture.gif" alt="Diagram ukazuje jak jsou třídy rozdělené mezi soubory" /><br />
+    Diagram ukazuje jak jsou třídy rozdělené mezi knihovny
+  </div><h2>Pluginy v ukázkové aplikaci</h2><p>V ukázkové aplikaci, kterou vytvoříme budou pluginy jednoduché hry,
+    které bude možné spustit, zastavit a při zastavení vrátí nějaké hlášení o tom,
+    jak si hráč vedl. Protože pluginy budou určovat i uživatelské rozhraní pro hru
+    je bázová třída odvozená od WinForms ovládacího prvku (<code>UserControl</code>).
+  </p><pre><span class="c">// Zakladni trida od ktere budou odvozene vsechny pluginy</span><br /><span class="c">// Tato trida sama o sobe nic nedela, proto je 'abstract'</span>
+public class BaseControl : UserControl
+{
+  <span class="c">// Spousti nejakou aktivitu, kterou plugin dela</span>
+  public virtual void Start() {}
+
+  <span class="c">// Zastavuje aktivitu pluginu a vraci vysledek </span>
+  public virtual string Stop() { return ""; }
+
+  <span class="c">// Vraci popis o cem v pluginu jde, ktery se zobrazuje pred spustenim</span>
+  public virtual string Description 
+  { get { return ""; } }
+}
+</pre><p>Bázová třída obsahuje metodu <code>Start</code>, která spouští hru a metodu
+    <code>Stop</code>, která hru ukončí a vrátí text s nějakým výsledkem. 
+    Dále obsahuje vlastnost <code>Description</code>, která bude v odvozených
+    pluginech vracet popis hry. Navíc se ještě v pluginech používá metoda 
+    <code>ToString</code> (obsahuje jí každý objekt), která vrací jméno pluginu 
+    zobrazované např. v menu.</p><p>Narozdíl od ukázky uvedené na začátku článku (<code>BaseEffect</code>) třída není
+    označená jako <code>abstract</code>. Důvodem pro tuto změnu je to, že 
+    designer ve Visual Studiu neumožňuje pracovat s abstraktními ovládacími
+    prvky a proto by nebylo možné v odvozených pluginech používat designer 
+    pro tvorbu uživatelského rozhraní. Nebýt tohoto omezení, bylo by rozhodně
+    lepší aby základní třida byla <code>abstract</code>.</p><h2>Načítání a používání pluginů</h2><p>Vytvoření pluginů, není nikterak složité. Stačí vytvořit nový projekt typu
+    'Class library' a v ní třídu odvozenou od <code>BaseControl</code>.
+    Nyní se podíváme jak je možné pomocí reflection načíst takto vytvořené
+    pluginy do aplikace. Toto načítání probíhá dynamicky a díky tomu je možné
+    přidávat pluginy bez úpravy aplikace (nově nahrané pluginy se načtou při 
+    dalším spuštění).</p><p>Aplikace musí nejprve zjistit, ze kterých assemblies (dll knihoven) má
+    načítat pluginy a jak se jmenujou třídy s pluginem v těchto knihovnách.
+    Nejjednodužší metodou je načítat všechny dll knihovny v nějakém adresáři 
+    (např. <code>Plugins</code>) a v každé knihovně hledat plugin pojmenovaný
+    <code>Plugin</code> (to že se jméno bude opakovat nevadí, protože se jedná
+    o různé knihovny). Pokud tedy známe jméno souboru s pluginem (<code>assemblyFile</code>)
+    a jméno třídy včetně namespace (<code>className</code>) lze plugin načíst takto:</p><pre>
+using System.Reflection;
+
+<span class="c">// Nacita plugin se jmenem className z assembly assemblyFile</span>
+BaseControl LoadPlugin(string assemblyFile, string classFile)
+{
+  <span class="c">// Nacte assembly z daneho souboru</span><span class="c">// a vytvori dynamicky objekt daneho typu</span>
+  Assembly asm=System.Reflection.Assembly.LoadFile(assemblyFile);
+  object obj=asm.CreateInstance(className);
+
+  <span class="c">// Pretypuje nacteny objekt na bazovy typ pluginu</span>
+  BaseControl plugin=(BaseControl)obj;
+  return plugin;
+}
+</pre><p>Poté co je plugin tímto způsobem vytvořen není problém volat jeho metody,
+    protože se jedná objekt odvozený od <code>BaseControl</code> a všechny metody
+    (a také vlastnost <code>Description</code>), které je potřeba z aplikace volat 
+    jsou virtuální. Například popis pluginu lze tedy zobrazit takto:</p><pre><span class="c">Nejprve nacte plugin pomoci LoadPlugin..</span>
+BaseControl plugin=LoadPlugin("soubor.dll","Namespace.JmenoPluginu");
+<span class="c">.. a pote zobrazi popis (vlastnost Description)</span>
+MessageBox.Show(plugin.Description);
+</pre><h2>Načítání nastavení z konfiguračního souboru</h2><p>V .Net aplikacích je velmi vhodné ukládat nastavení aplikace do konfiguračního 
+    souboru, který se jmenuje <code>jmenoaplikace.exe.config</code>.
+    Pro ukládání pluginů si v konfiguračním souboru vytvoříme vlastní sekci
+    (<code>pluginsSection</code>), ve které bude toto nastavení uloženo.
+    Pro přidání vlastní sekce s nastavením pluginů bude ještě potřeba vytvořit objekt,
+    který bude toto nastavení v aplikaci načítat. Konfigurační soubor s nastavením
+    pluginů vypadá takto:</p><pre>
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;configuration&gt;
+  
+  &lt;configSections&gt;
+    <span class="c">&lt;!-- Zde je urcen objekt pro nacitani sekce pluginsSection --&gt;</span>
+    &lt;section name="pluginsSection" 
+      type="Plugins.Main.PluginsConfig,Plugins.Main" /&gt;
+  &lt;/configSections&gt;
+
+  &lt;pluginsSection&gt;
+    <span class="c">&lt;!-- Nastaveni pluginu (assembly a jmeno tridy) --&gt;</span>
+    &lt;plugin assembly="Plugins.Main.exe" 
+      class="Plugins.Main.KeyGamePlugin" /&gt;
+    &lt;plugin assembly="Plugins\Plugins.Demo.dll" 
+      class="Plugins.Demo.MouseGamePlugin" /&gt;
+  &lt;/pluginsSection&gt;
+  
+&lt;/configuration&gt;
+</pre><p>Nastavení uložené v konfiguračním souboru bude v aplikaci načítáno pomocí 
+    objektu, který je již nastavený v konfiguračním souboru a jeho jméno je
+    včetně namespace <code>Plugins.­Main.­PluginsConfig</code>.
+    Tento objekt implementuje rozhraní <code>IConfigurationSectionHandler</code>,
+    které říká, že tento objekt slouží k načítání uživatelských sekcí
+    v konfiguračním souboru. Z tohoto rozhraní pochází metoda
+    <code>Create</code>, která je volána .Net frameworkem při přístupu k 
+    nastavení (jako je tomu ve statické metodě <code>GetSettings</code>).</p><pre><span class="c">// Objekt pro nacitani sekce, ktera obsahuje nastaveni</span><br /><span class="c">// pro pluginy v konfiguracnim souboru aplikace</span>
+public class PluginsConfig : IConfigurationSectionHandler
+{
+  <span class="c">// Vytvori objekt PluginsConfig pro aktualni aplikaci</span>
+  public static PluginsConfig GetSettings()
+  {
+    return (PluginsConfig)ConfigurationSettings.GetConfig("pluginsSection");
+  }
+
+  
+  <span class="c">// Tato metoda je volana .net frameworkem pri volani</span><br /><span class="c">  // (PluginsConfig)ConfigurationSettings.GetConfig("pluginsSection")</span>
+  public object Create(object parent, object configContext, XmlNode section)
+  {
+    PluginsConfig ret=new PluginsConfig();
+    foreach(XmlNode nd in section.SelectNodes("plugin"))
+    {
+      string assemblyName=nd.Attributes["assembly"].Value;
+      string className=nd.Attributes["class"].Value;
+      
+      <span class="c">// Nacist plugin pomoci vyse popsaneho postupu..</span><br /><span class="c">      // LoadPlugin(assemblyName, className);</span>
+    }
+  }
+}
+</pre><h2>Možné problémy a rozšíření</h2><p>Prvním problémem se kterým se můžete snadno setkat vznikne při změně
+    knihovny obsahující bázovou třídu. Pokud některý z pluginů, používá starou 
+    verzi knihovny nebude možné přetypovat načtený objekt na typ bázové třídy.
+    Přestože se bázová třída pluginu i ta na kterou chceme načtený objekt přetypovat
+    jmenují stejně, jedná se o jiný typ (každý z jiné knihovny) a proto 
+    přetypování selže. </p><p>Pokud se pokusíte používat tuto architekturu v Asp.Net narazíte na problém
+    způsobený tím, že Asp.Net si soubory aplikace kopíruje do různých dočasných
+    adresářů a knihovny s pluginy nebudou moci nalézt správnou knihovnu s bázovou 
+    třídou. Toto lze vyřešit pomocí GAC (global assembly cache), kam je možné po 
+    digitálním podepsání nahrát knihovnu s bázovou třídou. Aplikace poté bude vždy
+    načítat knihovnu z GAC.</p><p>Dalším možným problémem může být potřeba, aby plugin manipuloval nějakým
+    způsobem s aplikací a měl přístup k některým z jejích částí (například můžete
+    chtít pluginu umožnit přidávání pložek do menu). Zde je již potřeba trochu 
+    jiného přistupu, protože toto nelze snadno dosáhnout pomocí přidání nějaké
+    metody do bázové třídy pluginu. Ideální by bylo aby plugin mohl volat
+    metody z aplikace, ale vzhledem k tomu, že o aplikaci "neví", není to tak snadné.
+    Možné řešení je vytvořit bázovou třídu - např. <code>AppBase</code> (která bude v knihovně se základní třídou 
+    pro pluginy) a ve této třídě vytvořit abstraktní metody pro všechny potřebné 
+    operace. V hlavní části aplikace je již možné implementovat tyto metody v 
+    odvozené třídě (např. <code>AppObject</code> odvozené od <code>AppBase</code>).
+    Poté již stačí přidat do pluginu vlastnost typu <code>AppBase</code> a po
+    vytvoření předat pluginu pomocí této vlastnosti objekt pro práci s aplikací.</p><h2>Soubory na stažení</h2><ul class="externallinks"><li><a href="pluginsarch/clanek.zip">Stáhnout tento článek v čistém HTML</a> (19 kB)</li><li><a href="pluginsarch/sources.zip">Stáhnout zdrojové kódy a spustitelné soubry</a> (53 kB)</li></ul></body></doc>

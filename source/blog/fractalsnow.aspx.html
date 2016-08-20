@@ -1,0 +1,133 @@
+<!-- [info]
+
+ - date: 2004-12-31T03:40:15.0000000
+ - description: Describes how to draw snowflakes using fractals and contains a nice snow screensaver.
+ - tags: 
+ - layout: post
+ - title: Fractal snow screensaver
+ - url: fractalsnow.aspx
+
+[/info] -->
+<!-- [abstract]
+Describes how to draw snowflakes using fractals and contains a nice snow screensaver.
+[/abstract] -->
+
+<h1>Fractal snow screensaver</h1>
+<doc version="1"><body><h1>Fractal snow screensaver</h1><ul class="download"><li><a href="fractalsnow/setup.zip">Download
+    installer - 339 Kb</a></li><li><a href="fractalsnow/source.zip">Download
+    source - 23.4 Kb</a></li></ul><p><img height="100" alt="Snow generatedd using fractals" src="fractalsnow/flakes.gif" width="300" /></p><h2>Introduction</h2><p>This article describes some basic characteristics of fractals and shows how to
+  draw snowflakes using fractals. Source code contains object for drawing one snowflake
+  and Windows forms control for falling snow. This control is used for creating
+  screensaver applications. In the screensaver applications, snowflakes are created
+  using random settings, so there are almost unlimited variations of snowflakes.</p><h3>Fractals</h3><p>Fractals are geometrical shapes, where a certain pattern repeats itself depending
+  on zoom. That means, when you zoom in a part of the object, it looks the same way or
+  is very similar like the original object before the zoom.</p><p>In programs, fractals are created using recursion. Same (or very similar) drawing
+  operation is repeated until depth of recursion exceeds specified number. In my
+  application, the drawing operation is performed on the line connecting the center of
+  the snowflake with its edge and then on new lines created in first step.</p><h2>Snowflakes</h2><p>Application uses two slightly different algorithms to make more various
+  snowflakes. These two methods have same input parameters with same meaning, so it is
+  very simple to use both methods for drawing snowflakes.</p><p>If you want to learn more about how snowflakes are generated and what each input
+  parameter does, install screensaver and go to <i>Settings</i> - <i>Snowflake
+  Preview</i>.</p><h3>First type (LineType)</h3><p><img height="79" alt="First type of snow flakes" src="fractalsnow/linetype.gif" width="277" /></p><h4>Drawing snowflake</h4><ol><li>Six fractal branches are drawn from the center of the snowflake to the
+    edge.</li><li>Line is divided to two parts with lengths in specified ratio.</li><li>Two new lines are drawn under specified angle from found point.</li><li>Operation (from number 2 to 4) is repeated on two newly created lines.</li></ol><h3>Second type (PointType)</h3><p><img height="79" alt="Second type of snow flakes" src="fractalsnow/pointtype.gif" width="277" /></p><h4>Drawing snowflake</h4><ol><li>Six fractal branches are created (no drawing at this time!) from the center of
+    the snowflake to the edge.</li><li>Line is divided to two parts with lengths in specified ratio.</li><li>Two new lines are created (no drawing) under specified angle from found
+    point.</li><li>Operation (from number 2 to 4) is repeated on two newly created lines and on
+    third line from found point to the point at the edge.</li><li>After count of repetitions is exceeded, all residuary lines are drawn.</li></ol><h2>Source code</h2><h3>UML class diagram</h3><p><img height="362" alt="Uml class diagram" src="fractalsnow/uml.gif" width="527" /></p><h3>Snow flake drawing</h3><p>Following function is the simplified recursive function used for drawing the first
+  type of snowflakes:</p><p>This code uses function <code>Rotate</code>. This function rotates point around
+  specified center and is implemented in <i>SnowFlake.cs</i>.</p><pre><span class="c">// Ratio used for calculating dividing point</span>
+private const float fBranching=0.3f;
+<span class="c">// Ratio used for decreasing length of lines</span>
+private const float fShrinking=0.6f;
+<span class="c">// Maximal depth of recursion</span>
+private const int   iMaxDepth=5;
+<span class="c">// Angle between parent and child line (in degrees)</span>
+private const int   iBranchAngle=35;
+
+<span class="c">// Draw snowflake branch
+// output - Graphics to draw on
+// start  - Starting point of line
+// end    - Ending point of line
+// depth  - Depth of recursion</span>
+private void DrawBranch(Graphics output,
+        PointF start,PointF end,int depth)
+{
+  if (depth==iMaxDepth) return;
+  DrawLine(output,pn,start,end);
+
+  <span class="c">// calculate dividing point</span>
+  PointF cnt=new PointF(start.X+(end.X-start.X)*fBranching,
+                        start.Y+(end.Y-start.Y)*fBranching);
+  <span class="c">// calculate point used as end (after rotation) of two new lines</span>
+  PointF nend=new PointF(cnt.X+(end.X-start.X)*fShrinking,
+                         cnt.Y+(end.Y-start.Y)*fShrinking);
+  
+  <span class="c">// recursion - draw two new lines</span>
+  DrawBranch(output,cnt,Rotate(nend,cnt,iBranchAngle),depth+1);
+  DrawBranch(output,cnt,Rotate(nend,cnt,-iBranchAngle),depth+1);
+}
+</pre><h3>Using this code</h3><h4>Using SnowFlake</h4><p><code>SnowFlake</code> object can be used to draw snowflakes. It has two methods
+  for drawing. First method <code>Draw(Graphics, PointF)</code> can be used for normal
+  drawing and second method <code>Draw(Graphics, PointF, int)</code> allows you to
+  specify alpha value for drawn pixels. Second method is used in screensavers for
+  snowflake melting. <code>RandomSnowFlake</code> is class derived from
+  <code>SnowFlake</code>. Only one difference is that, all properties of snowflake are
+  generated from random numbers in constructor, so you don't have to set all properties
+  if you want to create snowflake.</p><pre lang="cs"><span class="c">// Draw snowflakes in Paint event handler</span>
+private void Form_Paint(object sender, PaintEventArgs pe)
+{
+  Random rndGen=new Random();
+  pe.Graphics.Clear(Color.Black);
+  SnowFlake flake=new SnowFlake(),
+    random=new RandomSnowFlake(rndGen.Next(Int32.MaxValue));
+          
+  <span class="c">// draw snowflake</span>
+  flake.Draw(pe.Graphics,new PointF(70.0f,70.0f));
+
+  <span class="c">// draw melting snowflake</span>
+  flake.Draw(pe.Graphics,new PointF(70.0f,140.0f,128));
+
+  <span class="c">// draw random snowflake</span>
+  random.Draw(pe.Graphics,new PointF(105.0f,105.0f));
+}
+</pre><h4>Using SnowControl</h4><p><code>SnowControl</code> is the control for creating falling snowflakes. This is
+  exactly the same control as control filling the whole screen of screensaver. This
+  control can be added to a <code>Form</code> using designer, or manually using code
+  similar to following:</p><p>This control has a lot of properties, that are described in <i>Screen saver
+  settings</i> section.</p><pre lang="cs">
+SnowControl snowCtrl;
+
+public Form()
+{
+  <span class="c">// Create control</span>
+  snowCtrl=new SnowControl();
+  Controls.Add(snowCtrl);
+  snowCtrl.Dock=DockStyle.Fill;
+}
+
+private void Form_Load(object sender,EventArgs e)
+{
+  <span class="c">// Start animation</span>
+  snowCtrl.Start();
+}
+</pre><p><img height="112" alt="Screen saver" src="fractalsnow/screensaver.gif" width="125" align="right" /></p><h2>SnowControl and Screensaver settings</h2><h4>Environment</h4><p>Property called <code>StopFalling</code> is length in pixels from bottom of the
+  screen, where falling snowflakes will stop falling. If this property is less than
+  zero, snowflakes will fall outside the screen. Falling snowflakes are affected by
+  wind. The <code>WindForce</code> specifies how the snowflakes will be inflected by
+  wind and <code>WindChanging</code> determinates how fast will the direction of wind
+  change.</p><h4>Snowflakes</h4><p>You can change number of snowflakes displayed on screen (<code>MaxFlakes</code>)
+  and color of snowflakes (<code>FlakeColor</code>). Size and speed properties are
+  randomly generated between specified maximal and minimal values
+  (<code>MinSpeed</code>, <code>MaxSpeed</code> and <code>MinSize</code>,
+  <code>MaxSize</code>).</p><p>When snowflake falls to the bottom of the screen, it stays at this location for a
+  specified number of frames (<code>MeltingStart</code>), after this time the snowflake
+  starts melting and it melts for a number of frames specified by
+  <code>MeltingFluency</code> property.</p><h4>Background</h4><p>Background of screensaver can be any image compatible with .NET, solid color or
+  gradient from two colors (top and bottom color). Note that if you set background to
+  image and you have more snowflakes, then the screensaver can be very slow!</p><h2>Thanks to...</h2><p>Thanks to Adam Abonyi for this idea, useful remarks and big help during the composition of this
+  English article. Additional thanks to the authors of the following articles.</p><h3>Related articles</h3><p>Marc's fractal tree was a great inspiration for this article and other two
+  contains useful information about creating screensavers, including multiple monitors
+  support and how to draw screensaver preview in .NET.</p><ol><li><a href="http://www.codeproject.com/csharp/fractaltree.asp">Create a fractal
+    Christmas tree</a> by Marc Clifton.</li><li><a href="http://www.codeproject.com/useritems/codeprojectscreensaver.asp">Christian
+    and James' Code Project Screensaver</a> by Christian Graus and James T.
+    Johnson.</li><li><a href="http://www.codeproject.com/csharp/scrframework.asp">How to develop a
+    screen saver in C#</a> by Rakesh Rajan.</li></ol></body></doc>

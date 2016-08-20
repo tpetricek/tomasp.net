@@ -1,0 +1,213 @@
+<!-- [info]
+
+ - date: 2012-02-22T17:38:40.0000000
+ - description: This article shows another application of the match! language extension for F#. This time, we look how to encode join calculus, which is an elegant abstraction for declarative concurrent programming.
+ - tags: f#,research,joinads,asynchronous,parallel
+ - layout: post
+ - title: TryJoinads (IV.) - Concurrency using join calculus
+ - url: joinads-join-calculus.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Join calculus provides a declarative way of expressing asynchronous synchronization
+patterns. It has been use as a basis for programming languages (JoCaml and COmega), but also
+as a basis for libraries (embedded in C# and Scala). Using joinads, it is possible to 
+embed join calculus in F# with a nice syntax using the <code>match!</code> construct. Formally,
+join calculus does not form a <em>monad</em>, but it can be viewed as a version of <em>joinad</em>
+as described in the <a href="../pubs.html">first paper on joinads</a>.</p>
+
+<p>The programming model is based on <em>channels</em> and <em>join patterns</em>. A channel can be viewed
+as a thread-safe mailbox into which we can put values without blocking the caller. In some
+sense, this is quite similar to <a href="agents.html">F# agents</a>. A join pattern is then a rule
+saying that a certain combination of values in channels should trigger a specific reaction
+(and remove values from the channels). The ability to match on multiple channels distinguishes
+join calculus from F# agents.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/joins.html">view the article on TryJoinads</a>.</em></p>
+[/abstract] -->
+
+<h1>TryJoinads (IV.) - Concurrency using join calculus</h1>
+<p>Join calculus provides a declarative way of expressing asynchronous synchronization
+patterns. It has been use as a basis for programming languages (JoCaml and COmega), but also
+as a basis for libraries (embedded in C# and Scala). Using joinads, it is possible to 
+embed join calculus in F# with a nice syntax using the <code>match!</code> construct. Formally,
+join calculus does not form a <em>monad</em>, but it can be viewed as a version of <em>joinad</em>
+as described in the <a href="../pubs.html">first paper on joinads</a>.</p>
+
+<p>The programming model is based on <em>channels</em> and <em>join patterns</em>. A channel can be viewed
+as a thread-safe mailbox into which we can put values without blocking the caller. In some
+sense, this is quite similar to <a href="agents.html">F# agents</a>. A join pattern is then a rule
+saying that a certain combination of values in channels should trigger a specific reaction
+(and remove values from the channels). The ability to match on multiple channels distinguishes
+join calculus from F# agents.</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?use/joins.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Thread-safe buffer</h2>
+
+<p>As a first example, we implement a thread-safe (unbounded) blocking buffer. The buffer 
+uses two channels - the <code>put</code> channel is used for adding values to the buffer and
+has a type <code>Channel&lt;string&gt;</code>; the <code>get</code> channel is used for retrieving values from the
+buffer. When the buffer is empty, the call cannot complete, so the operation is available as 
+an asynchronous workflow. Channels that are used to obtain some result from a join pattern
+are represented using the <code>ReplyChannel&lt;'T&gt;</code> type where <code>'T</code> is the type of the returned
+value.</p>
+
+<p>After constructing the channels, we construct a join pattern using the <code>join { ... }</code>
+computation builder by pattern matching on channels using <code>match!</code>:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">Extensions</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">Joinads</span>
+
+<span class="c">// Construct channels implementing the buffer</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">put</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">string</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">get</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft8', 8)" onmouseover="showTip(event, 'ft8', 8)" class="i">ReplyChannel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 9)" onmouseover="showTip(event, 'ft6', 9)" class="i">string</span><span class="o">&gt;</span>()
+
+<span class="c">// Encode a join pattern over the channels</span>
+<span onmouseout="hideTip(event, 'ft9', 10)" onmouseover="showTip(event, 'ft9', 10)" class="i">join</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft7', 11)" onmouseover="showTip(event, 'ft7', 11)" class="i">get</span>, <span onmouseout="hideTip(event, 'ft4', 12)" onmouseover="showTip(event, 'ft4', 12)" class="i">put</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft10', 13)" onmouseover="showTip(event, 'ft10', 13)" class="i">repl</span>, <span onmouseout="hideTip(event, 'ft11', 14)" onmouseover="showTip(event, 'ft11', 14)" class="i">v</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s">:</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft11', 15)" onmouseover="showTip(event, 'ft11', 15)" class="i">v</span>) }</pre>
+
+
+<p>The pattern matching consists of a single clause that matches on both of the channels. When
+both values become available, the join pattern is triggered. In response, it calls 
+<code>Reply</code> method of the value received from the <code>get</code> buffer. This sends a string value back
+to the caller of the <code>get</code> channel. Unlike for example <code>async { ... }</code>, the <code>join { ... }</code> 
+computation does not return any value - it constructs a join pattern that operates over
+the existing channels. We look at a more complex sample soon, but let's first
+demonstrate how the channels are used:</p>
+
+<pre class="fssnip">
+<span class="c">// Store some values in &#39;put&#39; channel</span>
+<span onmouseout="hideTip(event, 'ft4', 16)" onmouseover="showTip(event, 'ft4', 16)" class="i">put</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 17)" onmouseover="showTip(event, 'ft12', 17)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hello</span><span class="s"> </span><span class="s">world</span><span class="s">.</span><span class="s">&quot;</span>)
+<span onmouseout="hideTip(event, 'ft4', 18)" onmouseover="showTip(event, 'ft4', 18)" class="i">put</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 19)" onmouseover="showTip(event, 'ft12', 19)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hi</span><span class="s"> </span><span class="s">there</span><span class="s">!</span><span class="s">&quot;</span>)
+
+<span class="c">// Obtain value via the &#39;get&#39; channel</span>
+<span onmouseout="hideTip(event, 'ft7', 20)" onmouseover="showTip(event, 'ft7', 20)" class="i">get</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft13', 21)" onmouseover="showTip(event, 'ft13', 21)" class="i">AsyncCall</span>() <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 22)" onmouseover="showTip(event, 'ft14', 22)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft15', 23)" onmouseover="showTip(event, 'ft15', 23)" class="i">RunSynchronously</span></pre>
+
+
+<p>The above example shows how channels behave - values stored in channels are cached and when
+there is a matching pair (after calling both <code>put</code> and <code>get</code>), the join pattern fires.
+Note that calling <code>AsyncCall</code> using <code>RunSynchronously</code> blocks the F# Interactive if there
+is no matching value in the <code>put</code> channel.</p>
+
+<h2>Buffer with two input channels</h2>
+
+<p>To make the example slightly more interesting, we now change it to use two input channels.
+In the extended version, we can store two types of values in the buffer. The <code>putString</code>
+channel makes it possible to store strings and the <code>putInt</code> channel can be used to store
+integers. Values can be retrieved only as strings (numbers get converted to strings) using
+a single <code>getString</code> channel.</p>
+
+<p>This makes the join pattern more interesting, because it must now handle two cases. One
+pattern handles the case when there is a string in <code>putString</code> and a request to read value
+in <code>getString</code> and another pattern handles a case when there are values in <code>putInt</code> and 
+<code>getString</code>:</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft16', 24)" onmouseover="showTip(event, 'ft16', 24)" class="i">putString</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 25)" onmouseover="showTip(event, 'ft5', 25)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 26)" onmouseover="showTip(event, 'ft6', 26)" class="i">string</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft17', 27)" onmouseover="showTip(event, 'ft17', 27)" class="i">putInt</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft5', 28)" onmouseover="showTip(event, 'ft5', 28)" class="i">Channel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft18', 29)" onmouseover="showTip(event, 'ft18', 29)" class="i">int</span><span class="o">&gt;</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft19', 30)" onmouseover="showTip(event, 'ft19', 30)" class="i">getString</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft8', 31)" onmouseover="showTip(event, 'ft8', 31)" class="i">ReplyChannel</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft6', 32)" onmouseover="showTip(event, 'ft6', 32)" class="i">string</span><span class="o">&gt;</span>()
+
+<span onmouseout="hideTip(event, 'ft9', 33)" onmouseover="showTip(event, 'ft9', 33)" class="i">join</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft19', 34)" onmouseover="showTip(event, 'ft19', 34)" class="i">getString</span>, <span onmouseout="hideTip(event, 'ft16', 35)" onmouseover="showTip(event, 'ft16', 35)" class="i">putString</span>, <span onmouseout="hideTip(event, 'ft17', 36)" onmouseover="showTip(event, 'ft17', 36)" class="i">putInt</span> <span class="k">with</span>
+  | <span onmouseout="hideTip(event, 'ft10', 37)" onmouseover="showTip(event, 'ft10', 37)" class="i">repl</span>, <span onmouseout="hideTip(event, 'ft11', 38)" onmouseover="showTip(event, 'ft11', 38)" class="i">v</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'ft11', 39)" onmouseover="showTip(event, 'ft11', 39)" class="i">v</span>)
+  | <span onmouseout="hideTip(event, 'ft10', 40)" onmouseover="showTip(event, 'ft10', 40)" class="i">repl</span>, <span class="o">?</span>, <span onmouseout="hideTip(event, 'ft20', 41)" onmouseover="showTip(event, 'ft20', 41)" class="i">v</span> <span class="k">-&gt;</span> <span class="i">repl</span><span class="o">.</span><span class="i">Reply</span>(<span class="s">&quot;</span><span class="s">Echo</span><span class="s"> </span><span class="s">&quot;</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'ft6', 42)" onmouseover="showTip(event, 'ft6', 42)" class="i">string</span> <span onmouseout="hideTip(event, 'ft20', 43)" onmouseover="showTip(event, 'ft20', 43)" class="i">v</span>)) }</pre>
+
+
+<p>The first clause of the <code>match!</code> construct handles the case when there is a value in 
+<code>getString</code> and <code>putString</code>. The third channel is matched against the <code>?</code> pattern, which
+means that a value from that channel is not required. When the pattern matches, the
+values from <code>getString</code> and <code>putString</code> channels are removed and they are processed
+(by sending a string back to the caller of <code>getString</code> channel). The second pattern is
+similar, but it matches on <code>getString</code> and <code>putInt</code>.</p>
+
+<p>The following example shows how to call the buffer implemented above:</p>
+
+<pre class="fssnip">
+<span class="c">// Put values to &#39;putString&#39; and &#39;putInt&#39; channels</span>
+<span onmouseout="hideTip(event, 'ft21', 44)" onmouseover="showTip(event, 'ft21', 44)" class="i">async</span> {
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'ft22', 45)" onmouseover="showTip(event, 'ft22', 45)" class="i">i</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">5</span> <span class="k">do</span> 
+    <span onmouseout="hideTip(event, 'ft16', 46)" onmouseover="showTip(event, 'ft16', 46)" class="i">putString</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 47)" onmouseover="showTip(event, 'ft12', 47)" class="i">Call</span>(<span class="s">&quot;</span><span class="s">Hello</span><span class="s">!</span><span class="s">&quot;</span>)
+    <span onmouseout="hideTip(event, 'ft17', 48)" onmouseover="showTip(event, 'ft17', 48)" class="i">putInt</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft12', 49)" onmouseover="showTip(event, 'ft12', 49)" class="i">Call</span>(<span onmouseout="hideTip(event, 'ft22', 50)" onmouseover="showTip(event, 'ft22', 50)" class="i">i</span>)
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'ft14', 51)" onmouseover="showTip(event, 'ft14', 51)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft23', 52)" onmouseover="showTip(event, 'ft23', 52)" class="i">Sleep</span>(<span class="n">100</span>) } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 53)" onmouseover="showTip(event, 'ft14', 53)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft24', 54)" onmouseover="showTip(event, 'ft24', 54)" class="i">Start</span>
+
+<span class="c">// Call &#39;getString&#39; asynchronously to read replies</span>
+<span onmouseout="hideTip(event, 'ft21', 55)" onmouseover="showTip(event, 'ft21', 55)" class="i">async</span> { 
+  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'ft25', 56)" onmouseover="showTip(event, 'ft25', 56)" class="i">repl</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft19', 57)" onmouseover="showTip(event, 'ft19', 57)" class="i">getString</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft13', 58)" onmouseover="showTip(event, 'ft13', 58)" class="i">AsyncCall</span>()
+    <span onmouseout="hideTip(event, 'ft26', 59)" onmouseover="showTip(event, 'ft26', 59)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">got</span><span class="s">:</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span class="i">repl</span> } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ft14', 60)" onmouseover="showTip(event, 'ft14', 60)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft24', 61)" onmouseover="showTip(event, 'ft24', 61)" class="i">Start</span></pre>
+
+
+<p>The code creates and starts tw oasynchronous workflows - one that puts 5 values to 
+each of the put channels and another that keeps reading values from the <code>getString</code> 
+channel. When you run the code, you should see that the two join patterns are 
+triggered in an interleaving order, as the values are added to the put channels.</p>
+
+<h2>Dining Philosophers</h2>
+
+<p>Nick Palladinos recently used the <code>join</code> computation builder to implement the famous
+<a href="http://en.wikipedia.org/wiki/Dining_philosophers_problem">dining philosophers problem</a>,
+which demonstrates competition for resources. The solution is available 
+<a href="http://fssnip.net/aL">on F# snippets</a>.</p>
+
+<p>The problem is defined as follows: There are five philosophers sitting around the table
+with a fork between each of them. In order to eat, a philosopher needs to take hold of
+two forks (one on the left and one on the right of him). When holding both forks, the
+philosopher can eat for some time and then puts both forks back on the table and thinks
+for some time.</p>
+
+<p>Using joinads, the problem can be solved by creating a join pattern for every philosopher.
+The pattern matches when the philosopher acquires forks on both sides (represented as channels).</p>
+
+<ul>
+<li>See the <a href="http://fssnip.net/aL">join calculus based dining philosophers</a> on F# snippets.</li>
+<li>Load <a href="http://tryjoinads.org/index.html?examples/philosophers.html">join calculus sample on TryJoinads</a>.</li>
+</ul>
+
+<h2>Summary</h2>
+
+<p>In this article, we looked at two basic examples that used join calculus, embedded
+in F# using the <code>match!</code> construct. The second example showed a sample consisting
+of multiple join patterns. This is when join calculus becomes quite powerful, because
+we can declaratively specify what combination of values should trigger a certain 
+reaction.</p>
+
+<p>Join calculus provides a powerful abstraction for implementing concurrency primitives
+- it can be used to write various buffers, reader-writer locks, count-down events etc.
+However, the join calculus has been designed as an abstraction for distributed 
+programming and so it may find use in other areas as well.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">namespace FSharp</div>
+<div class="tip" id="ft2">namespace FSharp.Extensions</div>
+<div class="tip" id="ft3">namespace FSharp.Extensions.Joinads</div>
+<div class="tip" id="ft4">val put : Channel&lt;string&gt;<br /><br />Full name: TryJoinads.put<br />&#160;&#160;type: Channel&lt;string&gt;<br /></div>
+<div class="tip" id="ft5">Multiple items<br />module Channel<br /><br />from FSharp.Extensions.Joinads<br /><br />--------------------<br />type Channel&lt;&#39;T&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;interface IChannel&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; Channel&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Call : message:&#39;T -&gt; unit<br />&#160;&#160;&#160;&#160;member Put : message:&#39;T -&gt; unit<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.Channel&lt;_&gt;<br />&#160;&#160;type: Channel&lt;&#39;T&gt;<br /></div>
+<div class="tip" id="ft6">Multiple items<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft7">val get : ReplyChannel&lt;string&gt;<br /><br />Full name: TryJoinads.get<br />&#160;&#160;type: ReplyChannel&lt;string&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;string&gt;&gt;<br /></div>
+<div class="tip" id="ft8">Multiple items<br />type ReplyChannel&lt;&#39;TArg,&#39;TRes&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit Channel&lt;&#39;TArg * IReplyChannel&lt;&#39;TRes&gt;&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; ReplyChannel&lt;&#39;TArg,&#39;TRes&gt;<br />&#160;&#160;&#160;&#160;member AsyncCall : arg:&#39;TArg -&gt; Async&lt;&#39;TRes&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.ReplyChannel&lt;_,_&gt;<br />&#160;&#160;type: ReplyChannel&lt;&#39;TArg,&#39;TRes&gt;<br />&#160;&#160;inherits: Channel&lt;&#39;TArg * IReplyChannel&lt;&#39;TRes&gt;&gt;<br /><br /><br />--------------------<br />type ReplyChannel&lt;&#39;TRes&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit Channel&lt;IReplyChannel&lt;&#39;TRes&gt;&gt;<br />&#160;&#160;&#160;&#160;new : unit -&gt; ReplyChannel&lt;&#39;TRes&gt;<br />&#160;&#160;&#160;&#160;member AsyncCall : unit -&gt; Async&lt;&#39;TRes&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.ReplyChannel&lt;_&gt;<br />&#160;&#160;type: ReplyChannel&lt;&#39;TRes&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;&#39;TRes&gt;&gt;<br /></div>
+<div class="tip" id="ft9">val join : JoinBuilder<br /><br />Full name: FSharp.Extensions.Joinads.Builders.join</div>
+<div class="tip" id="ft10">val repl : IReplyChannel&lt;string&gt;</div>
+<div class="tip" id="ft11">val v : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft12">member Channel.Call : message:&#39;T -&gt; unit</div>
+<div class="tip" id="ft13">member ReplyChannel.AsyncCall : unit -&gt; Async&lt;&#39;TRes&gt;</div>
+<div class="tip" id="ft14">Multiple items<br />module Async<br /><br />from FSharp.Extensions.Joinads.AsyncTopLevel<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;<br /><br />--------------------<br />type Async =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member ParallelImmediate : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T []&gt;<br />&#160;&#160;&#160;&#160;static member StartChildImmediate : work:Async&lt;&#39;a0&gt; -&gt; Async&lt;Async&lt;&#39;a0&gt;&gt;<br />&#160;&#160;&#160;&#160;static member WhenAny : works:Async&lt;&#39;T&gt; [] -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;end<br /><br />Full name: FSharp.Extensions.Joinads.Async</div>
+<div class="tip" id="ft15">static member Async.RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:System.Threading.CancellationToken -&gt; &#39;T</div>
+<div class="tip" id="ft16">val putString : Channel&lt;string&gt;<br /><br />Full name: TryJoinads.putString<br />&#160;&#160;type: Channel&lt;string&gt;<br /></div>
+<div class="tip" id="ft17">val putInt : Channel&lt;int&gt;<br /><br />Full name: TryJoinads.putInt<br />&#160;&#160;type: Channel&lt;int&gt;<br /></div>
+<div class="tip" id="ft18">Multiple items<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;inherits: System.ValueType<br /><br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft19">val getString : ReplyChannel&lt;string&gt;<br /><br />Full name: TryJoinads.getString<br />&#160;&#160;type: ReplyChannel&lt;string&gt;<br />&#160;&#160;inherits: Channel&lt;IReplyChannel&lt;string&gt;&gt;<br /></div>
+<div class="tip" id="ft20">val v : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft21">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="ft22">val i : int<br />&#160;&#160;type: int<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft23">static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="ft24">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:System.Threading.CancellationToken -&gt; unit</div>
+<div class="tip" id="ft25">val repl : string<br />&#160;&#160;type: string<br /></div>
+<div class="tip" id="ft26">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>

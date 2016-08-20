@@ -1,0 +1,113 @@
+<!-- [info]
+
+ - date: 2005-12-04T00:18:30.0000000
+ - description: C# implementation of very efficient Aho-Corasick keyword matching algorithm with multiple keywords support.
+ - tags: .net
+ - layout: post
+ - title: Aho-Corasick string matching in C#
+ - url: ahocorasick.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>I implemented this algorithm because I worked on one project where we needed to filter bad language in comments submited by users (You wouldn't believe what anonymous users sometimes write). First I tried simple solution using <code>String.IndexOf</code> and using <code>Regex</code>, but none of these solutions was very suitable for this problem, so I decided to implement Aho-Corasick algorithm which is probabbly the best algorithm for this purpose.</p>
+
+<p>Article (published here an on CodeProject.com) describes implementation of this algorithm for pattern matching. In simple words this algorithm can be used for searching text for specified keywords. This implementation is usefull when you have a set of keywords and you want to find all occurences in text or check if any of the keywords is present in the text. You should use this algorithm especially if you have large number of keywords that don't change often, because in this case it is much more efficient than other algorithms that can be simply implemented using .NET class library.</p>
+
+<p>Aho-Corasick search algorithm is very efficient if you want to find large number of keywords in the text, but if you want to search only for a few keywords it is better to use simple method using <code>String.IndexOf</code>. </p>
+[/abstract] -->
+
+<h1>Aho-Corasick string matching in C#</h1>
+<ul class="download"><li><a href="/articles/ahocorasick/demo.zip">Download demo application - 67 Kb </a></li><li><a href="/articles/ahocorasick/source.zip">Download library with source - 49 Kb</a></li></ul><h2>Introduction</h2><p>In this article I will describe implementation of an efficient Aho-Corasick algorithm for pattern matching.
+		In simple words this algorithm can be used for searching text for specified keywords. Following code
+		is usefull when you have a set of keywords and you want to find all occurences in text or check if any of 
+		the keywords is present in the text. You should use this algorithm especially if you have large number of
+		keywords that don't change often, because in this case it is much more efficient than other algorithms
+		that can be simply implemented using .NET class library.</p><p></p><h2>Aho-Corasick algorithm</h2><p>In this section I'll try to describe the concept of this algorithm. For more information and more exact explanation 
+		please take a look at links at the end of article. The algorithm consists of two parts. First part is
+		the building of tree from keywords you want to search for and second part is the searching text for
+		keywords using previously built tree (state machine). Searching for keyword is very efficient, because
+		it only moves through the states in the state machine. If a character is matching it follows <i>goto function</i> otherwise
+		it follows <i>fail function</i>.</p><h3>Tree building</h3><p>In the first phase of tree building, keywords are added to the tree. In my implementation I use class <code>StringSearch.TreeNode</code>,
+	  which represents one letter. Root node is used only as a place holder and contains links to other letters. Links created in
+	  this first step represents <i>goto function</i>, which returns next state when character is matching.</p><p>During second phase <i>fail</i> and <i>output functions</i> are found. Fail function is used when character is not matching
+	  and output function returns found keywords for each reached state. For example in text "SHIS" failure function is used
+	  to exit from "SHE" branch to "HIS" branch after first two characters (because third character is not matching).
+	  During the second phase BFS (breadth first search) algorithm is used for traversing through all nodes. 
+	  Functions are calculated in this order, because fail function of specified node is calculated using fail 
+	  function of parent node.</p><div style="text-align:center"><img src="http://tomasp.net/articles/ahocorasick/tree1.gif" style="margin:5px" /><img src="http://tomasp.net/articles/ahocorasick/tree2.gif" style="margin:5px" /><br /><small>Building of keyword tree (1 - after first step, 2 - tree with <i>fail function</i>)</small></div><h3>Searching</h3><p>As I already mentioned searching means only traversing previously built keyword tree (state machine).
+	  To demonstrate how this algorithm works, let's look at commented method which returns all matches of specified keywords:</p><pre><span class="c">// Searches passed text and returns all occurrences of any keyword
+// Returns array containing positions of found keywords</span>
+public StringSearchResult[] FindAll(string text)
+{
+  ArrayList ret=new ArrayList(); <span class="c">// List containing results</span>
+  TreeNode ptr=_root;            <span class="c">// Current node (state)</span>
+  int index=0;                   <span class="c">// Index in text</span><span class="c">// Loop through characters</span>
+  while(index&lt;text.Length)
+  {
+    <span class="c">// Find next state (if no transition exists, fail function is used)
+    // walks through tree until transition is found or root is reached</span>
+    TreeNode trans=null;
+    while(trans==null)
+    {
+      trans=ptr.GetTransition(text[index]);
+      if (ptr==_root) break;
+      if (trans==null) ptr=ptr.Failure;
+    }
+    if (trans!=null) ptr=trans;
+
+    <span class="c">// Add results from node to output array and move to next character</span>
+    foreach(string found in ptr.Results)
+      ret.Add(new StringSearchResult(index-found.Length+1,found));
+    index++;
+  }
+  
+  <span class="c">// Convert results to array</span>
+  return (StringSearchResult[])ret.ToArray(typeof(StringSearchResult));
+}</pre><h3>Algorithm complexity</h3><p>Complexity of first part is not so important, because it is executed only once. Complexity of second part
+		is <i>O(m+z)</i> where <i>m</i> is length of the text and <i>z</i> is the number of found keywords 
+		(in simple words it is very fast and its speed doesn't drop quickly for longer texts or many keywords).</p><h2>Performance comparsion</h2><p>To show how efficient this algorithm is, I created test application which compares this algorithm
+	  whit two other simple methods that can be used for this purpose. First algorithm is using <code>String.IndexOf</code> method to 
+	  search the text for all keywords and second algorithm uses regular expressions - for example for keywords he, she and his it
+	  creates regular expression <code>(he|she|his)</code>. Following graphs shows results of tests for two texts of different size.
+	  Number of used keywords is displayed on the X axis and time of search is displayed on Y axis.</p><p>Interesting thing is that for less than 70 keywords it is better to use simple method using <code>String.IndexOf</code>.
+    Regular expressions are almost always slower than other algorithms. I also tried compiling test under both 
+    .NET 1.1 and .NET 2.0 to see the difference. Althrough my measuring method may not be very precise it looks that
+    .NET 2.0 is a bit faster (about 5-10%) and method with regular expressions gives much better results (about 60% faster).</p><div style="text-align:center"><img src="http://tomasp.net/articles/ahocorasick/graph1kb.gif" style="margin:5px" /><img src="http://tomasp.net/articles/ahocorasick/graph10kb.gif" style="margin:5px" /><br /><small>Two charts comparing speed of three described algorithms - Aho-Corasick (yellow), IndexOf (green) and Regex (blue)</small></div><h2>How to use the code</h2><p>I decided to implement this algorithm when I had to ban some words in community web page (vulgarisms etc.). 
+	  This is typical use case because searching should be really fast, but blocked keywords don't change often
+	  (and creation of keyword tree can be slower).</p><p>Search algorithm is implemented in file <code>StringSearch.cs</code>. I created interface that represents any search 
+	  algorithm (so it is easy to replace it with another implementation). This interface is called <code>IStringSearchAlgorithm</code>
+	  and it contains property <code>Keywords</code> (gets or sets keywords to search for) and methods for searching.
+	  Method <code>FindAll</code> returns all keywords in passed text, <code>FindFirst</code> returns first match. 
+	  Matches are represented by <code>StringSearchResult</code> structure, that contains found keyword and its position in the text.
+	  Last method is <code>ContainsAny</code>, which returns <code>true</code> when passed text contains any keyword. Class that implements Aho-Corasick algorithm is 
+	  called <code>StringSearch</code>.</p><h3>Initialization</h3><p>Following example shows how to load keywords from database and create <code>SearchAlgorithm</code> instance:</p><pre><span class="c">// Initialize DB connection</span>
+SqlConnection conn = new SqlConnection(connectionString);
+SqlCommand cmd = new SqlCommand("SELECT BlockedWord FROM BlockedWords",conn);
+conn.Open();
+
+<span class="c">// Read list of banned words</span>
+ArrayList listWords = new ArrayList();
+using(SqlDataReader reader = 
+  cmd.ExecuteReader(CommandBehavior.CloseConnection))
+{
+  while(reader.Read()) 
+    listWords.Add(myReader.GetString(0));
+}
+string[] arrayWords = (string[])listWords.ToArray(typeof(string));
+
+<span class="c">// Create search algorithm instance</span>
+IStringSearchAlgorithm searchAlg = new StringSearch();
+searchAlg.Keywords = arrayWords;
+</pre><p>You can also use <code>StringSearch</code> constructor which takes array of keywords as parameter.</p><h3>Searching</h3><p>Searching passed text for keywords is event easier. Following sample shows how to write all matches to console output:</p><pre><span class="c">// Find all matching keywords</span>  
+StringSearchResult[] results=searchAlg.FindAll(textToSearch);
+
+<span class="c">// Write all results</span>  
+foreach(StringSearchResult r in results)
+{
+  Console.WriteLine("Keyword='{0}', Index={1}", r.Keyword, r.Index);
+}</pre><h2>Conclusion</h2><p>This implementation of Aho-Corasick search algorithm is very efficient if you want to find large number of keywords
+    in text of any length, but if you want to search only for a few keywords it is better to use simple method using
+    <code>String.IndexOf</code>. Code can be compiled in both .NET 1.1 and .NET 2.0 without any modifications.
+    If you want to learn more about this algorithm look at the link in the next section, that was very useful for me
+    during implementation of algorithm and explains theory behind this algorithm.</p><h2>Links and references</h2><ul class="externallinks"><li><a href="http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf">Set Matching and Aho-Corasick Algorithm</a>
+			[<a href="http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf" target="_blank">^</a>] - Pekka Kilpeläinen (University of Kuopio)</li></ul><h2>Future work and history</h2><ul class="externallinks"><li>(12/03/2005) - First version of this article published at CodeProject</li></ul>

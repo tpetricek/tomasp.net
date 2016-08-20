@@ -1,0 +1,273 @@
+<!-- [info]
+
+ - date: 2012-03-02T13:24:21.0000000
+ - description: The match! research extension for F# can be used to program with a number of monadic computations. In this article, we look how to support it in one of the simplest monads - the maybe monad.
+ - tags: f#,research,joinads
+ - layout: post
+ - title: TryJoinads (V.) - Implementing the option joinad
+ - url: joinads-options.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>This article shows how to implement the <em>joinad</em> structure for one of the 
+simplest monads - the <code>option&lt;'T&gt;</code> type. This is a slightly oversimplified example. 
+The <code>match!</code> construct can be used to write patterns that specify that a monadic
+value (in this case <code>option&lt;'T&gt;</code>) should contain a certain value, or we can specify
+that we do not require a value. When working with options, this means the same thing 
+as matching the value against <code>Some</code> and against <code>_</code>, respectively.</p>
+
+<p>However, the example demonstrates the operations that need to be implemented and
+their type signatures. Later articles give more interesting examples including
+parsers and asynchronous workflows (and you can explore other examples if you look
+at the <a href="https://github.com/tpetricek/FSharp.Joinads">FSharp.Joiands source code</a> at GitHub).</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?implement/options.html">view the article on TryJoinads</a>.</em></p>
+[/abstract] -->
+
+<h1>TryJoinads (V.) - Implementing the option joinad</h1>
+<p>This article shows how to implement the <em>joinad</em> structure for one of the 
+simplest monads - the <code>option&lt;'T&gt;</code> type. This is a slightly oversimplified example. 
+The <code>match!</code> construct can be used to write patterns that specify that a monadic
+value (in this case <code>option&lt;'T&gt;</code>) should contain a certain value, or we can specify
+that we do not require a value. When working with options, this means the same thing 
+as matching the value against <code>Some</code> and against <code>_</code>, respectively.</p>
+
+<p>However, the example demonstrates the operations that need to be implemented and
+their type signatures. Later articles give more interesting examples including
+parsers and asynchronous workflows (and you can explore other examples if you look
+at the <a href="https://github.com/tpetricek/FSharp.Joinads">FSharp.Joiands source code</a> at GitHub).</p>
+
+<p><em><strong>Note:</strong> This blog post is a re-publication of a tutorial from the <a href="http://tryjoinads.org">TryJoinads.org</a>
+web page. If you read the article there, you can run the examples interactively
+and experiment with them: <a href="http://tryjoinads.org/index.html?implement/options.html">view the article on TryJoinads</a>.</em></p>
+
+<h2>Implementing the maybe builder</h2>
+
+<p>To implement computation builder that supports the <code>match!</code> construct, we first create 
+a usual F# computation builder with the standard members that are used by F# today. For
+options, we provide <code>Bind</code>, <code>Return</code> and <code>ReturnFrom</code> to support the <code>let!</code> construct, 
+<code>return</code> and <code>return!</code>:</p>
+
+<pre class="fssnip">
+<span class="c">/// Computation builder for option values that</span>
+<span class="c">/// defines standard members for monads</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft1', 1)" onmouseover="showTip(event, 'ft1', 1)" class="i">MaybeBuilder</span>() <span class="o">=</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 2)" onmouseover="showTip(event, 'ft2', 2)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft3', 3)" onmouseover="showTip(event, 'ft3', 3)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'ft4', 4)" onmouseover="showTip(event, 'ft4', 4)" class="i">v</span>, <span onmouseout="hideTip(event, 'ft5', 5)" onmouseover="showTip(event, 'ft5', 5)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft6', 6)" onmouseover="showTip(event, 'ft6', 6)" class="i">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft7', 7)" onmouseover="showTip(event, 'ft7', 7)" class="i">bind</span> <span onmouseout="hideTip(event, 'ft5', 8)" onmouseover="showTip(event, 'ft5', 8)" class="i">f</span> <span onmouseout="hideTip(event, 'ft4', 9)" onmouseover="showTip(event, 'ft4', 9)" class="i">v</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 10)" onmouseover="showTip(event, 'ft2', 10)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft8', 11)" onmouseover="showTip(event, 'ft8', 11)" class="i">Return</span>(<span onmouseout="hideTip(event, 'ft9', 12)" onmouseover="showTip(event, 'ft9', 12)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 13)" onmouseover="showTip(event, 'ft10', 13)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft9', 14)" onmouseover="showTip(event, 'ft9', 14)" class="i">a</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 15)" onmouseover="showTip(event, 'ft2', 15)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft11', 16)" onmouseover="showTip(event, 'ft11', 16)" class="i">ReturnFrom</span>(<span onmouseout="hideTip(event, 'ft12', 17)" onmouseover="showTip(event, 'ft12', 17)" class="i">o</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft12', 18)" onmouseover="showTip(event, 'ft12', 18)" class="i">o</span></pre>
+
+
+<p>To support <code>match!</code> we need to add five additional members. The most important members are
+<code>Merge</code> (to allow matching on multiple values in a single clause), <code>Choose</code> and <code>Fail</code> (to allow
+multiple clauses). The members <code>Delay</code> and <code>Run</code> do not have to be 
+implemented, but should be provided to handle side-effects in clause bodies.</p>
+
+<pre class="fssnip">
+<span class="c">/// Adds implementation of joinad operations</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft1', 19)" onmouseover="showTip(event, 'ft1', 19)" class="i">MaybeBuilder</span> <span class="k">with</span>
+  <span class="c">/// Combine two options into option of a tuple </span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 20)" onmouseover="showTip(event, 'ft2', 20)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft13', 21)" onmouseover="showTip(event, 'ft13', 21)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'ft14', 22)" onmouseover="showTip(event, 'ft14', 22)" class="i">v1</span>, <span onmouseout="hideTip(event, 'ft15', 23)" onmouseover="showTip(event, 'ft15', 23)" class="i">v2</span>) <span class="o">=</span> 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft14', 24)" onmouseover="showTip(event, 'ft14', 24)" class="i">v1</span>, <span onmouseout="hideTip(event, 'ft15', 25)" onmouseover="showTip(event, 'ft15', 25)" class="i">v2</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'ft10', 26)" onmouseover="showTip(event, 'ft10', 26)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft16', 27)" onmouseover="showTip(event, 'ft16', 27)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft10', 28)" onmouseover="showTip(event, 'ft10', 28)" class="i">Some</span> <span onmouseout="hideTip(event, 'ft17', 29)" onmouseover="showTip(event, 'ft17', 29)" class="i">b</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft10', 30)" onmouseover="showTip(event, 'ft10', 30)" class="i">Some</span> (<span onmouseout="hideTip(event, 'ft16', 31)" onmouseover="showTip(event, 'ft16', 31)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft17', 32)" onmouseover="showTip(event, 'ft17', 32)" class="i">b</span>)
+    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft18', 33)" onmouseover="showTip(event, 'ft18', 33)" class="i">None</span>
+  <span class="c">/// Return the first option that contains a value</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 34)" onmouseover="showTip(event, 'ft2', 34)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft19', 35)" onmouseover="showTip(event, 'ft19', 35)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'ft14', 36)" onmouseover="showTip(event, 'ft14', 36)" class="i">v1</span>, <span onmouseout="hideTip(event, 'ft20', 37)" onmouseover="showTip(event, 'ft20', 37)" class="i">v2</span>) <span class="o">=</span> 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'ft14', 38)" onmouseover="showTip(event, 'ft14', 38)" class="i">v1</span> <span class="k">with</span> 
+    | <span onmouseout="hideTip(event, 'ft10', 39)" onmouseover="showTip(event, 'ft10', 39)" class="i">Some</span>(<span onmouseout="hideTip(event, 'ft21', 40)" onmouseover="showTip(event, 'ft21', 40)" class="i">v1</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft10', 41)" onmouseover="showTip(event, 'ft10', 41)" class="i">Some</span>(<span onmouseout="hideTip(event, 'ft21', 42)" onmouseover="showTip(event, 'ft21', 42)" class="i">v1</span>) 
+    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft20', 43)" onmouseover="showTip(event, 'ft20', 43)" class="i">v2</span>
+  <span class="c">/// Represents a failed computation</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 44)" onmouseover="showTip(event, 'ft2', 44)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft22', 45)" onmouseover="showTip(event, 'ft22', 45)" class="i">Fail</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'ft18', 46)" onmouseover="showTip(event, 'ft18', 46)" class="i">None</span>
+
+  <span class="c">// Creating &amp; executing delayed computations</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 47)" onmouseover="showTip(event, 'ft2', 47)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft23', 48)" onmouseover="showTip(event, 'ft23', 48)" class="i">Delay</span>(<span onmouseout="hideTip(event, 'ft24', 49)" onmouseover="showTip(event, 'ft24', 49)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft24', 50)" onmouseover="showTip(event, 'ft24', 50)" class="i">f</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'ft2', 51)" onmouseover="showTip(event, 'ft2', 51)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft25', 52)" onmouseover="showTip(event, 'ft25', 52)" class="i">Run</span>(<span onmouseout="hideTip(event, 'ft26', 53)" onmouseover="showTip(event, 'ft26', 53)" class="i">f</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'ft26', 54)" onmouseover="showTip(event, 'ft26', 54)" class="i">f</span>()
+
+<span class="c">// Create an instance of the computation builder</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft27', 55)" onmouseover="showTip(event, 'ft27', 55)" class="i">maybe</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'ft1', 56)" onmouseover="showTip(event, 'ft1', 56)" class="i">MaybeBuilder</span>()</pre>
+
+
+<p>The computation builder implements most of the operations in the usual way. The <code>Delay</code> operation 
+can be implemented in two ways. For computations that can wrap a function <code>unit -&gt; M&lt;'T&gt;</code> into a 
+computation value <code>M&lt;'T&gt;</code> (without running it), we could wrap the function in <code>Delay</code> and don't 
+include <code>Run</code>. The above sample uses another approach which is to return the function passed to 
+<code>Delay</code> as it is (as a function) and add <code>Run</code> member that runs the function.</p>
+
+<p>Other members needed for the <code>match!</code> construct are:</p>
+
+<ul>
+<li><p>The <code>Fail</code> operation creates a computation that never produces any value. 
+For options, this is the None value. This is quite similar to the <code>Zero</code> member,
+but it may have a different meaning for some types.</p></li>
+<li><p>The <code>Merge</code> operation has a type <code>M&lt;'T&gt; -&gt; M&lt;'U&gt; -&gt; M&lt;'T * 'U&gt;</code>. It takes two computations 
+and returns a single computation that contains a tuple with the values. If any of the
+options passed as arguments is <code>None</code>, the result will also be <code>None</code>. If both of the
+options are <code>Some</code>, then we can get both values and return a tuple wrapped in <code>Some</code>.
+For some computations including options, this operation can be implemented using <code>Bind</code>
+and <code>Return</code>. However, this doesn't work for all computation.</p></li>
+<li><p>Finally, the <code>Choose</code> operation has a type <code>M&lt;'T&gt; -&gt; M&lt;'T&gt; -&gt; M&lt;'T&gt;</code>. The intuitive explanation 
+of the operation is that it should return the "first available value" and prefer values
+from the first argument. For options this means that if the first argument is <code>Some</code>, we
+return its value (wrapped in <code>Some</code>). Otherwise, we return the value of the second argument.
+The operation returns <code>None</code> only if both of the arguments are <code>None</code>.</p></li>
+</ul>
+
+<p>Now that we have a computation builder <code>maybe</code>, let's write some interesting computation. 
+We look how the example looks using the <code>match!</code> syntactic sugar and then explain how the translation works...</p>
+
+<h2>Implementing three-valued logic</h2>
+
+<p>As a simple example, we look how to implement the logical "or" operation for a 
+<a href="http://en.wikipedia.org/wiki/Ternary_logic">three-valued logic</a>. 
+As the name suggests, the logic works with three values (true, false and unknown). We can represent 
+values of the three-valued logic using <code>option&lt;bool&gt;</code> and take <code>None</code> to represent the unknown value.</p>
+
+<p>The unknown value means that the value may be either true or false, but we don't know which one. 
+The "or" operator reflects this interpretation - for example, when we write <code>false || unknown</code>, the result 
+is <code>unknown</code> (it may be either <code>true</code> or <code>false</code> depending on the second value).</p>
+
+<p>The following snippet uses <code>match!</code> to implement the "or" operator as defined in the 
+<a href="http://en.wikipedia.org/wiki/Ternary_logic#Kleene_logic">Kleene logic</a>:</p>
+
+<pre class="fssnip">
+<span class="c">/// Logical &#39;or&#39; operator for ternary (Kleene) logic</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft28', 57)" onmouseover="showTip(event, 'ft28', 57)" class="i">kleeneOr</span> <span onmouseout="hideTip(event, 'ft29', 58)" onmouseover="showTip(event, 'ft29', 58)" class="i">a</span> <span onmouseout="hideTip(event, 'ft30', 59)" onmouseover="showTip(event, 'ft30', 59)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 60)" onmouseover="showTip(event, 'ft27', 60)" class="i">maybe</span> {
+  <span class="k">match!</span> <span onmouseout="hideTip(event, 'ft29', 61)" onmouseover="showTip(event, 'ft29', 61)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft30', 62)" onmouseover="showTip(event, 'ft30', 62)" class="i">b</span> <span class="k">with</span>
+  | <span class="k">true</span>, <span class="o">?</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span>
+  | <span class="o">?</span>, <span class="k">true</span> <span class="k">-&gt;</span> <span class="k">return</span> <span class="k">true</span> 
+  | <span onmouseout="hideTip(event, 'ft31', 63)" onmouseover="showTip(event, 'ft31', 63)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft32', 64)" onmouseover="showTip(event, 'ft32', 64)" class="i">b</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'ft31', 65)" onmouseover="showTip(event, 'ft31', 65)" class="i">a</span> <span class="o">||</span> <span onmouseout="hideTip(event, 'ft32', 66)" onmouseover="showTip(event, 'ft32', 66)" class="i">b</span> }
+
+<span class="c">// Print truth table for the ternary operator</span>
+<span class="k">for</span> <span onmouseout="hideTip(event, 'ft29', 67)" onmouseover="showTip(event, 'ft29', 67)" class="i">a</span> <span class="k">in</span> [<span onmouseout="hideTip(event, 'ft10', 68)" onmouseover="showTip(event, 'ft10', 68)" class="i">Some</span> <span class="k">true</span>; <span onmouseout="hideTip(event, 'ft18', 69)" onmouseover="showTip(event, 'ft18', 69)" class="i">None</span>; <span onmouseout="hideTip(event, 'ft10', 70)" onmouseover="showTip(event, 'ft10', 70)" class="i">Some</span> <span class="k">false</span>] <span class="k">do</span>
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'ft30', 71)" onmouseover="showTip(event, 'ft30', 71)" class="i">b</span> <span class="k">in</span> [<span onmouseout="hideTip(event, 'ft10', 72)" onmouseover="showTip(event, 'ft10', 72)" class="i">Some</span> <span class="k">true</span>; <span onmouseout="hideTip(event, 'ft18', 73)" onmouseover="showTip(event, 'ft18', 73)" class="i">None</span>; <span onmouseout="hideTip(event, 'ft10', 74)" onmouseover="showTip(event, 'ft10', 74)" class="i">Some</span> <span class="k">false</span>] <span class="k">do</span>
+    <span onmouseout="hideTip(event, 'ft33', 75)" onmouseover="showTip(event, 'ft33', 75)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">A</span><span class="s"> </span><span class="s">or</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s"> </span><span class="s">=</span><span class="s"> </span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'ft29', 76)" onmouseover="showTip(event, 'ft29', 76)" class="i">a</span> <span onmouseout="hideTip(event, 'ft30', 77)" onmouseover="showTip(event, 'ft30', 77)" class="i">b</span> (<span onmouseout="hideTip(event, 'ft28', 78)" onmouseover="showTip(event, 'ft28', 78)" class="i">kleeneOr</span> <span onmouseout="hideTip(event, 'ft29', 79)" onmouseover="showTip(event, 'ft29', 79)" class="i">a</span> <span onmouseout="hideTip(event, 'ft30', 80)" onmouseover="showTip(event, 'ft30', 80)" class="i">b</span>)</pre>
+
+
+<p>The example is quite easy to read. When using <code>match!</code>, the patterns we write in clauses can be of two forms. 
+The form <code>&lt;pat&gt;</code> (binding pattern) means that the computation must produce a value and the value should match 
+the usual F# pattern <code>&lt;pat&gt;</code>. In case of options, <code>true</code> essentially means that the value should be <code>Some(true)</code>. 
+The form <code>?</code> (ignore pattern) specifies that we don't care about the value (there may or may not be some value). 
+For options, this means the same thing as underscore <code>_</code> (wildcard pattern) used in the standard <code>match</code> construct.</p>
+
+<p>The first two clauses encode the situation when one of the values is <code>true</code>. In that case, we immediately know 
+that the result of the "or" operation is also <code>true</code>. The last case handles the case when both values are known - 
+in that case, we simply use the standard logical or. In all remaining cases that are not covered by any of the patterns, 
+the result is unknown (or <code>None</code>).</p>
+
+<p>When using joinads to work with option values, we don't get any interesting benefits. The true power of the 
+construct is that it can be used for working with other interesting types of computations. This is possible, 
+because <code>match!</code> is just a syntactic sugar that is translated to the primitives of the computation builder.</p>
+
+<h2>Translation of joinads</h2>
+
+<p>The desugaring of <code>match!</code> is slightly more sophisticated than the desugaring of <code>let!</code> and other standard constructs. 
+The idea is that we combine all inputs for a clause (horizontally) using the <code>Merge</code> operation. Then 
+we select the first matching clause (vertically) using the <code>Choose</code> operation. A pattern matching failure 
+is represented using the <code>Fail</code> operation. The above example will be translated to the following code:</p>
+
+<pre class="fssnip">
+<span class="c">// Sample inputs</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft34', 81)" onmouseover="showTip(event, 'ft34', 81)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft10', 82)" onmouseover="showTip(event, 'ft10', 82)" class="i">Some</span> <span class="k">true</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft35', 83)" onmouseover="showTip(event, 'ft35', 83)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft18', 84)" onmouseover="showTip(event, 'ft18', 84)" class="i">None</span>
+
+<span class="c">// Translation of individual clauses - inputs are combined </span>
+<span class="c">// using &#39;Merge&#39; and body is wrapped using &#39;Delay&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft36', 85)" onmouseover="showTip(event, 'ft36', 85)" class="i">cl1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 86)" onmouseover="showTip(event, 'ft27', 86)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft37', 87)" onmouseover="showTip(event, 'ft37', 87)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'ft34', 88)" onmouseover="showTip(event, 'ft34', 88)" class="i">a</span>, <span class="k">function</span> 
+  | <span class="k">true</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 89)" onmouseover="showTip(event, 'ft27', 89)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 90)" onmouseover="showTip(event, 'ft38', 90)" class="i">Return</span>(<span onmouseout="hideTip(event, 'ft27', 91)" onmouseover="showTip(event, 'ft27', 91)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft39', 92)" onmouseover="showTip(event, 'ft39', 92)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 93)" onmouseover="showTip(event, 'ft27', 93)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 94)" onmouseover="showTip(event, 'ft38', 94)" class="i">Return</span>(<span class="k">true</span>)))
+  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 95)" onmouseover="showTip(event, 'ft27', 95)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft40', 96)" onmouseover="showTip(event, 'ft40', 96)" class="i">Fail</span>() )
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft41', 97)" onmouseover="showTip(event, 'ft41', 97)" class="i">cl2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 98)" onmouseover="showTip(event, 'ft27', 98)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft37', 99)" onmouseover="showTip(event, 'ft37', 99)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'ft35', 100)" onmouseover="showTip(event, 'ft35', 100)" class="i">b</span>, <span class="k">function</span> 
+  | <span class="k">true</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 101)" onmouseover="showTip(event, 'ft27', 101)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 102)" onmouseover="showTip(event, 'ft38', 102)" class="i">Return</span>(<span onmouseout="hideTip(event, 'ft27', 103)" onmouseover="showTip(event, 'ft27', 103)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft39', 104)" onmouseover="showTip(event, 'ft39', 104)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 105)" onmouseover="showTip(event, 'ft27', 105)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 106)" onmouseover="showTip(event, 'ft38', 106)" class="i">Return</span>(<span class="k">true</span>)))
+  | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 107)" onmouseover="showTip(event, 'ft27', 107)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft40', 108)" onmouseover="showTip(event, 'ft40', 108)" class="i">Fail</span>() )
+<span class="k">let</span> <span onmouseout="hideTip(event, 'ft42', 109)" onmouseover="showTip(event, 'ft42', 109)" class="i">cl3</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft27', 110)" onmouseover="showTip(event, 'ft27', 110)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft37', 111)" onmouseover="showTip(event, 'ft37', 111)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'ft27', 112)" onmouseover="showTip(event, 'ft27', 112)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft43', 113)" onmouseover="showTip(event, 'ft43', 113)" class="i">Merge</span>(<span onmouseout="hideTip(event, 'ft34', 114)" onmouseover="showTip(event, 'ft34', 114)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft35', 115)" onmouseover="showTip(event, 'ft35', 115)" class="i">b</span>), <span class="k">fun</span> (<span onmouseout="hideTip(event, 'ft31', 116)" onmouseover="showTip(event, 'ft31', 116)" class="i">a</span>, <span onmouseout="hideTip(event, 'ft44', 117)" onmouseover="showTip(event, 'ft44', 117)" class="i">b</span>) <span class="k">-&gt;</span> 
+  <span onmouseout="hideTip(event, 'ft27', 118)" onmouseover="showTip(event, 'ft27', 118)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 119)" onmouseover="showTip(event, 'ft38', 119)" class="i">Return</span>(<span onmouseout="hideTip(event, 'ft27', 120)" onmouseover="showTip(event, 'ft27', 120)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft39', 121)" onmouseover="showTip(event, 'ft39', 121)" class="i">Delay</span>(<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'ft27', 122)" onmouseover="showTip(event, 'ft27', 122)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft38', 123)" onmouseover="showTip(event, 'ft38', 123)" class="i">Return</span>(<span class="k">true</span>))))
+
+<span class="c">// Clauses are combined using &#39;Choose&#39; and selected</span>
+<span class="c">// delayed clause is then evaluated using &#39;Run&#39;</span>
+<span onmouseout="hideTip(event, 'ft27', 124)" onmouseover="showTip(event, 'ft27', 124)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft37', 125)" onmouseover="showTip(event, 'ft37', 125)" class="i">Bind</span>(<span onmouseout="hideTip(event, 'ft27', 126)" onmouseover="showTip(event, 'ft27', 126)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft45', 127)" onmouseover="showTip(event, 'ft45', 127)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'ft27', 128)" onmouseover="showTip(event, 'ft27', 128)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft45', 129)" onmouseover="showTip(event, 'ft45', 129)" class="i">Choose</span>(<span onmouseout="hideTip(event, 'ft36', 130)" onmouseover="showTip(event, 'ft36', 130)" class="i">cl1</span>, <span onmouseout="hideTip(event, 'ft41', 131)" onmouseover="showTip(event, 'ft41', 131)" class="i">cl2</span>), <span onmouseout="hideTip(event, 'ft42', 132)" onmouseover="showTip(event, 'ft42', 132)" class="i">cl3</span>), <span class="k">fun</span> <span onmouseout="hideTip(event, 'ft46', 133)" onmouseover="showTip(event, 'ft46', 133)" class="i">r</span> <span class="k">-&gt;</span> 
+  <span onmouseout="hideTip(event, 'ft27', 134)" onmouseover="showTip(event, 'ft27', 134)" class="i">maybe</span><span class="o">.</span><span onmouseout="hideTip(event, 'ft47', 135)" onmouseover="showTip(event, 'ft47', 135)" class="i">Run</span>(<span onmouseout="hideTip(event, 'ft46', 136)" onmouseover="showTip(event, 'ft46', 136)" class="i">r</span>))</pre>
+
+
+<p>When translating joinads, the modified F# compiler works in two steps:</p>
+
+<ul>
+<li><p>Every clause is translated into a separate computation of type <code>M&lt;M&lt;'T&gt;&gt;</code> 
+(or <code>M&lt;unit -&gt; M&lt;'T&gt;&gt;</code> when using <code>Delay</code> that returns a function as in this example).
+The inner computation represents the body to be executed when the clause is selected.
+To create this computation, the compiler first merges are inputs that appear in
+binding patterns using Merge. Then it uses <code>Bind</code> to transform the input into either
+<code>Return</code> (containing a delayed body when the value matches a pattern) or <code>Fail</code> (when
+the produced value doesn't match).</p></li>
+<li><p>After translating the clauses, the compiler constructs an expression that selects the first 
+clause that contains or produces body (the terminology is intentionally vaugue, because
+the meaning depends on the type of computation). This is done by combining all clauses in
+the top-to-bottom order using <code>Choose</code>. The result is a computation <code>M&lt;M&lt;'T&gt;&gt;</code>
+(or <code>M&lt;unit -&gt; M&lt;'T&gt;&gt;</code> for delayed functions), so we need to unwrap the body. This is
+done by passing the overall result as an argument to <code>Bind</code>. In the continuation, we
+apply the <code>Run</code> operation, which can unwrap the delayed computation (for computations that
+are delayed by design, the Run operation isn't required).</p></li>
+</ul>
+
+<h2>Summary</h2>
+
+<p>This article demonstrated how to add the joinad structure to the maybe monad. This is
+a very basic example, but it demonstrated what operations need to be implemented. We
+also looked how the translation works, so you should have enough information to implement
+your own joinads. The upcoming two articles will give more complex examples and also
+cover an additional feature that is needed, for example, for asynchronous workflows.</p>
+
+<p>The best way to understand how the translation works is to experiment with it. At the moment,
+the only specification for the translation is the modified source code itself, because
+it includes various small tweaks that are not documented in the <a href="../pubs.html">publications</a>.
+You can find the changes in the <code>tc.fs</code> file <a href="https://github.com/tpetricek/FSharp.Extensions">on GitHub</a>.</p>
+
+
+<!-- HTML for Tool Tips -->
+
+<div class="tip" id="ft1">type MaybeBuilder =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; MaybeBuilder<br />&#160;&#160;&#160;&#160;member Bind : v:&#39;c option * f:(&#39;c -&gt; &#39;d option) -&gt; &#39;d option<br />&#160;&#160;&#160;&#160;member Choose : v1:&#39;a option * v2:&#39;a option -&gt; &#39;a option<br />&#160;&#160;&#160;&#160;member Delay : f:&#39;a -&gt; &#39;a<br />&#160;&#160;&#160;&#160;member Fail : unit -&gt; &#39;a option<br />&#160;&#160;&#160;&#160;member Merge : v1:&#39;a option * v2:&#39;b option -&gt; (&#39;a * &#39;b) option<br />&#160;&#160;&#160;&#160;member Return : a:&#39;b -&gt; &#39;b option<br />&#160;&#160;&#160;&#160;member ReturnFrom : o:&#39;a -&gt; &#39;a<br />&#160;&#160;&#160;&#160;member Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br />&#160;&#160;end<br /><br />Full name: TryJoinads.MaybeBuilder<br /><em><br /><br />&#160;Computation builder for option values that<br />&#160;defines standard members for monads</em></div>
+<div class="tip" id="ft2">val x : MaybeBuilder</div>
+<div class="tip" id="ft3">member MaybeBuilder.Bind : v:&#39;c option * f:(&#39;c -&gt; &#39;d option) -&gt; &#39;d option<br /><br />Full name: TryJoinads.MaybeBuilder.Bind</div>
+<div class="tip" id="ft4">val v : &#39;c option<br />&#160;&#160;type: &#39;c option<br /></div>
+<div class="tip" id="ft5">val f : (&#39;c -&gt; &#39;d option)</div>
+<div class="tip" id="ft6">module Option<br /><br />from Microsoft.FSharp.Core</div>
+<div class="tip" id="ft7">val bind : (&#39;T -&gt; &#39;U option) -&gt; &#39;T option -&gt; &#39;U option<br /><br />Full name: Microsoft.FSharp.Core.Option.bind</div>
+<div class="tip" id="ft8">member MaybeBuilder.Return : a:&#39;b -&gt; &#39;b option<br /><br />Full name: TryJoinads.MaybeBuilder.Return</div>
+<div class="tip" id="ft9">val a : &#39;b</div>
+<div class="tip" id="ft10">union case Option.Some: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft11">member MaybeBuilder.ReturnFrom : o:&#39;a -&gt; &#39;a<br /><br />Full name: TryJoinads.MaybeBuilder.ReturnFrom</div>
+<div class="tip" id="ft12">val o : &#39;a</div>
+<div class="tip" id="ft13">member MaybeBuilder.Merge : v1:&#39;a option * v2:&#39;b option -&gt; (&#39;a * &#39;b) option<br /><br />Full name: TryJoinads.MaybeBuilder.Merge<br /><em><br /><br />&#160;Combine two options into option of a tuple </em></div>
+<div class="tip" id="ft14">val v1 : &#39;a option<br />&#160;&#160;type: &#39;a option<br /></div>
+<div class="tip" id="ft15">val v2 : &#39;b option<br />&#160;&#160;type: &#39;b option<br /></div>
+<div class="tip" id="ft16">val a : &#39;a</div>
+<div class="tip" id="ft17">val b : &#39;b</div>
+<div class="tip" id="ft18">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="ft19">member MaybeBuilder.Choose : v1:&#39;a option * v2:&#39;a option -&gt; &#39;a option<br /><br />Full name: TryJoinads.MaybeBuilder.Choose<br /><em><br /><br />&#160;Return the first option that contains a value</em></div>
+<div class="tip" id="ft20">val v2 : &#39;a option<br />&#160;&#160;type: &#39;a option<br /></div>
+<div class="tip" id="ft21">val v1 : &#39;a</div>
+<div class="tip" id="ft22">member MaybeBuilder.Fail : unit -&gt; &#39;a option<br /><br />Full name: TryJoinads.MaybeBuilder.Fail<br /><em><br /><br />&#160;Represents a failed computation</em></div>
+<div class="tip" id="ft23">member MaybeBuilder.Delay : f:&#39;a -&gt; &#39;a<br /><br />Full name: TryJoinads.MaybeBuilder.Delay</div>
+<div class="tip" id="ft24">val f : &#39;a</div>
+<div class="tip" id="ft25">member MaybeBuilder.Run : f:(unit -&gt; &#39;a) -&gt; &#39;a<br /><br />Full name: TryJoinads.MaybeBuilder.Run</div>
+<div class="tip" id="ft26">val f : (unit -&gt; &#39;a)</div>
+<div class="tip" id="ft27">val maybe : MaybeBuilder<br /><br />Full name: TryJoinads.maybe</div>
+<div class="tip" id="ft28">val kleeneOr : bool option -&gt; bool option -&gt; bool option<br /><br />Full name: TryJoinads.kleeneOr<br /><em><br /><br />&#160;Logical &#39;or&#39; operator for ternary (Kleene) logic</em></div>
+<div class="tip" id="ft29">val a : bool option<br />&#160;&#160;type: bool option<br /></div>
+<div class="tip" id="ft30">val b : bool option<br />&#160;&#160;type: bool option<br /></div>
+<div class="tip" id="ft31">val a : bool<br />&#160;&#160;type: bool<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft32">val b : bool<br />&#160;&#160;type: bool<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ft33">val printfn : Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="ft34">val a : bool option<br /><br />Full name: TryJoinads.a<br />&#160;&#160;type: bool option<br /></div>
+<div class="tip" id="ft35">val b : &#39;a option<br /><br />Full name: TryJoinads.b</div>
+<div class="tip" id="ft36">val cl1 : (unit -&gt; bool option) option<br /><br />Full name: TryJoinads.cl1<br />&#160;&#160;type: (unit -&gt; bool option) option<br /></div>
+<div class="tip" id="ft37">member MaybeBuilder.Bind : v:&#39;c option * f:(&#39;c -&gt; &#39;d option) -&gt; &#39;d option</div>
+<div class="tip" id="ft38">member MaybeBuilder.Return : a:&#39;b -&gt; &#39;b option</div>
+<div class="tip" id="ft39">member MaybeBuilder.Delay : f:&#39;a -&gt; &#39;a</div>
+<div class="tip" id="ft40">member MaybeBuilder.Fail : unit -&gt; &#39;a option<br /><em><br /><br />&#160;Represents a failed computation</em></div>
+<div class="tip" id="ft41">val cl2 : (unit -&gt; bool option) option<br /><br />Full name: TryJoinads.cl2<br />&#160;&#160;type: (unit -&gt; bool option) option<br /></div>
+<div class="tip" id="ft42">val cl3 : (unit -&gt; bool option) option<br /><br />Full name: TryJoinads.cl3<br />&#160;&#160;type: (unit -&gt; bool option) option<br /></div>
+<div class="tip" id="ft43">member MaybeBuilder.Merge : v1:&#39;a option * v2:&#39;b option -&gt; (&#39;a * &#39;b) option<br /><em><br /><br />&#160;Combine two options into option of a tuple </em></div>
+<div class="tip" id="ft44">val b : obj</div>
+<div class="tip" id="ft45">member MaybeBuilder.Choose : v1:&#39;a option * v2:&#39;a option -&gt; &#39;a option<br /><em><br /><br />&#160;Return the first option that contains a value</em></div>
+<div class="tip" id="ft46">val r : (unit -&gt; bool option)</div>
+<div class="tip" id="ft47">member MaybeBuilder.Run : f:(unit -&gt; &#39;a) -&gt; &#39;a</div>

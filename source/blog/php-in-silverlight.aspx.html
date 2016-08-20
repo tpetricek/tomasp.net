@@ -1,0 +1,251 @@
+<!-- [info]
+
+ - date: 2007-12-07T17:16:14.0000000
+ - description: In this article we will look how Phalanger can be used for developing Silverlight applications in the PHP language. We look at basic concepts like XAML as well as at a more complicated game.
+ - tags: phalanger
+ - layout: post
+ - title: Writing Silverlight applications in PHP
+ - url: php-in-silverlight.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In my <a href="http://tomasp.net/blog/phalanger-future-notes.aspx">last post</a> about Phalanger I mentioned 
+  that our important goal is to support the Silverlight (2.0) platform. Shortly Silverlight is a cross-browser 
+  platform that can be used for developing client-side components that run in the web browser and contain
+  rich media, graphics and can interactively communicate with the user. The language that can be used for
+  writing Silverlight code can be in general any .NET language, so our goal is to allow using PHP by 
+  making Phalanger compatible with Silverlight.</p>
+
+<img src="/articles/php-in-silverlight/car_intro_sm.png" alt="Simple Silverlight App in PHP" style="margin:10px; float:left;"/>
+<p>First steps were already made and it is becoming possible to write some very interesting things in 
+  Silverlight using PHP, there is of course still a lot of work to do and we're discussing the future 
+  development with PHP development team (you can join the mailing list <a href="http://news.php.net/php.on.dlr" type="external">PHP on DLR</a> for more info).
+  In this article we will first show a very basic Silverlight example that uses PHP and later I will 
+  shortly comment more complicated example - a game (quite addicting, so be careful :-)!) where you have to 
+  fly with helicopter and avoid the walls. The source code for helicopter game is also attached, so feel free
+  to modify it or create similar games!</p>
+<p>If you can't wait to try the demos before looking at the sources, here are the links:</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">Simple car demo</a> - Click on the car and it will move!</li>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/game.html" type="external">Helicopter game demo</a> - Click left button to fly up!</li>
+</ul>
+[/abstract] -->
+
+<h1>Writing Silverlight applications in PHP</h1>
+<img src="/articles/php-in-silverlight/car_intro_sm.png" alt="Simple Silverlight App in PHP" style="margin:10px; float:left;"/>
+
+<p>In my <a href="http://tomasp.net/blog/phalanger-future-notes.aspx">last post</a> about Phalanger I mentioned 
+  that our important goal is to support the Silverlight (2.0) platform. Shortly Silverlight is a cross-browser 
+  platform that can be used for developing client-side components that run in the web browser and contain
+  rich media, graphics and can interactively communicate with the user. The language that can be used for
+  writing Silverlight code can be in general any .NET language, so our goal is to allow using PHP by 
+  making Phalanger compatible with Silverlight.</p>
+<p>First steps were already made and it is becoming possible to write some very interesting things in 
+  Silverlight using PHP, there is of course still a lot of work to do and we're discussing the future 
+  development with PHP development team (you can join the mailing list <a href="http://news.php.net/php.on.dlr" type="external">PHP on DLR</a> for more info).
+  In this article we will first show a very basic Silverlight example that uses PHP and later I will 
+  shortly comment more complicated example - a game (quite addicting, so be careful :-)!) where you have to 
+  fly with helicopter and avoid the walls. The source code for helicopter game is also attached, so feel free
+  to modify it or create similar games!</p>
+<p>If you can't wait to try the demos before looking at the sources, here are the links:</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">Simple car demo</a> - Click on the car and it will move!</li>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/game.html" type="external">Helicopter game demo</a> - Click left button to fly up!</li>
+</ul>
+
+<h2>Introducing PHP for Silverlight</h2>
+<p>An inevitable part of almost any Silverlight application is <em>XAML</em> file. XAML is a declarative
+  language based on XML (which is in some ways similar to SVG) and is used for describing the user interface
+  elements of the application - it is important to note that these elements are all represented by some
+  object at runtime and so the XAML actually just creates instances of these objects. XAML can be used for
+  defining basic graphical elements like shapes (<code>Ellipse</code>, <code>Rectangle</code>, ...), elements
+  that can be used for grouping other elements (<code>Canvas</code>), but also animations. Animations
+  are quite interesting, because they specify how properties of other object (specified using <code>Name</code>)
+  should change when the animation runs. For example you can create an animation in XAML that moves object
+  from position <code>[0, 0]</code> to <code>[100, 100]</code> in 100 seconds.</p>
+  
+<h3>XAML Source File</h3>  
+<p>The following XAML sample contains part of the declarative markup used to create the car that you can see 
+  in the screenshot above. The live version of the example can be found <a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">here</a>.
+  The sample application contains an HTML file with some JavaScript that initializes the Silverlight component
+  (you can download them below and analyze them yourself). When the Silverlight component is initialized the 
+  XAML file is loaded and this is where the Silverlight application starts executing.
+  Let's now look at the structure of <code>simplegui.xaml</code> file:</p>  
+  
+<pre lang="xml">
+&lt;Canvas x:Name="parentCanvas"
+    xmlns="http://schemas.microsoft.com/client/2007" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:php="clr-namespace:PHP.Silverlight;assembly=ClientBin/PhpNetCore.dll"
+    Width="800" Height="600" Background="White" &gt;
+  &lt;!-- Specifies the PHP code that drives the application --&gt;
+  &lt;php:PhalangerLoader Source="Simplegui.phpx" /&gt;
+
+  &lt;Canvas.Resources&gt;
+    &lt;!-- Animation that moves the car object --&gt;
+    &lt;Storyboard x:Name="moveCar"&gt;
+      &lt;DoubleAnimation From="0" To="810" Duration="0:0:2" 
+                       Storyboard.TargetName="carCanvas" 
+                       Storyboard.TargetProperty="(Canvas.Left)"/&gt;
+    &lt;/Storyboard&gt;
+    &lt;!-- (...) more animations --&gt;
+  &lt;/Canvas.Resources&gt;
+
+  &lt;!-- Car - composed from ellipses and rectangles --&gt;
+  &lt;Canvas x:Name="carCanvas"&gt;
+    &lt;!-- Back wheel --&gt;
+    &lt;Ellipse x:Name="wheel1" Width="47" Height="47" Stroke="#FF000000" 
+             Canvas.Left="5" Canvas.Top="228" /&gt;
+    &lt;!-- (...) other car parts --&gt;
+  &lt;/Canvas&gt;  
+&lt;/Canvas&gt;
+</pre>
+<p>There are a few important things to note. First, the whole content is contained in a <code>Canvas</code>
+  element, which is a container for other elements. The root element contains several standard <code>xmlns</code>
+  declarations and also <code>xmlns:php="..."</code>, which imports element that will be later used to 
+  load PHP code. In the XML namespace declaration we have to specify the path to the Phalanger Core assembly
+  (called <code>PhpNetCore.dll</code>). Later, the <code>php:PhalangerLoader</code> element is used to specify
+  what PHP source file is attached to the application - this will be in more details discussed shortly.</p>
+<p>Other interesting element in the file is <code>Canvas.Resources</code>. This element specifies resources of the
+  root canvas and in our example contains animation declarations. The animation is created using <code>Storyboard</code>
+  element, which we will later retrieve from the resources using the <code>Name</code> attribute and start 
+  from our PHP code. The storyboard can contain several animations that specify how some attribute of other object 
+  should change - in this example we have a single <code>DoubleAnimation</code>, which linearly animates a floating
+  point value from <code>0</code> to <code>810</code>. The property that will be changed during the animation
+  is <code>Canvas.Left</code> (the position of the shape from left relatively to the parent <code>Canvas</code> object)
+  and the animated object is an object with name <code>carCanvas</code>. Finally, the last attribute (<code>Duration</code>)
+  specifies that the animation should take 2 seconds.</p>
+<p>Explaining everything that can be done just in XAML would make quite a long article alone, so I will not go in 
+  further details in this article, though I will definitely mention a few more things in the future. Good reference
+  with examples can be found in the MSDN Documentation for Silverlight [<a href="#phpinslref">1</a>]. Also, it is 
+  possible to create XAML files in a graphical designer called <em>Expression Blend 2</em> [<a href="#phpinslref">2</a>], which is currently available 
+  as a beta version. It doesn't directly support PHP projects, but you can use it to create XAML files that can be 
+  later copied to your Phalanger-powered Silverlight applications.</p>  
+
+<h3>PHPX Source File</h3>
+<p>In this example, I use <code>phpx</code> as an extension for the client-side PHP code that will run in Silverlight.
+  As you can see the file is referenced using file name from the XAML file and this also means that the source code is 
+  downloaded from the server to the client and executed there. To make this possible the extension of client-side (Silverlight)
+  PHP code has to be an extension that the web server will serve as a plain text (as an opposite to server-side PHP code
+  which is executed by the web server). If your web hosting doesn't allow hosting of files with <code>phpx</code> extension you can 
+  use for example <code>txt</code> and it will also work. </p>
+<p>Let's now look at the PHP code file that controls the demo with a car (available <a href="http://tomasp.net/articles/php-in-silverlight/simplegui.html" type="external">here</a>).
+  The PHP file contains code that defines the interaction for our application, which is in this example very simple - when a user clicks on 
+  the car we want to start the animation:</p>
+<pre lang="php">
+&lt;?
+import namespace System:::Windows:::Input;
+// Include common Silverlight utilities
+include("slutils.phpx");
+
+// Initialize canvas wrapper for working with the XAML elements
+global $CANVAS;
+global $cv;
+$cv = new CanvasWrapper($CANVAS);
+
+// Called when user clicks on the car
+function OnClick() {
+  global $cv;
+  // Start the animation declared in XAML
+  $cv-&gt;moveCar-&gt;Begin();
+}
+
+// Called when the Silverlight component loads in browser
+function OnLoad() {
+  global $cv;
+  // Attach the event handler for 'MouseLeftButtonDown' of the 'carCanvas'
+  $cv-&gt;carCanvas-&gt;MouseLeftButtonDown-&gt;Add
+    (new MouseEventHandler("OnClick"));
+}
+?&gt;
+</pre>
+<p>On the first line, you can see the <code>import namespace</code> statement, which imports objects from the 
+  specified .NET (Silverlight) namespace. This is a non-standard extension to the PHP language which is available
+  in Phalanger to support namespaces (in the future the syntax will be same as syntax for working with namespaces in PHP 5.3).
+  The second line includes a source file with various utilities that make developing Silverlight applications in PHP
+  a lot easier - we will use only a single extension in this example, so I'll comment that shortly below.</p>
+<p>The next few lines use a global variable <code>$CANVAS</code>, which is a special variable initialized by the
+  Silverlight module in Phalanger. This variable refers to an object that represents the root canvas object created
+  in XAML and it can be used for manipulating with other named elements in the XAML file (named elements have the 
+  <code>x:Name</code> attribute). The variable <code>$cv</code> will be initialized to an object <code>CanvasWrapper</code>,
+  which comes from the <code>slutils.phpx</code> file that I mentioned earlier. This class is a wrapper written in PHP 
+  that simplifies the access to the canvas elements - it is working with the .NET representation of the canvas object,
+  which has all the needed functionality, but the wrapper exposes this functionality in a more PHP-friendly style. 
+  If you look at the <code>OnClick</code> method (which will be called by the system when user clicks on the car element)
+  you can see a code that starts the animation, by calling <code>Begin</code> method of the <code>Storyboard</code> element
+  declared in XAML. The following example demonstrates how the <code>CanvasWrapper</code> simplifies the code:</p>  
+<pre lang="php">
+// Using CanvasWrapper we can just access 
+// 'moveCar' as a member using magical '__get'
+$cv-&gt;moveCar-&gt;Begin();
+
+// Without CanvasWrapper the element has to 
+// be accessed using 'FindName' method
+$cv-&gt;FindName("moveCar")-&gt;Begin();
+</pre>
+<p>There are of course some other tricks that the <code>slutils.phpx</code> implements, but this is the only one that 
+  we needed in this example. The implementation of <code>OnClick</code> function is quite simple, so let's look at the
+  remaining <code>OnLoad</code> function now. The function is called by Phalanger when the Silverlight component is loaded,
+  so we use it here to register an <em>event handler</em> that will be called when user clicks on the car.</p>
+<p>To do this, we first access the <code>carCanvas</code> element from the XAML file and we'll use its <code>MouseLeftButtonDown</code>
+  property, which represents the event. Events are general .NET concept and can be used thanks to Phalanger, which
+  understands events and knows how to use them. To register a new <em>event handler</em> that will be called when the 
+  event occurs, we use the <code>Add</code> method and give it a corresponding event handler object as an argument. 
+  In this case we're working with mouse-related events, so we have to create <code>MouseEventHandler</code> object
+  (which comes from the <code>System:::Windows:::Input</code> namespace). When creating the event handler you can 
+  give it either a reference to a global function (as a string) or a reference to a member function, in which case
+  you would give it the following argument: <code>array($this, "FuncName")</code>.</p>
+
+<h3>Deployment</h3>
+<p>The last thing that I wanted to comment in this article is the deployment process - that is what you need
+  to upload to your web server when you want to host Silverlight applications in PHP. The Silverlight plugin is 
+  installed on the client-side, so you can host it on any server using any server-side technology (both IIS and Apache
+  are fine and you don't even need PHP on the server). The client-side Silverlight application consists of <code>xaml</code>
+  file, <code>phpx</code> file and <code>html</code> with <code>js</code> files that contain the hosted 
+  Silverlight control. The JavaScript code that initializes the control can be just copied from any other Silverlight
+  application, so you just need to modify the <code>html</code> and <code>js</code> files to load the correct <code>xaml</code>
+  file (or replace them with more complex server-side code, for example in PHP). </p>
+<p>The <code>phpx</code> file has to be published as a text file, so that the source code can be downloaded to the
+  client and compiled and executed there. You can however change the extension (for example to <code>txt</code>) if
+  your web hosting doesn't allow <code>phpx</code> extension. You should be aware of the fact that the source code
+  of the client-side part of your application is available to the users and you shouldn't put any security critical
+  information in this file. This is a by-design limitation, because even if we allowed serving the client-side functionality
+  in a compiled file it would be still possible to decompile the source code relatively easily. I will comment the
+  security more in one of the future articles, where we get to sending data from client-side (PHP running in the 
+  Silverlight) to the server-side (standard PHP application running on the server).</p>  
+<p>Finally, the Silverlight has to be installed on the client and you need to upload Phalanger core libraries that 
+  will execute the <code>phpx</code> file on the client. Currently, the two files are <code>PhpNetCore.dll</code> and
+  <code>PhpNetClassLibrary.dll</code> - the first one contains the PHP compiler and core runtime and the second one
+  implements common PHP functions. These files have to be in same directory and the <code>PhpNetCore.dll</code> have to 
+  be referenced from the <code>xaml</code> file (default and recommended location for both of them is <code>ClientBin</code>
+  subdirectory). I believe that these two files are cached by the browser when they are downloaded, but we 
+  still want to make them as small as possible, so expect that the files together will be smaller than 1MB in a near future
+  (in a far feature we'd like to leverage of some DLR capabilities, so the files should get even smaller).</p>
+
+<h2>Helicopter Game</h2>
+<p>So far, we have looked at very simple example where we used XAML to define the user interface elements and animations
+  declaratively and we've used the PHP language (thanks to the Phalanger compiler and runtime) to implement interaction
+  logic for the sample Silverlight application. I will write more about using PHP with Silverlight in the future
+  (let me know if there is some topic that you're in particular interested!), but I also wanted to publish some 
+  more complex, so you have a more sample code to look at if you want to play with PHP in Silverlight:</p>
+  
+<div style="text-align:center;">
+<a href="http://tomasp.net/articles/php-in-silverlight/game.html" target="_blank"><img src="/articles/php-in-silverlight/copter_sm.png" alt="Go to the helicopter game" style="border:0px;margin:5px;"/></a><br />
+<small><a href="http://tomasp.net/articles/php-in-silverlight/game.html" type="external">Go to the helicopter game</a></small>
+</div>
+
+<p>The helicopter game uses the concepts introduced in this article (event handlers and the <code>CanvasWrapper</code> object).
+  The rest of the code uses standard PHP programming practices, so it should look quite familiar 
+  to any PHP programmer. I believe that this article gives you a good introduction to writing client-side Silverlight 
+  applications in PHP!</p>
+
+<h2>Downloads &amp; References<a name="phpinslref"></a></h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/php-in-silverlight/demos.zip">Download the samples with Phalanger Silverlight runtime</a> (636 kB)</li>
+</ul>
+
+<ul>
+  <li>[1] <a href="http://msdn2.microsoft.com/en-us/library/bb412392.aspx" type="external">XAML Syntax Overview</a> - MSDN Documentation</li>
+  <li>[2] <a href="http://www.microsoft.com/expression/products/download.aspx?key=blend2preview" type="external">Microsoft Expression Blend 2 Free Trial</a> - Microsoft Expression</li>
+  
+</ul>

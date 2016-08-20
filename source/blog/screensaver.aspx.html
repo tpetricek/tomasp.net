@@ -1,0 +1,150 @@
+<!-- [info]
+
+ - date: 2005-04-11T21:29:25.0000000
+ - description: Tento článek vysvětluje jak lze za použití objektově orientovaného programování vytvořit spořič obrazovky v .NETu
+ - tags: 
+ - layout: post
+ - title: WinForms - Screensaver a kreslení pomocí GDI+
+ - url: screensaver.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek vysvětluje jak lze za použití objektově orientovaného programování vytvořit spořič obrazovky v .NETu
+[/abstract] -->
+
+<h1>WinForms - Screensaver a kreslení pomocí GDI+</h1>
+<doc version="1"><body><h1>WinForms - Screensaver a kreslení pomocí GDI+</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak vytvářet screensavery v .NETu</li><li>Jak pomocí objektově orientovaného programování vytvářet "lepší" aplikace</li><li>Základy kreslení na obrazovku pomocí GDI+</li></ul><img src="http://www.eeeksoft.net/articles/screensaver/screen.jpg" alt="Screensaver v akci" style="margin:10px; float:right;" /><h2>Screensaver s červíky</h2><p>V tomto článku vytvoříme screensaver na kterém se budou po obrazovce 
+    pohybovat "červíci". Červík je objekt který má barvu a pozici a oboje se může
+    měnit. Červík se v každém kroku nakreslí (jako kruh) a posune se.
+    Po nakreslení se ještě smaže část okna a to tak, že se přes okno nakreslí 
+    na náhodá místa několik černých kružnic, které tak smažou dříve nakreslené 
+    červíky. Pomocí objektového návrhu vytvoříme dva různé typy červíka a každý
+    se bude chovat jinak, ale v hlaní aplikaci s nimi bude možné pracovat
+    stejným způsobem (takže by nebyl problém přidat například třetí typ).</p><h2>Jak funguje screensaver?</h2><p>Screensaver je obyčejný spustitelný soubor, jenom má místo připony <code>exe</code>
+    příponu <code>scr</code>. Program se spouští několika různými způsoby, podle 
+    toho co chce uživatel dělat a tento způsob je aplikaci předán jako parametr
+    příkazové řádky. Pokud se screensaver normálně spouští je na příkazové řádce
+    předán parametr <code>/s</code>. Při kliknutí na tlačítko "Nastavení" je
+    screensaveru předán parametru <code>/c</code>. Poslední parametr a to <code>/p</code>
+    je aplikaci předán když se má kreslit náhled (v nastavení screensaveru ve windows).</p><p><small>(Zpracování posledního parametru vyžaduje znalost WinAPI, takže se jím zde nebudeme 
+    zabývat, nicméně kód který jej obsluhuje naleznete například v aplikaci [<a href="#links">1</a>]</small>)</p><pre>
+static void Main(string[] args) 
+{
+  if (args.Length==0||args[0].StartsWith("/s"))
+    <span class="c">// Spustit screensaver</span>
+  else if (args[0].StartsWith("/c"))
+    <span class="c">// Nastaveni screensaveru</span>
+  else if (args[0].StartsWith("/p")) 
+    <span class="c">// Vykreslovani nahledu</span>
+}
+</pre><p>Po spuštění screensaveru je také potřeba, aby hlavní formulář aplikace 
+    zabral prostor celé obrazovky. Nejsnadnější způsob jak toho dosáhnout je
+    vytvořit maximalizovaný formulář bez okrajů (a také je třeba skrýt ukazetel myši).</p><pre><span class="c">// Bez okraje, maximalizovany a skryt mys</span>
+FormBorderStyle=FormBorderStyle.None;
+WindowState=FormWindowState.Maximized;
+Cursor.Hide();
+</pre><h2>Objektový návrh aplikace</h2><p>Pomocí objektově orientovaného programování je možné snadno vytvořit několik
+    typů "červíka", se kterými bude aplikace moci pracovat stejným způsobem, 
+    ale jednotlivé objekty se budou chovat odlišně (v OOP terminologii se toto
+    nazývá polymorfismus). Vytvoříme si nejprve bázovou třídu <code>Cervik</code>,
+    která bude obsahovat to co je pro všechny červíky společné a poté vytvoříme
+    třídy <code>CervikJedna</code> a <code>CervikDva</code>, které budou odvozené
+    od bázové třídy a budou do ní doplňovat specifické chování (pohyb a změnu barvy).
+    Objekty pro práci s červíky jsou graficky znázorněné na následujícím diagramu:</p><div style="text-align:center;"><img src="http://www.eeeksoft.net/articles/screensaver/objects.gif" alt="Diagram tříd" style="magin-left:auto;margin-right:auto;" /></div><pre><span class="c">// Bazova trida - Zdedene tridy</span><br /><span class="c">// musi doplnit zmenu pozice a barvy</span>
+public abstract class Cervik
+{
+  <span class="c">// Pozice, velikost a barva</span>
+  protected Point Position;
+  protected Size Size;
+  protected Color CurrentColor;
+
+  #region Abstraktni metody
+  <span class="c">// musi byt implementovane v odvozene tride<br />
+  // Tato metoda meni pozici a velikost cervika
+  //   - parametry width a height urcuji velikost okna
+  //     (aby cervik nevylezl mimo obrazovku)</span>
+  protected abstract void ChangePosAndSize(int width,int height);
+
+  <span class="c">// Tato metoda meni barvu cervika -</span>
+  protected abstract void ChangeColor();    
+
+  #endregion
+  
+  <span class="c">// Kresli cervika a zavola virtualni
+  // metody na posunuti a zmenu barvy</span>
+  public void DrawFrame(Graphics gr,int width,int height)
+  {
+    <span class="c">// kresleni (bude popsano pozdeji)...
+    // zmenit pozicic a barvu</span>
+    ChangePosAndSize(width,height);
+    ChangeColor();
+  }
+}
+</pre><p><small>Pro kompletní zdrojový kód se podívejte do přiloženého zdrojového kódu.</small></p><p>Třída <code>Cervik</code> obsahuje dvě abstraktní virtuální metody
+    (virtuální znamená, že je možné měnit její chování a abstraktní znamená,
+    že ve třídě <code>Cervik</code> nemá žádné tělo). Tyto dvě metody 
+    jsou volány z <code>DrawFrame</code>, protože v odvozených třídách
+    již budou tyto metody implementované a bude tedy možné je volat. Pomocí těchto
+    dvou metod dáváme najevo co je potřeba v odvozených třídách doplnit za 
+    chování aby "červík" mohl fungovat tak jak má. Jakmile tedy při psaní odvozených
+    tříd doplníme tyto dvě metody, získáme funkčního "červíka" a nebude nutné 
+    znovu psát metodu <code>DrawFrame</code>, která obsatrává kreslení na obrazovku
+    (které bude vždy stejné).</p><pre><span class="c">// Prvni cervik - Ukazuje jak vytvorit funkcniho cervika</span>
+public class CervikJedna : Cervik
+{
+  <span class="c">// Implementace zmeny pozice</span>
+  protected override void ChangePosAndSize(int width,int height)
+  {
+    <span class="c">// TODO: Zmenit pozici cervika</span>
+    Position.X+=1;
+    Position.Y+=1;
+  }
+
+  <span class="c">// Implementace zmeny barvy</span>
+  protected override void ChangeColor()
+  {
+    <span class="c">// TODO: Zmenit barvu cervika</span>
+    CurrentColor=Color.Red;
+  }
+}
+</pre><p><small>Kompletní kód opět hledejte v přiloženém souboru.</small></p><p>Jak jsem již psal, je možné tímto způsobem vytvořit několik různě se
+    chovajících tříd, které se ale mohou tvářit jako základní třída <code>Cervik</code>.
+    Tímto způsobem je také možné s třídami pracovat, takže při vytváření formuláře
+    uložíme různé typy červíků v poli a při kreslení již budeme volat kreslení
+    červíka aniž bychom věděli se kterou třídou pracujeme.</p><pre><span class="c">// Do pole cerviku lze dat ruzne typy</span>
+Cervik[] cervici=new Cervik[2];
+cervici[0]=new CervikJedna();
+cervici[1]=new CervikDva();
+
+<span class="c">// Ale pri kresleni s nimi lze pracovat jednotne</span>
+foreach(Cervik worm in cervici)
+  worm.DrawFrame(gr,width,height);
+</pre><h2>Kreslení červíků</h2><p>V článku jsem zatím nezmínil jak funguje samotné kreslení na obrazovku, takže je
+    na čase to napravit. Vzhledem k tomu, že se jedná o screensaver (se stále se měnícím
+    obsahem) je potřeba kreslit na obrazovku co nejčastěji, proto je upravená metoda
+    <code>Main</code> tak, aby se stále v cyklu volala metoda obstarávající kreslení.
+    Pro samotné kreslení je nejprve potřeba získat objekt <code>Graphics</code> pro 
+    kreslení na hlavní formulář. K tomu slouží metoda <code>CreateGraphics</code>.
+    Tento objekt je také po dokončení kreslení nutné uvolnit (a to zavoláním metody
+    <code>Dispose</code>). K tomuto slouží v C# konstrukce <code>using</code>:</p><pre>
+using(Graphics gr=CreateGraphics())
+{
+  <span class="c">// Zde se provede kresleni...</span>
+} <span class="c">// Po opusteni bloku using se vola gr.Dispose()</span></pre><p>Samotné kreslení červíků je poměrně jednoduché, protože se kreslí pouze
+    kružnice různých barev (při kreslení červíka) a nebo černé kružnice
+    při mazání. Při kreslení barevných kružnic je nejprve potřeba
+    vytvořit <code>Brush</code> (štětec) dané barvy pomocí kterého se bude
+    kreslit. Tento objekt má metodu <code>Dispose</code>, kterou je nutné
+    po dokončení kreslení zavolat (u objektů na kreslení je většinou nutné
+    volat <code>Dispose</code>, protože tyto objekty je potřeba uvolnit co nejdříve).
+    Kreslení barevné kružnice vypadá tedy takto:</p><pre><span class="c">// kresli na aktualni pozici pomoci aktualni barvy</span>
+using(Brush br=new SolidBrush(CurrentColor))
+{
+  <span class="c">// Vykresli se kruznice se stredem v bode
+  // <b>Positon</b> a velikosti urcenou pomoci <b>Size</b></span>
+  gr.FillEllipse(br,Position.X-Size.Width/2,
+    Position.Y-Size.Height/2,Size.Width,Size.Height);
+}
+</pre><h2>Soubory na stažení a odkazy</h2><ul class="externallinks"><li>[1] <a href="http://www.eeeksoft.net/articles/fractalsnow.aspx">Fractal Snow screensaver</a>
+      [<a href="http://www.eeeksoft.net/articles/fractalsnow.aspx" target="_blank">^</a>]
+      - Obsahuje zpracování parametru /p - kreslení náhledu</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/screensaver/clanek.zip">Stáhnout tento článek v čistém HTML</a> (32 kB)</li><li><a href="http://www.eeeksoft.net/articles/screensaver/sources.zip">Stáhnout screensaver (včetně zdrojových kódů)</a> (20 kB)</li></ul></body></doc>

@@ -1,0 +1,340 @@
+<!-- [info]
+
+ - date: 2006-06-10T14:26:52.0000000
+ - description: This article describes method that allows you to reuse parts of LINQ queries across data access layer.
+ - tags: c#
+ - layout: post
+ - title: Calling functions in LINQ queries
+ - url: linq-expand.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>The <a href="http://msdn.microsoft.com/data/ref/linq/">LINQ Project</a> [<a href="http://msdn.microsoft.com/data/ref/linq/" target="_blank">^</a>] is 
+  an extension to .NET Framework and most important .NET languages (C# and VB.Net) that extends these languages with query operators and some 
+  language features that make it possible to integrate queries in the languages. Thanks to LINQ you can write queries that read data from database
+  (or any other data source). For example, imagine that you want to write set of queries for eshop and you need to perform a price calculation
+  in more queries. The problem with LINQ queries is that you can't simply call a function written in C# that calculates price. The following example
+  is NOT WORKING for this reason:</p>
+<pre>
+<span class="c">// function used in filter</span><br />
+<span class="k">static</span> <span class="k">decimal</span> CalcPrice(Nwind.Product p)
+{
+  <span class="k">return</span> p.UnitPrice * 1.19m;
+}</pre>
+<pre>
+<span class="c">// query that uses MyFunc</span><br />
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products
+  <span class="k">where</span> CalcPrice(p) &gt; 30m
+  <span class="k">select</span> p
+</pre>
+<p>I think that this is a big limitation, because when you want to keep some more complex logic in the data access layer you should be able to reuse 
+  parts of queries that are similar across more queries. The good thing is that with latest release, LINQ became extensible so it is possible
+  to write a extensions that allow this scenario...</p>
+<ul>
+<li>You can also <a href="http://tomasp.net/articles/linq-expand/linq-expand.pdf">download the article in PDF</a> (80kB)</li>
+</ul>
+[/abstract] -->
+
+<h1>Calling functions in LINQ queries</h1>
+
+
+
+
+<p>The LINQ project (see [<a href="#lqlinks">1</a>]) is an extension to .NET Framework and most common .NET languages (C# and VB.Net) 
+  that extends these languages with query operators and some other features that make it possible to integrate 
+  queries in the languages. This article requieres some previous knowledge of LINQ and C# 3, so I recomend looking at the
+  the specification at LINQ home page.</p>
+<h2><span class="hn">1</span>What is and what isn't possible</h2>
+<p>There is a limitation of what you can write in a DLINQ query. This is clear, because DLINQ queries are translated 
+  at runtime to T-SQL statements, so the possibilities of DLINQ queries are limited by the T-SQL language. Conversion to T-SQL 
+  supports many of standard language constructs, but it can hardly support calling of your methods for two reasons. First 
+  (more important) reason is that the method is compiled and it is not possible to get its expression tree (as long as you don't 
+  use utility like Reflector). The second reason is that T-SQL is very limited when compared with C# as I mentioned earlier, although saying that T-SQL 
+  is limited is not fair, because it has different purpose than languages like C# and it does it very well. 
+  Let's take a look at the following example. It is a simple DLINQ query against the Northwind database that calls function 
+  <code>MyTest</code> in the <code>where</code> clause:</p>
+<pre>
+<span class="c">// function used in filter</span><br />
+<span class="k">static</span> <span class="k">bool</span> MyFunc(Nwind.Product p)
+{
+  <span class="k">return</span> p.ProductName.StartsWith("B");
+}</pre>
+<pre>
+<span class="c">// query that uses MyFunc</span><br />
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products
+  <span class="k">where</span> MyPriceFunc(p.UnitPrice) &gt; 30m
+  <span class="k">select</span> p
+</pre>
+
+<p>It compiles with no errors, but when you execute it DLINQ throws an exception saying: "Static method System.Boolean MyTest(LINQTest.Nwind.Product) 
+  has no supported translation to SQL." The exception is actually thrown when you try to fetch results from <code>q</code> (for example
+  using the <code>foreach</code> statement), because DLINQ attempts to convert the expression trees to T-SQL only when the results are 
+  needed and the query must be executed. To fix the example you can simply copy the code that checks whether product name starts 
+  with "B" to the <code>where</code> clause of the query and it would work fine. </p>
+<p>I'd say that checking whether query can be translated to T-SQL at runtime is slightly against the DLINQ objective to catch all errors
+  at compile time, but this is not the aim of the article. Also the rules for writing correct queries are not difficult. You can use all 
+  operators and some basic methods (like <code>String.StartsWith</code>) for working with numbers and strings, but you can't call 
+  any other methods, particlularly methods that you wrote.</p>
+  
+<h2><span class="hn">2</span>The problem</h2>  
+
+<p>The problem I wanted to solve is that you can't call your methods from queries. If you have a more complex application with 
+  many similar queries it would be natural to put the common subqueries to some function that is called by other queries.
+  For example you might want to write function that does some price calculations or function that selects information about one
+  significant product in category. If you look at some questions in MSDN Forums you can see that I'm not the only one who is asking 
+  for this (see [<a href="#lqlinks">2</a>]).</p>
+<p>First I'll show a little example that demonstrates what you can do with the library I wrote to keep your interest and than I'll 
+  explain the solution details. The following query selects products from the Northwind database and performs calculation 
+  of price for every product. Because we want to select only products that cost more than 30, the price calculation is repeated
+  twice in the query: </p>  
+<pre>
+<span class="c">// Notice that code for calculating price is repeated</span><br />
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products
+    <span class="k">where</span> (p.UnitPrice * 1.19m) &gt; 30.0m
+    <span class="k">select</span> <span class="k">new</span>
+      { 
+        p.ProductName, 
+        OriginalPrice = p.UnitPrice,
+        ShopPrice = (p.UnitPrice * 1.19m)
+      };
+</pre>
+<p>Using the extensions that I'll describe later you can extract price calculation to lambda expression and use this
+  expression in the query. Following code can be used for querying both database and in-memory objects, because it 
+  is possible to translate the lambda expression to T-SQL as well as execute it at runtime:</p>
+<pre>
+<span class="c">// Lambda expression that calculates the price</span>
+Expression&lt;Func&lt;Nwind.Product, decimal?&gt;&gt; calcPrice = 
+  (p) =&gt; p.UnitPrice * 1.19m;
+
+<span class="c">// Query that selects products</span><br />
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products.<strong>ToExpandable()</strong><br />
+<span class="k">  where</span> calcPrice.<strong>Invoke(p)</strong> &gt; 30.0m
+    <span class="k">select</span> <span class="k">new</span> 
+      { 
+        p.ProductName, 
+        OriginalPrice = p.UnitPrice,
+        ShopPrice = calcPrice<strong>.Invoke(p)</strong>
+      };
+</pre>
+<p>Declaration of lambda expression that will be used by the query is straightforward, because it isn't different 
+  than any other C# 3 lambda expressions. The query is more interesting because it uses two extension different methods.
+  First method called <code>ToExpandable</code> creates a thin wrapper around the DLINQ <code>Table</code> object.
+  Thanks to this wrapper you can use second method called <code>Invoke</code> that extends the <code>Expression</code> 
+  class to invoke the lambda expression while making it still possible to translate query to T-SQL. This works
+  because when converting to the expression tree, the wrapper replaces all occurrences of <code>Invoke</code> method by
+  expression trees of the invoked lambda expression and passes these expressions to DLINQ that is able to translate 
+  the expanded query to T-SQL.</p>
+
+<h2><span class="hn">3</span>Implementation details</h2>
+<h3><span class="hn">3.1</span>Expression expansion</h3>
+<p>As I mentioned, the crucial task for making the previous code work is replacing calls to <code>Invoke</code> (extension) 
+  method with the actual expression tree of the used lambda expression. This is done behind the scene by the wrapper 
+  created by <code>ToExpandable</code> in the previous code, but you can do it directly as you can see in the following example:</p>
+<pre>
+<span class="c">// Declare 'calc' that will be used by other lambda expressions</span>
+Expression&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt; calc = 
+    i =&gt; i * 10;
+
+<span class="c">// Expression that uses 'calc' (Invoke is an extension method)</span>
+Expression&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt; test =
+    i =&gt; calc.Invoke(i) + 2;
+</pre>
+<p>The first declaration in this example creates expression tree for lambda expression that multiplies its parameter by 10,
+  later this expression can be used by other expressions (like <code>test</code> that calls <code>calc</code> and adds 2 to the result).
+  To use expression you have to use <code>Invoke</code> extension method that is declared in the <code>ExpressionExtensions</code> class
+  (<code>EeekSoft.Expressions</code> namespace). This method is very simple, because it just uses <code>Compile</code> method 
+  of the expression and executes the compiled delegate, but if you write <code>calc.Compile().Invoke(i)</code> directly to the 
+  expression it is partially evaluated while creating expression tree and it will not be possible to get expression tree of 
+  the used lambda expression.</p>
+<p>The expansion can be done by the <code>Expand</code> extension method that is also declared in <code>ExpressionExtensions</code>.
+  This is possible when you have variable of <code>Expression</code> or <code>Expression&lt;F&gt;</code> type, where <code>F</code> is one of the
+  <code>Func</code> delegates. The following example demonstrates the expansion (some variables from previous example are used):</p>  
+<pre>
+<span class="c">// Expand the expression using Expand extension method </span>
+Expression&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt; expanded1 = 
+    test.Expand();
+    
+<span class="c">// You can use var because type is the same as the type of 'test' </span><br />
+<span class="k">var</span> expanded2 = test.Expand();
+
+<span class="c">// Output text representation of both expressions </span>
+Console.WriteLine("Original: {0}", test.ToString());
+Console.WriteLine("Expanded: {0}", expanded2.ToString());
+</pre>
+<p class="ni">The output is following:</p>
+<pre>
+Original: i =&gt; Add(i =&gt; Multiply(i, 10).Invoke(i), 2)
+Expanded: i =&gt; Add(Multiply(i, 10), 2)
+</pre>  
+<p>You can see that using of <code>Expand</code> extension method is very simple. This example also showed that
+  you can use <code>var</code> keyword and let the compiler infer the type of returned expression. This is possible because
+  the type of returned expression is same as the type of variable, on which the extension method is invoked or 
+  in other words as the parameter passed to the method.</p>
+  
+<p>Now, let's examine the output printed in the previous example. The first line represents the original expression before 
+  calling the <code>Expand</code> method. You can see that expression <code>calc</code> is printed using syntax for 
+  lambda expressions as part of the <code>test</code> expression. The important point here is that we didn't lose the expression
+  tree of this inner expression. The inner expression is followed by the call to <code>Invoke</code> method and it is part of 
+  the <code>Add</code> expression that represents addition in the <code>test</code>.</p>
+  
+<p>The second line represents expression tree that is created by the <code>Expand</code> method. You can see that 
+  inner lambda expression and call to the <code>Invoke</code> method was replaced by its expression tree, which is
+  multiplication applied to the parameter and the number 10. This representation can be later converted to T-SQL, because
+  it doesn't contain any calls to .NET methods that could not be translated. If you try to use non-expanded expression
+  the conversion will fail on the call to the <code>Invoke</code> method. </p>
+
+<p>Question that could came to your mind is why do you have to call expression that will later be replaced using 
+  the <code>Invoke</code> method instead of <code>Compile().Invoke(..)</code> code that does exactly the same thing. 
+  It is because when C# 3 builds the expression tree it executes the <code>Compile</code> method and the 
+  expression tree of the inner expression is be replaced by delegate, so it would not be possible to access the original
+  expression tree. This is demonstrated by the following example:</p>
+<pre>
+<span class="c">// What happens when we use Compile() instead of Invoke()?</span>
+Expression&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt; wrong =
+  i =&gt; calc.Compile().Invoke(i) + 2;
+Console.WriteLine(wrong.ToString());
+</pre>
+<p>The following output contains the delegate which is the result of <code>Compile</code> method (embedded using <code>value</code>)
+  instead of inner expression tree that is needed for replacement:</p>
+<pre>
+i =&gt; Add(value(System.Query.Func`2
+       [System.Int32,System.Int32]).Invoke(i), 2)
+</pre>
+
+<p>You may be also wondering whether you could write <code>(x =&gt; calc.Invoke(x) + 1).Expand()</code> instead of using a variable
+  for expression tree. If you try it, you'll get an error message saying that "Operator '.' cannot be applied to operand of type anonymous method."
+  The problem here is that compiler needs some way to decide whether lambda expression should be returned as a delegate or as 
+  an expression tree. This depends on the type of variable to which lambda expression is assigned and in this code it is
+  not clear what should the type of return value be. Anyway you can expand lambda expression if you call the <code>Expand</code>
+  method as standard static method. In this case compiler knows what the expected type of parameter is and it can decide whether
+  it should return delegate or expression tree:</p>
+<pre>
+<span class="c">// Use Expand as standard static method</span>
+Expression&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt; ret = 
+  ExpressionExtensions.Expand&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt;
+    ( (int x) =&gt; calc.Invoke(x) + 2 );
+    
+<span class="c">// In this case type is specified so you can use var</span><br />
+<span class="k">var</span> ret = ExpressionExtensions.Expand&lt;Func&lt;<span class="k">int</span>, <span class="k">int</span>&gt;&gt;
+  ( x =&gt; calc.Invoke(x) + 2 );
+</pre>
+<p>This would be even more interesting if C# 3 were able to infer return type from the type of lambda expression,
+  but this is not possible in the current version, so you have to specify type explicitly. In this case type arguments of 
+  method <code>Expand</code> are specified so both type of method parameter and its return value are known.
+  Because the return type is known, it is also possible to use new <code>var</code> keyword for declaring variables with infered type.</p>
+
+<h3><span class="hn">3.2</span>DLINQ integration</h3>
+<p>The latest LINQ preview contains one very important feature that makes LINQ extensible and it allows anybody
+  to write his own provider that takes expression tree representation of the LINQ query and executes it  
+  (for download visit the project homepage [<a href="#lqlinks">1</a>], for more info on the latest release see 
+  Matt Warren's weblog [<a href="#lqlinks">3</a>]). This extensibility is possible thanks to the <code>IQueryable</code> 
+  interface that contains aside from other methods,
+  the <code>CreateQuery</code> method. This method is used by LINQ for building the expression trees that represent the 
+  query which is, in case of DLINQ translated to T-SQL and executed on the database side.</p>  
+<p>I created a simple wrapper around DLINQ implementation that expands all expressions while building 
+  the query. Of course the translation to T-SQL is done by the wrapped DLINQ object. The wrapper is the <code>ExpandableWrapper</code>
+  class which implements the <code>IQueryable</code> interface. Actually, the <code>ExpandableWrapper</code> is wrapper
+  around any class that implements the <code>IQueryable</code> interface so you should be able to use it with any 
+  other providers that allow you to execute LINQ queries. Some of these providers were mentioned in Channel9 video 
+  [<a href="#lqlinks">4</a>], so in the future you should be able to use this extension with entities (in future version of ADO.NET) as well as
+  any third party OR mapper that supports LINQ.</p>
+<p class="ni">Lets look at the example similar to the one I presented at the beginning:</p>
+<pre>
+<span class="k">var</span> q = 
+  <span class="k">from</span> p <span class="k">in</span> db.Products.ToExpandable()
+    <span class="k">where</span> calcPrice.Invoke(p) &gt; 30.0m
+    <span class="k">select</span> p;
+</pre>
+<p>In this query, the <code>ToExpandable</code> method is used for creating the wrapper around DLINQ object that represents 
+  database table. When LINQ builds the expression tree that represents the query, it uses <code>CreateQuery</code> method
+  of this wrapper instead of underlying DLINQ <code>Table</code> object. This is the trick that makes the expansion work,
+  because the wrapper simply calls <code>Expand</code> method described in the previous section and than calls the 
+  <code>CreateQuery</code> of underlying DLINQ object. The returned value is wrapped using new instance of 
+  the <code>ExpandableWrapper</code> class, because when building queries that contain both <code>where</code> and
+  <code>select</code> clauses, LINQ calls <code>CreateQuery</code> method of the returned object again. </p>
+<p class="ni">This is the implementation of <code>CreateQuery</code> method:</p>
+<pre>
+<span class="c">// Creates query from expanded expression using underlying object
+// (_item is underlying IQueryable passed in the constructor)</span><br />
+<span class="k">public</span> IQueryable&lt;S&gt; CreateQuery&lt;S&gt;(Expression expression)
+{
+  <span class="k">return</span> <span class="k">new</span> ExpandableWrapper&lt;S&gt;
+    (_item.CreateQuery&lt;S&gt;(expression.Expand()));
+}</pre>
+<p class="ni">The method that creates first <code>ExpandableWrapper</code> is already mentioned method <code>ToExpandable</code>:</p>		
+<pre>
+<span class="c">// Returns wrapper that automatically expands expressions</span><br />
+<span class="k">public</span> <span class="k">static</span> IQueryable&lt;T&gt; ToExpandable&lt;T&gt;(<span class="k">this</span> IQueryable&lt;T&gt; q)
+{
+  <span class="k">return</span> <span class="k">new</span> ExpandableWrapper&lt;T&gt;(q);
+}
+</pre>
+
+
+<h2><span class="hn">4</span>Beta version difficulties</h2>
+<p>There are several difficulties that appeared during implementation of this project, some of them will be 
+  probably fixed before final version of the LINQ project will be released, some of them are caused by design.</p>
+  
+<p>First problem I'd like to mention is regarding limited scope of anonymous types. As you know, anonymous 
+  types can be used only locally inside body of one method. This prevents developers from overusing anonymous
+  types in situations where anonymous types are not needed and would lead to unreadable code. On the other side 
+  if you want to use expression that will be later used in the <code>select</code> clause and that will be defined
+  globally, for example as public property of some class, you have to explicitly define its return type
+  instead of using anonymous type as you do in all other DLINQ queries.</p>  
+
+<p>The second problem comes out when you want to declare expression returning anonymous type only locally inside 
+  method body. You can't use <code>var</code>, because you have to declare variable as either <code>Expression</code>
+  or <code>Func</code>, so that compiler knows whether you want delegate or expression tree, but you can't
+  declare it, because you need the name of returned anonymous type. I think that solution for this problem would be 
+  allowing something like this (though I'm not sure whether this is an acceptable solution):</p>
+<pre>
+Expression&lt;Func&lt;Product,_&gt;&gt; selector = 
+  p =&gt; <span class="k">new</span> { p.ProductName, p.UnitPrice };
+</pre>  
+<p>This can be partially solved by using method that returns <code>Expression</code>, because method type
+  parameters can be inferred, so you it wouldn't be needed to specify return type explicitly. The problem is 
+  that in current preview type inference doesn't use information from lambda expression that you pass as parameter
+  to method so this can't be done. The following code can't be currently compiled, but lets see whether this will
+  be fixed in the future releases:</p>
+<pre>
+<span class="c">// Using this method you could declare Expression 
+// variables that return anonymous type</span><br />
+<span class="k">public</span> Expression&lt;Func&lt;T, A0&gt;&gt; CreateExpression&lt;T, A0&gt;
+  (Expression&lt;Func&lt;T, A0&gt;&gt; expr)
+{
+  <span class="k">return</span> expr;
+}
+</pre>
+
+<pre>
+<span class="c">// Expression with anonymous return type! (unfortunatelly current 
+// preview isn't able to infer type from the lambda expression)</span>  <br />
+<span class="k">var </span>ret = CreateExpr( (Product p) =&gt; 
+  <span class="k">new</span> { p.ProductName, Price = p.UnitPrice} );
+</pre>
+
+<p>The minor problem is that it is currently difficult to modify expression trees. There is a class called 
+  <code>ExpressionVisitor</code> in the <code>System.Query.dll</code>, but it is currently internal. This class makes
+  modification of expression trees quite simple, so hopefully it will be public in the future LINQ releases. 
+  For now, I used Reflector to extract this class, because I didn't want to write the same class myself and I see 
+  no reasons why the class shouldn't be public in the future.</p>   
+
+<h2>References and downloads<a name="lqlinks"> </a></h2>
+<ul class="ref">
+  <li><a href="http://tomasp.net/articles/linq-expand/linq-expand.pdf">Download the article in PDF</a> (81kB)</li>
+  <li><a href="http://tomasp.net/articles/linq-expand/demos.zip">Download code samples</a> (35kB)</li>
+</ul>
+<ul class="ref">
+  <li>[1] <a href="http://msdn.microsoft.com/data/ref/linq/">The LINQ Project</a>
+    [<a href="http://msdn.microsoft.com/data/ref/linq/" target="_blank">^</a>] - Microsoft.com</li>
+  <li>[2] <a href="http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=428914&amp;SiteID=1">Query re-use and refactoring - some tips?</a>
+    [<a href="http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=428914&amp;SiteID=1" target="_blank">^</a>] - MSDN Forums</li>
+  <li>[3] <a href="http://blogs.msdn.com/mattwar/archive/2006/05/10/594966.aspx">Oops, we did it again</a>
+    [<a href="http://blogs.msdn.com/mattwar/archive/2006/05/10/594966.aspx" target="_blank">^</a>] - The Wayward WebLog</li>
+  <li>[4] <a href="http://channel9.msdn.com/showpost.aspx?postid=202138">Chatting about LINQ and ADO.NET Entities</a>
+    [<a href="http://channel9.msdn.com/showpost.aspx?postid=202138" target="_blank">^</a>]</li>
+</ul>

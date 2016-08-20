@@ -1,0 +1,353 @@
+<!-- [info]
+
+ - date: 2007-11-03T00:00:02.0000000
+ - description: In the second part of the F# overview we will look at functional programming, which is probably the most important paradigm used with the F# language, because F# is built on the same grounds as many functional languages.
+ - tags: functional,f#
+ - layout: post
+ - title: F# Overview (II.) - Functional Programming
+ - url: fsharp-ii-functional.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In the second part of the F# overview we will look at functional programming, which is probably the most important paradigm used with the F# language, because F# is built on the same grounds as many functional languages. We will first examine the standard F# data types, which are useful to allow the functional programming style and we will also look at a few functional tricks.</p> 
+
+<p>As already mentioned in the <a href="fsharp-i-introduction.aspx">Introduction</a> for this article series,
+  F# is a typed functional language, by which I mean that types of all values are determined during the compile-time. 
+  However, thanks to the use of a type inference, the types are explicitly specified in the code very rarely as we will see in the 
+  following examples. Basic data types (aside from a standard set of primitive numeric and textual types that are present in any 
+  .NET language) available in F# are tuple, discriminated union, record, array, list, function and object. In the following 
+  quick overview, we will use the F# interactive, which is a tool that compiles and executes the entered text on the fly.</p>
+[/abstract] -->
+
+<h1>F# Overview (II.) - Functional Programming</h1>
+<p>As already mentioned in the <a href="/blog/fsharp-i-introduction.aspx">Introduction</a> for this article series,
+  F# is a typed functional language, by which I mean that types of all values are determined during the compile-time. 
+  However, thanks to the use of a <em>type inference</em>, the types are explicitly specified in the code very rarely as we will see in the 
+  following examples. The type inference means that the compiler deduces the type from the code, so for example
+  when calling a function that takes <code>int</code> as an argument and returns <code>string</code> as a result,
+  the compiler can infer the type of the variable where the result is asigned (it has to be <code>string</code>) 
+  as well as the type of the variable that is given as an argument (it has to be <code>int</code>). Basic data types (aside from a standard set of primitive numeric and textual types that are present in any 
+  .NET language) available in F# are tuple, discriminated union, record, array, list, function and object. In the following 
+  quick overview, we will use the F# interactive, which is a tool that compiles and executes the entered text on the fly.</p>
+<p>The F# interactive can be either used from Visual Studio or by running the <code>fsi.exe</code> from the F# installation
+  directory. In the whole article series we will also use the F# lightweight syntax, which makes the code white-space sensitive,
+  but simplifies many of the syntactical rules. To enable the lightweight syntax enter the following command in the FSI:</p> 
+<pre lang="fsharp">&gt; #light;;</pre>  
+<p>The double semicolon is used as the end of the FSI input and sends the entered text to the compiler. This allows us
+  to enter multiple lines of code in a single command. With a few exceptions (mostly when showing a declaration of a complex
+  type) all the code samples in this article are written as commands for FSI including the double semicolon and the result
+  printed by the FSI. Longer code samples can be entered to FSI as well - just add the double semicolon to terminate the input.  </p>
+  
+<h2>F# Data Types Overview</h2>
+
+<h3>Tuples</h3>
+<p>The first example demonstrates constructing and deconstructing a tuple type. Tuple is a simple type that groups together two or more values of possibly different types. It is important to note that the length of the tuple is known at compile time, so we can for example create a tuple with two elements of types <code>int</code> and <code>string</code>:</p>
+<pre lang="fsharp">
+&gt; let tuple = (42, "Hello world!");;
+val tuple : int * string
+
+&gt; let (num, str) = tuple;;
+val num : int
+val str : string</pre>
+
+<p>As you can see, the compiler deduced a type of the expression that is present on the right side of the
+  equals sign and the F# interactive printed the type, so we can review it. In this example the type of 
+  a first element in a tuple is <code>int</code> and the type of the second element is <code>string</code>.
+  The asterisk denotes that the type is a tuple. Similarly, you can define a tuple with more than three 
+  elements, but the type changes with the number of elements in a tuple, which means that tuples can't be
+  used for storing an unknown number of values. This can be done using lists or arrays, which will be discussed later.</p>
+
+<p>The syntax used for deconstructing the value into variables <code>num</code> and <code>str</code> is in general 
+  called pattern matching and it is used very often in the F# language – the aim of pattern matching is to allow 
+  matching a value against a pattern that specifies different view of the data type – in case of tuple, one view is 
+  a single value (of type tuple) and the second view is a pair of two values (of different types). Pattern matching
+  can be used with all standard F# types, most notably with tuples, discriminated unions and record types.
+  In addition, F# also supports generalized pattern matching constructs called <em>active patterns</em>, which are 
+  discussed later in this overview.</p>
+
+<p>Tuple types are very handy for returning multiple values from functions, because this removes the need to declare
+  a new class or use references when writing a function that performs some simple operation resulting in more returned values 
+  (especially in places where C# uses <code>ref</code> and <code>out</code> parameters). In general, I would recommend 
+  using tuples when the function is either simple (like division with remainder), local (meaning that it will not be 
+  accessed from a different module or file) or it is likely to be used with pattern matching. For returning more 
+  complicated structures it is better to use record types which will be discussed shortly.</p>  
+  
+<h3>Discriminated Union</h3>
+<p>In the next sample we demonstrate working with the discriminated union type. This type is used for representing
+  a data type that store one of several possible options (where the options are well known when writing the code).
+  One common example of data type that can be represented using discriminated unions is an <em>abstract syntax tree</em>
+  (i.e. an expression in some programming language):</p>
+<pre lang="fsharp">
+&gt; // Declaration of the 'Expr' type
+  type Expr = 
+  | Binary   of string * Expr * Expr
+  | Variable of string 
+  | Constant of int;;
+(...)
+
+&gt; // Create a value 'v' representing 'x + 10'
+  let v = Binary("+", Variable "x", Constant 10);;
+val v : Expr</pre>
+<p>To work with the values of a discriminated union type, we can again use pattern matching. In this case we use the <code>match</code> 
+  language construct, which can be used for testing a value against several possible patterns – in case of the <code>Expr</code> type, 
+  the possible options are determined by all identifiers used when declaring the type (these are called <em>constructors</em>), 
+  namely <code>Binary</code>, <code>Variable</code> and <code>Constant</code>. The following example declares a function <code>eval</code>, 
+  which evaluates the given expression (assuming that <code>getVariableValue</code> is a function that returns a value of variable):</p>
+<pre lang="fsharp">
+&gt; let rec eval x =
+    match x with
+    | Binary(op, l, r) -&gt;
+        let (lv, rv) = (eval l, eval r)
+        if   (op = "+") then lv + rv 
+        elif (op = "-") then lv - rv 
+        else failwith "Unknonw operator!"
+    | Variable(var) -&gt; 
+        getVariableValue var
+    | Constant(n) -&gt;
+        n;;
+val eval : Expr -&gt; int</pre>
+
+<p>When declaring a function we can use the <code>let</code> keyword that is used for binding a value to a name.
+  I don’t use a term <em>variable</em> known from other programming languages for a reason that will be explained
+  shortly. When writing a recursive function, we have to explicitly state this using the <code>rec</code> keyword
+  as in the previous example. </p>
+<p>Discriminated unions form a perfect complement to the typical object-oriented inheritance structure. In an OO hierarchy the 
+  base class declares all methods that are overridden in derived classes, meaning that it is easy to add new
+  type of value (by adding a new inherited class), but adding a new operation requires adding method to all the classes. On the other side,
+  a discriminated union defines all types of values in advance, which means that adding a new function to work
+  with the type is easy, but adding a new type of value (new constructor to the discriminated union) requires modification 
+  of all existing functions. This suggests that discriminated unions are usually a better way for implementing a 
+  Visitor design pattern in F#. </p>  
+  
+<h3>Records</h3>  
+<p>The next data type that we will look at is a record type. It can be viewed as a tuple with named members
+  (in case of record these are called <em>labels</em>), 
+  which can be accessed using a dot-notation and as mentioned earlier it is good to use this type when it would be
+  difficult to understand what the members in a tuple represent. One more difference between a record type and 
+  a tuple is that records have to be declared in advance using a <code>type</code> construct:</p>
+<pre lang="fsharp">
+&gt; // Declaration of a record type
+  type Product = 
+    { Name:string
+      Price:int };;
+(...)
+
+&gt; // Constructing a value of the 'Product' type
+  let p = { Name="Test"; Price=42; };;
+val p : Product
+
+&gt; p.Name;;
+val it : string = "Test"
+
+&gt; // Creating a copy with different 'Name'
+  let p2 = { p with Name="Test2" };;
+val p2 : Product</pre>
+
+<p>The last command uses an interesting construct - the <code>with</code> keyword. The record types are by default immutable,
+  meaning that the value of the member can’t be modified. Since the members are immutable you will often need to create a copy
+  of the record value with one (or more) modified members. Doing this explicitly by listing all the members would
+  be impractical, because it would make adding a new members very difficult, so F# supports the 
+  <code>with</code> keyword to do this.</p>
+<p>F# records are in many ways similar to classes and they can be, indeed, viewed as simplified classes. Record types are by 
+  default immutable, which also means that F# use a structural comparison when comparing two values of a record type
+  (instead of the default reference comparison used when working with classes) and if you need this behavior (e.g. for storing
+  records as a keys in a dictionary) it is very practical to use them. Also, using a record instead of a class is a good idea
+  in a functional code where you can use the <code>with</code> construct. Exposing a record type in a public interface of the
+  module requires additional care and it is often useful to make the labels available as members, which makes it easier to 
+  modify implementation of the type later. This topic will be further discussed in the third part of this article series.</p>  
+
+<h3>Lists</h3>
+<p>The types used for storing collections of values are list and array. F# list is a typical linked-list type known from many 
+  functional languages – it can be either an empty list (written as <code>[]</code>) or a cell containing a value and a reference to the 
+  tail, which is itself a list (written as <code>value::tail</code>). It is also possible to write a list using a simplified syntax, which
+  means that you can write <code>[1; 2; 3]</code> instead of <code>1::2::3::[]</code> (which is exactly the same list written just using
+  the two basic list constructors). Array is a .NET compatible mutable array type, which is stored in a continuous memory 
+  location and is therefore very efficient – being a mutable type, array is often used in imperative programming style, 
+  which will be discussed later. The following example shows declaration of a list value and an implementation of a recursive 
+  function that adds together all elements in the list:</p>
+<pre lang="fsharp">
+&gt; let nums = [1; 2; 3; 4; 5];;
+val nums : list&lt;int&gt;
+
+&gt; let rec sum list = 
+    match list with
+    | h::tail -&gt; (sum tail) + h
+    | [] -&gt; 0
+val sum : list&lt;int&gt; -&gt; int</pre>
+<p>Similarly as earlier we declared a recursive function using <code>let rec</code> and inside the body we used
+  pattern matching to test whether the list is an empty list or a list cell. Note that list is a generic type, which
+  means that it can store values of any F# type. The type in our example is <code>list&lt;int&gt;</code>, which means that the
+  declared instance of list contains integers. Functions working with generic types can be restricted to some specific type - 
+  for example the <code>sum</code> function above requires a list of integers that can be added (this is inferred by the
+  type inference, because the default type used with the <code>+</code> operator is <code>int</code>). Alternatively, 
+  the function can be generic as well, which means that it works with any lists - for example a function that returns the
+  last element in the list doesn’t depend on the type and so it can be generic. The signature of a generic function to return
+  the last element would be <code>last : list&lt;'a&gt; -&gt; 'a</code>.</p>
+<p>An important feature when writing recursive functions in F# is the support for <em>tail-calls</em>. This means that when the
+  last operation performed by the function is a call to a function (including a recursive call to itself), the runtime 
+  drops the current stack frame, because it isn’t needed anymore - the value returned by the called function is a result
+  of the caller. This minimizes a chance for getting a stack overflow exception. The <code>sum</code> function from the 
+  previous example can be written using an auxiliary function that uses a tail recursion as following:</p>
+<pre lang="fsharp">
+&gt; // 'acc' is usually called an 'accumulator' variable
+  let rec sumAux acc list = 
+    match list with
+    | h::tail -&gt; sumAux (acc + h) tail
+    | [] -&gt; acc
+val sum : int -&gt; list&lt;int&gt; -&gt; int
+
+&gt; let sum list = sumAux 0 list
+val sum : list&lt;int&gt; -&gt; int</pre>
+<h3>Functions</h3>
+<p>Finally, the type that gives name to the whole <em>functional programming</em> is a function. In F#, similarly to other
+  functional languages, functions are first-class values, meaning that they can be used in a same way as any other types.
+  They can be given as an argument to other functions or returned from a function as a result (a function that takes function 
+  as an argument or returns function as a result is called <em>high-order</em> function) and the function type can be used as 
+  a type argument to generic types - you can for example create a list of functions. The important aspect of working with functions 
+  in functional languages is the ability to create closures – creating a function that captures some values available in the 
+  current stack frame. The following example demonstrates a function that creates and returns a function for adding specified 
+  number to an initial integer:</p>
+<pre lang="fsharp">
+&gt; let createAdder n =
+    (fun arg -&gt; n + arg);;
+val createAdder : int -&gt; int -&gt; int
+
+&gt; let add10 = createAdder 10;;
+val add10 : int -&gt; int
+
+&gt; add10 32;;
+val it : int = 42</pre>
+<p>In the body of the <code>createAdder</code> function we use a <code>fun</code> keyword to create a new unnamed function
+  (a function constructed in this way is called a <em>lambda function</em>). The type of <code>createAdder</code>
+  (<code>int -&gt; int -&gt; int</code>) denotes that when the function is called with <code>int</code> as an argument, it produces 
+  a value of type function (which takes an integer as a parameter and produces an integer as a result). In fact, the previous example 
+  could be simplified, because any function taking more arguments is treated as a function that produces a function value when it is 
+  given the first argument, which means that the following code snippet has the same behavior. 
+  Also note that the types of the function <code>createAdder</code> declared earlier and the type of the function <code>add</code> are the same):</p>
+<pre lang="fsharp">
+&gt; let add a b = a + b;;
+val add : int -&gt; int -&gt; int
+
+&gt; let add10 = add 10;;
+val add10 : int -&gt; int</pre>
+<p>When declaring the function value <code>add10</code> in this example, we used a function that expects two arguments
+  with just one argument. The result is a function with a fixed value of the first argument which now expects only
+  one (the second) argument. This aspect of working with functions is known as <em>currying</em>.</p>
+
+<p>Many functions in the F# library are implemented as high-order functions and functions as an arguments are often
+  used when writing a <em>generic</em> code, that is a code that can work with generic types (like <code>list&lt;'a&gt;</code>,
+  which we discussed earlier). For example standard set of functions for manipulating with list values is demonstrated in the 
+  following example:</p>
+<pre lang="fsharp">
+&gt; let odds = List.filter (fun n -&gt; n%2 &lt;&gt; 0) [1; 2; 3; 4; 5];;
+val odds : list&lt;int&gt; = [1; 3; 5]
+
+&gt; let squares = List.map (fun n -&gt; n * n) odds;;
+val squares : list&lt;int&gt; = [1; 9; 25]</pre>
+<p>It is interesting to note that the functions that we used for manipulating with lists are generic (otherwise they
+  wouldn’t be very useful!). The signature of the <code>filter</code> function is <code>('a -&gt; bool) -&gt; list&lt;'a&gt; -&gt; list&lt;'a&gt;</code>,
+  which means that the function takes list of some type as a second argument and a function that returns a <code>true</code>
+  or <code>false</code> for any value of that type, finally the result type is same as the type of the second argument. 
+  In our example we instantiate the generic function with a type argument <code>int</code>, because we’re filtering a list 
+  of integers. The signatures of generic functions often tell a lot about the function behavior. When we look at the 
+  signature of the <code>map</code> function (<code>('a -&gt; 'b) -&gt; list&lt;'a&gt; -&gt; list&lt;'b&gt;</code>) we
+  can deduce that <code>map</code> calls the function given as a first argument on all the items in the list (given as a second
+  argument) and returns a list containing the results.</p>
+<p>In the last example we will look at the pipelining operator (<code>|&gt;</code>) and we will also look at one example that
+  demonstrates how currying makes writing the code easier - we will use the <code>add</code> function declared earlier:</p>
+<pre lang="fsharp">
+&gt; let nums = [1; 2; 3; 4; 5];;
+val nums : list&lt;int&gt;
+
+&gt; let odds_plus_ten = 
+       nums 
+    |&gt; List.filter (fun n-&gt; n%2 &lt;&gt; 0)
+    |&gt; List.map (add 10)
+val odds_plus_ten : list&lt;int&gt; = [11; 13; 15];;
+</pre>
+<p>Sequences of <code>filter</code> and <code>map</code> function calls are very common and writing it as a single expression
+  would be quite difficult and not very readable. Luckily, the sequencing operator allows us to write the code as a single expression in a 
+  more readable order - as you can see in the previous example, the value on the left side of the <code>|&gt;</code> operator
+  is given as a last argument to the function call on the right side, which allows us to write the expression as sequence of ordinary calls, where
+  the state (current list) is passed automatically to all functions. The line with <code>List.map</code> also demonstrates a very
+  common use of currying. We want to add <code>10</code> to all numbers in the list, so we call the <code>add</code> function
+  with a single argument, which produces a result of the type we needed - a function that takes an integer as an argument and
+  returns an integer (produced by adding <code>10</code>) as the result.</p>
+
+<!-- todo: added -->
+<h2>Function Composition</h2>
+<p>One of the most interesting aspects of working with functions in functional programming languages is the
+  possibility to use function composition operator. This means that you can very simply build a function 
+  that takes an argument, invokes a first function with this argument and passes the result to a second function.
+  For example, you can compose a function <code>fst</code>, which takes a tuple (containing two elements) and returns 
+  the first element in the tuple with a function <code>uppercase</code>, which takes a string and returns
+  it in an uppercase:</p>
+<pre lang="fsharp">
+&gt; (fst &gt;&gt; String.uppercase) ("Hello world", 123);;
+val it : string = "HELLO WORLD"
+
+&gt; let data = [ ("Jim", 1); ("John", 2); ("Jane", 3) ];;
+val data : (string * int) list
+
+&gt; data |&gt; List.map (fst &gt;&gt; String.uppercase);;
+val it : string list = ["JIM"; "JOHN"; "JANE"]
+</pre>  
+<p>In the first command, we just compose the functions and call the returned function with a tuple as an argument,
+  however the real advantage of this trick becomes more obvious in the third command, where we use the function 
+  composition operator (<code>&gt;&gt;</code>) to build a function that is given as an argument to a <code>map</code>
+  function that we used earlier. The function composition allows us to build a function without explicitly 
+  using a lambda function (written using the <code>fun</code> keyword) and when this features is used 
+  reasonably it makes the code more compact and keeps it very readable.</p>
+
+<h2>Expressions and Variable Scoping</h2>
+<p>The F# language doesn’t have a different notion of a statement and an expression, which means that every language construct is an 
+  expression with a known return type. If the construct performs only a <em>side effect</em> (for example printing to a screen or modifying
+  a global mutable variable or a state of .NET object) and doesn’t return any value then the type of the 
+  construct is <code>unit</code>, which is a type with only one possible value (written as “<code>()</code>”). The semicolon symbol (<code>;</code>) 
+  is used for sequencing multiple expressions, but the first expression in the sequence should have a <code>unit</code> as a result type.
+  The following example demonstrates how the <code>if</code> construct can be used as an expression in F# (though in the optional 
+  F# lightweight syntax, which makes whitespace significant and which we used in the rest of this overview, the semicolon symbol 
+  can be omitted):</p>
+<pre lang="fsharp">
+&gt; let n = 1
+  let res = 
+    if n = 1 then
+      printfn "..n is one..";
+      "one"
+    else
+      "something else";;
+..n is one..
+val res : string = "one"</pre>
+<p>When this code executes it calls the true branch of the <code>if</code> expression, which first calls a side-effecting function, which
+  prints a string and then returns a string (<code>"one"</code>) as the result. The result is then assigned to the <code>res</code> value.</p>
+<p>Unlike some languages that allow one variable name to appear only once in the entire function body (e.g. C#) or even treat all 
+  variables declared inside the body of a function as a variable with scope of the whole function (e.g. Visual Basic or 
+  JavaScript), the scope of F# values is determined by the <code>let</code> binding and it is allowed to hide a value by declaring 
+  a value with the same name. The following (slightly esoteric) example demonstrates this:</p>
+<pre lang="fsharp">
+&gt; let n = 21
+  let f = 
+    if n &gt; 10 then
+      let n = n * 2
+      (fun () -&gt; printfn "%d" n)
+    else
+      let n = n / 2
+      (fun () -&gt; printfn "%d" n)
+  f ();;
+42
+val it : unit </pre>
+<p>In this example, the value <code>n</code> declared inside a branch of the <code>if</code> expression is captured by a 
+  function created using the <code>fun</code> keyword, which is returned from the <code>if</code> expression and bound to the 
+  value named <code>f</code>. When the <code>f</code> is invoked it indeed uses the value from the scope where it was created,
+  which is <code>42</code>. In languages, where the variable named <code>n</code> would refer to a value stored globally, it 
+  would be rather problematic to write a code like this. Of course, writing a code similar to what I demonstrated in this example
+  isn't a good idea, because it makes the code very difficult to read. There are however situations where hiding a value that
+  is no longer needed in the code is practical.</p>
+
+<h2>Article Series Links</h2>
+<ul>
+  <li><a href="/blog/fsharp-i-introduction.aspx">F# Overview (I.) - Introduction</a></li>
+  <li>F# Overview (II.) - Functional Programming</li>
+  <li><a href="/blog/fsharp-iii-oop.aspx">F# Overview (III.) - Object Oriented and Imperative Programming </a></li>
+  <li><a href="/blog/fsharp-iv-lang.aspx">F# Overview (IV.) - Language Oriented Programming</a></li>
+</ul>

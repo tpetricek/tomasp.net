@@ -1,0 +1,262 @@
+<!-- [info]
+
+ - date: 2010-05-09T20:43:52.0000000
+ - description: This article shows how to use F# for developing ASP.NET web applications using the MVC framework. It also shows how to access data using LINQ in F# and how to simplify web programming using F# meta-programming, modules and records.
+ - tags: .net,functional,web,meta-programming,f#
+ - layout: post
+ - title: ASP.NET and F# (I.) - Creating MVC web applications in F#
+ - url: fsharp-mvc-web.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Some time ago, I wrote a couple of examples of <a href="http://tomasp.net/blog/aspnet-in-fsharp.aspx">
+  developing web applications in F# using ASP.NET</a>. Since then, the F# language and runtime has changed
+  a little bit and there are also new technologies available in ASP.NET, so I thought I'd write a more
+  up-to-date article on this topic. In this article, I'll present a simple "demo" F# web application that
+  you can use as a starting point when creating your own projects (you'll also find a convenient Visual
+  Studio 2010 template below). The article shows the following interesting things:</p>
+<ul>
+  <li><strong>ASP.NET MVC</strong> - We're going to use ASP.NET MVC Framework to create the web
+    application. As the article name suggests, most of the actual program code including models and
+    controllers will be implemented in F#.</li>
+  <li><strong>F# LINQ to SQL</strong> - The application uses a sample Northwind database and we'll
+    write queries for selecting data from the database using LINQ support that's available in the
+    <a href="http://fsharppowerpack.codeplex.com/" type="external">F# PowerPack</a>.</li>
+  <li><strong>F# features</strong> - The application also uses some nice F# features that are 
+    quite useful for developing web applications. We'll use modules and records to implement the
+    model and we'll also use advanced meta-programming features for constructing LINQ queries.</li>
+</ul>
+<p>If you want to use F# for creating an MVC application, you have a few options. It should be 
+  possible to create the web application solely as an F# project. However, we'll use a more convenient
+  approach. We'll create a standard C# MVC project and move all the actual implementation to 
+  an F# library. We'll look at the application structure shortly. The following screenshot shows
+  a page that lists products in the Northwind database:</p>
+
+<div style="text-align:center;">
+<img src="http://tomasp.net/articles/fsharp-mvc-web/web.png" />
+</div>
+[/abstract] -->
+
+<h1>ASP.NET and F# (I.) - Creating MVC web applications in F#</h1>
+<p>Some time ago, I wrote a couple of examples of <a href="http://tomasp.net/blog/aspnet-in-fsharp.aspx">
+  developing web applications in F# using ASP.NET</a>. Since then, the F# language and runtime has changed
+  a little bit and there are also new technologies available in ASP.NET, so I thought I'd write a more
+  up-to-date article on this topic. In this article, I'll present a simple "demo" F# web application that
+  you can use as a starting point when creating your own projects (you'll also find a convenient Visual
+  Studio 2010 template below). The article shows the following interesting things:</p>
+<ul>
+  <li><strong>ASP.NET MVC</strong> - We're going to use ASP.NET MVC Framework to create the web
+    application. As the article name suggests, most of the actual program code including models and
+    controllers will be implemented in F#.</li>
+  <li><strong>F# LINQ to SQL</strong> - The application uses a sample Northwind database and we'll
+    write queries for selecting data from the database using LINQ support that's available in the
+    <a href="http://fsharppowerpack.codeplex.com/" type="external">F# PowerPack</a>.</li>
+  <li><strong>F# features</strong> - The application also uses some nice F# features that are 
+    quite useful for developing web applications. We'll use modules and records to implement the
+    model and we'll also use advanced meta-programming features for constructing LINQ queries.</li>
+</ul>
+<p>If you want to use F# for creating an MVC application, you have a few options. It should be 
+  possible to create the web application solely as an F# project. However, we'll use a more convenient
+  approach. We'll create a standard C# MVC project and move all the actual implementation to 
+  an F# library. We'll look at the application structure shortly. The following screenshot shows
+  a page that lists products in the Northwind database:</p>
+
+<div style="text-align:center;">
+<img src="http://tomasp.net/articles/fsharp-mvc-web/web.png" />
+</div>
+
+<h2>Application structure</h2>
+<img src="http://tomasp.net/articles/fsharp-mvc-web/project.png" style="float:right;margin:10px" />
+<p>The most convenient way to create an MVC web application, which is implemented in F# is to
+  mix several C# and F# projects in a single solution. F# doesn't include web project templates 
+  and doesn't implement all Visual Studio tools that are needed for comfortable web development,
+  so we'll create a C# projects that allow us to use LINQ to SQL and ASP.NET designers. All 
+  important pieces of code will be written in F# though!</p>
+<ul>
+  <li><strong>WebApplication</strong> is the main MVC web application project. This is a C#
+    project, but it doesn't contain almost any code, because model and all controllers are 
+    implemented in a referenced F# library. This project mainly contains views (<code>aspx</code>
+    files) and other resources (such as stylesheets and database).</li>
+  <li><strong>WebApplication.Core</strong> is an F# project that implements the core
+    functionality of the application. In the sample application, it contains <code>Model.fs</code>,
+    which implements the functionality for accessing data and two controllers (<code>HomeController.fs</code>
+    for the main page and <code>ProductsController.fs</code> for working with products database).
+    The <code>Global.fs</code> file registers routes for the URL rewriting.</li>
+  <li><strong>WebApplication.Data</strong> is a simple C# project that contains only generated
+    LINQ to SQL classes for our sample database. Although it is possible to rewrite the classes to F#,
+    it is more convenient to use the tool available for C# in Visual Studio.</li>
+</ul>
+<p>When creating the projects by hand, you'll need to translate the generated controllers from 
+  C# to F# and you'll need to add all relevant ASP.NET references to the F# library project 
+  (there is an absurd number of them). However, you shouldn't face any difficulties or tricky
+  problems. In any case, it is easier to start using the Visual Studio 2010 template that you
+  can download below.</p>
+<p>Now that we looked at the application structure, we'll look at a couple of interesting 
+  places in the application. This may give you an idea of some benefits that F# provides to
+  web developers (although the sample is only very basic!)</p>
+
+<h2>Implementing model in F# with LINQ</h2>
+<p>As already mentioned, I decided to use the F# implementation of LINQ to SQL for data access in 
+  the application. There are only a few articles about this topic, so we'll discuss it in some more
+  details. As already mentioned, LINQ to SQL cannot generate the classes natively in F#, so I 
+  created a separate C# project that contains just the generated classes.</p>
+<p>The following listing shows the content of the <code>Model.fs</code> (without a single function
+  that will be discussed shortly). As you can see, I created one record type for storing information
+  about products that will be displayed in the page (we'll use it later). The rest of the model
+  is implemented as an F# module, which means that it will appear as static class to .NET. Modules
+  are quite useful for storing functionality that doesn't need to be encapsulated in a class, so
+  this is a perfect fit:</p>
+<pre lang="fsharp">
+namespace WebApplication.Core
+
+open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Linq
+open Microsoft.FSharp.Linq.Query
+
+// Namespace with LINQ to SQL generated classes
+open WebApplication.Data
+
+// Stores information about product (will be used later)
+type ProductInfo = {
+  ID : int
+  Name : string
+  Category : string
+  Price : System.Decimal }
+
+// Implementes the model for our MVC application
+module Model = 
+  // Returns the 'Product' entity with the given ID
+  let ProductDetail (id) =
+    let dx = new NorthwindDataContext()
+    &lt;@@ seq { for p in dx.Products do
+               if (p.ProductID = id) then yield p }
+               |&gt; Seq.head @@&gt; |&gt; query
+</pre>
+<p>The <code>ProductDetail</code> function first creates a new instance of the generated data context
+  and then runs the query. A query in F# is written using quotations. This means that the data-processing
+  code is enclosed in <code>&lt;@@ ... @@&gt;</code>, which instructs the compiler to store the expression
+  tree of the code (instead of compiling it). The quotation is then passed to the built-in 
+  <code>query</code> function that interprets it as a LINQ query.</p>
+<p>Inside the query, you can use sequence expressions as well as some basic functions from the 
+  <code>Seq</code> module. In our application, we're using sequence expression that selects all products
+  with the specified ID and then use the <code>Seq.head</code> function to get only first such 
+  product.</p>
+
+<h3>Composing LINQ queries</h3>
+<p>The second function implemented in the model will return a list of products. I made it a bit more
+  sophisticated to demonstrate some interesting capabilities of the F# support for LINQ. In 
+  particular, the function takes a parameter that can specify how to sort the products. The 
+  parameter is a quotation that represents the expression tree of a key selector that specifies
+  how products should be sorted. A key selector is a function that takes a product and returns
+  some its property (or even calculated value). For example, to sort products using the length
+  of the product name, the key selector would be <code>&lt;@@ fun p -> p.ProductName.Length @@&gt;</code>.
+  Let's first look at the code and I'll explain how the key selector is used after that:</p>
+<pre lang="fsharp">
+let ListProducts (keySelector:Expr&lt;Product -> 'T&gt;) =
+  let dx = new NorthwindDataContext()
+  &lt;@@ seq { for p in dx.Products |&gt; Seq.sortBy %keySelector do
+              for c in dx.Categories do
+                if (p.CategoryID.Value = c.CategoryID) then
+                  yield { ID = p.ProductID
+                          Name = p.ProductName 
+                          Category = c.CategoryName 
+                          Price = p.UnitPrice.Value } } @@&gt; |&gt; query
+</pre>
+<p>The <code>keySelector</code> parameter has a type <code>Expr&lt;Product -> 'T&gt;</code>, which
+  means that it is an expression tree (or a quotation, in the F# terminology) of some 
+  function that takes a <code>Product</code> and returns some value - the function is 
+  generic, so the value can be anything. It is used in the quoted expression as a parameter
+  of the <code>Seq.sortBy</code> function. We use <code>%keySelector</code>, which means that
+  the quotation of the key selector will be "spliced" into the quotation we're writing.
+  When we pass the quoted query to the <code>query</code> function later, it will see the 
+  actual expression in place of the variable spliced using the <code>%</code> operator.
+  This allows us to compose queries from individual pieces, which is quite useful and 
+  cannot be directly done in C# - we can for example dynamically compose the <code>WHERE</code>
+  clause using conditions specified by the user.</p>
+<p>The sample query also uses a sequence expression with nested <code>for</code> loops to 
+  implement the <code>JOIN</code> functionality. Although this isn't needed, because the 
+  <code>Product</code> entity contains a reference to the associated <code>Category</code>,
+  I wrote the join explicitly to demonstrate a more complex LINQ query in F#. Finally, when
+  returning the result using the <code>yield</code> keyword, we construct a value of the
+  record defined in the previous listing (which is a bit simpler than declaring and creating a 
+  class in C#).</p>
+
+<h2>Implementing controllers in F#</h2>
+<p>Now that we have the module implementing the model component of our MVC application, we'll also
+  need to implement the controller. We'll look at the content of the <code>ProductsController.fs</code>
+  file, which is more interesting as it uses the model and also calls the <code>ListProducts</code>
+  function with several different key selectors as arguments.</p>
+<p>The class contains two members that implement two actions of the controller. The member
+  <code>List</code> loads a list of products from the database. It has a parameter which may be
+  <code>null</code> and specifies the ordering of products (simply as an integer). The second
+  member returns details about the specified product and is named <code>Detail</code>:</p>  
+<pre lang="fsharp">
+let (|NonNull|_|) (a:Nullable&lt;_&gt;) =
+  if a.HasValue then Some(a.Value) else None
+
+type ProductsController() =
+  inherit Controller()
+  
+  member x.List(id:Nullable&lt;int&gt;) =
+    x.ViewData.Model &lt;- 
+      match id with
+      | NonNull(1) -&gt; Model.ListProducts &lt;@@ fun p -&gt; p.UnitPrice.Value @@&gt;
+      | NonNull(2) -&gt; Model.ListProducts &lt;@@ fun p -&gt; p.CategoryID.Value @@&gt;
+      | _ -&gt; Model.ListProducts &lt;@@ fun p -&gt; p.ProductName @@&gt;
+    x.View() 
+
+  member x.Detail(id:int) =
+    x.ViewData.Model &lt;- Model.ProductDetail id
+    x.View() 
+</pre>
+<p>The listing first defines a simple active pattern that is useful when working with 
+  <code>Nullable&lt;T&gt;</code> values. It matches when the value given as an argument
+  contains some value and fails when the value is empty. We use it in the <code>List</code>
+  member where we need to select the ordering. When the parameter contains 1, we order 
+  products by price, parameter 2 specifies ordering by category and in all other cases
+  (including empty value) we use default ordering by the product name. As you can see
+  we specify several different key selectors (functions taking <code>Product</code> enclosed
+  in quotation using <code>&lt;@@ ... @@&gt;</code>) of various return types. This is possible,
+  because the <code>ListProducts</code> function is generic.</p>
+<p>In both of the actions, we assign the result to the <code>Model</code> property of the
+  <code>ViewData</code>. This allows the view to access the model in a type-safe way.
+  The code in the view is standard C# code, so we won't look at it here - it is just worth
+  mentioning that F# records appear as standard .NET classes to the C# code, so the 
+  integration is very smooth.</p>
+
+
+<h2>Summary</h2>
+<p>When developing ASP.NET MVC application in F#, the most convenient thing to do is to 
+  create a C# project and move all implementation to an F# library that is then referenced from
+  the C# project (which contains only <code>aspx</code> files and other content related to the
+  presentation layer). In F#, we can use LINQ for accessing data and the fact that quotations
+  can be nicely composed using <em>splicing</em> allows us to implement some patterns that are 
+  not easy to write in C#. Moreover, F# features such as modules and records as well as pattern 
+  matching are quite useful in web development. However, this article contains only a very
+  basic example that doesn't really take the full advantage of F#, so can only encourage you to 
+  download the template below and try experimenting yourself!</p>
+
+<h2>Visual Studio 2010 template</h2>
+<img src="http://tomasp.net/articles/fsharp-mvc-web/template.png" style="float:right;margin:10px" />
+<p>As already mentioned, I created a simple template based on the described project that
+  allows you to simply create MVC web applications that use F# by selecting the template
+  in Visual Studio 2010. To increase your appetite, the screenshot on the right is taken
+  from my "New Project" dialog after installing the template. There are two minor gotchas
+  with projects created from the template that you need to go through:</p>
+<ol>
+  <li>You'll need to go to the <code>WebApplication.Data</code> project and generate the
+    LINQ to SQL classes from the database description manually (for some reason, this doesn't
+    happen automatically when you build the project). To do this, right click on <code>Nortwind.dbml</code>
+    and select "Run Custom Tool" command.</li>
+  <li>You'll need to fix the reference from <code>WebApplication.Core</code> to 
+    <code>WebApplication.Data</code> - simply remove the existing reference and add it again
+    (choosing the reference to another project in the solution).</li>
+</ol>
+<p>Once that's done, you should be able to run the project (assuming that you have SQL Server Express
+  installed - the version that comes with Visual Studio 2010 is fine). In case you don't want a 
+  template for Visual Studio, you can also download the sample as a stand-alone solution:</p>
+<ul>
+  <li><a href="http://tomasp.net/articles/fsharp-mvc-web/FsWebApplication.vsi">Download Visual Studio 2010 project template</a> (VSI, 808kB)<br />
+    NOTE: Save the file with the <code>vsi</code> extension and then open it to import the template.</li>
+  <li><a href="http://tomasp.net/articles/fsharp-mvc-web/FsWebApplication.zip">Download the sample solution</a> (ZIP, 924kB)</li>
+</ul>

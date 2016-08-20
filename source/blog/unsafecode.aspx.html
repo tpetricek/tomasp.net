@@ -1,0 +1,135 @@
+<!-- [info]
+
+ - date: 2005-06-05T21:36:53.0000000
+ - description: Tento článek popisuje jak lze v jazyce C# pracovat s ukazateli a obsahuje ukázku přímého přístupu do paměti bitmapy.
+ - tags: 
+ - layout: post
+ - title: C# - Unsafe kód a ukazatele
+ - url: unsafecode.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek popisuje jak lze v jazyce C# pracovat s ukazateli a obsahuje ukázku přímého přístupu do paměti bitmapy.
+[/abstract] -->
+
+<h1>C# - Unsafe kód a ukazatele</h1>
+<doc version="1"><body><h1>C# - Unsafe kód a ukazatele</h1><h2>Co tento článek ukazuje</h2><ul><li>Základy práce s ukazateli v C#</li><li>Klíčová slova <code>unsafe</code>, <code>fixed</code> a <code>sizeof</code></li><li>Práce s bitmapou pomocí ukazatelů</li></ul><p>Častým mylným argumentem proti jazyku C# je, že v tomto jazyce není 
+    narozdíl od C++ možné pracovat s ukazateli. V C# lze s ukazateli pracovat
+    díky takzvanému "unsafe kódu", ale pravdou je, že to ve většině případů
+    není potřeba. Tento článek ukazuje jakým způsobem lze v C# přímo přistupovat 
+    do paměti a na závěr i jeden příklad, který ukazuje kdy je vhodné 
+    ukazatele použít.</p><h2>Práce s ukazateli v C#</h2><h3>Klíčové slovo unsafe</h3><p>Následující příklad ukazuje, jak lze napsat funkci, která 
+    přes ukazatele zapisuje hodnoty do pole typu <code>int[]</code>.
+    Tato funkce bere jako parametr ukazatel na pole a předpokládá, že velikost
+    pole je nejméně 500 položek. Toto je velmi nebezpečné chování, protože
+    pole může být klidně menší a v tom případě by funkce mohla přepsat
+    jiná data v paměti (a nemuselo by to způsobyt vyjímku). Klíčové slovo <code>unsafe</code>, 
+    které je uvedeno v deklaraci metody označuje tuto metodu za "nebezpečnou" a 
+    umožňuje v ní pracovat s ukazateli (Toto klíčové slovo lze dle potřeby uvést i 
+    k celé třídě nebo pouze jako blok v metodě).</p><pre><span class="c">// Naplnuje pole bytu primym pristupem do pameti
+// ptr - ukazatel na pole int[]</span>
+private unsafe static void UnsafeMethod(int* ptr)
+{
+  for(int i=0; i&lt;500; i++) {
+    *ptr=i; ptr++;
+  }
+}
+</pre><p>Z předcházejícího příkladu je zřejmé, že stejně jako v C/C++ i v C#
+    platí ukazatelová aritmetika a je tedy možné ukazatel na nějaký 
+    datový typ posouvat po jednotlivých položkách v poli pomocí operátoru
+    <code>++</code> (a samozřejmě i dalších).</p><p>Pokud se pokusíte tento kód zkompilovat, compiler ohlásí chybu 
+    "Unsafe code may only appear if compiling with /unsafe", což znamená, že 
+    je potřeba přidat compileru (csc.exe) jako parametr /unsafe a nebo ve 
+    VS.Net ve vlastnostech projektu nastavit Allow Unsafe Code Blocks.</p><h3>Klíčové slovo fixed</h3><p>Nyní když máme metodu, která naplňuje pole čísly, je ještě potřeba 
+    ukázat jak jí zavolat. K tomu je potřeba použít klíčové slovo <code>fixed</code>,
+    pomocí kterého lze označit blok kde pracujeme s ukazatelem na pole.
+    Tímto klíčovým slovem .NET Frameworku zakážeme přesunutí objektu,
+    takže ukazatel zůstane po celou dobu platný (jeho použití je opět možné pouze
+    v unsafe bloku):</p><pre>
+unsafe static void Main(string[] args)
+{
+  <span class="c">// vytvori pole a preda ukazatel</span>
+  int[] buffer=new int[500];
+  fixed(int* p=buffer)
+  {
+    UnsafeMethod(p);
+  }
+}
+</pre><h3>Operátor sizeof</h3><p>Další důležitou součástí C# při práci s ukazateli je (stejně jako v C++) 
+    operátor <code>sizeof</code>, pomocí kterého je možné zjistit velikost
+    jednotlivých hodnotových datových typů (value types) v paměti.</p><h2>Nebezpečný kód</h2><p>Již podle klíčového slova <code>unsafe</code> lze poznat, že práce s ukazateli
+    není v C# myšlena jako věc, bez které se člověk při každodení práci neobejde.
+    V následující části naleznete jednu ukázku, která rozhodně neukazuje 
+    jak lze rozumně používat ukazatele, proto jí prosím berte s rezervou.
+    Jedná se spíše o demnostraci toho, že ukazatele jsou i v C# poměrně všemocným
+    nástrojem. Následující kód by se tedy rozhodně neměl objevit v žádné 
+    reálné aplikaci (a prosím čtenáře se slabším žaludkem, ať následující odstavec přeskočí).</p><p>Tato ukázka vychází z toho, že .NET si před řetězec ukládá do 4 bytů
+    (tedy datový typ <code>int</code>) délku řetězce. Tuto délku zjišťuje tak,
+    že získá ukazatel na začátek řetězce, přetypuje ho na ukazatel typu <code>int*</code>
+    a posune se na předcházející položku (tedy o 4 byty před řetězec) a přečte délku.</p><pre>
+string str="Hello world";
+fixed(char* ptr=str)
+{
+  <span class="c">// ziskame ukazatel na retezec</span>
+  int* p=(int*)ptr; 
+  <span class="c">// presuneme se na delku (-4 byty)</span>
+  p--; 
+  Console.WriteLine("Delka: {0}",*p);
+}
+</pre><h2>Práce s obrázky</h2><div style="text-align:center;"><img src="http://www.eeeksoft.net/articles/unsafecode/screenshot.png" style="margin:10px;margin-right:auto;margin-left:auto;" /></div><p>Jedním s mála případů, kdy je velmi vhodné použít ukazatele je situace,
+    kdy potřebujete přistupovat přímo k datům v bitmapě. Třída <code>Bitmap</code>
+    sice obsahuje metody pro zjištění a nastavení barvy pixelu, ale tato metoda
+    je řádově pomalejší. O práci s obrázky jsem již dříve psal (viz [<a href="#links">1</a>]),
+    ale v tomto článku bude celý kód lépe popsaný a vysvětlený. Více o práci 
+    s obrázky můžete najít v seriálu Christiana Grausse [<a href="#links">2</a>].
+    V následující (zjednodušené) ukázce vyplníme bitmapu náhodnými body a
+    složitější příklad (viz screenshot) naleznete v přiložených zdrojových kódech.</p><p>Objekt <code>Bitmap</code> obsahuje metodu <code>LockBits</code>,
+    pomocí které lze získat přístup k datům v bitmapě. Tato metoda vrací strukturu,
+    která mimo jiné obsahuje ukazatel na začátek dat bitmapy. Jako parametr této
+    metodě můžete specifikovat formát v jakém mají být data k dispozici.
+    V této ukázce budeme pracovat s formátem <code>Format32bppArgb</code>,
+    který pro každý pixel ukládá barvu jako 4 byty (<code>int</code>), kde
+    1 byte je průhlednost a další tři byty tvoří barvu ve formátu RGB.
+    Pokud máte barvu v tomto formátu, je možné zkonvertovat ji na strukturu
+    <code>Color</code> pomocí <code>Color.FromArgb</code> a zpět metodou
+    <code>Color.ToArgb</code>.</p><pre><span class="c">// Vytvori novou bitmapu</span>
+Bitmap ret=new Bitmap(320,200); 
+<span class="c">// Ziska pristup k datum bitmapy</span>
+BitmapData data=ret.LockBits( 
+  new Rectangle(0,0,bmp.Width,bmp.Height), 
+  ImageLockMode.WriteOnly,PixelFormat.Format32bppArgb); 
+</pre><p>V následující ukázce naleznete kód, který postupně prochází všechny 
+      řádky a sloupce v bitmapě a každému pixelu nastaví náhodnou barvu.
+      Ukazatel na začátek bitmapy je položka <code>data.Scan0</code> ze
+      struktury <code>BitmapData</code>. Tato struktura dále obsahuje
+      položku <code>Stride</code>, která určuje o kolik bytů je třeba 
+      posunout ukazatel při přechodu u řádku, protože řádka může v paměti
+      zabírat o něco více než je šířka bitmapy. V této ukázce je tedy 
+      nejpodstatnější výpočet pozice na které začíná y-tá řádka bitmapy
+      (po pixelech na řádce se již ukazatel posouvá pomocí operátoru <code>++</code>).
+      </p><pre><span class="c">// generator nahodnych cisel</span>
+Random rnd=new Random();
+
+<span class="c">// postupne prochazime po radcich</span>
+for(int y=0; y&lt;data.Height; y++) 
+{ 
+  <span class="c">// vypocte ukazatel na zacatek y-teho radku</span>
+  int* retPos=(int*)((int)data.Scan0+(y*data.Stride)); 
+
+  int x=0;
+  while(x&lt;data.Width) 
+  { 
+    <span class="c">// vyplni pixel nahodnou barvou</span>
+    *retPos=Color.FromArgb(rnd.Next(256),
+      rnd.Next(256),rnd.Next(256)).ToArgb(); 
+
+   <span class="c">// posun na dalsi pixel</span>
+   retPos++; x++;
+  } 
+} 
+</pre><p>Na závěr je ještě potřeba uvolnit data, získaná pomocí <code>LockBits</code> a
+  bitmapa je vytvořena.</p><pre><span class="c">// Uvolnit data</span>
+ret.UnlockBits(data); 
+</pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://blog.vyvojar.cz/tomas/archive/2004/12/22/2728.aspx">Vytváření černobílé (stupně šedi) bitmapy z barevné</a>
+      [<a href="http://blog.vyvojar.cz/tomas/archive/2004/12/22/2728.aspx" target="_blank">^</a>] </li><li>[2] <a href="http://www.codeproject.com/script/Articles/list_articles.asp?userid=6556">Christian Graus - Image Processing for Dummies</a>
+      [<a href="http://www.codeproject.com/script/Articles/list_articles.asp?userid=6556" target="_blank">^</a>] - CodeProject.com</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/unsafecode/clanek.zip">Stáhnout tento článek v čistém HTML</a> (48 kB)</li><li><a href="http://www.eeeksoft.net/articles/unsafecode/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (25 kB)</li></ul></body></doc>

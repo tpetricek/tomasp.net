@@ -1,0 +1,613 @@
+<!-- [info]
+
+ - date: 2011-11-24T19:21:35.0000000
+ - description: In this article, we look at defining custom numeric types in F#. We'll create a numeric type representing numbers in a clock artihmetic (with base 5) and we'll see how to define custom operators, numeric literals and how to support F# PowerPack matrices.
+ - tags: functional,f#,math and numerics
+ - layout: post
+ - title: F# Math (III.) - Defining custom numeric types
+ - url: fsharp-custom-numeric.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In this article, we define an F# numeric type for calculating in the modular arithmetic (also called clock arithmetic)
+  [<a href="#ppcnuml">1</a>].  
+  Modular arithmetic is used for calculations where we want to keep a value within a specified range by counting in cycles. 
+  For example, a maximal value on clock is 12 hours. When we add 11 hours and 3 hours, the value overflows and the result is 
+  2 hours. Aside from clocks, this numeric system is also essential in cryptography or, for example, in music.</p>
+
+<p>This tutorial shows several techniques that are essential when defining any new numeric type in F#. Most importantly, you’ll learn how to:</p>
+<ul>
+<li>Define a numeric type with overloaded operators </li>
+<li>Define a numeric literal for constructing numbers of our new type</li>
+<li>Enable calculating with our type in F# lists and matrices</li>
+<li>Hide implementation details of a numeric type</li>
+</ul>
+
+<p>We define type <code>IntegerZ5</code> that implements modular arithmetic with modulus 5, meaning that valid values are in the range 
+  from 0 to 4 and we equip the type with operations such as addition and multiplication. When an operation produces a value that would 
+  be outside of the range, we adjust it by adding or subtracting the modulus (in our case 5). Here are some examples of calculations 
+  that we’ll be able to write:</p>
+<pre>
+2 + 1 = 3 (mod 5)
+4 * 2 = 3 (mod 5)
+List.sum [ 0; 1; 2; 3 ] = 1 (mod 5)
+</pre>
+
+<p>In the first case, we can perform the operation without any adjustments. In the second case, we multiply 4 by 2 and get 8 as the 
+  result, which is out of the required range. To correct it, we calculate the remainder after a division by 5 (written as <code>8 % 5</code> in F#), 
+  which gives us 3. Finally, the last example shows that we’d also like to be able to use our type with lists. If we add values 0, 1, 2
+  and 3, we get 6 which is adjusted to 1.</p>
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+[/abstract] -->
+
+<h1>F# Math (III.) - Defining custom numeric types</h1>
+<p>In this article, we define an F# numeric type for calculating in the modular arithmetic (also called clock arithmetic)
+  [<a href="#ppcnuml">1</a>].  
+  Modular arithmetic is used for calculations where we want to keep a value within a specified range by counting in cycles. 
+  For example, a maximal value on clock is 12 hours. When we add 11 hours and 3 hours, the value overflows and the result is 
+  2 hours. Aside from clocks, this numeric system is also essential in cryptography or, for example, in music.</p>
+
+<p>This tutorial shows several techniques that are essential when defining any new numeric type in F#. Most importantly, you’ll learn how to:</p>
+<ul>
+<li>Define a numeric type with overloaded operators </li>
+<li>Define a numeric literal for constructing numbers of our new type</li>
+<li>Enable calculating with our type in F# lists and matrices</li>
+<li>Hide implementation details of a numeric type</li>
+</ul>
+
+<p>We define type <code>IntegerZ5</code> that implements modular arithmetic with modulus 5, meaning that valid values are in the range 
+  from 0 to 4 and we equip the type with operations such as addition and multiplication. When an operation produces a value that would 
+  be outside of the range, we adjust it by adding or subtracting the modulus (in our case 5). Here are some examples of calculations 
+  that we’ll be able to write:</p>
+<pre>
+2 + 1 = 3 (mod 5)
+4 * 2 = 3 (mod 5)
+List.sum [ 0; 1; 2; 3 ] = 1 (mod 5)
+</pre>
+
+<p>In the first case, we can perform the operation without any adjustments. In the second case, we multiply 4 by 2 and get 8 as the 
+  result, which is out of the required range. To correct it, we calculate the remainder after a division by 5 (written as <code>8 % 5</code> in F#), 
+  which gives us 3. Finally, the last example shows that we’d also like to be able to use our type with lists. If we add values 0, 1, 2
+  and 3, we get 6 which is adjusted to 1.</p>
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+
+<h2>Defining the IntegerZ5 type</h2>
+
+<p>We’ll create an F# library containing our numeric type, so that it can be easily used from multiple applications. The approach 
+  we’ll use will follow the usual F# best practices for designing this kind of libraries, so you should follow similar 
+  steps when creating any other numeric type.</p>
+
+<p>To start, we create a new <strong>F# Library</strong> project in Visual Studio. Once the project is created, remove the existing files 
+  and add a new file named <code>IntegerZ5.fs</code>. This file will contain the implementation of our type. We start by adding a 
+  type <code>IntegerZ5</code> into a namespace <code>FSharp.Numeric</code>:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">namespace</span> <span onmouseout="hideTip(event, 'fppcn1', 1)" onmouseover="showTip(event, 'fppcn1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn2', 2)" onmouseover="showTip(event, 'fppcn2', 2)" class="i">Numerics</span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fppcn3', 3)" onmouseover="showTip(event, 'fppcn3', 3)" class="i">IntegerZ5</span> <span class="o">=</span> 
+<span class="l"> 4: </span>  | <span onmouseout="hideTip(event, 'fppcn4', 4)" onmouseover="showTip(event, 'fppcn4', 4)" class="i">Z5</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fppcn5', 5)" onmouseover="showTip(event, 'fppcn5', 5)" class="i">int</span>
+<span class="l"> 5: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn6', 6)" onmouseover="showTip(event, 'fppcn6', 6)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn7', 7)" onmouseover="showTip(event, 'fppcn7', 7)" class="i">ToInt32</span>() <span class="o">=</span>  
+<span class="l"> 6: </span>    <span class="k">let</span> (<span onmouseout="hideTip(event, 'fppcn4', 8)" onmouseover="showTip(event, 'fppcn4', 8)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn8', 9)" onmouseover="showTip(event, 'fppcn8', 9)" class="i">n</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn6', 10)" onmouseover="showTip(event, 'fppcn6', 10)" class="i">z</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fppcn8', 11)" onmouseover="showTip(event, 'fppcn8', 11)" class="i">n</span>
+<span class="l"> 7: </span>  <span class="k">override</span> <span onmouseout="hideTip(event, 'fppcn6', 12)" onmouseover="showTip(event, 'fppcn6', 12)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn9', 13)" onmouseover="showTip(event, 'fppcn9', 13)" class="i">ToString</span>() <span class="o">=</span> 
+<span class="l"> 8: </span>    <span onmouseout="hideTip(event, 'fppcn10', 14)" onmouseover="showTip(event, 'fppcn10', 14)" class="i">sprintf</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">d</span><span class="s"> </span><span class="s">(</span><span class="s">mod</span><span class="s"> </span><span class="s">5</span><span class="s">)</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fppcn6', 15)" onmouseover="showTip(event, 'fppcn6', 15)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn11', 16)" onmouseover="showTip(event, 'fppcn11', 16)" class="i">ToInt32</span>())
+<span class="l"> 9: </span>
+<span class="l">10: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn12', 17)" onmouseover="showTip(event, 'fppcn12', 17)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn8', 18)" onmouseover="showTip(event, 'fppcn8', 18)" class="i">n</span>) <span class="o">=</span> 
+<span class="l">11: </span>    <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn13', 19)" onmouseover="showTip(event, 'fppcn13', 19)" class="i">z5</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn8', 20)" onmouseover="showTip(event, 'fppcn8', 20)" class="i">n</span> <span class="o">%</span> <span class="n">5</span>
+<span class="l">12: </span>    <span onmouseout="hideTip(event, 'fppcn4', 21)" onmouseover="showTip(event, 'fppcn4', 21)" class="i">Z5</span>(<span onmouseout="hideTip(event, 'fppcn14', 22)" onmouseover="showTip(event, 'fppcn14', 22)" class="i">max</span> ((<span onmouseout="hideTip(event, 'fppcn13', 23)" onmouseover="showTip(event, 'fppcn13', 23)" class="i">z5</span> <span class="o">+</span> <span class="n">5</span>) <span class="o">%</span> <span class="n">5</span>) <span onmouseout="hideTip(event, 'fppcn13', 24)" onmouseover="showTip(event, 'fppcn13', 24)" class="i">z5</span>)</pre>
+
+
+<p>The type is implemented as a discriminated union with a single case labeled <code>Z5</code>. The case carries a value of type <code>int</code>, but 
+  the operations that we’ll provide for creating and calculating with <code>IntegerZ5</code> will guarantee that the actual value will be 
+  within the required range (0 to 4, inclusively). The fact that we use single-case discriminated union is merely an implementation 
+  detail that allows us to implement operations with the type in a convenient way, but we'll later see how to hide this implementation detail.</p>
+<p>The first two members convert an <code>IntegerZ5</code> value to other types. To get an integer, we simply return the underlying value. When 
+  formatting the value as a string, we append the "(mod 5)" string after the number, which is the usual way of denoting that the number 
+  is in the modular arithmetic.</p>
+<p>The last static members provide ways for constructing <code>IntegerZ5</code> values. It takes an arbitrary integer as an argument and 
+  adjusts it, so that it is within the specified range. This is done by calculating the remainder of a division by 5 and adding 5 in case 
+  the result is negative (for example, <code>-13 % 5</code> produces -3, and the result of <code>max -3 2</code> will give us 2).</p>
+<p>So far, we created a simple type that can be created and printed, but that’s all we can do with it so far. In the next section, we’ll 
+  equip our type with basic operators for calculating with it. As we’ll see, that’s all we need to use the type with some standard 
+  F# library functions.</p>
+
+<h2>Creating and calculating with IntegerZ5</h2>
+
+<p>Next, let's take the <code>IntegerZ5</code> type and add operators for multiplying, adding and subtracting values of this type. 
+  We’ll also add two members that provide easy access to frequently used constants 0 and 1 and we’ll provide a simple function for 
+  constructing values of this type. The following listing adds several static members to the type:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fppcn15', 25)" onmouseover="showTip(event, 'fppcn15', 25)" class="i">IntegerZ5</span> <span class="o">=</span> 
+<span class="l">2: </span>  <span onmouseout="hideTip(event, 'fppcn16', 26)" onmouseover="showTip(event, 'fppcn16', 26)" class="omitted">(Omitted)</span>
+<span class="l">3: </span>  <span class="k">static</span> <span class="k">member</span> (<span class="o">+</span>) (<span onmouseout="hideTip(event, 'fppcn4', 27)" onmouseover="showTip(event, 'fppcn4', 27)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn17', 28)" onmouseover="showTip(event, 'fppcn17', 28)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppcn4', 29)" onmouseover="showTip(event, 'fppcn4', 29)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn18', 30)" onmouseover="showTip(event, 'fppcn18', 30)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 31)" onmouseover="showTip(event, 'fppcn15', 31)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 32)" onmouseover="showTip(event, 'fppcn19', 32)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn17', 33)" onmouseover="showTip(event, 'fppcn17', 33)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fppcn18', 34)" onmouseover="showTip(event, 'fppcn18', 34)" class="i">b</span>)
+<span class="l">4: </span>  <span class="k">static</span> <span class="k">member</span> (<span class="o">-</span>) (<span onmouseout="hideTip(event, 'fppcn4', 35)" onmouseover="showTip(event, 'fppcn4', 35)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn17', 36)" onmouseover="showTip(event, 'fppcn17', 36)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppcn4', 37)" onmouseover="showTip(event, 'fppcn4', 37)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn18', 38)" onmouseover="showTip(event, 'fppcn18', 38)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 39)" onmouseover="showTip(event, 'fppcn15', 39)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 40)" onmouseover="showTip(event, 'fppcn19', 40)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn17', 41)" onmouseover="showTip(event, 'fppcn17', 41)" class="i">a</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fppcn18', 42)" onmouseover="showTip(event, 'fppcn18', 42)" class="i">b</span>)
+<span class="l">5: </span>  <span class="k">static</span> <span class="k">member</span> <span class="o">(*)</span> (<span onmouseout="hideTip(event, 'fppcn4', 43)" onmouseover="showTip(event, 'fppcn4', 43)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn17', 44)" onmouseover="showTip(event, 'fppcn17', 44)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppcn4', 45)" onmouseover="showTip(event, 'fppcn4', 45)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn18', 46)" onmouseover="showTip(event, 'fppcn18', 46)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 47)" onmouseover="showTip(event, 'fppcn15', 47)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 48)" onmouseover="showTip(event, 'fppcn19', 48)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn17', 49)" onmouseover="showTip(event, 'fppcn17', 49)" class="i">a</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcn18', 50)" onmouseover="showTip(event, 'fppcn18', 50)" class="i">b</span>)
+<span class="l">6: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn20', 51)" onmouseover="showTip(event, 'fppcn20', 51)" class="i">Zero</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn4', 52)" onmouseover="showTip(event, 'fppcn4', 52)" class="i">Z5</span> <span class="n">0</span>
+<span class="l">7: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn21', 53)" onmouseover="showTip(event, 'fppcn21', 53)" class="i">One</span>  <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn4', 54)" onmouseover="showTip(event, 'fppcn4', 54)" class="i">Z5</span> <span class="n">1</span></pre>
+
+<p>The three overloaded operators are implemented as static members with a special name. They take two parameters of type 
+  <code>IntegerZ5</code> and we use pattern matching (using the discriminated union case label <code>Z5</code>) to immediately 
+  extract the actual integer used to represent the number. After performing the numerical operation on integers, the result may be 
+  out of the specified range, so we construct the result using the <code>Create</code> member, which adjusts the integer. The <code>Zero</code> 
+  and <code>One</code> members simply construct value using the <code>Z5</code> union case, because 0 and 1 are always valid 
+  values (so there is no need for calling the <code>Create</code> member).</p>
+
+<p>Most of the standard F# numeric types can be created from other numeric types by calling a conversion function of the same 
+  name as the name of the type. For example <code>float 42</code> returns a floating point number 42.0 and <code>byte 42.0</code> converts a 
+  floating point number to a byte value <code>42uy</code>. </p>
+
+<p>Numeric type conversion functions are written in a way so that they work with any numeric type that supports the 
+  conversion in some way. This means that we can write <code>byte 42</code> as well as <code>byte 42.0</code>, but not for example 
+  <code>byte (new System.Random())</code>. This behavior is achieved using static member constraints, which allow the function to 
+  specify that the argument needs to be of any type that provides a specific method.</p>
+
+<p>To write a conversion function for <code>IntegerZ5</code> type, we could either use static member constraints explicitly, or 
+  we can use some existing function (such as <code>int</code>) and let the F# type inference deduce the constraints automatically. 
+  The following listing uses the second approach:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span>[&lt;<span onmouseout="hideTip(event, 'fppcn22', 55)" onmouseover="showTip(event, 'fppcn22', 55)" class="i">AutoOpen</span>&gt;]
+<span class="l">2: </span><span class="k">module</span> <span onmouseout="hideTip(event, 'fppcn23', 56)" onmouseover="showTip(event, 'fppcn23', 56)" class="i">IntegerZ5TopLevelOperations</span> <span class="o">=</span> 
+<span class="l">3: </span>  <span class="k">let</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppcn24', 57)" onmouseover="showTip(event, 'fppcn24', 57)" class="i">z5</span> <span onmouseout="hideTip(event, 'fppcn25', 58)" onmouseover="showTip(event, 'fppcn25', 58)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 59)" onmouseover="showTip(event, 'fppcn15', 59)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 60)" onmouseover="showTip(event, 'fppcn19', 60)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn5', 61)" onmouseover="showTip(event, 'fppcn5', 61)" class="i">int</span> <span onmouseout="hideTip(event, 'fppcn25', 62)" onmouseover="showTip(event, 'fppcn25', 62)" class="i">a</span>)</pre>
+
+<p>The function <code>z5</code> needs to be marked as <code>inline</code>, which allows us to use static member constraints. Inside 
+  the body, we first convert the argument to an integer using the int function and then construct <code>IntegerZ5</code> from the returned 
+  integer. The static member constraints are propagated automatically and we’ll look at them in more details later. </p>
+<p>Since functions cannot be declared inside a namespace, we need to enclose our function in a module. We want to make it available automatically 
+  whenever the user of our library opens the <code>FSharp.Numerics</code> namespace, which can be done by adding the <code>AutoOpen</code> attribute to the module declaration.</p>
+
+<h2>Testing numeric type interactively</h2>
+
+<p>As a next step, we’ll use F# interactive to verify that the code we wrote so far works as expected. At this point, we didn't even
+  build the library. We just wrote some F# source code and want to test the source code without building the library. We'll
+  use interactive tests written in an F# script file. Once you build the library, it is quite easy to turn those into
+  proper unit tests using NUnit, xUnit or other testing frameworks. </p>
+
+<p>To test the type we implemented at the source code level, we first add a new F# Script File (Add -&gt; New Item... -&gt; F# Script File) 
+  named <code>Tests.fsx</code>. In this file, we load the content of <code>IntegerZ5.fs</code> and register a printer to specify how the 
+  F# Interactive tool should output values of our type:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="prep">#load</span> <span class="s">&quot;</span><span class="s">IntegerZ5</span><span class="s">.</span><span class="s">fs</span><span class="s">&quot;</span>
+<span class="l">2: </span><span class="k">open</span> <span onmouseout="hideTip(event, 'fppcn1', 65)" onmouseover="showTip(event, 'fppcn1', 65)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn2', 66)" onmouseover="showTip(event, 'fppcn2', 66)" class="i">Numerics</span>
+<span class="l">3: </span>
+<span class="l">4: </span><span onmouseout="hideTip(event, 'fppcn27', 67)" onmouseover="showTip(event, 'fppcn27', 67)" class="i">fsi</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn28', 68)" onmouseover="showTip(event, 'fppcn28', 68)" class="i">AddPrinter</span>(<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fppcn6', 69)" onmouseover="showTip(event, 'fppcn6', 69)" class="i">z</span><span class="o">:</span><span onmouseout="hideTip(event, 'fppcn15', 70)" onmouseover="showTip(event, 'fppcn15', 70)" class="i">IntegerZ5</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcn6', 71)" onmouseover="showTip(event, 'fppcn6', 71)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn29', 72)" onmouseover="showTip(event, 'fppcn29', 72)" class="i">ToString</span>())</pre>
+
+<p>The first command loads an F# source code and evaluates it in the F# Interactive tool. Next, we open the namespace <code>FSharp.Numerics</code>, 
+  which contains our type. Finally, we call the <code>AddPrinter</code> member of the global <code>fsi</code> value. The parameter is a 
+  lambda function that takes value of our <code>IntegerZ5</code> type and returns a string by simply calling the <code>ToString</code> member we 
+  provided. Note that we need to add the type annotation, because <code>AddPrinter</code> is a generic member. The type annotation 
+  allows it to determine a type for which we’re specifying the printer.</p>
+
+<p>Now, we can test our function for creating <code>IntegerZ5</code> values and operators for working with them:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn30', 73)" onmouseover="showTip(event, 'fppcn30', 73)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn24', 74)" onmouseover="showTip(event, 'fppcn24', 74)" class="i">z5</span> <span class="n">3.0</span>
+<span class="l">2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn31', 75)" onmouseover="showTip(event, 'fppcn31', 75)" class="i">b</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn24', 76)" onmouseover="showTip(event, 'fppcn24', 76)" class="i">z5</span> <span class="n">7</span>
+<span class="l">3: </span><span class="fsi">val a : IntegerZ5 = &quot;3 (mod 5)&quot;</span>
+<span class="l">4: </span><span class="fsi">val b : IntegerZ5 = &quot;2 (mod 5)&quot;</span>
+<span class="l">5: </span>
+<span class="l">6: </span><span onmouseout="hideTip(event, 'fppcn30', 77)" onmouseover="showTip(event, 'fppcn30', 77)" class="i">a</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcn31', 78)" onmouseover="showTip(event, 'fppcn31', 78)" class="i">b</span>;
+<span class="l">7: </span><span class="fsi">val it : IntegerZ5 = &quot;1 (mod 5)&quot;</span>
+<span class="l">8: </span><span onmouseout="hideTip(event, 'fppcn30', 79)" onmouseover="showTip(event, 'fppcn30', 79)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fppcn31', 80)" onmouseover="showTip(event, 'fppcn31', 80)" class="i">b</span>
+<span class="l">9: </span><span class="fsi">val it : IntegerZ5 = &quot;0 (mod 5)&quot;</span></pre>
+
+<p>As we can see, when the F# Interactive outputs a value of our type, it uses the printer we specified. The output such as 
+  “3 (mod 5)” makes it clear that the value is calculated in modulus arithmetic of base 5. The first two <code>let</code> bindings show 
+  that the <code>z5</code> function works with any numeric types (including floating point numbers and integers) and that it 
+  automatically calculates the modulus of the number. The last two examples show that overloaded operators we provided also 
+  follow the rules of modulus arithmetic. </p>
+
+<p>So far, we’ve been using the operators directly. The way we wrote the <code>IntegerZ5</code> type also allows us to use it 
+  with some functions from the F# core libraries. For example, if we create a list of <code>IntegerZ5</code> values, we can sum 
+  the list using the overloaded operators we provided simply like this:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span onmouseout="hideTip(event, 'fppcn32', 81)" onmouseover="showTip(event, 'fppcn32', 81)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn33', 82)" onmouseover="showTip(event, 'fppcn33', 82)" class="i">sum</span> [ <span onmouseout="hideTip(event, 'fppcn24', 83)" onmouseover="showTip(event, 'fppcn24', 83)" class="i">z5</span> <span class="n">0</span>; <span onmouseout="hideTip(event, 'fppcn24', 84)" onmouseover="showTip(event, 'fppcn24', 84)" class="i">z5</span> <span class="n">1</span>; <span onmouseout="hideTip(event, 'fppcn24', 85)" onmouseover="showTip(event, 'fppcn24', 85)" class="i">z5</span> <span class="n">2</span>; <span onmouseout="hideTip(event, 'fppcn24', 86)" onmouseover="showTip(event, 'fppcn24', 86)" class="i">z5</span> <span class="n">3</span>; <span onmouseout="hideTip(event, 'fppcn24', 87)" onmouseover="showTip(event, 'fppcn24', 87)" class="i">z5</span> <span class="n">4</span> ]
+<span class="l">2: </span><span class="fsi">val it : IntegerZ5 = &quot;0 (mod 5)&quot;</span></pre>
+
+<p>How does the <code>List.sum</code> function know that it needs to use the overloaded operator of <code>IntegerZ5</code> type? 
+  The function is implemented using <em>static member constraints</em> and requires that the type of the elements provides a + operator and 
+  also a <code>Zero</code> member. The compiler knows that our type provides the required members, so it allows us to use <code>List.sum</code> for our type.
+  We'll look at implementing functions like this in the next article of the series.</p>
+
+<p>When creating values of <code>IntegerZ5</code> in this step, we used the <code>z5</code> conversion function. Alternatively, we 
+  could use the <code>IntegerZ5.Create</code> member, but that leads to a more heavyweight notation. In the next step, we’ll 
+  see how to use numeric literals to make the syntax more convenient.
+</p>
+
+<h2>Providing numeric literals for IntegerZ5</h2>
+
+<p>Values of built-in numeric types such as <code>int64</code>, <code>byte</code> or <code>float32</code> can be created using 
+  special numeric literals <code>-30L</code>, <code>127uy</code> and <code>42.0f</code>. The F# makes it possible to provide 
+  a similar literal for our own numeric types. There are several limitations to what kind of literals we can define. Briefly, 
+  the literal must end with one of characters that are reserved for this purpose by the F# language. Additionally, the literal 
+  must consist only of numeric symbols (so for example <code>12#3Z</code> isn’t allowed).</p>
+
+<p>To define a literal, we need to write a module with a special name. Inside the module, we implement several functions that 
+  are used automatically in the F# compiler whenever a literal is used:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">module</span> <span class="i">NumericLiteralZ</span> <span class="o">=</span> 
+<span class="l">2: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn34', 88)" onmouseover="showTip(event, 'fppcn34', 88)" class="i">FromZero</span> () <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn4', 89)" onmouseover="showTip(event, 'fppcn4', 89)" class="i">Z5</span> <span class="n">0</span>
+<span class="l">3: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn35', 90)" onmouseover="showTip(event, 'fppcn35', 90)" class="i">FromOne</span>  () <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn4', 91)" onmouseover="showTip(event, 'fppcn4', 91)" class="i">Z5</span> <span class="n">1</span> 
+<span class="l">4: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn36', 92)" onmouseover="showTip(event, 'fppcn36', 92)" class="i">FromInt32</span> <span onmouseout="hideTip(event, 'fppcn17', 93)" onmouseover="showTip(event, 'fppcn17', 93)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 94)" onmouseover="showTip(event, 'fppcn15', 94)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 95)" onmouseover="showTip(event, 'fppcn19', 95)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn17', 96)" onmouseover="showTip(event, 'fppcn17', 96)" class="i">a</span><span class="o">%</span><span class="n">5</span>)
+<span class="l">5: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn37', 97)" onmouseover="showTip(event, 'fppcn37', 97)" class="i">FromInt64</span> <span onmouseout="hideTip(event, 'fppcn38', 98)" onmouseover="showTip(event, 'fppcn38', 98)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn15', 99)" onmouseover="showTip(event, 'fppcn15', 99)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn19', 100)" onmouseover="showTip(event, 'fppcn19', 100)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fppcn5', 101)" onmouseover="showTip(event, 'fppcn5', 101)" class="i">int</span>(<span onmouseout="hideTip(event, 'fppcn38', 102)" onmouseover="showTip(event, 'fppcn38', 102)" class="i">a</span><span class="o">%</span><span class="n">5L</span>))</pre>
+
+<p>The name of the module consists of the special name <code>NumericLiteral</code> followed by a symbol <code>Z</code> which we’ll use for writing 
+  our literals. This means that we’ll be able to write literals such as <code>0Z</code>, <code>1Z</code> and <code>42Z</code>. The module may provide 
+  several functions to enable several sizes of literals. </p>
+
+<p>If we included only the first two functions (<code>FromZero</code> and <code>FromOne</code>) we would be able to write only <code>0Z</code> and <code>1Z</code>. 
+  The next two functions enable writing literals for other numbers that fit into integer values. To support numeric literals that are larger than <code>int64</code>, 
+  we could also provide the <code>FromString</code> method. Note that this wouldn’t allow writing literals consisting of non-numeric characters. The main use 
+  of this method is to enable arbitrarily sized integer values, so we don’t provide it in the above example.</p>
+
+<p>The following listing shows a few examples of using our newly defined numeric literals:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="n">6Z</span>
+<span class="l">2: </span><span class="fsi">val it : IntegerZ5 = &quot;1 (mod 5)&quot;</span>
+<span class="l">3: </span><span class="n">3Z</span> <span class="o">*</span> (<span class="n">4Z</span> <span class="o">+</span> <span class="n">2Z</span>)
+<span class="l">4: </span><span class="fsi">val it : IntegerZ5 = &quot;3 (mod 5)&quot;</span></pre>
+
+<p>As we can see, numeric literals make working with custom numeric data types easier. Since our numeric type is almost finished now, 
+  we’ll look at compiling it into a redistributable library in the next step.</p>
+
+<h2>Adding F# Signature file</h2>
+
+<p>Signature files can be added to a project to specify which of the members and values from an implementation file 
+  (such as <code>IntegerZ5.fs</code>) should be publicly exported by the compiled library. A signature file lists members 
+  and functions together with their type signatures, which also makes it a useful source of information about our library.</p>
+
+<p>The name of the file should be the same as the name of the implementation file, but it should have the fsi extension. In our case, 
+  we’ll add a file named <code>IntegerZ5.fsi</code>. The file needs to be passed to the compiler before the implementation file. 
+  In Visual Studio, this means that you need to move the file before the implementation file in the Solution Explorer. This can be 
+  done by right-clicking on the file and selecting the “Move Up” command.</p>
+
+<p>The listing below shows the source code of the signature file. Most of the type signatures that you can see in the listing 
+  can be inferred automatically by the F# compiler. An easy way of extracting the first version of F# signature file from 
+  the source code is selecting the entire content of the implementation file and evaluating it interactively. The F# Interactive prints 
+  all the inferred type signatures and we can easily copy them to the signature file.</p>
+   
+<p>Nevertheless, we’ll need to make one notable addition to the generated type signature. The listing also shows the type signature 
+  of the <code>z5</code> function, which is quite interesting:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">namespace</span> <span onmouseout="hideTip(event, 'fppcni1', 1)" onmouseover="showTip(event, 'fppcni1', 1)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcni2', 2)" onmouseover="showTip(event, 'fppcni2', 2)" class="i">Numerics</span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>[&lt;<span onmouseout="hideTip(event, 'fppcni3', 3)" onmouseover="showTip(event, 'fppcni3', 3)" class="i">Sealed</span>&gt;]
+<span class="l"> 4: </span><span class="k">type</span> <span onmouseout="hideTip(event, 'fppcni4', 4)" onmouseover="showTip(event, 'fppcni4', 4)" class="i">IntegerZ5</span> <span class="o">=</span>
+<span class="l"> 5: </span>  <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcni5', 5)" onmouseover="showTip(event, 'fppcni5', 5)" class="i">ToInt32</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni6', 6)" onmouseover="showTip(event, 'fppcni6', 6)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni7', 7)" onmouseover="showTip(event, 'fppcni7', 7)" class="i">int</span>
+<span class="l"> 6: </span>  <span class="k">override</span> <span onmouseout="hideTip(event, 'fppcni8', 8)" onmouseover="showTip(event, 'fppcni8', 8)" class="i">ToString</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni6', 9)" onmouseover="showTip(event, 'fppcni6', 9)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni9', 10)" onmouseover="showTip(event, 'fppcni9', 10)" class="i">string</span>
+<span class="l"> 7: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcni10', 11)" onmouseover="showTip(event, 'fppcni10', 11)" class="i">Create</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni7', 12)" onmouseover="showTip(event, 'fppcni7', 12)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 13)" onmouseover="showTip(event, 'fppcni4', 13)" class="i">IntegerZ5</span>
+<span class="l"> 8: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcni11', 14)" onmouseover="showTip(event, 'fppcni11', 14)" class="i">One</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni4', 15)" onmouseover="showTip(event, 'fppcni4', 15)" class="i">IntegerZ5</span>
+<span class="l"> 9: </span>  <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcni12', 16)" onmouseover="showTip(event, 'fppcni12', 16)" class="i">Zero</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni4', 17)" onmouseover="showTip(event, 'fppcni4', 17)" class="i">IntegerZ5</span>
+<span class="l">10: </span>  <span class="k">static</span> <span class="k">member</span> ( <span class="o">+</span> ) <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni4', 18)" onmouseover="showTip(event, 'fppcni4', 18)" class="i">IntegerZ5</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcni4', 19)" onmouseover="showTip(event, 'fppcni4', 19)" class="i">IntegerZ5</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 20)" onmouseover="showTip(event, 'fppcni4', 20)" class="i">IntegerZ5</span>
+<span class="l">11: </span>  <span class="k">static</span> <span class="k">member</span> ( <span class="o">*</span> ) <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni4', 21)" onmouseover="showTip(event, 'fppcni4', 21)" class="i">IntegerZ5</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcni4', 22)" onmouseover="showTip(event, 'fppcni4', 22)" class="i">IntegerZ5</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 23)" onmouseover="showTip(event, 'fppcni4', 23)" class="i">IntegerZ5</span>
+<span class="l">12: </span>  <span class="k">static</span> <span class="k">member</span> ( <span class="o">-</span> ) <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni4', 24)" onmouseover="showTip(event, 'fppcni4', 24)" class="i">IntegerZ5</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcni4', 25)" onmouseover="showTip(event, 'fppcni4', 25)" class="i">IntegerZ5</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 26)" onmouseover="showTip(event, 'fppcni4', 26)" class="i">IntegerZ5</span>
+<span class="l">13: </span>
+<span class="l">14: </span><span class="k">module</span> <span onmouseout="hideTip(event, 'fppcni13', 27)" onmouseover="showTip(event, 'fppcni13', 27)" class="i">NumericLiteralZ</span> <span class="o">=</span> 
+<span class="l">15: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni14', 28)" onmouseover="showTip(event, 'fppcni14', 28)" class="i">FromZero</span>  <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni6', 29)" onmouseover="showTip(event, 'fppcni6', 29)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 30)" onmouseover="showTip(event, 'fppcni4', 30)" class="i">IntegerZ5</span>
+<span class="l">16: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni15', 31)" onmouseover="showTip(event, 'fppcni15', 31)" class="i">FromOne</span>   <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni6', 32)" onmouseover="showTip(event, 'fppcni6', 32)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 33)" onmouseover="showTip(event, 'fppcni4', 33)" class="i">IntegerZ5</span>
+<span class="l">17: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni16', 34)" onmouseover="showTip(event, 'fppcni16', 34)" class="i">FromInt32</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni7', 35)" onmouseover="showTip(event, 'fppcni7', 35)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 36)" onmouseover="showTip(event, 'fppcni4', 36)" class="i">IntegerZ5</span>
+<span class="l">18: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni17', 37)" onmouseover="showTip(event, 'fppcni17', 37)" class="i">FromInt64</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni18', 38)" onmouseover="showTip(event, 'fppcni18', 38)" class="i">int64</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 39)" onmouseover="showTip(event, 'fppcni4', 39)" class="i">IntegerZ5</span>
+<span class="l">19: </span>
+<span class="l">20: </span><span class="k">module</span> <span onmouseout="hideTip(event, 'fppcni19', 40)" onmouseover="showTip(event, 'fppcni19', 40)" class="i">IntegerZ5TopLevelOperations</span> <span class="o">=</span> 
+<span class="l">21: </span>  <span class="k">val</span> <span class="k">inline</span> <span onmouseout="hideTip(event, 'fppcni20', 41)" onmouseover="showTip(event, 'fppcni20', 41)" class="i">z5</span> <span class="o">:</span> <span class="o">^</span><span class="i">a</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni4', 42)" onmouseover="showTip(event, 'fppcni4', 42)" class="i">IntegerZ5</span> <span class="k">when</span>  
+<span class="l">22: </span>        <span class="o">^</span><span class="i">a</span> <span class="o">:</span> (<span class="k">static</span> <span class="k">member</span> <span class="i">op_Explicit</span> <span class="o">:</span>  <span class="o">^</span><span class="i">a</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni7', 43)" onmouseover="showTip(event, 'fppcni7', 43)" class="i">int</span>)</pre>
+
+<p>The signature file starts with a namespace declaration, which is the same as the declaration in the implementation file. Next, it 
+  contains a single type signature and two module signatures. Note that the <code>IntegerZ5</code> type is marked with the <code>Sealed</code> 
+  attribute. This is required, because the signature file needs to reveal what kind of file we are declaring. For F# types such as records 
+  and discriminated unions, we use <code>Sealed</code> meaning that the type is not extensible. </p>
+
+<p>Type signatures of the members of our numeric type as well as functions in the <code>NumericLiteralZ</code> module are mostly straightforward. 
+  The function <code>z5</code> in the last module is far more interesting. As noted earlier, the function is implemented so that it works on 
+  any argument that can be converted into an integer. In practice, this means that the type of the argument needs to provide a static member named 
+  <code>op_Explicit</code> taking the type of the argument and returning integer. </p>
+
+<p>Determining whether a type of the argument has a certain method cannot be expressed in .NET generics, so we use F# specific feature named 
+  static member constraints. This works only for so-called hat types (such as <code>^a</code>). Hat types are inlined during the compilation, 
+  so the function also needs to be marked as <code>inline</code>.</p>
+
+<p>Finally, it is also worth noting that if we added <code>op_Explicit</code> member to our <code>IntegerZ5</code> type, it would be possible to 
+  use our type as parameter of the <code>int</code> function (so we could write for example <code>int 3Z</code>). </p>
+
+<h2>Supporting matrices using global associations</h2>
+
+<p>Our numeric type can be used with some standard library functions such as <code>List.sum</code>, because they implement certain members that are
+  required by static member constraints of <code>List.sum</code>. However, this approach doesn't work with complex data types such as generic matrices.
+  If we try to write any matrix computation with our type, it will not work, because generic Matrix type isn’t automatically able to use 
+  the overloaded operators and members we provided.</p>
+
+<p>In order to support matrices we need to provide a so-called numeric association. This is a simple interface containing numeric operations that 
+  can be performed on our type. The interface needs to be registered in a global table maintained by the F# PowerPack library, so that any F# 
+  code can get the interface from the table and use it for performing operations with our type.</p>
+
+<p>The F# PowerPack library contains a hierarchy of interfaces that represent various sets of numeric operations that we may be able to 
+  provide. We’ll implement the most basic interface called <code>INumeric&lt;'T&gt;</code> and represent a simple numeric type. Other 
+  interfaces available are for example <code>IIntegral&lt;'T&gt;</code>, which provides operations such as <code>DivRem</code> (division with a remainder) 
+  or <code>IFloating&lt;'T&gt;</code>, which additionally includes floating point operations such as <code>Sqrt</code>.</p>
+
+<p>The simplest way to implement the interface is to use object expressions and create a singleton value implementing it. We also need to provide 
+  an operation that registers the instance in the <code>GlobalAssociations</code> table:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">module</span> <span class="i">IntegerZ5Associations</span> <span class="o">=</span> 
+<span class="l"> 2: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn39', 103)" onmouseover="showTip(event, 'fppcn39', 103)" class="i">IntegerZ5Numerics</span> <span class="o">=</span> 
+<span class="l"> 3: </span>    { <span class="k">new</span> <span onmouseout="hideTip(event, 'fppcn40', 104)" onmouseover="showTip(event, 'fppcn40', 104)" class="i">INumeric</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fppcn41', 105)" onmouseover="showTip(event, 'fppcn41', 105)" class="i">IntegerZ5</span><span class="o">&gt;</span> <span class="k">with</span> 
+<span class="l"> 4: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 106)" onmouseover="showTip(event, 'fppcn42', 106)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn43', 107)" onmouseover="showTip(event, 'fppcn43', 107)" class="i">Zero</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn41', 108)" onmouseover="showTip(event, 'fppcn41', 108)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn44', 109)" onmouseover="showTip(event, 'fppcn44', 109)" class="i">Zero</span>
+<span class="l"> 5: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 110)" onmouseover="showTip(event, 'fppcn42', 110)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn45', 111)" onmouseover="showTip(event, 'fppcn45', 111)" class="i">One</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn41', 112)" onmouseover="showTip(event, 'fppcn41', 112)" class="i">IntegerZ5</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn46', 113)" onmouseover="showTip(event, 'fppcn46', 113)" class="i">One</span>
+<span class="l"> 6: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 114)" onmouseover="showTip(event, 'fppcn42', 114)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn47', 115)" onmouseover="showTip(event, 'fppcn47', 115)" class="i">Add</span>(<span onmouseout="hideTip(event, 'fppcn48', 116)" onmouseover="showTip(event, 'fppcn48', 116)" class="i">a</span>,<span onmouseout="hideTip(event, 'fppcn49', 117)" onmouseover="showTip(event, 'fppcn49', 117)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn48', 118)" onmouseover="showTip(event, 'fppcn48', 118)" class="i">a</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fppcn49', 119)" onmouseover="showTip(event, 'fppcn49', 119)" class="i">b</span>
+<span class="l"> 7: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 120)" onmouseover="showTip(event, 'fppcn42', 120)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn50', 121)" onmouseover="showTip(event, 'fppcn50', 121)" class="i">Subtract</span>(<span onmouseout="hideTip(event, 'fppcn48', 122)" onmouseover="showTip(event, 'fppcn48', 122)" class="i">a</span>,<span onmouseout="hideTip(event, 'fppcn49', 123)" onmouseover="showTip(event, 'fppcn49', 123)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn48', 124)" onmouseover="showTip(event, 'fppcn48', 124)" class="i">a</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fppcn49', 125)" onmouseover="showTip(event, 'fppcn49', 125)" class="i">b</span>
+<span class="l"> 8: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 126)" onmouseover="showTip(event, 'fppcn42', 126)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn51', 127)" onmouseover="showTip(event, 'fppcn51', 127)" class="i">Multiply</span>(<span onmouseout="hideTip(event, 'fppcn48', 128)" onmouseover="showTip(event, 'fppcn48', 128)" class="i">a</span>,<span onmouseout="hideTip(event, 'fppcn49', 129)" onmouseover="showTip(event, 'fppcn49', 129)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn48', 130)" onmouseover="showTip(event, 'fppcn48', 130)" class="i">a</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fppcn49', 131)" onmouseover="showTip(event, 'fppcn49', 131)" class="i">b</span>
+<span class="l"> 9: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 132)" onmouseover="showTip(event, 'fppcn42', 132)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn52', 133)" onmouseover="showTip(event, 'fppcn52', 133)" class="i">Equals</span>(<span onmouseout="hideTip(event, 'fppcn4', 134)" onmouseover="showTip(event, 'fppcn4', 134)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn53', 135)" onmouseover="showTip(event, 'fppcn53', 135)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppcn4', 136)" onmouseover="showTip(event, 'fppcn4', 136)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn54', 137)" onmouseover="showTip(event, 'fppcn54', 137)" class="i">b</span>) <span class="o">=</span> (<span onmouseout="hideTip(event, 'fppcn53', 138)" onmouseover="showTip(event, 'fppcn53', 138)" class="i">a</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn54', 139)" onmouseover="showTip(event, 'fppcn54', 139)" class="i">b</span>)
+<span class="l">10: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 140)" onmouseover="showTip(event, 'fppcn42', 140)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn55', 141)" onmouseover="showTip(event, 'fppcn55', 141)" class="i">Compare</span>(<span onmouseout="hideTip(event, 'fppcn4', 142)" onmouseover="showTip(event, 'fppcn4', 142)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn53', 143)" onmouseover="showTip(event, 'fppcn53', 143)" class="i">a</span>, <span onmouseout="hideTip(event, 'fppcn4', 144)" onmouseover="showTip(event, 'fppcn4', 144)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn54', 145)" onmouseover="showTip(event, 'fppcn54', 145)" class="i">b</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn56', 146)" onmouseover="showTip(event, 'fppcn56', 146)" class="i">compare</span> <span onmouseout="hideTip(event, 'fppcn53', 147)" onmouseover="showTip(event, 'fppcn53', 147)" class="i">a</span> <span onmouseout="hideTip(event, 'fppcn54', 148)" onmouseover="showTip(event, 'fppcn54', 148)" class="i">b</span>
+<span class="l">11: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 149)" onmouseover="showTip(event, 'fppcn42', 149)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn57', 150)" onmouseover="showTip(event, 'fppcn57', 150)" class="i">Negate</span>(<span onmouseout="hideTip(event, 'fppcn48', 151)" onmouseover="showTip(event, 'fppcn48', 151)" class="i">a</span>) <span class="o">=</span> <span class="n">0Z</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fppcn48', 152)" onmouseover="showTip(event, 'fppcn48', 152)" class="i">a</span>
+<span class="l">12: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 153)" onmouseover="showTip(event, 'fppcn42', 153)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn58', 154)" onmouseover="showTip(event, 'fppcn58', 154)" class="i">Abs</span>(<span onmouseout="hideTip(event, 'fppcn48', 155)" onmouseover="showTip(event, 'fppcn48', 155)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn48', 156)" onmouseover="showTip(event, 'fppcn48', 156)" class="i">a</span>
+<span class="l">13: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 157)" onmouseover="showTip(event, 'fppcn42', 157)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn59', 158)" onmouseover="showTip(event, 'fppcn59', 158)" class="i">Sign</span>(<span onmouseout="hideTip(event, 'fppcn4', 159)" onmouseover="showTip(event, 'fppcn4', 159)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn53', 160)" onmouseover="showTip(event, 'fppcn53', 160)" class="i">a</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn60', 161)" onmouseover="showTip(event, 'fppcn60', 161)" class="i">Math</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn61', 162)" onmouseover="showTip(event, 'fppcn61', 162)" class="i">Sign</span>(<span onmouseout="hideTip(event, 'fppcn53', 163)" onmouseover="showTip(event, 'fppcn53', 163)" class="i">a</span>)
+<span class="l">14: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 164)" onmouseover="showTip(event, 'fppcn42', 164)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn62', 165)" onmouseover="showTip(event, 'fppcn62', 165)" class="i">ToString</span>(<span onmouseout="hideTip(event, 'fppcn4', 166)" onmouseover="showTip(event, 'fppcn4', 166)" class="i">Z5</span> <span onmouseout="hideTip(event, 'fppcn63', 167)" onmouseover="showTip(event, 'fppcn63', 167)" class="i">n</span>,<span onmouseout="hideTip(event, 'fppcn64', 168)" onmouseover="showTip(event, 'fppcn64', 168)" class="i">fmt</span>,<span onmouseout="hideTip(event, 'fppcn65', 169)" onmouseover="showTip(event, 'fppcn65', 169)" class="i">fmtprovider</span>) <span class="o">=</span> 
+<span class="l">15: </span>           <span onmouseout="hideTip(event, 'fppcn63', 170)" onmouseover="showTip(event, 'fppcn63', 170)" class="i">n</span><span class="o">.</span><span class="i">ToString</span>(<span onmouseout="hideTip(event, 'fppcn64', 171)" onmouseover="showTip(event, 'fppcn64', 171)" class="i">fmt</span>,<span onmouseout="hideTip(event, 'fppcn65', 172)" onmouseover="showTip(event, 'fppcn65', 172)" class="i">fmtprovider</span>) <span class="o">+</span> <span class="s">&quot;</span><span class="s"> </span><span class="s">(</span><span class="s">mod</span><span class="s"> </span><span class="s">5</span><span class="s">)</span><span class="s">&quot;</span>
+<span class="l">16: </span>         <span class="k">member</span> <span onmouseout="hideTip(event, 'fppcn42', 173)" onmouseover="showTip(event, 'fppcn42', 173)" class="i">z</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn66', 174)" onmouseover="showTip(event, 'fppcn66', 174)" class="i">Parse</span>(<span onmouseout="hideTip(event, 'fppcn67', 175)" onmouseover="showTip(event, 'fppcn67', 175)" class="i">s</span>,<span onmouseout="hideTip(event, 'fppcn68', 176)" onmouseover="showTip(event, 'fppcn68', 176)" class="i">numstyle</span>,<span onmouseout="hideTip(event, 'fppcn65', 177)" onmouseover="showTip(event, 'fppcn65', 177)" class="i">fmtprovider</span>) <span class="o">=</span> 
+<span class="l">17: </span>           <span onmouseout="hideTip(event, 'fppcn24', 178)" onmouseover="showTip(event, 'fppcn24', 178)" class="i">z5</span> (<span onmouseout="hideTip(event, 'fppcn69', 179)" onmouseover="showTip(event, 'fppcn69', 179)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn70', 180)" onmouseover="showTip(event, 'fppcn70', 180)" class="i">Int32</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn71', 181)" onmouseover="showTip(event, 'fppcn71', 181)" class="i">Parse</span>(<span onmouseout="hideTip(event, 'fppcn67', 182)" onmouseover="showTip(event, 'fppcn67', 182)" class="i">s</span>,<span onmouseout="hideTip(event, 'fppcn68', 183)" onmouseover="showTip(event, 'fppcn68', 183)" class="i">numstyle</span>,<span onmouseout="hideTip(event, 'fppcn65', 184)" onmouseover="showTip(event, 'fppcn65', 184)" class="i">fmtprovider</span>)) }
+<span class="l">18: </span>
+<span class="l">19: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn72', 185)" onmouseover="showTip(event, 'fppcn72', 185)" class="i">Init</span>() <span class="o">=</span> 
+<span class="l">20: </span>    <span onmouseout="hideTip(event, 'fppcn73', 186)" onmouseover="showTip(event, 'fppcn73', 186)" class="i">GlobalAssociations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn74', 187)" onmouseover="showTip(event, 'fppcn74', 187)" class="i">RegisterNumericAssociation</span> <span onmouseout="hideTip(event, 'fppcn39', 188)" onmouseover="showTip(event, 'fppcn39', 188)" class="i">IntegerZ5Numerics</span></pre>
+
+<p>Most of the operations can be implemented directly in terms of operators that we already provided in the <code>IntegerZ5</code> type, so the purpose of the 
+  <code>INumeric&lt;'T&gt;</code> interface is simply to make these operations accessible indirectly. Some other operations such as <code>Compare</code>, 
+  <code>Sign</code> or <code>ToString</code> can be implemented using the underlying integer (which we can extract by writing the pattern 
+  <code>Z5</code> a in place of parameter).</p>
+
+<p>The module also provides <code>Init</code> function, which registers our instance in the <code>GlobalAssociations</code> table. Ideally, 
+  the registration would be done automatically when the <code>IntegerZ5</code> type is used for the first time, but this is unfortunately 
+  not easy to achieve. Instead, we'll write a function that needs to be called explicitly (to make this automatic, you could move the code 
+  to a static constructor of the <code>IntegerZ5</code> type).</p>
+
+<p>To make the module visible in the compiled library, we also need to include its type signature in the F# Signature file that we added earlier. 
+  This can be done by adding the code from the following listing:</p>
+
+<pre class="fssnip">
+<span class="l">1: </span><span class="k">module</span> <span onmouseout="hideTip(event, 'fppcni21', 44)" onmouseover="showTip(event, 'fppcni21', 44)" class="i">IntegerZ5Associations</span> <span class="o">=</span> 
+<span class="l">2: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni22', 45)" onmouseover="showTip(event, 'fppcni22', 45)" class="i">IntegerZ5Numerics</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni23', 46)" onmouseover="showTip(event, 'fppcni23', 46)" class="i">INumeric</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fppcni4', 47)" onmouseover="showTip(event, 'fppcni4', 47)" class="i">IntegerZ5</span><span class="o">&gt;</span>
+<span class="l">3: </span>  <span class="k">val</span> <span onmouseout="hideTip(event, 'fppcni24', 48)" onmouseover="showTip(event, 'fppcni24', 48)" class="i">Init</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fppcni6', 49)" onmouseover="showTip(event, 'fppcni6', 49)" class="i">unit</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fppcni6', 50)" onmouseover="showTip(event, 'fppcni6', 50)" class="i">unit</span></pre>
+
+<p>Now that our library is complete, we can compile and use the created assembly in other F# projects. In this tutorial, 
+  we didn’t aim to create a C# compatible type, however, the type would be also usable from C# (most importantly, all the 
+  overloaded operators and members of the type would work in C#). </p>
+
+<p>As a final step, we’ll look how to load the compiled library in F# interactive and use our type to do a simple computation 
+  using generic <code>Matrix</code> type:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="prep">#r</span> <span class="s">&quot;</span><span class="s">FSharp</span><span class="s">.</span><span class="s">PowerPack</span><span class="s">.</span><span class="s">dll</span><span class="s">&quot;</span>
+<span class="l"> 2: </span><span class="prep">#r</span> <span class="s">&quot;</span><span class="s">bin</span><span class="s">\</span><span class="s">Debug</span><span class="s">\</span><span class="s">FSharp</span><span class="s">.</span><span class="s">Numerics</span><span class="s">.</span><span class="s">dll</span><span class="s">&quot;</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span><span class="k">open</span> <span onmouseout="hideTip(event, 'fppcn1', 193)" onmouseover="showTip(event, 'fppcn1', 193)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn2', 194)" onmouseover="showTip(event, 'fppcn2', 194)" class="i">Numerics</span>
+<span class="l"> 5: </span><span class="k">module</span> <span class="i">MatrixG</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fppcn75', 195)" onmouseover="showTip(event, 'fppcn75', 195)" class="i">Matrix</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn76', 196)" onmouseover="showTip(event, 'fppcn76', 196)" class="i">Generic</span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span onmouseout="hideTip(event, 'fppcn77', 197)" onmouseover="showTip(event, 'fppcn77', 197)" class="i">IntegerZ5Associations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn72', 198)" onmouseover="showTip(event, 'fppcn72', 198)" class="i">Init</span>()
+<span class="l"> 8: </span>
+<span class="l"> 9: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn78', 199)" onmouseover="showTip(event, 'fppcn78', 199)" class="i">ys</span> <span class="o">=</span> <span class="i">MatrixG</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn79', 200)" onmouseover="showTip(event, 'fppcn79', 200)" class="i">init</span> <span class="n">5</span> <span class="n">5</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fppcn53', 201)" onmouseover="showTip(event, 'fppcn53', 201)" class="i">a</span> <span onmouseout="hideTip(event, 'fppcn54', 202)" onmouseover="showTip(event, 'fppcn54', 202)" class="i">b</span> <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fppcn24', 203)" onmouseover="showTip(event, 'fppcn24', 203)" class="i">z5</span> <span onmouseout="hideTip(event, 'fppcn53', 204)" onmouseover="showTip(event, 'fppcn53', 204)" class="i">a</span>))
+<span class="l">10: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fppcn80', 205)" onmouseover="showTip(event, 'fppcn80', 205)" class="i">xs</span> <span class="o">=</span> <span class="i">MatrixG</span><span class="o">.</span><span onmouseout="hideTip(event, 'fppcn79', 206)" onmouseover="showTip(event, 'fppcn79', 206)" class="i">init</span> <span class="n">5</span> <span class="n">5</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fppcn53', 207)" onmouseover="showTip(event, 'fppcn53', 207)" class="i">a</span> <span onmouseout="hideTip(event, 'fppcn54', 208)" onmouseover="showTip(event, 'fppcn54', 208)" class="i">b</span> <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fppcn24', 209)" onmouseover="showTip(event, 'fppcn24', 209)" class="i">z5</span> <span onmouseout="hideTip(event, 'fppcn54', 210)" onmouseover="showTip(event, 'fppcn54', 210)" class="i">b</span>))
+<span class="l">11: </span><span class="fsi">val ys : Matrix&lt;IntegerZ5&gt; = (...)</span>
+<span class="l">12: </span><span class="fsi">val xs : Matrix&lt;IntegerZ5&gt; = (...)</span>
+<span class="l">13: </span>
+<span class="l">14: </span><span onmouseout="hideTip(event, 'fppcn80', 211)" onmouseover="showTip(event, 'fppcn80', 211)" class="i">xs</span> <span class="o">.*</span> <span onmouseout="hideTip(event, 'fppcn78', 212)" onmouseover="showTip(event, 'fppcn78', 212)" class="i">ys</span>
+<span class="l">15: </span><span class="fsi">val it : Matrix&lt;IntegerZ5&gt; =</span>
+<span class="l">16: </span><span class="fsi">  matrix [[0 (mod 5); 0 (mod 5); 0 (mod 5); 0 (mod 5); 0 (mod 5)]</span>
+<span class="l">17: </span><span class="fsi">          [0 (mod 5); 1 (mod 5); 2 (mod 5); 3 (mod 5); 4 (mod 5)]</span>
+<span class="l">18: </span><span class="fsi">          [0 (mod 5); 2 (mod 5); 4 (mod 5); 1 (mod 5); 3 (mod 5)]</span>
+<span class="l">19: </span><span class="fsi">          [0 (mod 5); 3 (mod 5); 1 (mod 5); 4 (mod 5); 2 (mod 5)]</span>
+<span class="l">20: </span><span class="fsi">          [0 (mod 5); 4 (mod 5); 3 (mod 5); 2 (mod 5); 1 (mod 5)]]</span></pre>
+
+
+
+<p>After referencing F# PowerPack and our library, we open the namespace <code>FSharp.Numerics</code>, which contains our type and define a 
+  module alias <code>MatrixG</code> to simplify access to generic <code>Matrix</code> type. Next we call the <code>Init</code> function 
+  to register the global numeric associations for our type. </p>
+
+<p>Finally, we construct two matrices of the size <code>5x5</code> – the first one contains increasing values of the <code>IntegerZ5</code> type along 
+  the first dimension and the values in the second matrix increase along the second dimension. We use point-wise multiplication of these two 
+  matrices to produce a simple table that shows results of multiplying all possible combinations of <code>IntegerZ5</code> values.</p>
+
+<h2>Summary</h2>
+
+<p>In this article, we looked at implementing a custom numeric type. Although you probably won't need to implement a custom
+  numeric type very often, it may be useful. Aside from modular arithmetic, you may want to implement a type that represents
+  quadruples of values (to represent colors) or a type to represent 3D vectors. The F# PowerPack library uses the techniques
+  described in this article to implement <code>BigRational</code> and <code>complex</code> types that I introduced in 
+  an <a href="http://tomasp.net/blog/powerpack-numeric.aspx">earlier article</a>.
+</p>
+
+<p>When implementing a numeric type, there is quite a few features that you may want to support. In this article, we
+  defined overloaded operators and members that are required by static member constraints, so that we could use
+  functions like <code>List.sum</code>. Then we also defined numeric literals to be able to write <code>1Z</code>
+  instead of <code>z5 1</code>. Finally, we implemented the <code>INumeric&lt;'T&gt;</code> interface, which makes
+  it possible to use our type with generic matrices from F# PowerPack, which I covered in the 
+  <a href="http://tomasp.net/blog/powerpack-matrix.aspx">previous article of the series</a>.</p>
+
+
+<h2>References &amp; Links<a name="ppcnuml"></a></h2>
+<ul>
+  <li>[1] <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Modular arithmetic</a> - Wikipedia.org</li>
+  <li>[2] <a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> (source code and binary packages) - CodePlex</li>
+  <li>[3] <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numeric Computing</a> - Real World Functional Programming on MSDN</li>
+  <li>[4] <a href="http://msdn.microsoft.com/en-us/library/hh304368.aspx">Numerical Libraries for F# and .NET</a> - Real World Functional Programming on MSDN</li>
+</ul>
+
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fppcn1">namespace FSharp<br /></div>
+<div class="tip" id="fppcn2">namespace FSharp.Numerics<br /></div>
+<div class="tip" id="fppcn3">type IntegerZ5 =<br />&#160;&#160;| Z5 of int<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;member ToInt32 : unit -&gt; int<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member Create : n:int -&gt; IntegerZ5<br />&#160;&#160;end<br /><br />Full name: FSharp.Numerics.Version1.IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: System.IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn4">union case IntegerZ5.Z5: int -&gt; IntegerZ5<br /></div>
+<div class="tip" id="fppcn5">Multiple items
+<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int
+<br /><br />--------------------<br />
+<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn6">val z : IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: System.IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn7">member IntegerZ5.ToInt32 : unit -&gt; int<br /><br />Full name: FSharp.Numerics.Version1.IntegerZ5.ToInt32<br /></div>
+<div class="tip" id="fppcn8">val n : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn9">override IntegerZ5.ToString : unit -&gt; string<br /><br />Full name: FSharp.Numerics.Version1.IntegerZ5.ToString<br /></div>
+<div class="tip" id="fppcn10">val sprintf : Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf<br /></div>
+<div class="tip" id="fppcn11">member IntegerZ5.ToInt32 : unit -&gt; int<br /></div>
+<div class="tip" id="fppcn12">static member IntegerZ5.Create : n:int -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.Version1.IntegerZ5.Create<br /></div>
+<div class="tip" id="fppcn13">val z5 : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn14">val max : &#39;T -&gt; &#39;T -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.max<br /></div>
+<div class="tip" id="fppcn15">type IntegerZ5 =<br />&#160;&#160;| Z5 of int<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;member ToInt32 : unit -&gt; int<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member Create : n:int -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member One : IntegerZ5<br />&#160;&#160;&#160;&#160;static member Zero : IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( + ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( * ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( - ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;end<br /><br />Full name: FSharp.Numerics.IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: System.IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn16">| Z5 of int<br />member z.ToInt32() =  <br />&#160;&#160;let (Z5 n) = z in n<br />override z.ToString() = <br />&#160;&#160;sprintf &quot;%d (mod 5)&quot; (z.ToInt32())<br /><br />static member Create(n) = <br />&#160;&#160;let z5 = n % 5<br />&#160;&#160;Z5(max ((z5 + 5) % 5) z5)<br />&#160;&#160;<br /></div>
+<div class="tip" id="fppcn17">val a : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn18">val b : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn19">static member IntegerZ5.Create : n:int -&gt; IntegerZ5<br /></div>
+<div class="tip" id="fppcn20">static member IntegerZ5.Zero : IntegerZ5<br /><br />Full name: FSharp.Numerics.IntegerZ5.Zero<br /></div>
+<div class="tip" id="fppcn21">static member IntegerZ5.One : IntegerZ5<br /><br />Full name: FSharp.Numerics.IntegerZ5.One<br /></div>
+<div class="tip" id="fppcn22">Multiple items
+<br />type AutoOpenAttribute =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Attribute<br />&#160;&#160;&#160;&#160;new : unit -&gt; AutoOpenAttribute<br />&#160;&#160;&#160;&#160;new : path:string -&gt; AutoOpenAttribute<br />&#160;&#160;&#160;&#160;member Path : string<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Core.AutoOpenAttribute<br /><br />&#160;&#160;type: AutoOpenAttribute<br />&#160;&#160;implements: System.Runtime.InteropServices._Attribute<br />&#160;&#160;inherits: System.Attribute<br />
+<br /><br />--------------------<br />
+<br />new : unit -&gt; AutoOpenAttribute
+<br /><br />--------------------<br />
+<br />new : path:string -&gt; AutoOpenAttribute<br /></div>
+<div class="tip" id="fppcn23">module IntegerZ5TopLevelOperations<br /><br />from FSharp.Numerics<br /></div>
+<div class="tip" id="fppcn24">val z5 : &#39;a -&gt; IntegerZ5 (requires member op_Explicit)<br /><br />Full name: FSharp.Numerics.IntegerZ5TopLevelOperations.z5<br /></div>
+<div class="tip" id="fppcn25">val a : &#39;a (requires member op_Explicit)<br /></div>
+<div class="tip" id="fppcn26">Directives inside modules are ignored<br /></div>
+<div class="tip" id="fppcn27">val fsi : Compiler.Interactive.InteractiveSession<br /><br />Full name: Microsoft.FSharp.Compiler.Interactive.Settings.fsi<br /></div>
+<div class="tip" id="fppcn28">member Compiler.Interactive.InteractiveSession.AddPrinter : (&#39;T -&gt; string) -&gt; unit<br /></div>
+<div class="tip" id="fppcn29">System.Object.ToString() : string<br /></div>
+<div class="tip" id="fppcn30">val a : IntegerZ5<br /><br />Full name: Script.Testing.a<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: System.IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn31">val b : IntegerZ5<br /><br />Full name: Script.Testing.b<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: System.IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn32">Multiple items
+<br />module List<br /><br />from Microsoft.FSharp.Collections
+<br /><br />--------------------<br />
+<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of &#39;T * &#39;T list<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;interface System.Collections.IEnumerable<br />&#160;&#160;&#160;&#160;interface System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Head : &#39;T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;static member Empty : &#39;T list<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;<br /><br />&#160;&#160;type: List&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IStructuralEquatable<br />&#160;&#160;implements: System.IComparable&lt;List&lt;&#39;T&gt;&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.Collections.IStructuralComparable<br />&#160;&#160;implements: System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="fppcn33">val sum : &#39;T list -&gt; &#39;T (requires member ( + ) and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.List.sum<br /></div>
+<div class="tip" id="fppcn34">val FromZero : unit -&gt; IntegerZ5<br /><br />Full name: Script.Testing.NumericLiteralZ.FromZero<br /></div>
+<div class="tip" id="fppcn35">val FromOne : unit -&gt; IntegerZ5<br /><br />Full name: Script.Testing.NumericLiteralZ.FromOne<br /></div>
+<div class="tip" id="fppcn36">val FromInt32 : int -&gt; IntegerZ5<br /><br />Full name: Script.Testing.NumericLiteralZ.FromInt32<br /></div>
+<div class="tip" id="fppcn37">val FromInt64 : int64 -&gt; IntegerZ5<br /><br />Full name: Script.Testing.NumericLiteralZ.FromInt64<br /></div>
+<div class="tip" id="fppcn38">val a : int64<br /><br />&#160;&#160;type: int64<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int64&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int64&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcn39">val IntegerZ5Numerics : INumeric&lt;IntegerZ5&gt;<br /><br />Full name: Script.IntegerZ5Associations.IntegerZ5Numerics<br /></div>
+<div class="tip" id="fppcn40">Multiple items
+<br />type INumeric&lt;&#39;T&gt; =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;abstract member Abs : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Add : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Compare : &#39;T * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Equals : &#39;T * &#39;T -&gt; bool<br />&#160;&#160;&#160;&#160;abstract member Multiply : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Negate : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Parse : string * Globalization.NumberStyles * IFormatProvider -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Sign : &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Subtract : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member ToString : &#39;T * string * IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;abstract member One : &#39;T<br />&#160;&#160;&#160;&#160;abstract member Zero : &#39;T<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Math.INumeric&lt;_&gt;
+<br /><br />--------------------<br />
+<br />INumeric<br /></div>
+<div class="tip" id="fppcn41">type IntegerZ5 =<br />&#160;&#160;| Z5 of int<br />&#160;&#160;with<br />&#160;&#160;&#160;&#160;member ToInt32 : unit -&gt; int<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member Create : n:int -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member One : IntegerZ5<br />&#160;&#160;&#160;&#160;static member Zero : IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( + ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( * ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;&#160;&#160;static member ( - ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;end<br /><br />Full name: FSharp.Numerics.IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn42">val z : INumeric&lt;IntegerZ5&gt;<br /></div>
+<div class="tip" id="fppcn43">property INumeric.Zero: IntegerZ5<br /></div>
+<div class="tip" id="fppcn44">property IntegerZ5.Zero: IntegerZ5<br /></div>
+<div class="tip" id="fppcn45">property INumeric.One: IntegerZ5<br /></div>
+<div class="tip" id="fppcn46">property IntegerZ5.One: IntegerZ5<br /></div>
+<div class="tip" id="fppcn47">abstract member INumeric.Add : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn48">val a : IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn49">val b : IntegerZ5<br /><br />&#160;&#160;type: IntegerZ5<br />&#160;&#160;implements: IEquatable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: IComparable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: Collections.IStructuralComparable<br /></div>
+<div class="tip" id="fppcn50">abstract member INumeric.Subtract : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn51">abstract member INumeric.Multiply : &#39;T * &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn52">Multiple overloads
+<br />Object.Equals(obj: obj) : bool
+<br />abstract member INumeric.Equals : &#39;T * &#39;T -&gt; bool<br /></div>
+<div class="tip" id="fppcn53">val a : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fppcn54">val b : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fppcn55">abstract member INumeric.Compare : &#39;T * &#39;T -&gt; int<br /></div>
+<div class="tip" id="fppcn56">val compare : &#39;T -&gt; &#39;T -&gt; int (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.compare<br /></div>
+<div class="tip" id="fppcn57">abstract member INumeric.Negate : &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn58">abstract member INumeric.Abs : &#39;T -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn59">abstract member INumeric.Sign : &#39;T -&gt; int<br /></div>
+<div class="tip" id="fppcn60">type Math =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static val PI : float<br />&#160;&#160;&#160;&#160;static val E : float<br />&#160;&#160;&#160;&#160;static member Abs : System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Abs : int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Abs : int -&gt; int<br />&#160;&#160;&#160;&#160;static member Abs : int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Abs : float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Abs : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Abs : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Acos : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Asin : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Atan : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Atan2 : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member BigMul : int * int -&gt; int64<br />&#160;&#160;&#160;&#160;static member Ceiling : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Ceiling : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Cos : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Cosh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member DivRem : int * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member DivRem : int64 * int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Exp : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Floor : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Floor : float -&gt; float<br />&#160;&#160;&#160;&#160;static member IEEERemainder : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log10 : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Max : System.SByte * System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Max : System.Byte * System.Byte -&gt; System.Byte<br />&#160;&#160;&#160;&#160;static member Max : int16 * int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Max : uint16 * uint16 -&gt; uint16<br />&#160;&#160;&#160;&#160;static member Max : int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Max : uint32 * uint32 -&gt; uint32<br />&#160;&#160;&#160;&#160;static member Max : int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Max : uint64 * uint64 -&gt; uint64<br />&#160;&#160;&#160;&#160;static member Max : float32 * float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Max : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Max : decimal * decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Min : System.SByte * System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Min : System.Byte * System.Byte -&gt; System.Byte<br />&#160;&#160;&#160;&#160;static member Min : int16 * int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Min : uint16 * uint16 -&gt; uint16<br />&#160;&#160;&#160;&#160;static member Min : int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Min : uint32 * uint32 -&gt; uint32<br />&#160;&#160;&#160;&#160;static member Min : int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Min : uint64 * uint64 -&gt; uint64<br />&#160;&#160;&#160;&#160;static member Min : float32 * float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Min : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Min : decimal * decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Pow : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : float * int -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : float * System.MidpointRounding -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal * int -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : decimal * System.MidpointRounding -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : float * int * System.MidpointRounding -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal * int * System.MidpointRounding -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Sign : System.SByte -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int16 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int64 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : float32 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : float -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : decimal -&gt; int<br />&#160;&#160;&#160;&#160;static member Sin : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Sinh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Sqrt : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Tan : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Tanh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Truncate : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Truncate : float -&gt; float<br />&#160;&#160;end<br /><br />Full name: System.Math<br /></div>
+<div class="tip" id="fppcn61">Multiple overloads
+<br />Math.Sign(value: decimal) : int
+<br />Math.Sign(value: float) : int
+<br />Math.Sign(value: float32) : int
+<br />Math.Sign(value: int64) : int
+<br />Math.Sign(value: int) : int
+<br />Math.Sign(value: int16) : int
+<br />Math.Sign(value: sbyte) : int<br /></div>
+<div class="tip" id="fppcn62">Multiple overloads
+<br />Object.ToString() : string
+<br />abstract member INumeric.ToString : &#39;T * string * IFormatProvider -&gt; string<br /></div>
+<div class="tip" id="fppcn63">val n : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fppcn64">val fmt : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fppcn65">val fmtprovider : IFormatProvider<br /></div>
+<div class="tip" id="fppcn66">abstract member INumeric.Parse : string * Globalization.NumberStyles * IFormatProvider -&gt; &#39;T<br /></div>
+<div class="tip" id="fppcn67">val s : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fppcn68">val numstyle : Globalization.NumberStyles<br /><br />&#160;&#160;type: Globalization.NumberStyles<br />&#160;&#160;inherits: Enum<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fppcn69">namespace System<br /></div>
+<div class="tip" id="fppcn70">Multiple items
+<br />type Int32 =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member CompareTo : obj -&gt; int<br />&#160;&#160;&#160;&#160;member CompareTo : int -&gt; int<br />&#160;&#160;&#160;&#160;member Equals : obj -&gt; bool<br />&#160;&#160;&#160;&#160;member Equals : int -&gt; bool<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; System.TypeCode<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;member ToString : string * System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;static val MaxValue : int<br />&#160;&#160;&#160;&#160;static val MinValue : int<br />&#160;&#160;&#160;&#160;static member Parse : string -&gt; int<br />&#160;&#160;&#160;&#160;static member Parse : string * System.Globalization.NumberStyles -&gt; int<br />&#160;&#160;&#160;&#160;static member Parse : string * System.IFormatProvider -&gt; int<br />&#160;&#160;&#160;&#160;static member Parse : string * System.Globalization.NumberStyles * System.IFormatProvider -&gt; int<br />&#160;&#160;&#160;&#160;static member TryParse : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParse : string * System.Globalization.NumberStyles * System.IFormatProvider * int -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Int32<br /><br />&#160;&#160;type: Int32<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br />
+<br /><br />--------------------<br />
+<br />Int32()<br /></div>
+<div class="tip" id="fppcn71">Multiple overloads
+<br />Int32.Parse(s: string) : int
+<br />Int32.Parse(s: string, provider: IFormatProvider) : int
+<br />Int32.Parse(s: string, style: Globalization.NumberStyles) : int
+<br />Int32.Parse(s: string, style: Globalization.NumberStyles, provider: IFormatProvider) : int<br /></div>
+<div class="tip" id="fppcn72">val Init : unit -&gt; unit<br /><br />Full name: Script.IntegerZ5Associations.Init<br /></div>
+<div class="tip" id="fppcn73">module GlobalAssociations<br /><br />from Microsoft.FSharp.Math<br /></div>
+<div class="tip" id="fppcn74">val RegisterNumericAssociation : INumeric&lt;&#39;a&gt; -&gt; unit<br /><br />Full name: Microsoft.FSharp.Math.GlobalAssociations.RegisterNumericAssociation<br /></div>
+<div class="tip" id="fppcn75">Multiple items
+<br />module Matrix<br /><br />from Microsoft.FSharp.Math
+<br /><br />--------------------<br />
+<br />type Matrix&lt;&#39;T&gt;<br />with<br />&#160;&#160;interface Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;interface Collections.IStructuralEquatable<br />&#160;&#160;interface Collections.IStructuralComparable<br />&#160;&#160;interface IComparable<br />&#160;&#160;member Column : index:int -&gt; Vector&lt;&#39;T&gt;<br />&#160;&#160;member Columns : start:int * length:int -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member Copy : unit -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member GetDiagonal : int -&gt; Vector&lt;&#39;T&gt;<br />&#160;&#160;override GetHashCode : unit -&gt; int<br />&#160;&#160;member GetSlice : start1:int option * finish1:int option * start2:int option * finish2:int option -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member PermuteColumns : permutation:(int -&gt; int) -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member PermuteRows : permutation:(int -&gt; int) -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member Region : starti:int * startj:int * lengthi:int * lengthj:int -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member Row : index:int -&gt; RowVector&lt;&#39;T&gt;<br />&#160;&#160;member Rows : start:int * length:int -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;member SetSlice : start1:int option * finish1:int option * start2:int option * finish2:int option * source:Matrix&lt;&#39;T&gt; -&gt; unit<br />&#160;&#160;member ToArray2 : unit -&gt; &#39;T [,]<br />&#160;&#160;member ToArray2D : unit -&gt; &#39;T [,]<br />&#160;&#160;member ToRowVector : unit -&gt; RowVector&lt;&#39;T&gt;<br />&#160;&#160;member ToVector : unit -&gt; Vector&lt;&#39;T&gt;<br />&#160;&#160;member Diagonal : Vector&lt;&#39;T&gt;<br />&#160;&#160;member Dimensions : int * int<br />&#160;&#160;member ElementOps : INumeric&lt;&#39;T&gt;<br />&#160;&#160;member InternalDenseValues : &#39;T [,]<br />&#160;&#160;member InternalSparseColumnValues : int []<br />&#160;&#160;member InternalSparseRowOffsets : int []<br />&#160;&#160;member InternalSparseValues : &#39;T []<br />&#160;&#160;member IsDense : bool<br />&#160;&#160;member IsSparse : bool<br />&#160;&#160;member Item : int * int -&gt; &#39;T with get<br />&#160;&#160;member NonZeroEntries : seq&lt;int * int * &#39;T&gt;<br />&#160;&#160;member Norm : float<br />&#160;&#160;member NumCols : int<br />&#160;&#160;member NumRows : int<br />&#160;&#160;member StructuredDisplayAsArray : obj<br />&#160;&#160;member Transpose : Matrix&lt;&#39;T&gt;<br />&#160;&#160;member Item : int * int -&gt; &#39;T with set<br />&#160;&#160;static member ( + ) : Matrix&lt;&#39;T&gt; * Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( .* ) : Matrix&lt;&#39;T&gt; * Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( * ) : &#39;T * Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( * ) : Matrix&lt;&#39;T&gt; * &#39;T -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( * ) : Matrix&lt;&#39;T&gt; * Vector&lt;&#39;T&gt; -&gt; Vector&lt;&#39;T&gt;<br />&#160;&#160;static member ( * ) : Matrix&lt;&#39;T&gt; * Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( - ) : Matrix&lt;&#39;T&gt; * Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( ~- ) : Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />&#160;&#160;static member ( ~+ ) : Matrix&lt;&#39;T&gt; -&gt; Matrix&lt;&#39;T&gt;<br />end<br /><br />Full name: Microsoft.FSharp.Math.Matrix&lt;_&gt;<br /><br />&#160;&#160;type: Matrix&lt;&#39;T&gt;<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: IComparable<br /></div>
+<div class="tip" id="fppcn76">module Generic<br /><br />from Microsoft.FSharp.Math.MatrixModule<br /></div>
+<div class="tip" id="fppcn77">module IntegerZ5Associations<br /><br />from Script<br /></div>
+<div class="tip" id="fppcn78">val ys : Matrix&lt;IntegerZ5&gt;<br /><br />Full name: Script.Script2.ys<br /><br />&#160;&#160;type: Matrix&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: IComparable<br /></div>
+<div class="tip" id="fppcn79">val init : int -&gt; int -&gt; (int -&gt; int -&gt; &#39;T) -&gt; Matrix&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Math.MatrixModule.Generic.init<br /></div>
+<div class="tip" id="fppcn80">val xs : Matrix&lt;IntegerZ5&gt;<br /><br />Full name: Script.Script2.xs<br /><br />&#160;&#160;type: Matrix&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.Generic.IEnumerable&lt;IntegerZ5&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: IComparable<br /></div>
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fppcni1">namespace FSharp<br /></div>
+<div class="tip" id="fppcni2">namespace FSharp.Numerics<br /></div>
+<div class="tip" id="fppcni3">Multiple items
+<br />type SealedAttribute =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Attribute<br />&#160;&#160;&#160;&#160;new : unit -&gt; SealedAttribute<br />&#160;&#160;&#160;&#160;new : value:bool -&gt; SealedAttribute<br />&#160;&#160;&#160;&#160;member Value : bool<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Core.SealedAttribute<br /><br />&#160;&#160;type: SealedAttribute<br />&#160;&#160;implements: System.Runtime.InteropServices._Attribute<br />&#160;&#160;inherits: System.Attribute<br />
+<br /><br />--------------------<br />
+<br />new : unit -&gt; SealedAttribute
+<br /><br />--------------------<br />
+<br />new : value:bool -&gt; SealedAttribute<br /></div>
+<div class="tip" id="fppcni4">type IntegerZ5<br />with<br />&#160;&#160;member ToInt32 : unit -&gt; int<br />&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;static member Create : int -&gt; IntegerZ5<br />&#160;&#160;static member One : IntegerZ5<br />&#160;&#160;static member Zero : IntegerZ5<br />&#160;&#160;static member ( + ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;static member ( * ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />&#160;&#160;static member ( - ) : IntegerZ5 * IntegerZ5 -&gt; IntegerZ5<br />end<br /><br />Full name: FSharp.Numerics.IntegerZ5<br /></div>
+<div class="tip" id="fppcni5">member IntegerZ5.ToInt32 : unit -&gt; int<br /><br />Full name: FSharp.Numerics.IntegerZ5.ToInt32<br /></div>
+<div class="tip" id="fppcni6">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit<br /><br />&#160;&#160;type: unit<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="fppcni7">Multiple items
+<br />val int : &#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int
+<br /><br />--------------------<br />
+<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcni8">override IntegerZ5.ToString : unit -&gt; string<br /><br />Full name: FSharp.Numerics.IntegerZ5.ToString<br /></div>
+<div class="tip" id="fppcni9">Multiple items
+<br />val string : &#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string
+<br /><br />--------------------<br />
+<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.ICloneable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: System.Collections.IEnumerable<br />&#160;&#160;implements: System.IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fppcni10">static member IntegerZ5.Create : int -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.IntegerZ5.Create<br /></div>
+<div class="tip" id="fppcni11">static member IntegerZ5.One : IntegerZ5<br /><br />Full name: FSharp.Numerics.IntegerZ5.One<br /></div>
+<div class="tip" id="fppcni12">static member IntegerZ5.Zero : IntegerZ5<br /><br />Full name: FSharp.Numerics.IntegerZ5.Zero<br /></div>
+<div class="tip" id="fppcni13">module NumericLiteralZ<br /><br />from FSharp.Numerics<br /></div>
+<div class="tip" id="fppcni14">val FromZero : unit -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.NumericLiteralZ.FromZero<br /></div>
+<div class="tip" id="fppcni15">val FromOne : unit -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.NumericLiteralZ.FromOne<br /></div>
+<div class="tip" id="fppcni16">val FromInt32 : int -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.NumericLiteralZ.FromInt32<br /></div>
+<div class="tip" id="fppcni17">val FromInt64 : int64 -&gt; IntegerZ5<br /><br />Full name: FSharp.Numerics.NumericLiteralZ.FromInt64<br /></div>
+<div class="tip" id="fppcni18">Multiple items
+<br />val int64 : &#39;T -&gt; int64 (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int64
+<br /><br />--------------------<br />
+<br />type int64 = System.Int64<br /><br />Full name: Microsoft.FSharp.Core.int64<br /><br />&#160;&#160;type: int64<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;int64&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int64&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type int64&lt;&#39;Measure&gt; = int64<br /><br />Full name: Microsoft.FSharp.Core.int64&lt;_&gt;<br /><br />&#160;&#160;type: int64&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;int64&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;int64&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="fppcni19">module IntegerZ5TopLevelOperations<br /><br />from FSharp.Numerics<br /></div>
+<div class="tip" id="fppcni20">val z5 : &#39;a -&gt; IntegerZ5 (requires member op_Explicit)<br /><br />Full name: FSharp.Numerics.IntegerZ5TopLevelOperations.z5<br /></div>
+<div class="tip" id="fppcni21">module IntegerZ5Associations<br /><br />from FSharp.Numerics<br /></div>
+<div class="tip" id="fppcni22">val IntegerZ5Numerics : INumeric&lt;IntegerZ5&gt;<br /><br />Full name: FSharp.Numerics.IntegerZ5Associations.IntegerZ5Numerics<br /></div>
+<div class="tip" id="fppcni23">Multiple items
+<br />type INumeric&lt;&#39;T&gt; =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;abstract member Abs : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Add : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Compare : &#39;T * &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Equals : &#39;T * &#39;T -&gt; bool<br />&#160;&#160;&#160;&#160;abstract member Multiply : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Negate : &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Parse : string * System.Globalization.NumberStyles * System.IFormatProvider -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member Sign : &#39;T -&gt; int<br />&#160;&#160;&#160;&#160;abstract member Subtract : &#39;T * &#39;T -&gt; &#39;T<br />&#160;&#160;&#160;&#160;abstract member ToString : &#39;T * string * System.IFormatProvider -&gt; string<br />&#160;&#160;&#160;&#160;abstract member One : &#39;T<br />&#160;&#160;&#160;&#160;abstract member Zero : &#39;T<br />&#160;&#160;end<br /><br />Full name: Microsoft.FSharp.Math.INumeric&lt;_&gt;
+<br /><br />--------------------<br />
+<br />INumeric<br /></div>
+<div class="tip" id="fppcni24">val Init : unit -&gt; unit<br /><br />Full name: FSharp.Numerics.IntegerZ5Associations.Init<br /></div>

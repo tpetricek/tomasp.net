@@ -1,0 +1,584 @@
+<!-- [info]
+
+ - date: 2007-03-02T17:11:05.0000000
+ - description: CLinq project is a library that makes it possible to use LINQ technologies from the C++/CLI language.
+ - tags: .net,academic,c#
+ - layout: post
+ - title: CLinq - LINQ support for the C++/CLI language
+ - url: clinq-project.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>I started working on this project, because I attended C++ class at our university and I had to do some application in C++. Because I hate doing useless projects I wanted to work on something interesting and so I started thinking whether it would be possible to enable LINQ support in C++/CLI...</p>
+
+<p>C++/CLI is a very flexible language and the following example proves that enabling LINQ support in C++/CLI isn't impossible. The following database query returns name of contact and company for all customers living in London:</p>
+
+<pre lang="c++">
+// create connection to database
+NorthwindData db(".. connection string ..");
+
+// declare database query
+Expr&lt;Customers^&gt; cvar = Var&lt;Customers^&gt;("c");
+CQuery&lt;String^&gt;^ q = db.QCustomers
+  -&gt;Where(clq::fun(cvar, cvar.City == "London"))
+  -&gt;Select(clq::fun(cvar, 
+      cvar.ContactName + Expr&lt;String^&gt;(", ") + cvar.CompanyName));
+
+// execute query and output results
+for each(String^ s in q-&gt;Query)
+  Console::WriteLine(s);
+</pre>  
+<p>If you are interested in more information about CLinq project you can...</p>
+<ul>
+  <li><a href="/articles/clinq-project.aspx">.. continue and read the entire article</a></li>
+  <li><a href="http://www.codeplex.com/linqextensions">Visit the CodePlex project homepage</a> [<a href="http://www.codeplex.com/linqextensions" target="_blank">^</a>]</li>
+</ul>
+[/abstract] -->
+
+<h1>CLinq - LINQ support for the C++/CLI language</h1>
+  <ul>
+    <li><a href="/articles/clinq/clinq-src.zip">Download CLinq source code (139.8 kB)</a> </li>
+    <li><a href="/articles/clinq/clinq-doc.zip">Download generated documentation (14.9 kB)</a> </li>
+    <li><a href="/articles/clinq/clinq-demo.zip">Download demo application (75.6 kB)</a> </li>
+  </ul>
+  <ul>
+    <li><a href="http://www.codeplex.com/linqextensions">Visit the project homepage at CodePlex</a></li>
+  </ul>
+  
+  <h2>Introduction</h2>
+  <p>The LINQ project which will be part of the next version of Visual Studio (codename "Orcas") is set of extensions that
+    make it possible to query data sources directly from the C# or VB.NET languages. LINQ extends .NET Framework with classes
+    to represent queries and both C# and VB.NET language with features that make it possible to write these queries easily.
+    It also includes libraries for using queries with the most common types of data sources like SQL database, DataSets and
+    XML files. This article requires some basic knowledge of LINQ and C# 3.0, so I recommend looking at the LINQ Overview available
+    from the official project web site before reading the article.</p>
+  <p>LINQ includes extensions for the C# and VB.NET, but there are no plans for supporting LINQ in C++/CLI. The goal of CLinq project
+    is to allow using part of LINQ functionality from C++/CLI. Thanks to very powerful operator overloading mechanism in C++/CLI it is 
+    possible to enable using LINQ to SQL for accessing SQL databases in C++/CLI as well as some other LINQ uses.</p>
+  <p>I will first demonstrate how the same database query looks in C# 3.0 and C++/CLI and then we will look at CLinq in more detail. 
+    The following query (written in C# 3.0) returns uses the Northwind database and returns name of contact and company for all 
+    customers living in London:</p>    
+<pre lang="csharp">
+// create connection to database
+NorthwindData db = new NorthwindData(".. connection string ..");
+
+// declare database query
+var q = 
+  from cvar in db.Customers
+  where cvar.City == "London"
+  select cvar.ContactName + ", " + cvar.CompanyName;
+
+// execute query and output results
+foreach(string s in q)
+  Console.WriteLine(s);
+</pre>  
+  <p>Now, let's look at the same query written in C++/CLI using CLinq. It is a bit more complex, but this is the price for 
+    implementing it as a library instead of modifying the language:</p>
+<pre lang="c++">
+// create connection to database
+NorthwindData db(".. connection string ..");
+
+// declare database query
+Expr&lt;Customers^&gt; cvar = Var&lt;Customers^&gt;("c");
+CQuery&lt;String^&gt;^ q = db.QCustomers
+  -&gt;Where(clq::fun(cvar, cvar.City == "London"))
+  -&gt;Select(clq::fun(cvar, 
+      cvar.ContactName + Expr&lt;String^&gt;(", ") + cvar.CompanyName));
+
+// execute query and output results
+for each(String^ s in q-&gt;Query)
+  Console::WriteLine(s);
+</pre>  
+  <h2>LINQ &amp; C++/CLI overview</h2>
+  <p>In this section I'll very shortly recapitulate a few LINQ and C++/CLI features that are important for understanding how CLinq works.
+    If you're familiar with LINQ and C++/CLI you can safely skip this section.</p>
+  <h3>Important LINQ features</h3>
+  <p>Probably the most important extension in C# that makes LINQ possible are lambda expressions. Lambda expressions
+    are similar to anonymous delegates (but the syntax is even simpler). Lambda expressions can be used for declaring 
+    functions inline and you can pass them as a parameter to methods. There is however one important difference to
+    anonymous delegates - lambda expressions can be either compiled as executable code (like anonymous delegate) or 
+    as a data structure that represents the lambda expression source code. The structure is called expression tree.
+    Expression tree can be also compiled at runtime, so you can convert this representation to executable code.</p>
+  <p>What LINQ to SQL does is that it takes the expression tree representing the query that contains lambda expressions 
+    and converts it to the SQL query, which is sent to the SQL Server. LINQ to SQL also contain tool called <code>sqlmetal.exe</code>,
+    which generates objects that represent the database structure, so when you're writing the queries you can 
+    work with these type-safe objects instead of having to specify database tables or columns by name.</p>  
+  
+  <h3>Important C++/CLI features</h3>
+  <p>Now I'd like to mention a few from the rich set of C++/CLI features. LINQ itself is available for .NET, so we'll
+    use the ability to work with managed classes a lot in the whole project. We'll also use the ability to work with
+    both C++ templates and .NET generics. CLinq benefits from the fact that .NET generics can be compiled and exported 
+    from an assembly, while C++ templates are interesting thanks to their template specialization support, which means that
+    if you have <code>SomeClass&lt;T&gt;</code> template, you can write special version for specified type parameter 
+    (for example <code>SomeClass&lt;int&gt;</code>) and add modify behavior of this class, including the possibility
+    to add methods, etc.</p>
+  
+  <h2>Basic CLinq features</h2>
+  <p>In the previous example we used <code>Expr&lt;Customers^&gt;</code> and <code>Var&lt;Customers^&gt;</code> classes.
+    This two classes are typed wrappers and are declared using C++/CLI templates. We use templates instead of generics,
+    because templates allow us to use template specialization - this means that there are basic <code>Expr&lt;&gt;</code> and
+    <code>Var&lt;&gt;</code> classes and these can be specialized, so for example <code>Expr&lt;Customers^&gt;</code> can contain
+    some additional properties. Using these additional properties you can express operations with <code>Customers</code> class.
+    These template specializations can be generated using the <code>clinqgen.exe</code> tool, which will be described later. CLinq
+    also supports a bit more complex syntax that you can use for manipulating with classes that don't have template specializations. </p>
+    
+  <p>Before we start, I'll explain how the CLinq library organized is. It consists from two parts. First part is the <code>EeekSoft.CLinq.dll</code>
+    assembly which contains core CLinq classes. You'll need to reference this assembly from your project either using project settings or 
+    with the <code>#using</code> statement. Second part is the <code>clinq.h</code> header file (and 2 other headers) which contain
+    C++/CLI templates and you'll need to include this header in every CLinq project. The header files are used because CLinq relies on C++/CLI 
+    templates. The classes from the core library can be used if you want to share CLinq objects across more .NET projects.</p>  
+  
+  <p>I already mentioned the <code>Expr&lt;&gt;</code> class. This class is written using templates and it is included (together 
+    with <code>Var&lt;&gt;</code>) from the <code>clinq.h</code> file. These two are inherited from classes in the CLinq assembly,
+    namely <code>Expression&lt;&gt;</code> (there are some other classes in the assembly, but this one is the most important). This 
+    class can be shared in multiple projects and it is written using .NET generics. It is recommended to use this class as a type for
+    parameters of any public methods from your project that can be called from other .NET assembly.</p>
+      
+  <h3>Expr and Var classes</h3>
+  <p>Let's look at some sample code. As you can see from the previous paragraph the <code>Expr&lt;&gt;</code> and <code>Var&lt;&gt;</code> 
+    classes are key structures of the CLinq project, so we'll use them in the following example. The example works with two specialized
+    versions of these classes - one for the <code>int</code> and second for the <code>String^</code> type:</p>
+<pre lang="c++">
+// Declare variable of type int called 'x'
+Expr&lt;int&gt; x = Var&lt;int&gt;("x");
+// Declare expression of type String initialized with literal
+Expr&lt;String^&gt; str("Hello world!");
+
+// Expression representing addition of the x variable and 
+// result of the method call to 'IndexOf' method.
+Expr&lt;int&gt; expr = str.IndexOf("w") + x;
+</pre>  
+  <p>If you look at the code you could think that the <code>IndexOf</code> method and other operations are executed after the code is
+    invoked, but this isn't true! This is important fact to note - the code only builds internal structures that represent the 
+    expression, but <strong>the expression is not executed!</strong> This provides you with a similar behavior to the C# 3.0 lambda
+    expressions which can be also used for building representation of the written expression instead of building executable code.
+    You can also convert the expression represented by the <code>Expr&lt;&gt;</code> class to the structures used by LINQ as demonstrated
+    in the following example:</p>
+<pre lang="c++">
+// Convert to LINQ expression
+System::Expressions::Expression^ linqExpr = expr.ToLinq();
+// Print string representation of LINQ expression
+Console::WriteLine(linqExpr);
+</pre>
+<p>The result printed to the console window will be:</p>
+<pre lang="text">
+Add("Hello world!".IndexOf("w"), x)
+</pre>
+
+  <h3>Lambda expressions</h3>  
+  <p>Let's now look at the syntax for writing lambda expressions in CLinq. Lambda expressions are represented by generic 
+    <code>Lambda&lt;&gt;</code> class. The type parameter of this class should be one of the <code>Func</code> delegates
+    declared by LINQ in the <code>System::Query</code> namespace. For declaring lambda expressions you can use the <code>fun</code>
+    function in the <code>EeekSoft::CLinq::clq</code> namespace. Assuming that you included <code>using namespace EeekSoft::CLinq;</code>
+    directive (which is recommended), the source code will look like this:</p>
+<pre lang="c++">
+// Declare parameter (variable) and method body (expression)
+Expr&lt;int&gt; var = Var&lt;int&gt;("x");
+Expr&lt;int&gt; expr = Expr&lt;String^&gt;("Hello world!").IndexOf("w") + var;
+
+// First argument for the clq::fun function is lambda expression
+// parameter, the last argument is the lambda expression body
+Lambda&lt;Func&lt;int, int&gt;^&gt;^ lambda = clq::fun(var, expr);
+
+// Print string representation of lambda..
+Console::WriteLine(lambda-&gt;ToLinq());
+
+// Compile &amp; execute lambda
+Func&lt;int, int&gt;^ compiled = lambda-&gt;Compile();
+Console::WriteLine(compiled(100));
+</pre>  
+  <p>After executing this example you should see the following output in console window (first line represents the lambda expression and
+  the second line is the result of lambda expression invocation):</p>
+<pre lang="text">
+x => Add("Hello world!".IndexOf("w"), x)
+106</pre>
+  <p>Similarly to the LINQ you can compile the CLinq expression at runtime (actually CLinq internally uses LINQ). This was done in the 
+    previous example using the <code>Compile</code> method. The returned type is one of the <code>Func&lt;&gt;</code> delegates 
+    and this delegate can be directly invoked.</p>  
+  <p>As in LINQ you can use only up to 4 parameters in lambda expressions (due to the limitations of <code>Func&lt;&gt;</code> delegates 
+    declared in LINQ assemblies). Accordingly to this limitation, the <code>clq::fun</code> function has the same number of overloads.
+    Also note that you don't have to specify type arguments to this function in most of the situations, because C++/CLI type inference
+    algorithm can infer the types for you. Let's look at one more example that demonstrates declaring lambda expression with more than one parameter:</p>
+<pre lang="c++">
+Expr&lt;int&gt; x = Var&lt;int&gt;("x");
+Expr&lt;int&gt; y = Var&lt;int&gt;("y");
+Lambda&lt;Func&lt;int, int, int&gt;^&gt;^ lambda2 = 
+  clq::fun(x, y, 2 * (x + y) );
+Console::WriteLine(lambda2-&gt;Compile()(12, 9));
+</pre>
+  <p>In this example the body of the lambda expression isn't declared earlier as another variable, but composed directly
+    in the <code>clq::fun</code> function. We also used overloaded operators (namely <code>*</code> and <code>+</code>) in the 
+    body of lambda expression. If you run this code, the result will be <code>(12 + 9) * 2</code> which is <code>42</code>.</p>  
+    
+  <h3>Supported types and operators</h3>
+  <p>In the previous example I used two overloaded operators. These operators are declared in the <code>Expr&lt;int&gt;</code>
+    template specialization (so you can use them when working with an expression representing integer). CLinq includes template
+    specializations with overloaded operators for the following standard types:</p>
+  <table>
+  <tr>
+    <th style="text-align:left; width:170px">Type</th>
+    <th style="text-align:left;">Supported operators &amp; methods</th>
+  </tr>
+  <tr><td><code>bool</code></td>
+    <td>Comparison: <code>!=</code>, <code>==</code>; Logical: <code>&amp;&amp;</code>, <code>||</code>, <code>!</code></td>
+  </tr><tr>
+    <td><code>int</code></td>
+    <td>Comparison: <code>!=</code>, <code>==</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>; Math: <code>+</code>, <code>*</code>, <code>/</code>, <code>-</code>; Modulo: <code>%</code>; Shifts: <code>&lt;&lt;</code>, <code>&gt;&gt;</code></td>
+  </tr><tr>
+    <td>Other integral types</td>
+    <td>Comparison: <code>!=</code>, <code>==</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>; Math: <code>+</code>, <code>*</code>, <code>/</code>, <code>-</code>; Modulo: <code>%</code></td>
+  </tr><tr>
+    <td><code>float</code>, <code>double</code>, <code>Decimal</code></td>
+    <td>Comparison: <code>!=</code>, <code>==</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>; Math: <code>+</code>, <code>*</code>, <code>/</code>, <code>-</code></td>
+  </tr><tr>
+    <td><code>wchar_t</code></td>
+    <td>Comparison: <code>!=</code>, <code>==</code></td>
+  </tr><tr>
+    <td><code>String^</code></td>
+    <td>Comparison: <code>!=</code>, <code>==</code>; Concatenation: <code>+</code>; Standard string methods (<code>IndexOf</code>, <code>Substring</code>, etc..)</td>
+  </tr></table>    
+  <p>For complete list of supported types with list of methods and operators see <a href="/articles/clinq/documentation.html">generated documentation</a> 
+  [<a href="/articles/clinq/documentation.html" target="_blank">^</a>].
+    The following example demonstrates using overloaded operators with expressions representing <code>double</code> and <code>float</code>
+    (mixing different type is another interesting problem, so that's why we use two different floating point types here):</p>  
+<pre lang="c++">
+// Declare 'float' variable and 'double' literal
+Expr&lt;float&gt; fv = Var&lt;float&gt;("f");
+Expr&lt;double&gt; fc(1.2345678);
+
+// Function taking 'float' and returning 'float'
+Lambda&lt;Func&lt;float, float&gt;^&gt;^ foo4 = clq::fun(fv, 
+  clq::conv&lt;float&gt;(Expr&lt;Math^&gt;::Sin(fv * 3.14) + fc)  );
+</pre>  
+  <p>You can see that we're using another function from the <code>clq</code> namespace - the <code>clq::conv</code>. This function is used for converting
+    types when implicit conversion is not available. In the sample we're using a <code>Sin</code> function which accepts <code>Expr&lt;double&gt;</code> 
+    as a parameter. The variable of type <code>float</code> is converted to the expression of type <code>double</code> implicitly, but when conversion
+    in the opposite direction is not possible, so we have to use <code>clq::conv</code> function. CLinq allows implicit conversion only from smaller floating
+    point data type to larger (<code>float</code> to <code>double</code>) or from smaller integral type to larger (for example <code>short</code> 
+    to <code>int</code>). This example also uses the <code>Expr&lt;Math^&gt;</code> class, which is another interesting template specialization. 
+    This specialization represents the .NET <code>System::Math</code> class and contains most of the methods from this class.</p>
+    
+  <h2>Working with classes</h2>
+  <p>I already demonstrated how you can work with basic data types, like <code>int</code> or <code>float</code>, but I mentioned only a few 
+    about working with another classes. There are two possible approaches - you can either use template specialization (if it exists) which 
+    includes properties and methods that represent members of underlying class. These specializations exist for some standard types (like <code>String^</code>)
+    and can be generated for LINQ to SQL database mappings. If the template specialization isn't available you have to 
+    use common methods that can be used for invoking method (or property) by its name. </p>
+    
+  <h3>Typed wrappers</h3>
+  <p>Using class if the corresponding template specialization exists is fairly simple. The following example declares expression working with the 
+    <code>String^</code> type:</p>
+<pre lang="c++">
+// 'String^' variable
+Expr&lt;String^&gt; name = Var&lt;String^&gt;("name");
+
+// Expression that uses 'IndexOf' and 'Substring' methods
+Expr&lt;String^&gt; sh("Hello Tomas");
+Expr&lt;int&gt; n = sh.IndexOf('T');
+Lambda&lt;Func&lt;String^, String^&gt;^&gt;^ foo = 
+  clq::fun(name, sh.Substring(0, n) + name);
+
+// Print LINQ representation and execute
+Console::WriteLine(foo-&gt;ToLinq());
+Console::WriteLine(foo-&gt;Compile()("world!"));
+</pre>
+  <p>In this example we used two methods that are declared in the <code>Expr&lt;String^&gt;</code> class. These methods were 
+    <code>IndexOf</code> and <code>Substring</code> and they represent calls to according methods of the <code>String^</code>
+    type. If you look at the program output, you can see that it contains calls to these two methods (there is also a call to the
+    <code>Concat</code> method which was generated by CLinq when we used <code>+</code> operator for string concatenation):</p>
+<pre lang="text">
+name => Concat(new [] {"Hello Tomas".
+  Substring(0, "Hello Tomas".IndexOf(T)), name})
+Hello world!</pre>  
+
+  <h3>Indirect member access</h3>
+  <p>To demonstrate the second approach, we'll first define new class with sample property, method and static method (you can also
+    invoke static properties):</p>
+<pre lang="c++">
+// Sample class that we'll work with
+ref class DemoClass
+{
+  int _number;
+public:
+  DemoClass(int n) { 
+    _number = n; 
+  }  
+  // Property
+  property int Number {
+    int get() { return _number;  }
+  }
+  // Standard method
+  int AddNumber(int n) {
+    return _number = _number + n;
+  }
+  // Static method
+  static int Square(int number) {
+    return number * number;
+  }
+};
+</pre>
+<p>Now let's get to the more interesting part of the example. We will first declare variable of type <code>DemoClass^</code> and
+  later we'll use the <code>Prop</code> method to read property by its name, <code>Invoke</code> to call member method and 
+  <code>InvokeStatic</code> to invoke static method of this class (the <code>AddNumber</code> method could be a bit tricky,
+  because it increments number stored in the class as a side-effect, which means that the value of expression depends on the
+  order in which members of the expression are evaluated):</p>
+<pre lang="c++">
+// Construct the lambda expression
+Expr&lt;DemoClass^&gt; var = Var&lt;DemoClass^&gt;("var");
+Lambda&lt;Func&lt;DemoClass^,int&gt;^&gt;^ foo = clq::fun(var, 
+  var.Prop&lt;int&gt;("Number") + 
+  var.Invoke&lt;int&gt;("AddNumber", Expr&lt;int&gt;(6)) + 
+  Expr&lt;DemoClass^&gt;::InvokeStatic&lt;int&gt;("Square", Expr&lt;int&gt;(100) ) );
+
+// Compile the lambda and pass instance of 'DemoClass' as a parameter
+DemoClass^ dcs = gcnew DemoClass(15);
+int ret = foo-&gt;Compile()(dcs);
+
+Console::WriteLine("{0}\n{1}", foo-&gt;ToLinq(), ret);
+</pre>  
+  <p>And the output of this example will be:</p>
+<pre lang="text">
+var => Add(Add(var.Number, var.AddNumber(6)), Square(100))
+10036
+</pre>
+  <p>I included the output because I wanted to point out one interesting fact. You can see that there is no difference in the 
+    output if you use generated template specialization or invoke by name. This is because if you're using invoke by name, the
+    method (or property) that should be invoked is found using reflection before the LINQ expression tree is generated. This
+    also means that if you execute the compiled lambda expression, it will call the method (or property) directly and not
+    by its name.</p>
+
+  <h3>Calling constructors in projection</h3>
+  <p>So far we looked at calling methods and reading property values, but there is one more interesting problem that I didn't write
+    about. Sometimes you may want to create an instance of a class and return it from lambda expression. CLinq doesn't support
+    anything like C# 3.0 anonymous methods, but you can invoke class constructor and pass parameters to it using <code>clq::newobj</code>
+    function. The following sample assumes that you have a class called <code>DemoCtor</code> with constructor taking <code>String^</code>
+    and <code>int</code> as parameters:</p>
+<pre lang="c++">
+// Arguments of the lambda expression
+Expr&lt;String^&gt; svar = Var&lt;String^&gt;("s");
+Expr&lt;int&gt; nvar = Var&lt;int&gt;("n");
+
+DemoCtor^ d = clq::fun(svar, nvar, clq::newobj&lt;DemoCtor^&gt;(svar, nvar) )
+  -&gt;Compile()("Hello world!", 42);
+</pre>  
+  <p>After executing this code, he <code>d</code> variable will contain instance of <code>DemoCtor</code> class created using
+    constructor that I wrote about earlier. You should be very careful when using the <code>newobj</code> method, because there is
+    no compile-time checking so if the required constructor doesn't exist or has incompatible types, the code will end with 
+    run-time error.</p>
+
+  <h2>Using LINQ</h2>
+  <p>You're now familiar with all CLinq features that you need to start working with data using LINQ in C++/CLI! The key for working
+    with data is the <code>CQuery</code> class which serves as a CLinq wrapper for the <code>IQueryable</code> interface, which
+    represents query in LINQ. This class has several methods for constructing queries, including <code>Where</code>, <code>Select</code>,
+    <code>Average</code> and other. You can construct this class if you already have an instance of class implementing the 
+    <code>IQueryable</code> interface, but for working with database, you can use a tool to generate code which makes it simpler.
+    <code>CQuery</code> class also has a property called <code>Query</code> that returns the underlying <code>IQueryable</code>
+    interface - we'll need this property later for accessing the results of the query.</p>
+    
+  <h3>Working with SQL Database</h3>
+  <h4>LINQ to SQL: Introduction</h4>
+  <p>We will use two tools to generate CLinq header file with classes that will represent the database structure. 
+    First tool is shipped as part of LINQ and is called <code>sqlmetal</code>. This tool can generate C# or VB.NET code,
+    but it can also be used to generate XML description of the database structure. We will use the third option - the
+    following example demonstrates how to generate XML description (<code>northwind.xml</code>) for database
+    <code>northwind</code> at SQL server running at <code>localhost</code>:</p>
+  <pre lang="text">sqlmetal /server:localhost /database:northwind /xml:northwind.xml</pre>
+  <p>Once we have the XML file, we can use the <code>clinqgen</code> tool which is part of CLinq. This tool generates
+    C++/CLI header file with classes that represent database tables, according <code>Expr&lt;&gt;</code> template specializations
+    and also the class that will represent the entire database. You can customize the name and namespace of this class.
+    If you want to automate this task, you can include the XML file generated by <code>sqlmetal</code> in your project and set 
+    its custom build tool to the following command (Hacker note: You can also use pipe (<code>|</code>) to get these two 
+    tools working together):</p>
+  <pre lang="text">clinqgen /namespace:EeekSoft.CLinq.Demo 
+  /class:NorthwindData /out:Northwind.h $(InputPath)</pre>  
+  <p>Now you'll need to include the generated header file and we can start working with database. We'll first create
+    instance of the generated <code>NorthwindData</code> class, which represents the database (note, that the example 
+    uses <em>C++/CLI stack semantics</em>, but you can also use <em>gcnew</em> if you want instead). Once we have instance
+    of this class, we can use it's properties that represent data tables. The properties with the <code>Q</code> prefix
+    return the <code>CQuery</code> class, so we'll use these properties instead of properties without this prefix, which 
+    are designed for using from C# 3.0 or VB.NET. The following example demonstrates some basic <code>CQuery</code> methods:</p>
+<pre lang="c++">
+// Create database context
+NorthwindData db(".. connection string ..");
+
+// (1) Count employees
+Console::WriteLine("Number of employees: {0}",
+  db.QEmployees-&gt;Count());
+
+// (2) Calculate average 'UnitPrice' value
+Expr&lt;Products^&gt; p = Var&lt;Products^&gt;("p");
+Nullable&lt;Decimal&gt; avgPrice = 
+  db.QProducts-&gt;Average( clq::fun(p, p.UnitPrice) );
+Console::WriteLine("Average unit price: {0}", avgPrice);
+
+// (3) Get first employee whose 'ReportsTo' column is NULL
+Expr&lt;Employees^&gt; e = Var&lt;Employees^&gt;("e");
+Employees^ boss = db.QEmployees-&gt;
+  Where( clq::fun(e, e.ReportsTo == nullptr) )-&gt;First();
+Console::WriteLine("The boss: {0} {1}",
+  boss-&gt;FirstName, boss-&gt;LastName);</pre>
+  
+  <p>In the first example we simply called the <code>Count</code> method which returns number of rows in the table. 
+    In second example we use <code>Average</code> method which requires one argument, which is a lambda expression that
+    returns some numeric type for every row in the table. Since <code>UnitPrice</code> column can contain <code>NULL</code>
+    values we're working with <code>Nullable&lt;Decimal&gt;</code> type which can contain either real value
+    or <code>NULL</code> which is represented using <code>nullptr</code> in C++/CLI. Third example uses <code>Where</code>
+    method to filter only rows matching specified predicate (lambda expression). The result of this call is
+    also <code>CQuery</code> class, so we can easily concatenate multiple operations. In this example we append call to the
+    <code>First</code> method, which returns first row from the result set.</p>
+  
+  <h4>LINQ to SQL: Filtering &amp; projection</h4>
+  <p>Let's look at the more interesting sample that cover filtering (<code>Where</code> method) and projection
+    (<code>Select</code> method). The result of the query will be collection containing instances of custom class 
+    called <code>CustomerInfo</code>, so let's first look at this class:</p>
+<pre lang="c++">
+ref class CustomerInfo
+{
+  String^ _id;
+  String^ _name;
+
+public:
+  CustomerInfo([PropMap("ID")] String^ id, 
+      [PropMap("Name")] String^ name) { 
+    _id=id; _name=name; 
+  }
+  CustomerInfo() { }
+
+  property String^ ID { 
+    String^ get() { return _id; }
+    void set(String^ value) { _id = value; }
+  }
+
+  property String^ Name {
+    String^ get() { return _name; }
+    void set(String^ value) { _name = value; }
+  }
+};</pre>  
+  <p>The class has two properties (<code>ID</code> and <code>Name</code>), one parameter-less constructor and 
+    one constructor that needs further explanation. The constructor takes two parameters, which are used
+    to initialize both two fields of the class. There is also an attribute <code>PropMap</code> attached to 
+    every parameter, which describes how does the constructor initialize the properties of the class (for
+    example attribute <code>[PropMap("ID")]</code> attached to the <code>id</code> parameter means, that
+    the value of <code>ID</code> property will be set to value of the <code>id</code> parameter in the constructor. </p>
+    
+  <p>Why is this information important? First, it will not be used in the following query, but you could write a query that 
+    constructs collection of <code>CustomerInfo</code> objects and later filters this collection using the 
+    <code>Where</code> method. The whole query will be passed to LINQ for conversion to SQL and if you use the
+    <code>ID</code> property for the filtering, LINQ needs to know what the value that was assigned to this
+    property earlier is. For this reason, CLinq has <code>PropMap</code> attribute which maps property values to 
+    parameters passed to the constructor earlier. In C# 3.0 the behavior is a bit different, because you can use 
+    anonymous types and you don't need to pass values directly to the constructor.</p>    
+<pre lang="c++">
+// DB context &amp; variable.. 
+NorthwindData db(".. connection string ..");
+Expr&lt;Customers^&gt; cvar = Var&lt;Customers^&gt;("c");
+
+// Query: select some information about customers living
+//   in country whose name starts with the letter "U"
+CQuery&lt;CustomerInfo^&gt;^ q = db.QCustomers
+  -&gt;Where(clq::fun(cvar, cvar.Country.IndexOf("U") == 0))
+  -&gt;Select(clq::fun(cvar, clq::newobj&lt;CustomerInfo^&gt;(
+      cvar.CustomerID, cvar.ContactName + 
+      Expr&lt;String^&gt;(" from ") + cvar.Country)));
+
+// Print SQL command sent to SQL server
+Console::WriteLine("\nQuery:\n{0}\n\nResults:", 
+  q-&gt;Query-&gt;ToString());
+
+// Print returned rows
+for each(CustomerInfo^ c in q-&gt;Query)
+  Console::WriteLine(" * {0},  {1}", c-&gt;ID, c-&gt;Name);
+</pre>  
+  <p>This code is quite similar to the code that you usually write when working with LINQ in C# 3.0. 
+    In this sample we first create the database context and declare variable that will be used in the query.
+    The query itself takes <code>QCustomers</code> property (representing the Customers table in database),
+    than filters (<code>Where</code> method) customers from country starting with the letter "U" and finally, 
+    it performs projection (<code>Select</code> method) where it selects only information that we're
+    interested in and creates the <code>CustomerInfo</code> object.</p>
+  <p>The sample also prints the SQL command that will be generated from the query - LINQ returns the
+    SQL command if you call the <code>ToString</code> method on the <code>IQueryable</code> representing the query.
+    As I mentioned earlier, the underlying <code>IQueryable</code> of the <code>CQuery</code> class can be 
+    accessed using the <code>Query</code> property, so the code <code>q-&gt;Query-&gt;ToString()</code>
+    returns the SQL command. The last thing that the code does is that it executes the query and prints information
+    about all returned customers. The query is executed automatically when you start enumerating over the
+    collection, which is done in the <code>for each</code> statement.</p>
+  
+  <h4>LINQ to SQL: Joins &amp; tuples</h4>
+  <p>For the last example, I wrote very a more complex query. It first performs <code>GroupJoin</code> operation
+    on customers and orders, which means that it returns collection of tuples containing the customer and 
+    all her orders. After this join, it performs <code>Where</code> filtering and returns only customers
+    who have at least one order that will be shipped to USA (the customers are still kept together with
+    their orders). The last operation done by the query is projection where it generates string 
+    with the name of company and number of orders associated with it.</p>
+  
+  <p>This query also demonstrates a few more interesting things that we didn't need earlier. 
+    The example starts with two <code>typedef</code>s to make the code more readable. First just defines shortcut for the
+    collection of orders, but the second uses the <code>Tuple</code> class, which is part of CLinq and I didn't 
+    talk about it so far. <code>Tuple</code> is very simple generic class with two type parameters
+    which contains two properties (called <code>First</code> and <code>Second</code>) that have the type
+    determined by the type parameters. You can use this class if you want to return two different values
+    from projection or join without declaring your own class. </p>
+  <p>The query returns the <code>Tuple</code> type from the projection and later uses <code>Where</code>
+    operation to filter the customers. This reveals one advantage of using the predefined <code>Tuple</code>
+    class - the <code>co</code> variable whose type is the expression representing the tuple (<code>Expr&lt;Tuple&lt;&gt;^&gt;</code>) is 
+    passed as a parameter to lambda expression and in the lambda expression we can directly use its properties
+    (<code>First</code> and <code>Second</code>). Because we're manipulating with <strong>expressions</strong>, 
+    we're not working with the <code>Tuple</code> class directly, but we're working with template specialization
+    of the <code>Expr</code> class, in which the <code>Expr&lt;Tuple&lt;&gt;^&gt;</code> is expanded to 
+    contain these two properties.</p>
+  <p>I'll comment other interesting features used in this example later, so let's look at the query now:</p>
+<pre lang="c++">
+// First declare type for storing Customer and her Orders
+typedef IEnumerable&lt;Orders^&gt; OrdersCollection;
+typedef Tuple&lt;Customers^, OrdersCollection^&gt; CustomerOrders;
+
+// Connect to DB and declare variables
+NorthwindData db(".. connection string ..");
+Expr&lt;Customers^&gt; c = Var&lt;Customers^&gt;("c");
+Expr&lt;Orders^&gt; o = Var&lt;Orders^&gt;("o");
+Expr&lt;OrdersCollection^&gt; orders
+  = Var&lt;OrdersCollection^&gt;("orders");
+Expr&lt;CustomerOrders^&gt; co = Var&lt;CustomerOrders^&gt;("co");
+
+// The Query
+CQuery&lt;String^&gt;^ q = db.QCustomers
+  // Group customers and their orders and 
+  // produce collection of 'CustomerOrders'
+  -&gt;GroupJoin(db.QOrders,
+    clq::fun(c, c.CustomerID),
+    clq::fun(o, o.CustomerID),
+    clq::fun&lt;Customers^, OrdersCollection^, CustomerOrders^&gt;
+      ( c, orders, clq::newobj&lt;CustomerOrders^&gt;(c, orders) ))
+  // Filter only customers with order shipped to USA 
+  // Note: 'Second' is the collection with orders
+  -&gt;Where( clq::fun(co, co.Second.Where( 
+      clq::fun(o, o.ShipCountry == "USA" )).Count() &gt; 0) )
+  // Projection - string concatenation
+  -&gt;Select( clq::fun(co, co.First.CompanyName + Expr&lt;String^&gt;(", #orders = ") + 
+      Expr&lt;Convert^&gt;::ToString(co.Second.Count()) ) );</pre>
+			
+  <p>Let's focus on the <code>Where</code> clause. The lambda expression accepts expression of type <code>Tuple</code>,
+    which I explained earlier, as a parameter and it accesses its second value (<code>co.Second</code>). Type
+    of this parameter is expression representing collection (<code>Expr&lt;IEnumerable&lt;&gt;^&gt;</code>) -
+    this is another specialization of the <code>Expr&lt;&gt;</code> class and you can discover using the InteliSense that 
+    this class has a lot of methods for working with collections! These methods correspond to the methods
+    available in the <code>CQuery</code> class, but are designed for working with expressions representing queries, instead
+    of working with queries directly. In this example we use the <code>Where</code> method, which returns expression
+    representing query again and also the <code>Count</code> method.</p>
+  <p>Second class that wasn't mentioned earlier is <code>Expr&lt;Convert&gt;</code>, which is just another template
+    specialization similar to the <code>Expr&lt;Math&gt;</code> that contains several methods for type conversions. In this 
+    example we use the <code>ToString</code> method for converting number of orders to string.</p>
+  
+  <h2>Project summary</h2>
+  <p>Currently, the project is in very early phase, which means it needs more testing and also review from other people.
+    If you find any bugs or if you think that CLinq is missing some important LINQ functionality, let me know. The project currently 
+    uses May 2006 CTP version of LINQ, but it will be updated to support Visual Studio "Orcas", once more stable beta versions 
+    will be available. The project is available at <a href="http://www.codeplex.com/linqextensions">CodePlex</a>
+    [<a href="http://www.codeplex.com/linqextensions" target="_blank">^</a>] so you can download the latest version of 
+    the source code and binaries from the project site. Because I'm not C++/CLI expert I'm very interested in your comments
+    and suggestions and if you're willing to participate in the project, let me know!</p>
+  
+  <h2>Version &amp; updates</h2>  
+  <ul>
+    <li>(2<sup>nd</sup> March 2007) First preview version - using LINQ May 2006 CTP</li>
+  </ul>

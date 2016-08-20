@@ -1,0 +1,145 @@
+<!-- [info]
+
+ - date: 2007-02-15T21:46:45.0000000
+ - description: PHP doesn't support method overloading, so Phalanger has to solve an interesting problem when calling overloaded .NET method from PHP.
+ - tags: phalanger
+ - layout: post
+ - title: Overload resolution in Phalanger
+ - url: phalanger-overload-resolution.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>PHP language itself doesn't method support overloading (having two methods with same name, but different number or types of parameters).
+  This brings an interesting problem to Phalanger, because most of .NET languages support this and if we want to be able to call any .NET object
+  from PHP we need to add support (at least) for calling of overloaded methods. The latest Phalanger release contains overload resolution described
+  in the <em>Integrating PHP with CLR</em> document [<a href="#phpoverloadlnk">1</a>].</p>
+<p>For example, when calling the <code>Console::WriteLine</code> method (which has a lot of overloads), Phalanger dynamically generates 
+  a piece of code that we call dynamic stub, which is responsible for choosing the most appropriate overload depending on the actual
+  parameter types. This stub is generated only once for every method, which makes this implementation very efficient. The difficult part of 
+  overload resolution is, how can the stub determine what is the best overload? PHP language has a lot of implicit conversions, so 
+  when you pass the string <code>"10.2 Little Piggies"</code> to a method it can be implicitly converted to float (<code>10.2</code>) 
+  (For more details see [<a href="#phpoverloadlnk">2</a>]). Another example of implicit conversion is that any boolean value can be 
+  converted to string (empty string or string <code>"0"</code> are converted to <code>false</code>, every other string is converted 
+  to <code>true</code>).</p>  
+<p>In this article I'll describe how does the dynamic stub look like in current version of Phalanger, what problems can it cause and how are we going to fix it in the future version!</p>
+[/abstract] -->
+
+<h1>Overload resolution in Phalanger</h1>
+<p>PHP language itself doesn't method support overloading (having two methods with same name, but different number or types of parameters).
+  This brings an interesting problem to Phalanger, because most of .NET languages support this and if we want to be able to call any .NET object
+  from PHP we need to add support (at least) for calling of overloaded methods. The latest Phalanger release contains overload resolution described
+  in the <em>Integrating PHP with CLR</em> document [<a href="#phpoverloadlnk">1</a>].</p>
+<p>For example, when calling the <code>Console::WriteLine</code> method (which has a lot of overloads), Phalanger dynamically generates 
+  a piece of code that we call dynamic stub, which is responsible for choosing the most appropriate overload depending on the actual
+  parameter types. This stub is generated only once for every method, which makes this implementation very efficient. The difficult part of 
+  overload resolution is, how can the stub determine what is the best overload? PHP language has a lot of implicit conversions, so 
+  when you pass the string <code>"10.2 Little Piggies"</code> to a method it can be implicitly converted to float (<code>10.2</code>) 
+  (For more details see [<a href="#phpoverloadlnk">2</a>]). Another example of implicit conversion is that any boolean value can be 
+  converted to string (empty string or string <code>"0"</code> are converted to <code>false</code>, every other string is converted 
+  to <code>true</code>).</p>  
+  
+<h2>Stubs in Phalanger beta 3</h2>
+<p>Let's now look at the generated stubs in latest Phalanger releases. I was working on a demo to demonstrate Phalanger interoperability
+  some time ago and I was a bit surprised with the result of the following code:</p>
+<pre lang="php">
+Console::WriteLine("Hello world!");
+</pre>  
+<p>I was expecting that <code>"Hello world!"</code> will appear in the console window, but it didn't! Instead it just printed <code>"true"</code>.
+  The reason is that Phalanger used one of the implicit conversions described above and converted string to boolean. The generated stub first
+  uses parameter count to determine what overloads might be compatible and than generates something like the following code (in pseudo-C#) 
+  to choose the best overload (this is very simple situation, because method has only one parameter and no overload with <code>[Params]</code>
+  attribute is involved, but it explains the problem well):</p>
+<pre lang="csharp">
+// Stub that chooses between foo(string), foo(int) and foo(bool)
+object p = PopParameter();
+bool bval;
+int ival;
+string sval;
+
+if (Convert.ConvertToBool(p, out bval))
+  return foo(bval);
+if (Convert.ConvertToInt32(p, out ival))
+  return foo(ival);
+if (Convert.ConvertToString(p, out sval))
+  return foo(sval);
+throw new ConversionFailedException();  
+</pre>  
+<p>The conversion functions are called in some non-specified order, so in this case Phalanger first tries to convert parameter to bool.
+  The <code>ConvertToBool</code> function tries to perform all implicit conversions and when the parameter is string it converts it
+  to boolean and returns true, because it succeeded!</p>
+<h2>Stubs in the future</h2>
+<p>As I mentioned, PHP allows a lot of implicit conversions. The algorithm described above guarantees that it will convert parameters
+  using acceptable conversion, but it doesn't always call the method that you would expect. That's why we
+  decided to implement a bit more complex algorithm, which would prefer overloads that don't require any implicit conversions.
+  The stub generated using the new algorithm looks like this:</p>
+<pre lang="csharp">
+// Stub that chooses between foo(string), foo(int) and foo(bool)
+object p = PopParameter();
+// To store conversion result
+bool bval;
+int ival;
+string sval;
+
+// Temporary variables
+byte result;
+int bestIndex;
+byte bestResult = Byte.MaxValue;
+
+// Perform conversions to specific types
+result = Convert.ConvertToBool(p, out bval);
+// Set the best overload index 
+// (if result is better then result of previous conversions) 
+if (result &lt; bestResult) 
+  { bestResult = result; bestIndex = 0; }
+// If this is the best match (no implicit conversion) 
+// skip the rest of conversions and call the overload
+if (result == BestConversion) 
+  goto call;  
+
+// Same as previous..
+result = Convert.ConvertToInt32(p, out ival);
+if (result &lt; bestResult) 
+  { bestResult = result; bestIndex = 1; }
+if (result == BestConversion) 
+  goto call;
+
+// Same as previous..
+result = Convert.ConvertToString(p, out sval);
+if (result &lt; bestResult) 
+  { bestResult = result; bestIndex = 2; }
+if (result == BestConversion) 
+  goto call;
+
+// No overload is appropriate
+if (bestResult == FailedConversion) 
+  throw new ConversionFailedException();  
+
+// Call the best overload
+call:;
+switch(bestIndex)
+{
+  case 0: return foo(bval);
+  case 1: return foo(ival);
+  case 2: return foo(sval);
+}
+</pre>  
+<p>In this code we use slightly modified version of <code>ConvertToXxx</code> methods. Instead of returning boolean value (whether conversion
+  succeeded or not) it returns integral value that express how "good" was the conversion. For example if you pass value of type <code>integer</code>
+  to the <code>ConvertToInt32</code> method, it returns the <code>BestConversion</code> constant, which is the least possible value. If you 
+  pass <code>"10 little pigs"</code> string to the conversion method it successfully converts the parameter to integer, but returns higher value,
+  so if there is an overload that accepts string as a parameter, it is preferred.</p>
+<p>There are a lot of important details that I didn't write about, as well as interesting problems (for example when method has more parameters,
+  some parameters are marked with the <code>[Params]</code> attribute, etc..), but I hope that this article helps you if you're interested
+  in overload resolution algorithm in Phalanger. If you want to know more, leave me a note in the comments!</p>
+
+<h2>Performance note</h2>
+<p>Performance is very important in this area, because it affects every code that uses .NET classes in Phalanger.
+  If you look at the stub code, you can see that after every conversion, Phalanger checks the return value and when it  
+  equals <code>BestConversion</code>, the stub skips all remaining conversions and calls the best overload immediately.
+  Thanks to this optimization the stub is as efficient as in the earlier Phalanger version in most of the situations.</p>  
+  
+<h2>References <a name="phpoverloadlnk"></a></h2>
+<ul>
+  <li>[1] <a href="http://www.php-compiler.net/lib/exe/fetch.php?media=integrating_php_with_clr.pdf">Phalanger: Integrating PHP with CLR</a> [<a href="http://www.php-compiler.net/lib/exe/fetch.php?media=integrating_php_with_clr.pdf" target="_blank">^</a>] - Ladislav Prosek, Tomas Matousek</li>
+  <li>[2] <a href="http://www.php.net/manual/en/language.types.string.php">PHP: Strings</a> [<a href="http://www.php.net/manual/en/language.types.string.php" target="_blank">^</a>] - PHP Manual</li>
+</ul>

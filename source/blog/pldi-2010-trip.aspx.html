@@ -1,0 +1,193 @@
+<!-- [info]
+
+ - date: 2010-07-05T23:23:02.0000000
+ - description: In June, I attended PLDI 2010, which is one of the big \"programming language\" conferences. I presented a paper based on some work that I did during my internship at MSR at one of the workshops and I also attended many interesting talks...
+ - tags: universe,academic,meta-programming
+ - layout: post
+ - title: PLDI 2010 Trip Report
+ - url: pldi-2010-trip.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In June, I attended my first "big" academic conference <a href="http://cs.stanford.edu/pldi10" type="external">Programming 
+  Languages Design and Implementation (PLDI 2010)</a> in Toronto. I attended the conference, because
+  I presented a paper that I wrote with Don Syme as a result of my internship at Microsoft Research, but
+  I'll write more about that shortly (and thanks to MSR for partly supporting my attendance at the conference!)</p>
+  
+<p>As far as I understand it, the 
+  focus of the conference is more on <em>implementation</em>. Many people believe that the current 
+  programming languages are good enough and we need to make sure that they run well (e.g. compilers 
+  optimize code to run better on multi-core) and that we need better tools for working with them 
+  (e.g. automatic verification of the code we write), so these areas were the main focus of the
+  conference. However, there were some very interesting talks on the <em>design</em> of programming 
+  languages, which is an area that I personally find more interesting...
+</p>
+[/abstract] -->
+
+<h1>PLDI 2010 Trip Report</h1>
+<p>In June, I attended my first "big" academic conference <a href="http://cs.stanford.edu/pldi10" type="external">Programming 
+  Languages Design and Implementation (PLDI 2010)</a> in Toronto. I attended the conference, because
+  I presented a paper that I wrote with Don Syme as a result of my internship at Microsoft Research, but
+  I'll write more about that shortly (and thanks to MSR for partly supporting my attendance at the conference!)</p>
+  
+<p>As far as I understand it, the 
+  focus of the conference is more on <em>implementation</em>. Many people believe that the current 
+  programming languages are good enough and we need to make sure that they run well (e.g. compilers 
+  optimize code to run better on multi-core) and that we need better tools for working with them 
+  (e.g. automatic verification of the code we write), so these areas were the main focus of the
+  conference. However, there were some very interesting talks on the <em>design</em> of programming 
+  languages, which is an area that I personally find more interesting...
+</p>
+
+<h2>Garbage Collection in Reactive Scenario</h2>
+<p>I presented a paper named <strong>Collecting Hollywood’s Garbage: Avoiding Space-Leaks in 
+  Composite Events</strong> at the <a href="http://www.cs.purdue.edu/ISMM10/">International Symposium
+  on Memory Management (ISMM 2010)</a>, which is a workshop co-located with the main conference.
+  The symposium focuses on various theoretical problems of garbage collection, real-time garbage
+  collection as well as efficient (and concurrent) implementations of GC algorithms.</p>
+  
+<p>My work was somewhat more general and I tried to point out that the usual garbage collection 
+  techniques do not work well in some scenarios - in particular in <em>reactive programming</em>.
+  This is an observation that many WPF developers already know. This is a reason why we have 
+  so-called <a type="external" href="http://msdn.microsoft.com/en-us/library/aa970850.aspx">Weak Event pattern</a>.
+  However, the motivation for my talk was different (arising from the use of F# event combinators
+  such as <code>Event.map</code>) and perhaps more fundamental. Here is a brief summary of my talk:</p>
+
+<p style="margin-left:3em; margin-right:3em; font-style:italic;">If we mix the declarative 
+  and imperative programming style, which is usual in languages like F# it becomes easy to 
+  introduce patterns where the usual garbage collector for objects cannot automatically
+  dispose all components that we intuitively consider garbage. We present a duality between 
+  the definitions of garbage for objects and events. In particular, an <em>object</em> is
+  <em>garbage</em> if it cannot be reached from any root objects, but an <em>event</em> is
+  <em>garbage</em> if it doesn't lead to any leaf event that causes some imperative action
+  (in .NET terminology, has an event handler attached). We combine the two dual notions
+  into a single definition that can be used for collecting garbage in a reactive programming
+  model in a mixed functional/imperative language. We present a garbage collection
+  algorithm for this mixed theoretical model and, more importantly, we use the principle
+  to implement a correct reactive library for F#.</p>
+
+<p>After the talk, Dave Detlefs (who works in the CLR team at Microsoft) asked a very interesting
+  question - How do we identify what is an "event" and what is an "object" in the runtime? In my
+  theoretical model, these two are explicitly separated, but in a real-world (e.g. .NET) they would 
+  both be some kind of objects. One interesting point about "event" is that it can only trigger 
+  other events, but never receives any value back from them. This means that "event" should only
+  call methods that return <code>void</code>. However, this is an interesting problem that deserves
+  further research...</p>
+
+<h3>More information</h3>
+<p>For more information about my work, you can read the full paper and look at the slides from the ISMM workshop:</p>
+<ul>
+  <li><a href="http://tomasp.net/academic/event-chains/event-chains.pdf">Full text of the paper (PDF)</a> (with Don Syme) - with all appendices</li>
+  <li>Slides from the talk (<a href="http://tomasp.net/academic/event-chains/ismm.pptx">PPTX</a>, <a href="http://tomasp.net/academic/event-chains/ismm.pdf">PDF</a> format)</li>
+</ul>
+
+<h2>Interesting talks from PLDI</h2>
+<p>The main conference contained a large number of interesting talks. Here is a brief summary
+  of the talks that I found particularly interesting - mostly because they are in some ways related
+  to my interests (such as F#, functional programming and web programming): </p>
+
+<h3>Safe Programmable Speculative Parallelism</h3> 
+<p style="font-style:italic">(P. Prabhu, G. Ramalingam, K. Vaswani)</p>
+<p>If we have a <code>for</code> loop where every iteration is independent of all other 
+  iterations (e.g. do not rely on some state calculated by previous iterations), we can 
+  easily parallelize the loop, for example, by creating a new task for every iteration.
+  Unfortunately, this isn't always possible as many loops keep some state. <em>Speculative
+  parallelism</em> provides a way for solving this - we specify a <em>prediction function</em>
+  that attempts to guess the next state (without consuming much resources), so that we can
+  run the next iteration in parallel. If the guess was correct, we calculated multiple 
+  values in parallel. If no, we need to recalculate the values that depend on the current 
+  result. The paper presents a static verification algorithm that checks whether the "recalculation"
+  needs to rollback some side-effects (which would be impossible). The authors also presented 
+  a C# library, which allows us to write something like this:</p>
+<pre lang="csharp">
+Speculation.Iterate(0, numTasks,
+  (i, state) =&gt; {
+    // Body of the stateful loop 
+    // - calculate new state based on current 'state' and index 'i'
+  }, (i) =&gt;
+    // Prediction function
+    // - calculate new state without knowing the current 'state'
+  });
+</pre>
+<p>This raises some interesting problems for F# as well. It turns out that encoding this
+  style of computations using <em>computation expressions</em> isn't easy, because we need to
+  write two functions for every step (while <em>computation expressions</em> or <em>monads</em>
+  use only a single continuation). If you know about similar types of computations where
+  we need two (or more) functions, I would be quite interested in hearing about them!</p>
+
+<h3>Ur: Statically-Typed Metaprogramming with Type-Level Record Computation</h3>
+<p style="font-style:italic">(A. Chlipala)</p>
+<p>This talk caught my interest because it discussed a language for web programming 
+  that appeared to be quite related to what I did some time ago in my <a href="http://tomasp.net/projects/fswebtools.aspx">F# Web Tools</a>
+  (and indeed, also related to the work by the Links team in Edinburgh). The key topic of the
+  presented paper was a bit different though. The language has a type-system where a type
+  can depend on some computation (<em>dependent types</em>) and focuses on programming with
+  record types and names (which is a very natural way to map SQL databases to a functional
+  language). Some interesting uses of this technique include:</p>
+<ul>
+  <li><strong>Versioning</strong> - we can write a (type-safe) reusable function that translates an 
+    old version of (any) table to a new version given a few properties (such as name of the
+    primary key and names of new columns).</li>
+  <li><strong>Grids</strong> - we can write a reusable function that generates grid for viewing and
+    editing data and takes the type of the table as parameter.</li>
+</ul>
+<p>This is something that is possible in F#/.NET only using dynamic reflection that analyzes values
+  and types at runtime. Dependent types make it possible to write this kind of generic code more 
+  directly (and in a type-safe way).</p>
+
+<h3>Complete Functional Synthesis</h3>
+<p style="font-style:italic">(V. Kuncak, M. Mayer, R. Piskac, P. Suter)</p>
+<p>The authors present an extension of the Scala language that allows us to write a 
+  <em>specification</em> of value (typicaly a number) that we want to get as the result 
+  and automatically constructs (<em>synthetizes</em>) code to calculate the number. The
+  specification is simply a Boolean expression that specifies what properties should hold
+  about the value. For example, say we have a value <code>totsec</code> specifying
+  a total number of seconds and we want to convert it to the <code>hh:mm::ss</code> format. Using the
+  new <code>choose</code> construct, we can write:</p>
+<pre>
+val (hours, minutes, seconds) = 
+  choose((h: Int, m: Int, s: Int) =&gt;
+    h * 3600 + m * 60 + s == totsec &amp;&amp;
+    0 &lt;= m &amp;&amp; m &lt;= 60 &amp;&amp;
+    0 &lt;= s &amp;&amp; s &lt;= 60 &amp;&amp;
+    0 &lt;= h)</pre>
+<p>This is a bit like generalized pattern matching that makes the language even more 
+  declarative. The compiler is smart enough to know whether it can always find a single 
+  unique solution to the specification - if that's the case it emits a warning (because
+  we want to avoid introducing non-determinism to our code). This is certainly an 
+  interesting extension and I can easily imagine using it in F# (where it could be probably
+  quite nicely implemented using quotations...)</p>
+
+<h3>Traceable Data Types for Self-Adjusting Computation</h3>
+<p style="font-style:italic">(Umut A. Acar et al.)</p>
+<p>The paper presents an easy and efficient way of writing <em>self-adjusting</em> computations
+  in a ML-like language. To example what that means, here is a quote from the abstract: <em>"Self-adjusting 
+  computation provides an evaluation model where computations can respond automatically to 
+  modifications to their data by using a mechanism for propagating modifications through
+  the computation."</em> This means that we create some functional data-structure (e.g. queue) or
+  perform some computation (e.g. heapsort) that uses some input data. When the input data change,
+  we would typically need to remove some elements to recover the data-structure (sort the list again
+  or rebuild the queue).</p>
+
+<p>When using <em>self-adjusting computations</em>, the compiler 
+  automatically keeps track of how the data structure was created and performs the necessary 
+  updates. It would re-run the part of the computation (used to construct the data-structure) that
+  is different than in the original run. This seems like an interesting technique that could
+  be used for writing some efficient functional data-structures...</p>
+
+<h2>Programming Languages for Web (APLWACA)</h2>
+<p>Another event that was held as part of the PLDI conference was the 
+  <a href="http://research.microsoft.com/en-us/um/redmond/events/APLWACA2010/default.html">APLWACA</a>
+  workshop (the long acronym includes keywords like <em>programming languages</em>, <em>cloud</em> and also <em>web</em>).
+  The workshop was organized for the first time and was very interesting (it is unfortunate that
+  something like this didn't exist a few years ago, because it would be a perfect venue for my
+  <a href="http://tomasp.net/fswebtools/files/fswebtoolkit-ml.pdf">draft paper about F# Web Tools</a>, which was
+  never published anywhere). Anyway, it is great to know that there is a place for meeting people
+  interested  in this kind of topics from an academic perspective!
+  I'm surely planning to submit something next year (if it will be held again - and I hope it will)</p>
+
+<p>Some of the topics discussed at the workshop this year included security of JavaScript
+  (which is a tricky topic if you want to forbid third-party code to use some features of JavaScript
+  such as <code>XmlHttpRequest</code>, but is very important for sites like Facebook). Another
+  topic that caught my attention was a discussion of the semantics of the <a href="http://hop.inria.fr/" type="external">HOP language</a>,
+  which is a language for programming interactive client/server web applications.</p>

@@ -1,0 +1,472 @@
+<!-- [info]
+
+ - date: 2010-10-29T04:34:51.0000000
+ - description: One of the exciting new technologies announced at PDC 2010 is a preview of asynchronous programming support for C#. In this article, I briefly introduce the new features and I demonstrate how they relate to F# asynchronous workflows already available in Visual Studio 2010. We'll also look at some differences between the two.
+ - tags: c#,asynchronous,f#
+ - layout: post
+ - title: Asynchronous C# and F# (I.): Simultaneous introduction
+ - url: csharp-fsharp-async-intro.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/csharp-fsharp-async-intro/pdc2010.png" style="float:right;margin:5px;margin-left:20px;" />
+<p>One of the exciting new technologies that was announced at <a href="http://www.microsoftpdc.com/">PDC 2010</a>
+  is the support for <em>asynchronous programming</em> in C#. So what exactly is <em>asynchronous programming</em>?
+  Many applications today need to connect to some service or external data source including, for example, 
+  Web Services and REST APIs. This calls may take a long time to run, but we want to run them without
+  blocking the application.</p>
+
+<p>Currently, you can run the operation on a background thread or using a <code>Task</code>, but
+  coordinating multiple such operations is difficult. What if you for example need to wait until
+  any (or all) of downloads complete and run some more code then? This is not only difficult, but
+  it also scales badly, because blocking .NET threads is a bad practice (Threads are expensive and when
+  they're just waiting for other operation to complete, we're wasting valuable resources).
+  This problem has been the main motivation for including <em>asynchronous workflows</em> in F#
+  about 3 years ago. In F#, this also enabled various interesting programming styles - for example
+  <a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx" type="external">creating 
+  GUI using asynchronous workflows</a> (also discussed in Chapter 16 of <a href="http://manning.com/petricek">my book</a> and in 
+  in <a href="http://tomasp.net/blog/reactive-talk.aspx">my recent talk</a>). The C# asynchronous 
+  programming support and the <code>await</code> keyword is largely inspired by
+  F# <em>asynchronous workflows</em> (I was quite surprised that F# wasn't more visibly 
+  mentioned in the PDC talk).
+</p>
+
+<p>In this article series, I'll demonstrate both F# and C# asynchronous programming model,
+  I'll look at features that are missing in one or the other as well as a few subtle differences
+  (that may be unexpected) and finally, I'll write about writing (asynchronous) F# libraries 
+  that are easy to use from C#. The plan for the series is following:</p>
+<ul>
+  <li><strong>Asynchronous C# and F# (I.): Simultaneous introduction</strong></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><a href="http://tomasp.net/blog/async-compilation-internals.aspx">Asynchronous C# and F# (III.): How does it work?</a></li>  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+<p>Let's start with a brief overview of asynchronous programming features in C# and F#...</p>
+[/abstract] -->
+
+<h1>Asynchronous C# and F# (I.): Simultaneous introduction</h1>
+<img src="http://tomasp.net/articles/csharp-fsharp-async-intro/pdc2010.png" style="float:right;margin:5px;margin-left:20px;" />
+<p>One of the exciting new technologies that was announced at <a href="http://www.microsoftpdc.com/">PDC 2010</a>
+  is the support for <em>asynchronous programming</em> in C#. So what exactly is <em>asynchronous programming</em>?
+  Many applications today need to connect to some service or external data source including, for example, 
+  Web Services and REST APIs. This calls may take a long time to run, but we want to run them without
+  blocking the application.</p>
+
+<p>Currently, you can run the operation on a background thread or using a <code>Task</code>, but
+  coordinating multiple such operations is difficult. What if you for example need to wait until
+  any (or all) of downloads complete and run some more code then? This is not only difficult, but
+  it also scales badly, because blocking .NET threads is a bad practice (Threads are expensive and when
+  they're just waiting for other operation to complete, we're wasting valuable resources).
+  This problem has been the main motivation for including <em>asynchronous workflows</em> in F#
+  about 3 years ago. In F#, this also enabled various interesting programming styles - for example
+  <a href="http://dotnetslackers.com/articles/net/Programming-user-interfaces-using-f-sharp-workflows.aspx" type="external">creating 
+  GUI using asynchronous workflows</a> (also discussed in Chapter 16 of <a href="http://manning.com/petricek">my book</a> and in 
+  in <a href="http://tomasp.net/blog/reactive-talk.aspx">my recent talk</a>). The C# asynchronous 
+  programming support and the <code>await</code> keyword is largely inspired by
+  F# <em>asynchronous workflows</em> (I was quite surprised that F# wasn't more visibly 
+  mentioned in the PDC talk).
+</p>
+
+<p>In this article series, I'll demonstrate both F# and C# asynchronous programming model,
+  I'll look at features that are missing in one or the other as well as a few subtle differences
+  (that may be unexpected) and finally, I'll write about writing (asynchronous) F# libraries 
+  that are easy to use from C#. The plan for the series is following:</p>
+<ul>
+  <li><strong>Asynchronous C# and F# (I.): Simultaneous introduction</strong></li>
+  <li><a href="http://tomasp.net/blog/async-csharp-differences.aspx">Asynchronous C# and F# (II.): How do they differ?</a></li>
+  <li><a href="http://tomasp.net/blog/async-compilation-internals.aspx">Asynchronous C# and F# (III.): How does it work?</a></li>  <li>Asynchronous C# and F# (IV.): Calling F# libraries from C# <em>(not yet available)</em></li>
+</ul>  
+<p>Let's start with a brief overview of asynchronous programming features in C# and F#...</p>
+
+<h2>Introducing C# await construct</h2>
+<p>Perhaps the best example to demonstrate asynchronous programming on .NET is implementing a method
+  to download the content of a web page. In practice, this can be done easily using <code>WebClient</code>,
+  but it works well as a demo. In the implementation, we need to get HTTP response and then 
+  read data from the stream repeatedly in a loop into a buffer.</p>
+
+<p>Writing the code using <code>BeginGetResponse</code> and <code>BeginRead</code> methods is
+  quite difficult. We can pass lambda function as an argument, but there isn't an easy way of
+  implementing the looping. The problem is that the iteration is started in one scope,
+  but continues in a different scope (the body of the lambda). As a result, we cannot use 
+  any standard control-flow constructs such as <code>while</code>, <code>for</code> but also
+  <code>try</code> ... <code>catch</code>.</p>
+
+<h3>Downloading page asynchronously</h3>
+
+<p>If the feature makes it into C# 5.0 (which I would expect) then we'll be able to write the same 
+  thing more easily using the <code>await</code>
+  construct. The following snippet shows the initialization of the HTTP request - we'll
+  discuss the actual downloading in the next snippet.</p>
+
+<pre lang="csharp">
+async Task&lt;Tuple&lt;string, int&gt;&gt; DownloadPage(string url) {
+  // Create web request to download a web site
+  var request = HttpWebRequest.Create(url);
+  // Asynchronously obtain the HTTP response
+  using (var response = await request.GetResponseAsync()) {
+    // Start reading the response stream
+    using (var stream = response.GetResponseStream()) {
+      // TODO: Asynchronously copy content of the stream
+      // TODO: Read 'html' content and extract 'title'
+      return Tuple.Create(title, html.Length);
+    }
+  }
+}
+</pre>
+<p>The method creates a web request and then obtains a HTTP response from the server.
+  It uses the usual <code>using</code> statement to ensure that all created 
+  objects will be disposed. At the first look, it looks like a completely ordinary
+  C# method, but it is not. There are two important differences:</p>
+
+<ul>
+  <li style="margin-bottom:10px"><strong>The <code>async</code> keyword and <code>Task</code> return type</strong> - the return type of the method
+    is <code>Task&lt;Tuple&lt;string, int&gt;&gt;</code>, but there is no task created
+    anywhere in the method. It just creates a tuple and returns it using the 
+    <code>return</code> statement. This would look like an error, but the method 
+    is also marked with <code>async</code> keyword.</li>
+
+  <li><strong>The <code>await</code> keyword</strong> - when getting the response in the 
+    second <code>using</code> statement, we use the new keyword <code>await</code> and
+    we call an asynchronous variant of the method named <code>GetResponseAsync</code>.</li>
+</ul>
+
+<p>The two changes above turn a usual method into an <em>asynchronous method</em>. 
+  When called, the asynchronous method starts running, but returns a task before it completes.
+  The caller can then do some other work before waiting for the result of the call. 
+  The waiting is done using the new <code>await</code> construct. The construct can appear
+  almost anywhere in an expression and we can use it to obtain the result of a <code>Task&lt;T&gt;</code> 
+  or to wait until <code>Task</code> completes.</p>
+
+<h3 style="font-variant:small-caps; margin:15px 50px 3px 50px">Blocking and non-blocking waiting</h3>
+<p style="margin:0px 50px 15px 50px">There is an important difference between writing <code>task.Result</code> and <code>await task</code>.
+  In the first case, the <code>Result</code> property simply blocks the thread until the 
+  task completes and produces result. On the other hand, the <code>await</code> construct
+  is handled in a special way by the C# compiler. The compiler translates the method into a 
+  state machine and replaces all uses of <code>await</code> with code that sets a <em>continuation</em>
+  of a task and returns. A continuation is simply a function that will be called when the
+  task completes and will continue running the body of the method. This requires quite a bit
+  of reorganization in the body of the method and it is not something that can be easily done by
+  hand. The key point is that using <code>await</code> will not block any thread. </p>
+
+<p>Let's now look at the second snippet. It shows a loop that asynchronously downloads
+  the page content using 1kB buffer. When it completes, it extracts
+  title of the page and returns it together with the length of the page:</p>
+
+<pre lang="csharp">
+// Regular expression for extracting page title
+Regex regTitle = new Regex(@@"\&lt;title\&gt;([^\&lt;]+)\&lt;/title\&gt;");
+
+// Create a buffer and stream to copy data to
+var buffer = new byte[1024];
+var temp = new MemoryStream();
+int count;
+do {
+  // Asynchronously read next 1kB of data
+  count = await stream.ReadAsync(buffer, 0, buffer.Length);
+  // Write data to memory stream
+  temp.Write(buffer, 0, count);
+} while (count &gt; 0);
+
+// Read data as string and find page title
+temp.Seek(0, SeekOrigin.Begin);
+var html = new StreamReader(temp).ReadToEnd();
+var title = regTitle.Match(html).Groups[1].Value;
+return Tuple.Create(title, html.Length);
+</pre>
+
+<p>Again, this looks like a completely normal C# code with a loop inside.
+  The interesting thing is that we use <code>await</code> inside the loop to 
+  implement asynchronous waiting. We start by initializing the buffer and 
+  a memory stream where we copy the downloaded data. Inside the loop, we start
+  reading from the HTTP stream into a 1kB buffer. This may take some time, so 
+  we use asynchronous version of the operation <code>ReadAsync</code>, which
+  returns <code>Task&lt;int&gt;</code>.</p>
+
+<p>When the reading completes, the system calls a callback that we provided and the callback runs a
+  continuation generated by the C# compiler. The continuation runs the rest of the loop body,
+  checks the condition and then jumps either to the start of the loop (again) or to the code
+  after the loop.</p>
+
+<h3>Starting asynchronous operations</h3>
+<p>Let's now look how we can run the method for a couple of URLs in parallel and 
+  collect all the results. The C# language doesn't provide any direct <em>language</em>
+  support for doing that, but we can easily do that using a library. The library that is
+  distributed with the C# preview contains a class <code>TaskEx</code> (I guess it would be 
+  merged with standard <code>Task</code> class in a new .NET). The task has a very useful
+  method named <code>WhenAll</code>:</p>
+
+<pre lang="csharp">
+async static Task ComparePages() {
+  var urls = new[] { "http://www.google.com",
+    "http://www.bing.com", "http://www.yahoo.com", };
+  var downloads = urls.Select(DownloadPage);
+  var results = await TaskEx.WhenAll(downloads);
+  foreach (var item in results)
+    Console.WriteLine("{0} (length {1})", item.Item1, item.Item2);
+}
+static void Main() {
+  ComparePages().Wait();
+}
+</pre>
+<p>The <code>WhenAll</code> method (corresponding to <code>Async.Parallel</code> in F#) takes 
+  a collection of <code>Task&lt;T&gt;</code> objects and creates a single task that waits until
+  all the tasks given as an argument complete and returns the results in an array. The return type
+  of the method is <code>Task&lt;T[]&gt;</code>. In the code snippet above, we just create a list
+  of URLs and use the <code>Select</code> method to call <code>DownloadPage</code> for every
+  URL. The result is an array of tasks that are downloading the specified web pages.</p>
+<p>Next, we use the <code>await</code> keyword again to wait until the aggregating task completes
+  (meaning that all downloads have completed). As a result, we get an array that contains
+  tuples returned by <code>DownloadPage</code>, so we can simply iterate over the values in the
+  array and print the title of the page with the total size in bytes.</p>
+<p>The method <code>ComparePages</code> is again implemented as an asynchronous method
+  (meaning that it is marked with <code>async</code> and returns <code>Task</code>). It doesn't
+  return any result, but it runs in the background and eventually completes and prints the results.
+  Since <code>Main</code> cannot be asynchronous, we cannot call it using <code>await</code>, but
+  we can use the standard <code>Wait</code> method of the <code>Task</code> type to block the
+  program until the operation finishes. It is worth noting that when we call <code>ComparePages</code>,
+  the operation already starts downloading the web pages, so if your application needs to do
+  something else, you can just call the method and discard the returned <code>Task</code> object.</p>
+
+<h3 style="font-variant:small-caps; margin:15px 50px 3px 50px">Why do we need asynchronous programming?</h3>
+<p style="margin:0px 50px 15px 50px">You may be wondering why we need asynchronous programming
+  in the previous example at all. Why can't we just create three threads and run every operation
+  on a separate thread. If we did that, an operation would occupy the thread for the entire time
+  needed to download the page. On the other hand, with asynchronous support, a thread is needed only
+  to run the processing code. An operation called using <code>await</code> is handled by the system
+  and it will resume the code (and start using some thread) only after it completes. This means
+  that when using asynchronous model, the above code could easily run just on a single thread, even
+  when downloading larger number of pages such as 50.</p>
+
+<h2>Using F# asynchronous workflows</h2>
+<p>Let's now look at the same problem implemented in F#. Asynchronous programming support is
+  not built directly into the F# language. It is implemented using <em>computation expressions</em>,
+  which is a general purpose feature for writing computations with some <em>non-standard</em>
+  aspect. In F#, the same language feature can be used for sequence expressions (similar to 
+  iterators and <code>yield return</code>) and <em>asynchronous workflows</em>.</p>
+
+<h3>Downloading page asynchronously</h3>
+<p>The .NET methods used and the control flow of the F# version is exactly the same. 
+  The main difference is that I'm using a recursive function instead of <code>while</code>
+  to implement the looping, but that's just a personal preference. I wanted to show an idiomatic
+  functional solution (instead of an imperative <code>while</code> loop), but you can
+  use the <code>while</code> loop in F# just fine.</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fsast1', 1)" onmouseover="showTip(event, 'fsast1', 1)" class="i">regTitle</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fsast2', 2)" onmouseover="showTip(event, 'fsast2', 2)" class="i">Regex</span>(<span class="s">@@&quot;</span><span class="s">\</span><span class="s">&lt;</span><span class="s">title</span><span class="s">\</span><span class="s">&gt;</span><span class="s">(</span><span class="s">[</span><span class="s">^</span><span class="s">\</span><span class="s">&lt;</span><span class="s">]</span><span class="s">+</span><span class="s">)</span><span class="s">\</span><span class="s">&lt;</span><span class="s">/</span><span class="s">title</span><span class="s">\</span><span class="s">&gt;</span><span class="s">&quot;</span>)
+<span class="l"> 2: </span>
+<span class="l"> 3: </span><span class="c">///</span><span class="c"> </span><span class="c">Asynchronously</span><span class="c"> </span><span class="c">downloads</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">web</span><span class="c"> </span><span class="c">page</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">returns</span><span class="c"> </span>
+<span class="l"> 4: </span><span class="c">///</span><span class="c"> </span><span class="c">title</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">page</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">size</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">bytes</span>
+<span class="l"> 5: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fsast3', 3)" onmouseover="showTip(event, 'fsast3', 3)" class="i">downloadPage</span>(<span onmouseout="hideTip(event, 'fsast4', 4)" onmouseover="showTip(event, 'fsast4', 4)" class="i">url</span><span class="o">:</span><span onmouseout="hideTip(event, 'fsast5', 5)" onmouseover="showTip(event, 'fsast5', 5)" class="i">string</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast6', 6)" onmouseover="showTip(event, 'fsast6', 6)" class="i">async</span> {
+<span class="l"> 6: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fsast7', 7)" onmouseover="showTip(event, 'fsast7', 7)" class="i">request</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast8', 8)" onmouseover="showTip(event, 'fsast8', 8)" class="i">HttpWebRequest</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast9', 9)" onmouseover="showTip(event, 'fsast9', 9)" class="i">Create</span>(<span onmouseout="hideTip(event, 'fsast4', 10)" onmouseover="showTip(event, 'fsast4', 10)" class="i">url</span>)
+<span class="l"> 7: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Asynchronously</span><span class="c"> </span><span class="c">get</span><span class="c"> </span><span class="c">response</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">dispose</span><span class="c"> </span><span class="c">it</span><span class="c"> </span><span class="c">when</span><span class="c"> </span><span class="c">we're</span><span class="c"> </span><span class="c">done</span>
+<span class="l"> 8: </span>  <span class="k">use!</span> <span onmouseout="hideTip(event, 'fsast10', 11)" onmouseover="showTip(event, 'fsast10', 11)" class="i">response</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast7', 12)" onmouseover="showTip(event, 'fsast7', 12)" class="i">request</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast11', 13)" onmouseover="showTip(event, 'fsast11', 13)" class="i">AsyncGetResponse</span>()
+<span class="l"> 9: </span>  <span class="k">use</span> <span onmouseout="hideTip(event, 'fsast12', 14)" onmouseover="showTip(event, 'fsast12', 14)" class="i">stream</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast10', 15)" onmouseover="showTip(event, 'fsast10', 15)" class="i">response</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast13', 16)" onmouseover="showTip(event, 'fsast13', 16)" class="i">GetResponseStream</span>()
+<span class="l">10: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fsast14', 17)" onmouseover="showTip(event, 'fsast14', 17)" class="i">temp</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fsast15', 18)" onmouseover="showTip(event, 'fsast15', 18)" class="i">MemoryStream</span>()
+<span class="l">11: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fsast16', 19)" onmouseover="showTip(event, 'fsast16', 19)" class="i">buffer</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast17', 20)" onmouseover="showTip(event, 'fsast17', 20)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast18', 21)" onmouseover="showTip(event, 'fsast18', 21)" class="i">zeroCreate</span> <span class="n">4096</span>
+<span class="l">12: </span>
+<span class="l">13: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Loop</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">downloads</span><span class="c"> </span><span class="c">page</span><span class="c"> </span><span class="c">into</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">buffer</span><span class="c"> </span><span class="c">(could</span><span class="c"> </span><span class="c">use</span><span class="c"> </span><span class="c">'while'</span><span class="c"> </span>
+<span class="l">14: </span>  <span class="c">//</span><span class="c"> </span><span class="c">but</span><span class="c"> </span><span class="c">recursion</span><span class="c"> </span><span class="c">is</span><span class="c"> </span><span class="c">more</span><span class="c"> </span><span class="c">typical</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">functional</span><span class="c"> </span><span class="c">language)</span>
+<span class="l">15: </span>  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fsast19', 22)" onmouseover="showTip(event, 'fsast19', 22)" class="i">download</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast6', 23)" onmouseover="showTip(event, 'fsast6', 23)" class="i">async</span> { 
+<span class="l">16: </span>    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fsast20', 24)" onmouseover="showTip(event, 'fsast20', 24)" class="i">count</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast12', 25)" onmouseover="showTip(event, 'fsast12', 25)" class="i">stream</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast21', 26)" onmouseover="showTip(event, 'fsast21', 26)" class="i">AsyncRead</span>(<span onmouseout="hideTip(event, 'fsast16', 27)" onmouseover="showTip(event, 'fsast16', 27)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fsast16', 28)" onmouseover="showTip(event, 'fsast16', 28)" class="i">buffer</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast22', 29)" onmouseover="showTip(event, 'fsast22', 29)" class="i">Length</span>)
+<span class="l">17: </span>    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fsast14', 30)" onmouseover="showTip(event, 'fsast14', 30)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast23', 31)" onmouseover="showTip(event, 'fsast23', 31)" class="i">AsyncWrite</span>(<span onmouseout="hideTip(event, 'fsast16', 32)" onmouseover="showTip(event, 'fsast16', 32)" class="i">buffer</span>, <span class="n">0</span>, <span onmouseout="hideTip(event, 'fsast20', 33)" onmouseover="showTip(event, 'fsast20', 33)" class="i">count</span>)
+<span class="l">18: </span>    <span class="k">if</span> <span onmouseout="hideTip(event, 'fsast20', 34)" onmouseover="showTip(event, 'fsast20', 34)" class="i">count</span> <span class="o">&gt;</span> <span class="n">0</span> <span class="k">then</span> <span class="k">return!</span> <span onmouseout="hideTip(event, 'fsast19', 35)" onmouseover="showTip(event, 'fsast19', 35)" class="i">download</span>() }
+<span class="l">19: </span>  
+<span class="l">20: </span>  <span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">download</span><span class="c"> </span><span class="c">asynchronously</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">handle</span><span class="c"> </span><span class="c">results</span>
+<span class="l">21: </span>  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fsast19', 36)" onmouseover="showTip(event, 'fsast19', 36)" class="i">download</span>()
+<span class="l">22: </span>  <span onmouseout="hideTip(event, 'fsast14', 37)" onmouseover="showTip(event, 'fsast14', 37)" class="i">temp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast24', 38)" onmouseover="showTip(event, 'fsast24', 38)" class="i">Seek</span>(<span class="n">0L</span>, <span onmouseout="hideTip(event, 'fsast25', 39)" onmouseover="showTip(event, 'fsast25', 39)" class="i">SeekOrigin</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast26', 40)" onmouseover="showTip(event, 'fsast26', 40)" class="i">Begin</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fsast27', 41)" onmouseover="showTip(event, 'fsast27', 41)" class="i">ignore</span>
+<span class="l">23: </span>  <span class="k">let</span> <span onmouseout="hideTip(event, 'fsast28', 42)" onmouseover="showTip(event, 'fsast28', 42)" class="i">html</span> <span class="o">=</span> (<span class="k">new</span> <span onmouseout="hideTip(event, 'fsast29', 43)" onmouseover="showTip(event, 'fsast29', 43)" class="i">StreamReader</span>(<span onmouseout="hideTip(event, 'fsast14', 44)" onmouseover="showTip(event, 'fsast14', 44)" class="i">temp</span>))<span class="o">.</span><span class="i">ReadToEnd</span>()
+<span class="l">24: </span>  <span class="k">return</span> <span onmouseout="hideTip(event, 'fsast1', 45)" onmouseover="showTip(event, 'fsast1', 45)" class="i">regTitle</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast30', 46)" onmouseover="showTip(event, 'fsast30', 46)" class="i">Match</span>(<span onmouseout="hideTip(event, 'fsast28', 47)" onmouseover="showTip(event, 'fsast28', 47)" class="i">html</span>)<span class="o">.</span><span class="i">Groups</span><span class="o">.</span>[<span class="n">1</span>]<span class="o">.</span><span class="i">Value</span>, <span onmouseout="hideTip(event, 'fsast28', 48)" onmouseover="showTip(event, 'fsast28', 48)" class="i">html</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast31', 49)" onmouseover="showTip(event, 'fsast31', 49)" class="i">Length</span> }<a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>It is not difficult to see how this corresponds to the C# version we've seen before. The body of the 
+  function is wrapped in an <code>async { ... }</code> block. Unlike in C#, this is not a hard-coded language 
+  feature - <code>async</code> is not a keyword but a value defined in F# library that specifies what
+  is special about the code block (in our case, the fact that it is asynchronous). The block constructs
+  a value of type <code>Async&lt;string * int&gt;</code>, which represents an asynchronous computation
+  that can be started and eventually returns a tuple.</p>
+
+<p>The keywords with <em>bang</em> correspond to various uses of the <code>await</code> keyword in C#.
+  We're using <code>use!</code> keyword to start an asynchronous operation and dispose of the returned object
+  when the workflow completes, we're using <code>let!</code> to start an operation and bind the
+  result to a value and finally, we're using <code>do!</code> to start operation that doesn't
+  return any result. I'll discuss some of the differences between F# and C# later 
+  (and in more details in an upcoming article). First, let's look how to start the computation...</p>
+
+<h3>Starting asynchronous computations</h3>
+<p>Just like in the C# version, we'll first write a function <code>comparePages</code> that downloads
+  multiple pages in parallel and then prints all the results and returns. We'll write it as an <em>asynchronous
+  workflow</em> representing the composed computation. Note that unlike in C#, the computation is not 
+  started yet - we're just building a specification of what should be done. Once we have the workflow, 
+  we can start it. In the following example we start it and wait until it completes:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Downloads</span><span class="c"> </span><span class="c">pages</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">parallel</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">prints</span><span class="c"> </span><span class="c">all</span><span class="c"> </span><span class="c">results</span>
+<span class="l"> 2: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fsast32', 50)" onmouseover="showTip(event, 'fsast32', 50)" class="i">comparePages</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fsast6', 51)" onmouseover="showTip(event, 'fsast6', 51)" class="i">async</span> {
+<span class="l"> 3: </span>  <span class="k">let!</span> <span onmouseout="hideTip(event, 'fsast33', 52)" onmouseover="showTip(event, 'fsast33', 52)" class="i">results</span> <span class="o">=</span> 
+<span class="l"> 4: </span>    [| <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">google</span><span class="s">.</span><span class="s">com</span><span class="s">&quot;</span>; <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">bing</span><span class="s">.</span><span class="s">com</span><span class="s">&quot;</span>
+<span class="l"> 5: </span>       <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">www</span><span class="s">.</span><span class="s">yahoo</span><span class="s">.</span><span class="s">com</span><span class="s">&quot;</span> |]
+<span class="l"> 6: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fsast17', 53)" onmouseover="showTip(event, 'fsast17', 53)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast34', 54)" onmouseover="showTip(event, 'fsast34', 54)" class="i">map</span> <span onmouseout="hideTip(event, 'fsast3', 55)" onmouseover="showTip(event, 'fsast3', 55)" class="i">downloadPage</span>
+<span class="l"> 7: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fsast35', 56)" onmouseover="showTip(event, 'fsast35', 56)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast36', 57)" onmouseover="showTip(event, 'fsast36', 57)" class="i">Parallel</span>
+<span class="l"> 8: </span>  <span class="k">for</span> <span onmouseout="hideTip(event, 'fsast37', 58)" onmouseover="showTip(event, 'fsast37', 58)" class="i">title</span>, <span onmouseout="hideTip(event, 'fsast38', 59)" onmouseover="showTip(event, 'fsast38', 59)" class="i">length</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fsast33', 60)" onmouseover="showTip(event, 'fsast33', 60)" class="i">results</span> <span class="k">do</span>
+<span class="l"> 9: </span>    <span onmouseout="hideTip(event, 'fsast39', 61)" onmouseover="showTip(event, 'fsast39', 61)" class="i">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast40', 62)" onmouseover="showTip(event, 'fsast40', 62)" class="i">WriteLine</span>(<span class="s">&quot;</span><span class="s">{</span><span class="s">0</span><span class="s">}</span><span class="s"> </span><span class="s">(</span><span class="s">length</span><span class="s"> </span><span class="s">{</span><span class="s">1</span><span class="s">}</span><span class="s">)</span><span class="s">&quot;</span>, <span class="i">title</span>, <span class="i">length</span>) }
+<span class="l">10: </span>
+<span class="l">11: </span><span class="c">//</span><span class="c"> </span><span class="c">Start</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">computation</span><span class="c"> </span><span class="c">on</span><span class="c"> </span><span class="c">current</span><span class="c"> </span><span class="c">thread</span>
+<span class="l">12: </span><span class="k">do</span> <span onmouseout="hideTip(event, 'fsast32', 63)" onmouseover="showTip(event, 'fsast32', 63)" class="i">comparePages</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fsast35', 64)" onmouseover="showTip(event, 'fsast35', 64)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fsast41', 65)" onmouseover="showTip(event, 'fsast41', 65)" class="i">RunSynchronously</span><a target="_blank" class="fssniplink" href="http://tomasp.net/fswebsnippets">F# Web Snippets</a>
+</pre>
+
+<p>The code is again very similar to the C# version earlier in the article. We create an array of 
+  URLs, use <code>Array.map</code> to turn it into an array of asynchronous computations and then 
+  compose the computations into a single one using <code>Async.Parallel</code>. This creates a composed
+  computation that returns an array with all the results. To get the results we wait until the composed
+  computation completes using <code>let!</code> Once that happens, we iterate over the results and 
+  output them to the screen.</p>
+<p>Unlike in C# (where asynchronous method returns a started task), the F# version just gives us a 
+  specification of the work to be done. We can start it using various different methods. The method
+  used in the example above is <code>Async.RunSynchronously</code>, which starts the workflow and blocks
+  until it completes. However, the sub-tasks done by the workflow (3 distinct downloads) will be all
+  started in parallel.</p>
+
+<h2>Comparing C# and F# asynchronous model</h2>
+<p>Now that we've seen the same problem implemented in both F# and C#, let's look at some of the
+  similarities and differences between the two programming models. I'll write a separate article with
+  more details and discussing some of the subtle and tricky differences, but I'd like to mention
+  at least a few of them in this introduction.</p>
+
+<h3>Similarities</h3>
+<p>Let's start with the similarities. Obviously, the syntax is quite similar. The <code>await</code>
+  keyword corresponds to several keywords from F# computation expressions depending on how it is
+  used. The most common is <code>let!</code> and then also <code>use!</code> and <code>do!</code>
+  These keywords are used to insert a special asynchronous call into code that is otherwise sequential.</p>
+<p>There are also some very similar concepts in the libraries, in particular, for introducing 
+  parallelism. There are two ways of adding parallelism using asynchronous programming model. One is 
+  to compose multiple operations returning the same type (and running the same code) and the other one
+  is to start and wait for tasks explicitly. For the F# way of doing this, see section 4.1 in The F# 
+  Asynchronous Programming Model [<a href="csasynclinks">1</a>] article.</p>
+<ul class="spaces">
+  <li><strong>Data-parallel</strong> programming model can be done using the <code>TaskEx.WhenAll</code> method 
+    in C#. This method corresponds to <code>Async.Parallel</code> in F#. These two methods create a task or
+    a workflow that runs multiple operations, waits until all of them complete and then returns all results.</li>
+  <li><strong>Task-based</strong> parallelism in C# is done by creating new task (using <code>Task.Create</code>),
+    which is started automatically and then waiting using <code>await</code>. In F#, the same thing is done
+    using <code>Async.StartChild</code> (to start a workflow) and <code>let!</code> to wait for the completion.</li>
+</ul>
+
+<h3>Differences</h3>
+<p>Even though the programming model <em>looks</em> almost the same, there are some notable differences.
+  I'll write a more detailed article about some of them, but here is an assorted list of those that
+  I found quite important:</p>
+
+<ul class="spaces">
+  <li><strong>Availability</strong>. This is not a techincal aspect, but it is perhaps the most important one.
+    Asynchronous workflows in F# shipped in Visual Studio 2010 and you can use them now to write production code
+    for a wide range of runtimes including .NET 2.0, Mono, Silverlight (see <a href="http://tomasp.net/blog/reactive-talk.aspx">my talk</a>!) and even Windows Phone 7. 
+    The bits released for C# are very early version and will (probably) ship with the next version 
+    of Visual Studio. My guess is that they will also require a new version of .NET framework when finally released. </li>
+  <li><strong>Running or Delayed?</strong> The F# programming model creates <code>Async&lt;T&gt;</code> which 
+    is just a specification of what should be done. We can start it in various different ways (or we may not
+    start it) and it can be quite nicely composed. The C# programming model works with <code>Task&lt;T&gt;</code>
+    type, which means that <code>async</code> method creates a computation that is already running in background.
+    The F# programming model definitely feels more suitable for functional (declarative) programming languages.
+    I also think that it makes it easier to reason about what is going on. </li>
+  <li><strong>Cancellation</strong>. When you want to implement a computation that can be cancelled in C#, you 
+    need to explicitly pass <code>CancellationToken</code> object around and check whether a cancellation was
+    requested. In F#, this is done automatically (and checks are made each time some asynchronous operation
+    is executed (or when a language construct with special meaning is executed). Implementing the cancellation
+    explicitly isn't as bad as writing everything using <code>BeginFoo</code>, but doing it properly
+    is not as easy as it may sound (more about that later)</li>
+  <li><strong>Waiting inside expressions</strong>. In C#, we can use <code>await</code> anywhere inside
+    an expression, while in F#, <code>let!</code> cannot be nested. When you want to rewrite something like
+    <code>await Foo(await Bar())</code> in F#, you first have to assign the result of <code>Bar</code> to 
+    some local variable. This is a good thing for C#, because it makes writing of certain things easier.
+    A slight disadvantage may be that it is not as easy to see when an asynchronous operation occurs in the
+    expression (though it would be interesting to see this feature in F# too).</li>
+</ul>
+
+<h3>Summary</h3>
+<p>As far as I can tell, the asynchronous programming model in C# is largely based on F# <em>asynchronous 
+  workflows</em>. It is wonderful to see how ideas from the F# language spread to the main-stream (although
+  it would be nicer if this was more visibly acknowledged in the presentation). </p>
+<p>This definitely doesn't mean that F# is not interesting anymore. There are many useful
+  features in F# not related to asynchronous programming that would be difficult to imagine in C#. Even when 
+  talking just about asynchronous programming, F# still has some features and libraries that make it more
+  attractive. Two examples are implicit cancellation and a wonderful library for agent-based parallelism. Moreover,
+  there are interesting new things in F# comming out at PDC 2010. There are also interesting research 
+  projects (like <a href="http://tomasp.net/blog/match-bang-paper.aspx">my pattern matching extension</a> [<a href="csasynclinks">3</a>]) 
+  which would make F# even better for reactive, concurrent and asynchronous programming (but, just to be
+  clear, that's a distant future).</p>
+
+<a name="csasynclinks">&#160;</a>
+<h3>References</h3>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/b/dsyme/archive/2010/10/21/the-f-asynchronous-programming-model-padl-2010-pre-publication-draft.aspx" type="external">The F# Asynchronous Programming Model</a> - Don Syme, Tomas Petricek, Dmitry Lomov</li>
+  <li>[2] <a href="http://msdn.microsoft.com/en-us/vstudio/async.aspx" type="external">Asynchronous Programming for C# and Visual Basic</a> - MSDN homepage</li>
+  <li>[3] <a href="http://tomasp.net/blog/match-bang-paper.aspx">Joinads: A retargetable control-flow construct for reactive, parallel and concurrent programming</a> - Tomas Petricek, Don Syme</li>
+</ul>
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="fsast1">val regTitle : Regex<br /><br />Full name: Demo.regTitle<br /><br />&#160;&#160;type: Regex<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br /></div>
+<div class="tip" id="fsast2">type Regex =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : string -&gt; System.Text.RegularExpressions.Regex<br />&#160;&#160;&#160;&#160;new : string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.Regex<br />&#160;&#160;&#160;&#160;member GetGroupNames : unit -&gt; string []<br />&#160;&#160;&#160;&#160;member GetGroupNumbers : unit -&gt; int []<br />&#160;&#160;&#160;&#160;member GroupNameFromNumber : int -&gt; string<br />&#160;&#160;&#160;&#160;member GroupNumberFromName : string -&gt; int<br />&#160;&#160;&#160;&#160;member IsMatch : string -&gt; bool<br />&#160;&#160;&#160;&#160;member IsMatch : string * int -&gt; bool<br />&#160;&#160;&#160;&#160;member Match : string -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Match : string * int -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Match : string * int * int -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;member Matches : string -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;member Matches : string * int -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;member Options : System.Text.RegularExpressions.RegexOptions<br />&#160;&#160;&#160;&#160;member Replace : string * string -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * string * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * string * int * int -&gt; string<br />&#160;&#160;&#160;&#160;member Replace : string * System.Text.RegularExpressions.MatchEvaluator * int * int -&gt; string<br />&#160;&#160;&#160;&#160;member RightToLeft : bool<br />&#160;&#160;&#160;&#160;member Split : string -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : string * int -&gt; string []<br />&#160;&#160;&#160;&#160;member Split : string * int * int -&gt; string []<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member CacheSize : int with get, set<br />&#160;&#160;&#160;&#160;static member CompileToAssembly : System.Text.RegularExpressions.RegexCompilationInfo [] * System.Reflection.AssemblyName -&gt; unit<br />&#160;&#160;&#160;&#160;static member CompileToAssembly : System.Text.RegularExpressions.RegexCompilationInfo [] * System.Reflection.AssemblyName * System.Reflection.Emit.CustomAttributeBuilder [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member CompileToAssembly : System.Text.RegularExpressions.RegexCompilationInfo [] * System.Reflection.AssemblyName * System.Reflection.Emit.CustomAttributeBuilder [] * string -&gt; unit<br />&#160;&#160;&#160;&#160;static member Escape : string -&gt; string<br />&#160;&#160;&#160;&#160;static member IsMatch : string * string -&gt; bool<br />&#160;&#160;&#160;&#160;static member IsMatch : string * string * System.Text.RegularExpressions.RegexOptions -&gt; bool<br />&#160;&#160;&#160;&#160;static member Match : string * string -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;static member Match : string * string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.Match<br />&#160;&#160;&#160;&#160;static member Matches : string * string -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;static member Matches : string * string * System.Text.RegularExpressions.RegexOptions -&gt; System.Text.RegularExpressions.MatchCollection<br />&#160;&#160;&#160;&#160;static member Replace : string * string * string -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * System.Text.RegularExpressions.MatchEvaluator -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * string * System.Text.RegularExpressions.RegexOptions -&gt; string<br />&#160;&#160;&#160;&#160;static member Replace : string * string * System.Text.RegularExpressions.MatchEvaluator * System.Text.RegularExpressions.RegexOptions -&gt; string<br />&#160;&#160;&#160;&#160;static member Split : string * string -&gt; string []<br />&#160;&#160;&#160;&#160;static member Split : string * string * System.Text.RegularExpressions.RegexOptions -&gt; string []<br />&#160;&#160;&#160;&#160;static member Unescape : string -&gt; string<br />&#160;&#160;end<br /><br />Full name: System.Text.RegularExpressions.Regex<br /><br />&#160;&#160;type: Regex<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br /></div>
+<div class="tip" id="fsast3">val downloadPage : string -&gt; Async&lt;string * int&gt;<br /><br />Full name: Demo.downloadPage
+<br /><br /><em>Asynchronously downloads a web page and returns <br />&#160;title of the page and size in bytes</em><br /></div>
+<div class="tip" id="fsast4">val url : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fsast5">Multiple items
+<br />val string : 'T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string
+<br /><br />--------------------<br />
+<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fsast6">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async<br /></div>
+<div class="tip" id="fsast7">val request : WebRequest<br /><br />&#160;&#160;type: WebRequest<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast8">type HttpWebRequest =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Net.WebRequest<br />&#160;&#160;&#160;&#160;member Abort : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Accept : string with get, set<br />&#160;&#160;&#160;&#160;member AddRange : int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : string * int -&gt; unit<br />&#160;&#160;&#160;&#160;member AddRange : string * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member Address : System.Uri<br />&#160;&#160;&#160;&#160;member AllowAutoRedirect : bool with get, set<br />&#160;&#160;&#160;&#160;member AllowWriteStreamBuffering : bool with get, set<br />&#160;&#160;&#160;&#160;member AutomaticDecompression : System.Net.DecompressionMethods with get, set<br />&#160;&#160;&#160;&#160;member BeginGetRequestStream : System.AsyncCallback * obj -&gt; System.IAsyncResult<br />&#160;&#160;&#160;&#160;member BeginGetResponse : System.AsyncCallback * obj -&gt; System.IAsyncResult<br />&#160;&#160;&#160;&#160;member ClientCertificates : System.Security.Cryptography.X509Certificates.X509CertificateCollection with get, set<br />&#160;&#160;&#160;&#160;member Connection : string with get, set<br />&#160;&#160;&#160;&#160;member ConnectionGroupName : string with get, set<br />&#160;&#160;&#160;&#160;member ContentLength : int64 with get, set<br />&#160;&#160;&#160;&#160;member ContentType : string with get, set<br />&#160;&#160;&#160;&#160;member ContinueDelegate : System.Net.HttpContinueDelegate with get, set<br />&#160;&#160;&#160;&#160;member CookieContainer : System.Net.CookieContainer with get, set<br />&#160;&#160;&#160;&#160;member Credentials : System.Net.ICredentials with get, set<br />&#160;&#160;&#160;&#160;member EndGetRequestStream : System.IAsyncResult -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member EndGetRequestStream : System.IAsyncResult * System.Net.TransportContext -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member EndGetResponse : System.IAsyncResult -&gt; System.Net.WebResponse<br />&#160;&#160;&#160;&#160;member Expect : string with get, set<br />&#160;&#160;&#160;&#160;member GetRequestStream : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member GetRequestStream : System.Net.TransportContext -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;member GetResponse : unit -&gt; System.Net.WebResponse<br />&#160;&#160;&#160;&#160;member HaveResponse : bool<br />&#160;&#160;&#160;&#160;member Headers : System.Net.WebHeaderCollection with get, set<br />&#160;&#160;&#160;&#160;member IfModifiedSince : System.DateTime with get, set<br />&#160;&#160;&#160;&#160;member KeepAlive : bool with get, set<br />&#160;&#160;&#160;&#160;member MaximumAutomaticRedirections : int with get, set<br />&#160;&#160;&#160;&#160;member MaximumResponseHeadersLength : int with get, set<br />&#160;&#160;&#160;&#160;member MediaType : string with get, set<br />&#160;&#160;&#160;&#160;member Method : string with get, set<br />&#160;&#160;&#160;&#160;member Pipelined : bool with get, set<br />&#160;&#160;&#160;&#160;member PreAuthenticate : bool with get, set<br />&#160;&#160;&#160;&#160;member ProtocolVersion : System.Version with get, set<br />&#160;&#160;&#160;&#160;member Proxy : System.Net.IWebProxy with get, set<br />&#160;&#160;&#160;&#160;member ReadWriteTimeout : int with get, set<br />&#160;&#160;&#160;&#160;member Referer : string with get, set<br />&#160;&#160;&#160;&#160;member RequestUri : System.Uri<br />&#160;&#160;&#160;&#160;member SendChunked : bool with get, set<br />&#160;&#160;&#160;&#160;member ServicePoint : System.Net.ServicePoint<br />&#160;&#160;&#160;&#160;member Timeout : int with get, set<br />&#160;&#160;&#160;&#160;member TransferEncoding : string with get, set<br />&#160;&#160;&#160;&#160;member UnsafeAuthenticatedConnectionSharing : bool with get, set<br />&#160;&#160;&#160;&#160;member UseDefaultCredentials : bool with get, set<br />&#160;&#160;&#160;&#160;member UserAgent : string with get, set<br />&#160;&#160;&#160;&#160;static member DefaultCachePolicy : System.Net.Cache.RequestCachePolicy with get, set<br />&#160;&#160;&#160;&#160;static member DefaultMaximumErrorResponseLength : int with get, set<br />&#160;&#160;&#160;&#160;static member DefaultMaximumResponseHeadersLength : int with get, set<br />&#160;&#160;end<br /><br />Full name: System.Net.HttpWebRequest<br /><br />&#160;&#160;type: HttpWebRequest<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;inherits: WebRequest<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast9">Multiple overloads
+<br />WebRequest.Create(requestUri: Uri) : WebRequest
+<br />WebRequest.Create(requestUriString: string) : WebRequest<br /></div>
+<div class="tip" id="fsast10">val response : WebResponse<br /><br />&#160;&#160;type: WebResponse<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast11">member WebRequest.AsyncGetResponse : unit -&gt; Async&lt;WebResponse&gt;<br /></div>
+<div class="tip" id="fsast12">val stream : Stream<br /><br />&#160;&#160;type: Stream<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast13">WebResponse.GetResponseStream() : Stream<br /></div>
+<div class="tip" id="fsast14">val temp : MemoryStream<br /><br />&#160;&#160;type: MemoryStream<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: Stream<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast15">type MemoryStream =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.IO.Stream<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : int -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : System.Byte [] -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : System.Byte [] * bool -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : System.Byte [] * int * int -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : System.Byte [] * int * int * bool -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;new : System.Byte [] * int * int * bool * bool -&gt; System.IO.MemoryStream<br />&#160;&#160;&#160;&#160;member CanRead : bool<br />&#160;&#160;&#160;&#160;member CanSeek : bool<br />&#160;&#160;&#160;&#160;member CanWrite : bool<br />&#160;&#160;&#160;&#160;member Capacity : int with get, set<br />&#160;&#160;&#160;&#160;member Flush : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member GetBuffer : unit -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member Length : int64<br />&#160;&#160;&#160;&#160;member Position : int64 with get, set<br />&#160;&#160;&#160;&#160;member Read : System.Byte [] * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member ReadByte : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Seek : int64 * System.IO.SeekOrigin -&gt; int64<br />&#160;&#160;&#160;&#160;member SetLength : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;member ToArray : unit -&gt; System.Byte []<br />&#160;&#160;&#160;&#160;member Write : System.Byte [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member WriteByte : System.Byte -&gt; unit<br />&#160;&#160;&#160;&#160;member WriteTo : System.IO.Stream -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.IO.MemoryStream<br /><br />&#160;&#160;type: MemoryStream<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: Stream<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast16">val buffer : byte []<br /><br />&#160;&#160;type: byte []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.Generic.IList&lt;byte&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;byte&gt;<br />&#160;&#160;implements: seq&lt;byte&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fsast17">type Array =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;&#160;&#160;member CopyTo : System.Array * int -&gt; unit<br />&#160;&#160;&#160;&#160;member CopyTo : System.Array * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;member GetEnumerator : unit -&gt; System.Collections.IEnumerator<br />&#160;&#160;&#160;&#160;member GetLength : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetLongLength : int -&gt; int64<br />&#160;&#160;&#160;&#160;member GetLowerBound : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetUpperBound : int -&gt; int<br />&#160;&#160;&#160;&#160;member GetValue : int [] -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int64 -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int64 [] -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int * int -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int64 * int64 -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int * int * int -&gt; obj<br />&#160;&#160;&#160;&#160;member GetValue : int64 * int64 * int64 -&gt; obj<br />&#160;&#160;&#160;&#160;member Initialize : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member IsFixedSize : bool<br />&#160;&#160;&#160;&#160;member IsReadOnly : bool<br />&#160;&#160;&#160;&#160;member IsSynchronized : bool<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member LongLength : int64<br />&#160;&#160;&#160;&#160;member Rank : int<br />&#160;&#160;&#160;&#160;member SetValue : obj * int -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int [] -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int64 [] -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int64 * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;member SetValue : obj * int64 * int64 * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;member SyncRoot : obj<br />&#160;&#160;&#160;&#160;static member AsReadOnly&lt;'T&gt; : 'T [] -&gt; System.Collections.ObjectModel.ReadOnlyCollection&lt;'T&gt;<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * obj -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;'T&gt; : 'T [] * 'T -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * obj * System.Collections.IComparer -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;'T&gt; : 'T [] * 'T * System.Collections.Generic.IComparer&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * int * int * obj -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;'T&gt; : 'T [] * int * int * 'T -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch : System.Array * int * int * obj * System.Collections.IComparer -&gt; int<br />&#160;&#160;&#160;&#160;static member BinarySearch&lt;'T&gt; : 'T [] * int * int * 'T * System.Collections.Generic.IComparer&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member Clear : System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member ConstrainedCopy : System.Array * int * System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member ConvertAll&lt;'TInput,'TOutput&gt; : 'TInput [] * System.Converter&lt;'TInput,'TOutput&gt; -&gt; 'TOutput []<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * System.Array * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * System.Array * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * int * System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Copy : System.Array * int64 * System.Array * int64 * int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int [] -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int64 [] -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int * int -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int [] * int [] -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member CreateInstance : System.Type * int * int * int -&gt; System.Array<br />&#160;&#160;&#160;&#160;static member Exists&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; bool<br />&#160;&#160;&#160;&#160;static member Find&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; 'T<br />&#160;&#160;&#160;&#160;static member FindAll&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; 'T []<br />&#160;&#160;&#160;&#160;static member FindIndex&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member FindIndex&lt;'T&gt; : 'T [] * int * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member FindIndex&lt;'T&gt; : 'T [] * int * int * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member FindLast&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; 'T<br />&#160;&#160;&#160;&#160;static member FindLastIndex&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member FindLastIndex&lt;'T&gt; : 'T [] * int * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member FindLastIndex&lt;'T&gt; : 'T [] * int * int * System.Predicate&lt;'T&gt; -&gt; int<br />&#160;&#160;&#160;&#160;static member ForEach&lt;'T&gt; : 'T [] * System.Action&lt;'T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member IndexOf : System.Array * obj -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;'T&gt; : 'T [] * 'T -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf : System.Array * obj * int -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;'T&gt; : 'T [] * 'T * int -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf : System.Array * obj * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member IndexOf&lt;'T&gt; : 'T [] * 'T * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf : System.Array * obj -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;'T&gt; : 'T [] * 'T -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf : System.Array * obj * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;'T&gt; : 'T [] * 'T * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf : System.Array * obj * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member LastIndexOf&lt;'T&gt; : 'T [] * 'T * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Resize&lt;'T&gt; : 'T [] * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Reverse : System.Array -&gt; unit<br />&#160;&#160;&#160;&#160;static member Reverse : System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'T&gt; : 'T [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'TKey,'TValue&gt; : 'TKey [] * 'TValue [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'T&gt; : 'T [] * System.Collections.Generic.IComparer&lt;'T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'T&gt; : 'T [] * System.Comparison&lt;'T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'T&gt; : 'T [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'TKey,'TValue&gt; : 'TKey [] * 'TValue [] * System.Collections.Generic.IComparer&lt;'TKey&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * int * int * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'TKey,'TValue&gt; : 'TKey [] * 'TValue [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'T&gt; : 'T [] * int * int * System.Collections.Generic.IComparer&lt;'T&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort : System.Array * System.Array * int * int * System.Collections.IComparer -&gt; unit<br />&#160;&#160;&#160;&#160;static member Sort&lt;'TKey,'TValue&gt; : 'TKey [] * 'TValue [] * int * int * System.Collections.Generic.IComparer&lt;'TKey&gt; -&gt; unit<br />&#160;&#160;&#160;&#160;static member TrueForAll&lt;'T&gt; : 'T [] * System.Predicate&lt;'T&gt; -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Array<br /><br />&#160;&#160;type: Array<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IEnumerable<br /></div>
+<div class="tip" id="fsast18">val zeroCreate : int -&gt; 'T []<br /><br />Full name: Microsoft.FSharp.Collections.Array.zeroCreate<br /></div>
+<div class="tip" id="fsast19">val download : (unit -&gt; Async&lt;unit&gt;)<br /></div>
+<div class="tip" id="fsast20">val count : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fsast21">Multiple overloads
+<br />member Stream.AsyncRead : count:int -&gt; Async&lt;byte []&gt;
+<br />member Stream.AsyncRead : buffer:byte [] * ?offset:int * ?count:int -&gt; Async&lt;int&gt;<br /></div>
+<div class="tip" id="fsast22">property Array.Length: int<br /></div>
+<div class="tip" id="fsast23">member Stream.AsyncWrite : buffer:byte [] * ?offset:int * ?count:int -&gt; Async&lt;unit&gt;<br /></div>
+<div class="tip" id="fsast24">Stream.Seek(offset: int64, origin: SeekOrigin) : int64<br /></div>
+<div class="tip" id="fsast25">type SeekOrigin =<br />&#160;&#160;| Begin = 0<br />&#160;&#160;| Current = 1<br />&#160;&#160;| End = 2<br /><br />Full name: System.IO.SeekOrigin<br /><br />&#160;&#160;type: SeekOrigin<br />&#160;&#160;inherits: Enum<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fsast26">field SeekOrigin.Begin = 0<br /></div>
+<div class="tip" id="fsast27">val ignore : 'T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore<br /></div>
+<div class="tip" id="fsast28">val html : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fsast29">type StreamReader =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.IO.TextReader<br />&#160;&#160;&#160;&#160;new : System.IO.Stream -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : System.IO.Stream * bool -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : System.IO.Stream * System.Text.Encoding -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : System.IO.Stream * System.Text.Encoding * bool -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : System.IO.Stream * System.Text.Encoding * bool * int -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : string -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : string * bool -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : string * System.Text.Encoding -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : string * System.Text.Encoding * bool -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;new : string * System.Text.Encoding * bool * int -&gt; System.IO.StreamReader<br />&#160;&#160;&#160;&#160;member BaseStream : System.IO.Stream<br />&#160;&#160;&#160;&#160;member Close : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member CurrentEncoding : System.Text.Encoding<br />&#160;&#160;&#160;&#160;member DiscardBufferedData : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member EndOfStream : bool<br />&#160;&#160;&#160;&#160;member Peek : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Read : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Read : char [] * int * int -&gt; int<br />&#160;&#160;&#160;&#160;member ReadLine : unit -&gt; string<br />&#160;&#160;&#160;&#160;member ReadToEnd : unit -&gt; string<br />&#160;&#160;&#160;&#160;static val Null : System.IO.StreamReader<br />&#160;&#160;end<br /><br />Full name: System.IO.StreamReader<br /><br />&#160;&#160;type: StreamReader<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: TextReader<br />&#160;&#160;inherits: MarshalByRefObject<br /></div>
+<div class="tip" id="fsast30">Multiple overloads
+<br />Regex.Match(input: string) : Match
+<br />Regex.Match(input: string, startat: int) : Match
+<br />Regex.Match(input: string, beginning: int, length: int) : Match<br /></div>
+<div class="tip" id="fsast31">property String.Length: int<br /></div>
+<div class="tip" id="fsast32">val comparePages : Async&lt;unit&gt;<br /><br />Full name: Demo.comparePages
+<br /><br /><em>Downloads pages in parallel and prints all results</em><br /></div>
+<div class="tip" id="fsast33">val results : (string * int) []<br /><br />&#160;&#160;type: (string * int) []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.Generic.IList&lt;string * int&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;string * int&gt;<br />&#160;&#160;implements: seq&lt;string * int&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fsast34">val map : ('T -&gt; 'U) -&gt; 'T [] -&gt; 'U []<br /><br />Full name: Microsoft.FSharp.Collections.Array.map<br /></div>
+<div class="tip" id="fsast35">Multiple items
+<br />type Async&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;
+<br /><br />--------------------<br />
+<br />type Async<br />with<br />&#160;&#160;static member AsBeginEnd : computation:('Arg -&gt; Async&lt;'T&gt;) -&gt; ('Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; 'T) * (IAsyncResult -&gt; unit)<br />&#160;&#160;static member AwaitEvent : event:IEvent&lt;'Del,'T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt; (requires delegate and 'Del :&gt; Delegate)<br />&#160;&#160;static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member CancelDefaultToken : unit -&gt; unit<br />&#160;&#160;static member Catch : computation:Async&lt;'T&gt; -&gt; Async&lt;Choice&lt;'T,exn&gt;&gt;<br />&#160;&#160;static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg:'Arg1 * beginAction:('Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * beginAction:('Arg1 * 'Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromBeginEnd : arg1:'Arg1 * arg2:'Arg2 * arg3:'Arg3 * beginAction:('Arg1 * 'Arg2 * 'Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; 'T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member FromContinuations : callback:(('T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member Ignore : computation:Async&lt;'T&gt; -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />&#160;&#160;static member Parallel : computations:seq&lt;Async&lt;'T&gt;&gt; -&gt; Async&lt;'T []&gt;<br />&#160;&#160;static member RunSynchronously : computation:Async&lt;'T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; 'T<br />&#160;&#160;static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartChild : computation:Async&lt;'T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;'T&gt;&gt;<br />&#160;&#160;static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member StartWithContinuations : computation:Async&lt;'T&gt; * continuation:('T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />&#160;&#160;static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member TryCancelled : computation:Async&lt;'T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;'T&gt;<br />&#160;&#160;static member CancellationToken : Async&lt;CancellationToken&gt;<br />&#160;&#160;static member DefaultCancellationToken : CancellationToken<br />end<br /><br />Full name: Microsoft.FSharp.Control.Async<br /></div>
+<div class="tip" id="fsast36">static member Async.Parallel : computations:seq&lt;Async&lt;'T&gt;&gt; -&gt; Async&lt;'T []&gt;<br /></div>
+<div class="tip" id="fsast37">val title : string<br /><br />&#160;&#160;type: string<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;string&gt;<br />&#160;&#160;implements: seq&lt;char&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: IEquatable&lt;string&gt;<br /></div>
+<div class="tip" id="fsast38">val length : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fsast39">type Console =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member BackgroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member Beep : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member Beep : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member BufferHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member BufferWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member CapsLock : bool<br />&#160;&#160;&#160;&#160;static member Clear : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member CursorLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorSize : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorTop : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorVisible : bool with get, set<br />&#160;&#160;&#160;&#160;static member Error : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member ForegroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member In : System.IO.TextReader<br />&#160;&#160;&#160;&#160;static member InputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member KeyAvailable : bool<br />&#160;&#160;&#160;&#160;static member LargestWindowHeight : int<br />&#160;&#160;&#160;&#160;static member LargestWindowWidth : int<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int * char * System.ConsoleColor * System.ConsoleColor -&gt; unit<br />&#160;&#160;&#160;&#160;static member NumberLock : bool<br />&#160;&#160;&#160;&#160;static member OpenStandardError : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardError : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member Out : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member OutputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member Read : unit -&gt; int<br />&#160;&#160;&#160;&#160;static member ReadKey : unit -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadKey : bool -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadLine : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member ResetColor : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetBufferSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetCursorPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetError : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetIn : System.IO.TextReader -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetOut : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Title : string with get, set<br />&#160;&#160;&#160;&#160;static member TreatControlCAsInput : bool with get, set<br />&#160;&#160;&#160;&#160;static member WindowHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowTop : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member Write : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Console<br /></div>
+<div class="tip" id="fsast40">Multiple overloads
+<br />Console.WriteLine() : unit
+<br />Console.WriteLine(value: string) : unit
+<br />Console.WriteLine(value: obj) : unit
+<br />Console.WriteLine(value: uint64) : unit
+<br />Console.WriteLine(value: int64) : unit
+<br />Console.WriteLine(value: uint32) : unit
+<br />Console.WriteLine(value: int) : unit
+<br />Console.WriteLine(value: float32) : unit
+<br />Console.WriteLine(value: float) : unit
+<br />Console.WriteLine(value: decimal) : unit
+<br />&#160;&#160;&#160;<em>(+9 other overloads)</em><br /></div>
+<div class="tip" id="fsast41">static member Async.RunSynchronously : computation:Async&lt;'T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; 'T<br /></div>

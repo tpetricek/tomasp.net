@@ -1,0 +1,353 @@
+<!-- [info]
+
+ - date: 2011-03-10T13:26:00.0000000
+ - description: Everyone tells you that LINQ is a monad, but LINQ can be used to enocde other types of computations too. This article demonstrates that you can use LINQ to program using idioms, which are in some ways more useful than monads.
+ - tags: c#,research,functional
+ - layout: post
+ - title: Beyond the Monad fashion (I.): Writing idioms in LINQ
+ - url: idioms-in-linq.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Thanks to LINQ and Erik Meier, monads have become a fashionable topic in the C# developer community.
+  Indeed, no serious developer conference on .NET can get away without having a talk on monads. The attractive
+  thing about LINQ and monads is that the <code>SelectMany</code> operator roughly corresponds to the <em>bind</em>
+  function that defines a monad. In practice, LINQ is used for working with collections of data (<code>IEnumerable&lt;T&gt;</code>),
+  but you can also define <em>bind</em> (i.e. <code>SelectMany</code>) for some other data types and use the LINQ syntax
+  for working with other types. You won't be really using the full LINQ syntax. You'll probably use just nested
+  <code>from</code> clauses (for <em>binding</em>) and <code>select</code> at the end to return the result.</p>
+
+<p>However, monads are not the only notion of computation that we can work with. More interestingly, they are also 
+  not the only notion of computation that you can encode using LINQ! In this article, I'll briefly introduce 
+  <em>idioms</em> (also called <em>applicative functors</em>), which is another useful abstract type of computations.
+  Idioms can be used for a few things that cannot be done using monads.</p>
+
+<p>A provocative summary of this article is: <span style="font-variant:small-caps">"Everyone who tells you that LINQ is a monad is wrong!"</span></p>
+
+<p>The truth is
+that LINQ syntax can be used for encoding <em>queries</em> (obviously), <em>monads</em> (as you were told), but also for <em>idioms</em> as you'll learn today (and quite possibly for other types of computations). In this article, we look at a basic example, but I'll describe a more complex real-world scenario in the next blog post.</p>
+[/abstract] -->
+
+<h1>Beyond the Monad fashion (I.): Writing idioms in LINQ</h1>
+<p>Thanks to LINQ and Erik Meier, monads have become a fashionable topic in the C# developer community.
+  Indeed, no serious developer conference on .NET can get away without having a talk on monads. The attractive
+  thing about LINQ and monads is that the <code>SelectMany</code> operator roughly corresponds to the <em>bind</em>
+  function that defines a monad. In practice, LINQ is used for working with collections of data (<code>IEnumerable&lt;T&gt;</code>),
+  but you can also define <em>bind</em> (i.e. <code>SelectMany</code>) for some other data types and use the LINQ syntax
+  for working with other types. You won't be really using the full LINQ syntax. You'll probably use just nested
+  <code>from</code> clauses (for <em>binding</em>) and <code>select</code> at the end to return the result.</p>
+
+<p>However, monads are not the only notion of computation that we can work with. More interestingly, they are also 
+  not the only notion of computation that you can encode using LINQ! In this article, I'll briefly introduce 
+  <em>idioms</em> (also called <em>applicative functors</em>), which is another useful abstract type of computations.
+  Idioms can be used for a few things that cannot be done using monads.</p>
+
+<p>A provocative summary of this article is: <span style="font-variant:small-caps">"Everyone who tells you that LINQ is a monad is wrong!"</span></p>
+
+<p>The truth is
+that LINQ syntax can be used for encoding <em>queries</em> (obviously), <em>monads</em> (as you were told), but also for <em>idioms</em> as you'll learn today (and quite possibly for other types of computations). In this article, we look at a basic example, but I'll describe a more complex real-world scenario in the next blog post.</p>
+
+<h2>Monads and LINQ</h2>
+<p>To set the scene, we I briefly demonstrate the encoding of monads using LINQ. You can find similar examples in quite
+  a few blog posts on the internet (and at any serious .NET conference these days). 
+  I covered the topic in detail in my <a href="http://manning.com/petricek">Real-World Functional Programming</a> book. The Chapter 12 which 
+  explains monads and LINQ is <a href="http://manning.com/petricek/SampleChapter12.pdf">available for free as a sample chapter</a>
+  [<a href="#csidiomsl">5</a>]. </p>
+<p>The example I used in the book uses values of type <code>Option&lt;T&gt;</code>. The value can either contain a value of type <code>T</code>
+  (<code>Option.Some</code>) or it can be empty (<code>Option.None</code>). It is similar to <code>Nullable&lt;T&gt;</code> with 
+  the only difference that the contained value can also be a reference type). When working with options, you can use LINQ syntax to 
+  write computations that can fail and return <code>Option.None</code> at any time without explicitly checking for it:</p>
+<pre lang="csharp">
+var res = from n in TryReadInt()
+          from m in TryReadInt()
+          select n + m;
+</pre>
+<p>The sample tries to read number from the console (<code>TryReadInt</code>). If the user enters two valid numbers, the result 
+  will be <code>Option.Some</code> containing the sum. However, if the user enters wrong input, the rest of the computation
+  will not run and the result will be immediately <code>Option.None</code>.</p>
+
+<h2>Introducing idioms</h2>
+
+<p>Monads are certainly very nice, but as I wrote, they are not the only notion of computation that we can use. 
+  In this article, we'll look at <em>idioms</em>, but there is quite a few of them (another interesting example
+  is <em>comonads</em>; you can find a short Haskell introduction here [<a href="#csidiomsl">1</a>]).
+  Idioms are particularly interesting because they are closely related to monads.
+  They are weaker than monads, which means that all monads are idioms, but not all idioms are automatically monads. 
+  Let me first quote Conor McBride and Ross Paterson who described idioms and I'll clarify everything shortly:</p>
+  
+<p style="margin-left:50px; margin-right:50px; font-style:italic;">
+  The moral is this: if you’ve got an <code>Applicative</code> functor, that’s good; if you’ve also
+  got a <code>Monad</code>, that’s even better! And the dual of the moral is this: if you want a
+  <code>Monad</code>, that’s good; if you only want an <code>Applicative</code> functor, that’s even better!
+</p>
+
+<p>In the object oriented terms, you can think of <em>idiom</em> and <em>monad</em> as two interfaces. The <em>monad</em> interface inherits from the 
+  <em>idiom</em> interface. When you write some method, you'll prefer to take <em>idiom</em> as an argument (because this means that 
+  your method can work with more objects). If you're defining a class, you'll prefer to implement <em>monad</em>, because it means that
+  your object can be passed even to methods that have stronger requirements (that require <em>monad</em> and not just <em>idiom</em>).</p>
+
+<h3>Defining an idiom</h3>
+<p>Both monads and idioms are defined in terms of a few simple operations that they need to provide. For monads, one of the operations
+  is <code>Bind</code> (which is similar to <code>SelectMany</code> in LINQ) and the other operation is <code>Return</code> (it doesn't
+  have a direct correspondence in LINQ, but imagine you could write <code>var q = select 10</code> to create a list containing 
+  a single value 10).</p>
+
+<p>The operations that are required by idiom are <code>Return</code> (just like for monads), <code>Select</code> (which happens
+  to be the same thing as <code>Select</code> in LINQ) and <code>Merge</code> (in the academic terminology, they are usually called
+  <em>unit</em>, <em>map</em> and <small style="font-size:70%;">&#9733;</small>). The operations should have the following types
+  (I'm using the F# syntax, so <code>-&gt;</code> stands for the <code>Func</code> delegate or a method):</p>
+
+<pre lang="csharp">
+// Operations required by a Monad
+Return : R -&gt; Monad&lt;R&gt;
+Bind   : Monad&lt;T&gt; -&gt; Func&lt;T, Monad&lt;R&gt;&gt; -&gt; Monad&lt;R&gt;
+
+// Operations required by an Idiom
+Return : R -&gt; Idiom&lt;R&gt;
+Select : Idiom&lt;T&gt; -&gt; Func&lt;T, R&gt;) -&gt; Idiom&lt;R&gt;
+Merge  : Idiom&lt;T1&gt; -&gt; Idiom&lt;T2&gt; -&gt; Idiom&lt;Tuple&lt;T1, T2&gt;&gt;
+</pre>
+
+<p>The <code>Return</code> operation does the same thing as <code>Return</code> for monads. It turns an ordinary value
+  into a value wrapped inside idiom. This could mean a different thing for a different type of computations. For option values
+  from the introduction, we could wrap the value using <code>Option.Some</code>.</p>
+<p>You may already have some intuition about <code>Select</code> from LINQ. It should turn all values inside one idiom
+  into different values (using the provided function) and wrap them inside an idiom with the same structure. For options, we
+  would turn <code>Option.Some</code> into <code>Option.Some</code> containing the calculated value; for lists, we would
+  apply the function to all elements of a list.
+</p>
+<p>The <code>Merge</code> operation is the key thing. It takes two idioms and combines them into a new idiom that contains
+  two-element tuples. The first element is some value from the first idiom and the second value comes from the second idiom.
+  If you carefully look at all the <code>Enumerable</code> members in the <a href="http://msdn.microsoft.com/en-us/library/system.linq.enumerable.aspx" type="external">MSDN documentation</a>, 
+  you'll find a method that has a very similar signature. You'll find out which method I'm talking about in the next
+  section when we define our first idiom...
+</p>
+
+<h2>Writing our first idiom</h2>
+<p>There are two ways to define an idiom for <code>IEnumerable&lt;T&gt;</code>. As already mentioned, when you have a monad, you also
+  automatically get an idiom. I'll show you how to do that later, but it is possible to implement <code>Merge</code> in terms of <code>Bind</code>.
+  In that case, the <code>Merge</code> operation will behave essentially as <em>cross-join</em>, which means that it generates
+  all combinations of the elements from the two sequences. For example, if you have <code>[1; 2]</code> and <code>[a; b; c]</code> you'll get
+  <code>[1,a; 1,b; 1,c; 2,a; 2,b; 2,c]</code>. This isn't a very interesting example, because we can do that with monads. However,
+  there is another option...</p>
+
+<h3>Implementing ZipList idiom</h3>
+<p>The alternative implementation is to use the <code>Zip</code> operation as <code>Merge</code>. The <code>Zip</code> operation [<a href="#csidiomsl">3</a>] takes two 
+  collections and generates a new one by taking elements at the corresponding indices. If you have <code>[1; 2; 3]</code> and 
+  <code>[a; b; c]</code> you'll get <code>[1,a; 2,b; 3,c]</code>. There is only a single sensible way to implement the <code>Select</code>
+  and that's to use the same behavior as LINQ. However, the <code>Return</code> operation may be surprising. Let's look at the three methods:</p>
+
+<pre lang="csharp">
+// Returns an infinite sequence containing the specified value
+public static IEnumerable&lt;T&gt; Return&lt;T&gt;(T value) {
+  while (true) yield return value;
+}
+
+// Merges corresponding elements from two sequences into tuples
+public static IEnumerable&lt;Tuple&lt;T1, T2&gt;&gt; Merge&lt;T1, T2&gt;
+    (this IEnumerable&lt;T1&gt; first, IEnumerable&lt;T2&gt; second) {
+  return Enumerable.Zip(first, second, Tuple.Create);
+}
+
+// Applies the specified function to all elements of source 
+public static IEnumerable&lt;R&gt; Select&lt;T, R&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T, R&gt; func) {
+  foreach(var el in source) yield return func(el);
+}
+</pre>
+
+<p>In the usual List monad (that roughly corresponds to LINQ), the <code>Return</code> operation returns a single-element
+  sequence that contains the specified value. However, for the ZipList idiom, we need a different behavior. When we look at some
+  examples, you'll see that this implementation allows us to write useful things just using the idiom operations. Another 
+  reason is that idioms should obey some laws to give a reasonable definition. You can think of laws as unit tests that should
+  hold for any random input. One of the laws about <code>Return</code> is:</p>
+<pre lang="csharp">
+[Test]
+public void LeftIdentity&lt;T&gt;(IEnumerable&lt;T&gt; source) {
+  Assert.AreEqual( source, source.Merge(ZipList.Return(0)).Select(tup => tup.Item1) );
+}
+</pre>
+
+<p>Common unit testing frameworks wouldn't be able to randomly generate values for the argument, but you get the idea. The 
+  law says that if you <code>Merge</code> any sequence with a sequence generated using <code>Return</code> and then take
+  only the first element of the tuple, you should get the same thing as the original sequence. This is something that
+  sounds obvious, but it wouldn't work if we used <code>Return</code> that generates only a single element.</p>
+
+<h3>Programming with ZipList</h3>
+<p>Now that we have idiom for ZipList, let's see how we can use the provided operations to solve some problems.
+  We'll start with a basic example that calculates average price of stock prices over several days that are stored
+  in sequence of sequences:</p>
+
+<pre lang="csharp">
+// Changing prices of 4 different stocks over 3 days
+var prices = new[] { 
+  new[] { 10.0, 4.0, 13.0, 20.0 },
+  new[] { 12.0, 3.0, 11.0, 25.0 },
+  new[] {  9.0, 1.0, 16.0, 24.0 },
+};
+
+// Calculate average price for each stock
+var res = ZipList.Return(0.0);
+foreach (var day in prices)
+  res = res.Merge(day).Select(tup => tup.Item1 + tup.Item2);
+var avg = res.Select(sum => sum / prices.Count());
+
+// Print results: 10.3, 2.6, 13.3 and 23 
+foreach (var price in avg)
+  Console.Write("{0}, ", price);
+</pre>
+
+<p>How does the calculation of the average work? We first need to sum all prices over the three days. To do that, we 
+  add prices for all days to the current sum in a <code>foreach</code> loop. To add values, we <code>Merge</code> the
+  results so far with the prices for the current day and then use <code>Select</code> to add them. As an initial value,
+  we use a sequence containing zeros generated using <code>Return</code>. A nice thing is that we don't need to 
+  explicitly specify the length of the sequence, because <code>Merge</code> can take as many zeros from it as needed.</p>
+
+<p>This was a fairly simple example, but we'll look at a more complicated one later. First of all, let's look how
+  LINQ fits into the picture.</p>
+
+<h2>Writing idioms using LINQ</h2>
+<p>The LINQ query syntax doesn't provide any direct way for encoding idioms. However, we can misuse one of the 
+  standard query operators for this purpose. There aren't many benefits in a simple example like this one. In the
+  next blog post, we'll look at a larger example and the syntax will be quite useful. The keyword that we can
+  misuse is <code>join</code>:</p>
+
+<pre lang="csharp">
+var res = ZipEnumerable.Return(0.0);
+foreach (var day in prices)
+  res = from sum in res
+        join price in day on 1 equals 1
+        select sum + price;
+var avg = from sum in res select sum / prices.Count();
+</pre>
+
+<p>When using <code>join</code> for implementing actual database joins, we can specify keys that should be
+  matched using the <code>equals</code> clause. When encoding idioms, we just ignore the clause, so I'll 
+  always write just <code>on 1 equals 1</code>. The reason why we can use <code>join</code> for encoding idioms
+  is because it is translated to <code>Join</code> calls in a way that's very similar to what we need to write
+  when using <code>Merge</code> directly (You can find more details in the C# specification [<a href="#csidiomsl">4</a>]). 
+  The key difference is that you cannot use variables declared earlier in the query (e.g. <code>sum</code>) in the
+  expression that specifies data source for joining (e.g. <code>day</code>).</p>
+
+<h3>How does it work?</h3>
+<p>When working with idioms, we cannot select data source depending on a value from previous data source. This 
+  essentially means that all the data sources used by one or more <code>join</code> clauses and the first <code>from</code>
+  clause will be combined using <code>Merge</code>. Then the query will use <code>Select</code> to evaluate the expression
+  specified in <code>select</code>. This is different than monads encoded using multiple <code>from</code> clauses 
+  where the next <code>from</code> expression can depend on earlier variables. For example, when using monads, you can write:</p>
+<pre lang="csharp">
+var q = from cat in RandomCategories()
+        from prod in ProductsInCategory(cat.ID)
+        select prod.Name;
+</pre>
+<p>Note that we can use the <code>cat</code> value in the <code>in</code> part of the second <code>from</code> clause.
+  This is because the translation that C# uses for multiple <code>from</code> clauses and the translation used
+  for <code>join</code> is very different (and the variable simply isn't in scope when using <code>join</code>).
+  Because of the translation, the <code>Join</code> method also has quite different type than the <code>SelectMany</code>
+  method (used by monads). If you write the declaration of the <code>Join</code> method (and decide to ignore the
+  two key selectors), you can easily find a way to implement it in terms of <code>Merge</code> and <code>Select</code>
+  provided by any idiom:</p>
+
+<pre lang="csharp">
+// Allows using of the join keyword for writing idiom computations
+// (they two key selectors are ignored and users can just write 'on 1 equals 1')
+public static IEnumerable&lt;TResult&gt; Join&lt;TOuter, TInner, TKey, TResult&gt;
+  (this IEnumerable&lt;TOuter&gt; outer, IEnumerable&lt;TInner&gt; inner,
+    Func&lt;TOuter, TKey&gt; outerKeySelector,
+    Func&lt;TInner, TKey&gt; innerKeySelector,
+    Func&lt;TOuter, TInner, TResult&gt; resultSelector) {
+
+  // Implementation using just 'Merge' and 'Select'
+  // that can be provided by any idiom
+  return outer.Merge(inner).Select(tup =&gt; resultSelector(tup.Item1, tup.Item2));
+}
+</pre>
+<p>In fact, the implementation could just directly use <code>Enumerable.Zip</code>. However, I wanted to write it
+  explicitly using <code>Merge</code> and <code>Select</code>, because these two are the operations used to define
+  idioms in the original paper about idioms [<a href="#csidiomsl">1</a>] (In fact, the paper gives two equivalent definitions and
+  I'm using the second one, because it is easier to understand).</p>
+
+<p>If you want, you can look at the query translation [<a href="#csidiomsl">4</a>] and try to rewrite the 
+  LINQ query above (or use Reflector or similar tools) to see how the C# compiler desugars the query. However, the fact that
+  we could directly implement <code>Join</code> (without key selectors) using operations from an idiom means
+  that the computation is using just operations of the idiom (in some way) and that the code is equivalent to what 
+  we wrote earlier explicitly.</p>
+
+<h2>Transposing matrices with idioms</h2>
+<p>One example of using idioms that you can find in the original paper [<a href="#csidiomsl">1</a>] is matrix transposition.
+  We can implement that using our ZipList idiom and the encoding using LINQ as well. The implementation won't be 
+  very efficient (it was designed to work with lazy functional lists), but it is an interesting demonstration.
+  In the next blog post, I'll show you how to implement a more real-world idiom, so the purpose of the example
+  isn't to convince you that writing idioms using LINQ is a good idea - instead, I just want to demonstrate that
+  we can rewrite any example from the original article. The following method implements the transposition
+  using the LINQ syntax for idioms:</p>
+
+<pre lang="csharp">
+IEnumerable&lt;IEnumerable&lt;T&gt;&gt; Transpose&lt;T&gt;(this IEnumerable&lt;IEnumerable&lt;T&gt;&gt; matrix) {
+  return matrix.Count() == 0 ?
+
+    // Processed all rows - return infinite sequence of empty lists
+    ZipList.Return(Enumerable.Empty&lt;T&gt;()) :
+
+    // Zip all elements from the first row 'matrix.First()' with rows of 
+    // recursively transposed sub-matrix starting from the second row
+    from xs in matrix.First()
+    join xss in Transpose(matrix.Skip(1)) on 1 equals 1
+    select Enumerable.Concat(new[] { xs }, xss);
+}
+</pre>
+
+<img src="http://tomasp.net/articles/idioms-in-linq/transpose.png" style="float:right; margin:5px 0px 5px 20px" />
+
+<p>This function is a bit tricky, but you can understand it by looking at the diagram on the right.
+  We start processing the matrix by taking the first row. Then we take a smaller sub-matrix that with
+  the first row removed (<code>matrix.Skip(1)</code>) and transpose this sub-matrix. Once we have these
+  two, we use ZipList idiom to merge individual columns of the first row and rows of the transposed
+  matrix back together. 
+</p>
+
+<p>When we eventually reach the end, we need to generate a sequence that is at least as long as the
+  height of the matrix. The sequence (representing rows) should contain empty sequences (representing
+  columns) so that we can later append elements to the individual columns (using <code>Enumerable.Concat</code>).</p>
+
+<p>If we wanted to write the same thing explicitly using the idiom operations, we'd just need to change the
+  else clause of the conditional operator and use the following:</p>
+<pre lang="csharp">
+ZipList.
+  Merge(matrix.First(), Transpose(matrix.Skip(1))).
+  Select(tuple => Enumerable.Concat(new[] { tuple.Item1 }, tuple.Item2));
+</pre>
+<p>As I already mentioned, the difference between the two syntactic options isn't as huge in this basic
+  example. The main benefit of (mis-)using the query syntax is that we can avoid using tuples explicitly,
+  which makes our life a bit easier. In this example, we're merging just two inputs, so the tuple is
+  quite simple. In the next blog post, we'll need to merge a much larger number of idioms, so the
+  code would look quite ugly and we'd have to work with tuples like <code>Tuple&lt;string, Tuple&lt;Unit, Tuple&lt;Unit, string&gt;&gt;&gt;</code>.</p>
+
+<h2>Summary</h2>
+<p>The LINQ query syntax in C# is quite a powerful weapon. Obviously, it can be used for encoding queries,
+  but you can use it to write other types of computations as well. There are quite a few blog posts and articles
+  (including <a href="http://manning.com/petricek/SampleChapter12.pdf">freely available Chapter 12 of my book</a> [<a href="#csidiomsl">5</a>]
+  that explain how to use LINQ syntax for working with monads.</p>
+
+<p>However, saying that LINQ <em>is</em> a monad isn't quite right, because the LINQ syntax can be used for encoding
+  other types of computations too. In this article, I demonstrated how to use it for writing code using
+  <em>idioms</em>. Idioms are weaker than monads - in the object oriented terms, this means that the "monad interface"
+  inherits from "idiom interface". As a result, some computation types can implement the "idiom interface", but cannot
+  be written as monads. We looked at ZipList, which is one example of such computation type.</p>
+<p>I demonstrated how you
+  can use (somewhat surprisingly) the <code>join</code> clause to work with idioms and we also looked at 
+  some examples. You've seen matrix transposition which is one of the examples used in the original paper that
+  introduces idioms.</p>
+<p>The ZipList example may look a little academic, but it was quite easy to explain. If you want to see a more
+  practical example, stay tuned for the next blog post. I'll demonstrate using Formlets [<a href="#csidiomsl">6</a>],
+  which is an idiom that can be used for constructing web forms.</p>
+
+<a name="csidiomsl"></a>
+<h2>References</h2>
+<ul>
+  <li>[1] <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.pdf" type="external">Applicative programming with effects</a> (PDF) - Conor McBride, Ross Paterson</li>
+  <li>[2] <a href="http://gelisam.blogspot.com/2007/04/i-understand-comonads.html" type="external">I understand comonads</a> - Bloggy Badger</li>
+  <li>[3] <a href="http://msdn.microsoft.com/en-us/library/dd267698.aspx" type="external">Enumerable.Zip&lt;TFirst, TSecond, TResult&gt; Method</a> - MSDN Library</li>
+  <li>[4] <a href="http://msdn.microsoft.com/en-us/library/bb308966.aspx#csharp3.0overview_topic18" type="external">Query Expression Translation - C# Overview</a> - MSDN Library</li>
+  <li>[5] <a href="http://manning.com/petricek/SampleChapter12.pdf" type="external">Chapter 12: Sequence expressions and alternative workflows</a> - Real-World Functional Programming</li>
+  <li>[6] <a href="http://groups.inf.ed.ac.uk/links/formlets/" type="external">The essence of form abstraction</a> - Ezra Cooper, Sam Lindley, Philip Wadler, Jeremy Yallop</li>
+</ul>

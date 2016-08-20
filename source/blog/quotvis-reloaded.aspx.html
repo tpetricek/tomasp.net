@@ -1,0 +1,139 @@
+<!-- [info]
+
+ - date: 2006-10-01T21:39:06.0000000
+ - description: New and improved version of quotation visualizer. Supports more language constructs and makes it possible to open quotations from compiled F# assembly.
+ - tags: meta-programming,f#
+ - layout: post
+ - title: F# quotations visualizer - reloaded!
+ - url: quotvis-reloaded.aspx
+
+[/info] -->
+<!-- [abstract]
+<div style="float:right;margin-left:10px;">
+  <a href="http://www.tomasp.net/articles/quotvis-reloaded/screen.png" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis-reloaded/screen-sm-sm.jpg" alt="Quotation Visualizer" /></a>
+</div>
+
+<p>Some time ago, I wrote an article about useful utility called <a href="http://www.tomasp.net/blog/quotvis.aspx">F# quotations visualizer</a>.
+  This utility can be used to show visual representation of F# quotations, that can represent (subset of) source code written in F#.
+  There are two ways that you can use to get F# quotations - first is using operators <code>&lt;@@@@ ... @@@@&gt;</code> (this
+  returns quotation of the code written inside the operator), second method is to get quotation of top level definition from compiled 
+  F# assembly (you have to explicitly enable this using command line switch <code>--enable-quotation-data</code> while compiling assembly).
+</p>
+<p>Because I added several new features to the original Quotations visualizer, I decided to publish the latest version - here is the list of main improvements:</p>
+<ul>
+  <li>Rewritten using active patterns (new F# language feature)</li>
+  <li>It is possible to extract quotations from compiled F# assembly (if it contains quotation data)</li>
+  <li>Added support for several missing language constructs</li>
+</ul>
+[/abstract] -->
+
+<h1>F# quotations visualizer - reloaded!</h1>
+
+
+
+<div style="float:right;margin-left:10px;">
+  <a href="http://www.tomasp.net/articles/quotvis-reloaded/screen.png" target="_blank"><img style="margin:10px;border-style:none;" src="http://tomasp.net/articles/quotvis-reloaded/screen-sm.png" alt="Quotation Visualizer" /></a>
+</div>
+
+<p>Some time ago, I wrote an article about useful utility called <a href="http://www.tomasp.net/blog/quotvis.aspx">F# quotations visualizer</a>.
+  This utility can be used to show visual representation of F# quotations, that can represent (subset of) source code written in F#.
+  There are two ways that you can use to get F# quotations - first is using operators <code>&lt;@@@@ ... @@@@&gt;</code> (this
+  returns quotation of the code written inside the operator), second method is to get quotation of top level definition from compiled 
+  F# assembly (you have to explicitly enable this using command line switch <code>--enable-quotation-data</code> while compiling assembly).
+</p>
+<p>Because I added several new features to the original Quotations visualizer, I decided to publish the latest version - here is the list of main improvements:</p>
+<ul>
+  <li>Rewritten using active patterns (new F# language feature)</li>
+  <li>It is possible to extract quotations from compiled F# assembly (if it contains quotation data)</li>
+  <li>Added support for several missing language constructs</li>
+</ul>
+
+<h2>Active patterns</h2>
+<p>Active patterns is a new (experimental) feature in the F# language. You can find some information about this feature in 
+  Don Syme's article [<a href="#qv-reload-links">1</a>]. In simple words, active patterns allows you to write "switch"
+  consisting of functions (patterns) that return <code>'a option</code> type. When the code is executed, it finds first 
+  pattern whose query returned a value (<code>Some(...)</code>) and the body of selected pattern is executed.</p>
+<p>This feature makes it very easy to work with F# quotations because all <code>ef[Something]</code> values that are used
+  for querying quotations have the required signature (the <code>Query</code> function that returns <code>'a option</code> type),
+  so they can be used with the active patterns feature.</p>
+<p>In the quotations visualizer, we need to match the expression (type <code>expr</code>) with all possible 
+  expression families (<code>ef[Something]</code>) and choose the first one that matches. To see how active patterns
+  work, you can look at the following part of the function that does this. First, without active patterns:</p>  
+<pre>
+<span class="k">match</span> efForLoop.Query(expr) <span class="k">with</span>
+  | Some(nfrom,nto,body) -&gt;
+      <span class="c">// Statement: for i=start to end do body; done;
+      // .. create tree node ..</span>
+  | _ -&gt;
+<span class="k">match</span> efWhileLoop.Query(cond,body) <span class="k">with</span>
+      <span class="c">// Statement: while condition do body; done;
+      // .. create tree node ..</span>
+  | _ -&gt;
+<span class="k">match</span> efCond.Query(t,(cond,trbody,flbody)) <span class="k">with</span>
+      <span class="c">// if (cond) then trbody; else flbody;
+      // .. create tree node ..</span>
+  | _ -&gt;
+      <span class="c">// unknown expression</span>
+</pre>      
+<p>And with active patterns the source looks like this:</p>
+<pre>
+#light
+<span class="k">let</span> EFForLoop = efForLoop
+<span class="k">let</span> EFWhileLoop = efWhileLoop
+<span class="k">let</span> EFCond = efCond
+
+<span class="k">match</span> expr <span class="k">with</span>
+  | EFForLoop(nfrom,nto,body) -&gt;
+      <span class="c">// Statement: for i=start to end do body; done;
+      // .. create tree node ..</span>
+  | EFWhileLoop(cond,body) -&gt;
+      <span class="c">// Statement: while condition do body; done;
+      // .. create tree node ..</span>
+  | EFCond(t,(cond,trbody,flbody)) -&gt;
+      <span class="c">// if (cond) then trbody; else flbody;
+      // .. create tree node ..</span>
+  | _ -&gt;
+      <span class="c">// unknown expression</span>
+</pre>      
+<p>This is very simple example and there are many situations where active patterns are even more helpful.
+  You may have also noticed that the code doesn't contain any semicolons. This is the result of another new feature called
+  lightweight syntax (it is turned on by the #light directive) - if you turn it on the whitespace becomes significant
+  and compiler can understand structure of the code using whitespace instead of semicolons, parentheses and 
+  <code>begin</code>/<code>end</code> keywords. This feature is described in the F# manual [<a href="#qv-reload-links">2</a>].</p>
+
+<h2>Extracting quotations from assembly</h2>
+<p>When you specify <code>--enable-quotation-data</code> switch to the F# compiler, it stores quotation of every
+  top level definition (functions in modules) in the assembly. This quotation can be later retrieved using 
+  <code>resolveTopDef</code> function, however to use the function for loading top-level definitions from 
+  another assembly, you first have to load quotation data from the assembly. The following snippet shows
+  how to register declarations from assembly.</p>
+
+<pre>
+<span class="k">let</span> asm = Assembly.LoadFile(name) <span class="k">in</span>
+  asm.GetManifestResourceNames() |&gt; Array.to_list 
+    |&gt; List.filter (<span class="k">fun</span> rn -&gt; 
+        rn.StartsWith(pickledDefinitionsResourceNameBase)) 
+    |&gt; List.iter (<span class="k">fun</span> rn -&gt; 
+        explicitlyRegisterTopDefs asm rn (readToEnd (asm.GetManifestResourceStream(rn))))
+</pre>  
+<p>This code first loads the assembly (using <code>LoadFile</code> method which accepts assembly file path).
+  Than it gets all managed resources of the assembly and filters only those, which name starts with
+  <code>pickledDefinitionsResourceNameBase</code> (this is a constant declared in <code>Microsoft.FSharp.Quotations.Raw</code> module).
+  Now we have all resources containing F# quotation data, and we can use <code>explicitlyRegisterTopDefs</code> function
+  to load quoted top level definitions. The <code>explicitlyRegisterTopDefs</code> method takes three parameters - 
+  assembly, name of the resource and resource data (byte array). When the top level definitions are registered using 
+  this method, it is possible to load quotations of functions declared in loaded assembly - and this is exactly what 
+  happens when you click on the "Open F# assembly" link in the application.
+  If you are interested in the complete code, look at the attached source code of quotations visualizer application.</p>
+
+<h2>Links<a name="qv-reload-links"></a></h2>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/dsyme/archive/2006/08/16/ActivePatterns.aspx">An upcoming experimental feature: Active Patterns in F#</a> [<a href="http://blogs.msdn.com/dsyme/archive/2006/08/16/ActivePatterns.aspx" target="_blank">^</a>] - Don Syme's WebLog on F# and Other Research Projects</li>
+  <li>[2] <a href="http://research.microsoft.com/fsharp/manual/lexyacc.aspx#LightSyntax">Optional lightweight syntax</a> [<a href="http://research.microsoft.com/fsharp/manual/lexyacc.aspx#LightSyntax" target="_blank">^</a>] - F# manual</li>
+</ul>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/quotvis-reloaded/quotvis.zip">Download the application</a> (50.3kB)</li>
+  <li><a href="http://tomasp.net/articles/quotvis-reloaded/quotvis-src.zip">Download the application - source code</a> (39.3kB)</li>
+</ul>

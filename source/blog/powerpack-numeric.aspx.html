@@ -1,0 +1,248 @@
+<!-- [info]
+
+ - date: 2011-11-02T02:34:07.0000000
+ - description: This article discusses two numeric types that are available in F# PowerPack - BigRational represents arbitrary precision rational numbers and complex represents (floating-point) complex numbers. The types can be nicely used from F# as well as from C#.
+ - tags: c#,functional,f#,math and numerics
+ - layout: post
+ - title: F# Math (I.) - Numeric types in PowerPack
+ - url: powerpack-numeric.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In this article, we'll briefly look at two numeric types that are available in F# PowerPack. 
+  The type <code>complex</code> represents complex numbers consisting of real and imaginary parts. 
+  Both parts are stored as a floating point numbers. The type <code>BigRational</code> represents 
+  rational numbers consisting of numerator and denominator of arbitrary sizes. Integers of arbitrary
+  size are represented using <code>BigInteger</code> type that is available in .NET 4.0 
+  (in the <code>System.Numerics.dll</code> assembly). On .NET 2.0, the <code>BigInteger</code>
+  type is also a part of F# PowerPack.</p>
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+[/abstract] -->
+
+<h1>F# Math (I.) - Numeric types in PowerPack</h1>
+<p>In this article, we'll briefly look at two numeric types that are available in F# PowerPack. 
+  The type <code>complex</code> represents complex numbers consisting of real and imaginary parts. 
+  Both parts are stored as a floating point numbers. The type <code>BigRational</code> represents 
+  rational numbers consisting of numerator and denominator of arbitrary sizes. Integers of arbitrary
+  size are represented using <code>BigInteger</code> type that is available in .NET 4.0 
+  (in the <code>System.Numerics.dll</code> assembly). On .NET 2.0, the <code>BigInteger</code>
+  type is also a part of F# PowerPack.</p>
+
+<p style="font-style:italic;">This article is a part of a series that covers some F# and F# PowerPack features for 
+  numerical computing. Other articles in this series discuss matrices, defining custom
+  numeric types and writing generic code. For links to other parts, see 
+  <a href="http://tomasp.net/blog/powerpack-introduction.aspx">F# Math - Overview of F# PowerPack</a>.</p>
+
+<h2>Using complex numbers</h2>
+<p>The first example demonstrates a few basic operations that can be done with <code>complex</code> 
+  numbers in F#. In order to run the code in the listing, you first need to reference 
+  <code>FSharp.PowerPack.dll</code>. This can be done either using <code>#r</code> directive in F# Interactive 
+  (when working in an F# Script file such as <code>Script.fsx</code>) or using the “Add Reference” 
+  dialog in Visual Studio when creating an F# project (or using <code>-r:FSharp.PowerPack.dll</code>
+  option of the compiler):
+</p>
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="prep">#r</span> <span class="s">&quot;</span><span class="s">FSharp</span><span class="s">.</span><span class="s">PowerPack</span><span class="s">.</span><span class="s">dll</span><span class="s">&quot;</span>
+<span class="l"> 2: </span><span class="k">open</span> <span onmouseout="hideTip(event, 'ppifs1', 1)" onmouseover="showTip(event, 'ppifs1', 1)" class="i">Microsoft</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs2', 2)" onmouseover="showTip(event, 'ppifs2', 2)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs3', 3)" onmouseover="showTip(event, 'ppifs3', 3)" class="i">Math</span>;;
+<span class="l"> 3: </span>
+<span class="l"> 4: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs4', 4)" onmouseover="showTip(event, 'ppifs4', 4)" class="i">c</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs5', 5)" onmouseover="showTip(event, 'ppifs5', 5)" class="i">complex</span> <span class="o">-</span><span class="n">1.0</span> <span class="n">0.0</span>;;
+<span class="l"> 5: </span><span class="fsi">val c : complex = -1r+0i</span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs6', 6)" onmouseover="showTip(event, 'ppifs6', 6)" class="i">i</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs7', 7)" onmouseover="showTip(event, 'ppifs7', 7)" class="i">sqrt</span> <span onmouseout="hideTip(event, 'ppifs4', 8)" onmouseover="showTip(event, 'ppifs4', 8)" class="i">c</span>;;
+<span class="l"> 8: </span><span class="fsi">val i : Complex = 6.12303176911189e-17r+1i</span>
+<span class="l"> 9: </span>
+<span class="l">10: </span><span onmouseout="hideTip(event, 'ppifs6', 9)" onmouseover="showTip(event, 'ppifs6', 9)" class="i">i</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'ppifs6', 10)" onmouseover="showTip(event, 'ppifs6', 10)" class="i">i</span>;;
+<span class="l">11: </span><span class="fsi">val it : Complex = -1r+1.22460635382238e-16i { ... }</span></pre>
+
+<p>After referencing PowerPack and opening the namespace that contains functionality for 
+  mathematical calculations, the snippet creates a number using the <code>complex</code> function. 
+  The first parameter represents the real part and the second one represents the imaginary part, 
+  so the example creates a complex number representing a real number -1. The next step uses 
+  <code>sqrt</code> function to calculate the square root. Since the calculation uses complex 
+  numbers, this is a valid operation and it returns the number <em>i</em> (with some rounding error). 
+  Next, the snippet calculates square of <em>i</em> to get a real number -1 again.</p>
+
+<p>Note that both <code>sqrt</code> and * are standard operations that are available in the F# 
+  library and don’t handle the <code>complex</code> type explicitly. Instead, they work with any 
+  type that provides specific members. This is done using static member constraints, which are 
+  discussed in the last two articles of this series (see <a href="http://tomasp.net/blog/powerpack-introduction.aspx">introduction</a>
+  for links).</p>
+  
+<h2>Using rational numbers</h2>
+
+<p>In this section, we look at a similarly simple listing that shows working with the 
+  <code>BigRational</code> type. Literals of this type can be written more easily using the 
+  <code>N</code> suffix. The suffix can be only when the <code>FSharp.PowerPack.dll</code>
+  library is referenced and it can be used to write rational numbers representing 
+  (arbitrary large) integers. To get a rational representing a fraction, we can use
+  division operator:
+</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs8', 11)" onmouseover="showTip(event, 'ppifs8', 11)" class="i">r1</span> <span class="o">=</span> <span class="n">4N</span> <span class="o">/</span> <span class="n">6N</span>;;
+<span class="l"> 2: </span><span class="fsi">val r : BigRational = 2/3N</span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs9', 12)" onmouseover="showTip(event, 'ppifs9', 12)" class="i">r2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs10', 13)" onmouseover="showTip(event, 'ppifs10', 13)" class="i">pown</span> <span onmouseout="hideTip(event, 'ppifs8', 14)" onmouseover="showTip(event, 'ppifs8', 14)" class="i">r1</span> <span class="n">10</span>;;
+<span class="l"> 5: </span><span class="fsi">val r : BigRational = 1024/59049N</span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs11', 15)" onmouseover="showTip(event, 'ppifs11', 15)" class="i">q1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs10', 16)" onmouseover="showTip(event, 'ppifs10', 16)" class="i">pown</span> (<span class="n">1N</span> <span class="o">/</span> <span class="n">2N</span>) <span class="n">5</span>
+<span class="l"> 8: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs12', 17)" onmouseover="showTip(event, 'ppifs12', 17)" class="i">q2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs10', 18)" onmouseover="showTip(event, 'ppifs10', 18)" class="i">pown</span> (<span class="n">1N</span> <span class="o">/</span> <span class="n">2N</span>) <span class="n">6</span>;;
+<span class="l"> 9: </span><span class="fsi">val q1 : BigRational = 1/32N</span>
+<span class="l">10: </span><span class="fsi">val q2 : BigRational = 1/64N</span>
+<span class="l">11: </span>
+<span class="l">12: </span><span onmouseout="hideTip(event, 'ppifs12', 19)" onmouseover="showTip(event, 'ppifs12', 19)" class="i">q2</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'ppifs9', 20)" onmouseover="showTip(event, 'ppifs9', 20)" class="i">r2</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'ppifs11', 21)" onmouseover="showTip(event, 'ppifs11', 21)" class="i">q1</span> <span class="o">&gt;</span> <span onmouseout="hideTip(event, 'ppifs9', 22)" onmouseover="showTip(event, 'ppifs9', 22)" class="i">r2</span>;;
+<span class="l">13: </span><span class="fsi">val it : bool = true</span></pre>
+
+<p>Literals such as <code>4N</code> can be only created from integers. However, the overloaded
+  division operator for <code>BigRational</code> returns a <code>BigRational</code> representing
+  fractions. As you can see, the number is stored in a normalized form (this means there is no
+  integer such that the numerator and denominator can be divided by it).</p>
+
+<p>The next couple of lines show code that finds a number <em>q</em> such that 
+  <em>(1/2)<sup>q</sup></em> is smaller the number <code>r2</code> and <em>(1/2)<sup>(q+1)</sup></em>
+  is larger. Just like when working with complex numbers, we can use standard functions 
+  and operators such as <code>pown</code> and <em>&lt;</em>. These are overloaded 
+  and work with any numeric type.
+</p>
+
+<p>The literals of <code>BigRational</code> can be constructed using notation such as <code>4N</code>. 
+  This is not a built-in language feature. In fact, you can define your own literals (using 
+  a limited set of suffixes) for your own numeric type. This is discussed in an article that
+  explains how to define a custom numeric type (see <a href="http://tomasp.net/blog/powerpack-introduction.aspx">introduction</a>
+  for links).</p>
+
+<h3>Calculating PI in F#</h3>
+
+<p>To look at some larger example that uses the <code>BigRational</code> type, let's write an
+  F# snippet that calculates an estimate of the number π. The sample uses Gregory–Leibniz series
+  that is explained on WikiPedia [<a href="#ppnuml">3</a>]. First few members of the series
+  are <em>4/1 - 4/3 + 4/5 - 4/7</em> etc. It is quite easy to see the pattern - the denominator
+  always increases by 2 and the operation varies between + and -. The series is quite simple to 
+  calculate, but it does not give a very precise estimate. However, it is good enough to 
+  demonstrate working with rational numbers.</p>
+
+<p>We can make the code nicely functional by representing the series as a value of type
+  <code>seq&lt;BigRational&gt;</code>. The following <code>series</code> function calculates
+  a single element of the series (using denominator <code>n</code>) and then calls itself
+  recursively to calculate the rest:</p>
+
+<pre class="fssnip">
+<span class="l"> 1: </span><span class="c">/// Generates series that approximates PI </span>
+<span class="l"> 2: </span><span class="c">/// 4/1 - 4/3 + 4/5 - 4/7 + 4/9 (starting from q * 4/n)</span>
+<span class="l"> 3: </span><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'ppifs13', 23)" onmouseover="showTip(event, 'ppifs13', 23)" class="i">series</span> <span onmouseout="hideTip(event, 'ppifs14', 24)" onmouseover="showTip(event, 'ppifs14', 24)" class="i">n</span> <span onmouseout="hideTip(event, 'ppifs15', 25)" onmouseover="showTip(event, 'ppifs15', 25)" class="i">q</span> <span class="o">=</span> 
+<span class="l"> 4: </span>  <span onmouseout="hideTip(event, 'ppifs16', 26)" onmouseover="showTip(event, 'ppifs16', 26)" class="i">seq</span> { 
+<span class="l"> 5: </span>    <span class="k">yield</span> <span onmouseout="hideTip(event, 'ppifs15', 27)" onmouseover="showTip(event, 'ppifs15', 27)" class="i">q</span> <span class="o">*</span> <span class="n">4N</span> <span class="o">/</span> <span onmouseout="hideTip(event, 'ppifs14', 28)" onmouseover="showTip(event, 'ppifs14', 28)" class="i">n</span>
+<span class="l"> 6: </span>    <span class="k">yield!</span> <span onmouseout="hideTip(event, 'ppifs13', 29)" onmouseover="showTip(event, 'ppifs13', 29)" class="i">series</span> (<span onmouseout="hideTip(event, 'ppifs14', 30)" onmouseover="showTip(event, 'ppifs14', 30)" class="i">n</span> <span class="o">+</span> <span class="n">2N</span>) (<span onmouseout="hideTip(event, 'ppifs15', 31)" onmouseover="showTip(event, 'ppifs15', 31)" class="i">q</span> <span class="o">*</span> <span class="o">-</span><span class="n">1N</span>) }
+<span class="l"> 7: </span>
+<span class="l"> 8: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs17', 32)" onmouseover="showTip(event, 'ppifs17', 32)" class="i">pi1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs13', 33)" onmouseover="showTip(event, 'ppifs13', 33)" class="i">series</span> <span class="n">1N</span> <span class="n">1N</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ppifs18', 34)" onmouseover="showTip(event, 'ppifs18', 34)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs19', 35)" onmouseover="showTip(event, 'ppifs19', 35)" class="i">take</span> <span class="n">10</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ppifs18', 36)" onmouseover="showTip(event, 'ppifs18', 36)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs20', 37)" onmouseover="showTip(event, 'ppifs20', 37)" class="i">reduce</span> (<span class="o">+</span>)
+<span class="l"> 9: </span><span class="fsi">val pi1 : BigRational = 44257352/14549535N</span>
+<span class="l">10: </span><span onmouseout="hideTip(event, 'ppifs21', 38)" onmouseover="showTip(event, 'ppifs21', 38)" class="i">float</span> <span onmouseout="hideTip(event, 'ppifs17', 39)" onmouseover="showTip(event, 'ppifs17', 39)" class="i">pi1</span>
+<span class="l">11: </span><span class="fsi">val it : float = 3.041839619</span>
+<span class="l">12: </span>
+<span class="l">13: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'ppifs22', 40)" onmouseover="showTip(event, 'ppifs22', 40)" class="i">pi2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ppifs13', 41)" onmouseover="showTip(event, 'ppifs13', 41)" class="i">series</span> <span class="n">1N</span> <span class="n">1N</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ppifs18', 42)" onmouseover="showTip(event, 'ppifs18', 42)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs19', 43)" onmouseover="showTip(event, 'ppifs19', 43)" class="i">take</span> <span class="n">300</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'ppifs18', 44)" onmouseover="showTip(event, 'ppifs18', 44)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'ppifs20', 45)" onmouseover="showTip(event, 'ppifs20', 45)" class="i">reduce</span> (<span class="o">+</span>)
+<span class="l">14: </span><span class="fsi">val pi2 : BigRational = (...)</span>
+<span class="l">15: </span><span onmouseout="hideTip(event, 'ppifs21', 46)" onmouseover="showTip(event, 'ppifs21', 46)" class="i">float</span> <span onmouseout="hideTip(event, 'ppifs22', 47)" onmouseover="showTip(event, 'ppifs22', 47)" class="i">pi2</span>
+<span class="l">16: </span><span class="fsi">val it : float = 3.13825933</span></pre>
+
+<p>If we added all elements of the series, we would get the precise value of π.
+  Unfortunately, we don't have infinite space and time, so the snippet just takes 
+  first few elements (using <code>Seq.take</code>) and then adds all elements
+  using <code>Seq.reduce</code>. Every second element is already negative, because
+  the <code>series</code> function multiplies the elements by <code>q</code>, which
+  alternates between 1 and -1, so we can use the + operator as the aggregation function.</p>
+
+<h2>Using F# numeric types from C#</h2>
+
+<p>The PowerPack library is mainly designed as a library with additional functionality for F#. However,
+  it is a standard .NET library and can be referenced from C# too. Moreover, F# represents overloaded
+  operators in the same way as C#, so the types <code>BigRational</code> and <code>Complex</code>
+  (and also <code>BigInteger</code> when using .NET 2.0) can be quite nicely used from C#.</p>
+
+<p>The following example re-implements the previous F# snippet to calculate the number π. It follows the
+  same approach as F#. The method <code>Series</code> generates elements of the 
+  Gregory–Leibniz series. The implementation uses loop instead of recursion, because recursive
+  iterators cannot be written efficiently in C#:</p>
+
+<pre lang="csharp">
+static IEnumerable&lt;BigRational&gt; Series() {
+  var n = BigRational.FromInt(1);
+  var q = BigRational.FromInt(1);
+  while (true) {
+    yield return q * BigRational.FromInt(4) / n;
+    n = n + BigRational.FromInt(2);
+    q = q * BigRational.FromInt(-1);
+  }
+}
+</pre>
+
+<p>As you can see, we can create <code>BigRational</code> from integers using a static method
+  <code>BigRational.FromInt</code>. The type also implements standard overloaded operators
+  (the snippet uses <code>+</code>, <code>*</code> and <code>/</code>) and a few additional operations, such as 
+  <code>BigRational.PowN</code> (to calculate power). To get approximate value of π as
+  a floating point number, we can write:</p>
+
+<pre lang="csharp">
+var pi = Series().Take(300).Aggregate((a, b) =&gt; a + b);
+Console.WriteLine(BigRational.ToDouble(pi));
+</pre>
+
+<p>In C#, we can use LINQ to take 300 elements of the series and sum them. The resulting rational
+  number can be converted to floating point using <code>BigRational.ToDouble</code>:</p>
+
+<h2>Summary</h2>
+
+<p>Using F# PowerPack from C# is just a bonus. The library is mainly designed for F#, but
+  it follows standard .NET programming patterns, so it can be nicely used from C# too.
+  The F# PowerPack implementation of rational numbers is likely good enough for many
+  applications, but if you need more features or better performance, you can check out
+  a list of numerical libraries for .NET (and F#) on MSDN [<a href="#ppn2l">4</a>].
+</p>
+
+
+<h2>References &amp; Links<a name="ppnuml"></a></h2>
+<ul>
+  <li>[1] <a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> (source code and binary packages) - CodePlex</li>
+  <li>[2] <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numeric Computing</a> - Real World Functional Programming on MSDN</li>
+  <li>[3] <a href="http://en.wikipedia.org/wiki/Pi#Estimating_the_value">Pi - Estimating the Value</a> - WikiPedia</li>
+  <li>[4] <a href="http://msdn.microsoft.com/en-us/library/hh304368.aspx">Numerical Libraries for F# and .NET</a> - Real World Functional Programming on MSDN</li>
+</ul>
+
+<!-- HTML code for ToolTips -->
+<div class="tip" id="ppifs1">namespace Microsoft<br /></div>
+<div class="tip" id="ppifs2">namespace Microsoft.FSharp<br /></div>
+<div class="tip" id="ppifs3">namespace Microsoft.FSharp.Math<br /></div>
+<div class="tip" id="ppifs4">val c : complex<br /><br />Full name: Untitled.c<br /><br />&#160;&#160;type: complex<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ppifs5">Multiple items
+<br />val complex : float -&gt; float -&gt; complex<br /><br />Full name: Microsoft.FSharp.Math.ComplexTopLevelOperators.complex
+<br /><br />--------------------<br />
+<br />type complex = Complex<br /><br />Full name: Microsoft.FSharp.Math.complex<br /><br />&#160;&#160;type: complex<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ppifs6">val i : Complex<br /><br />Full name: Untitled.i<br /><br />&#160;&#160;type: Complex<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ppifs7">val sqrt : &#39;T -&gt; &#39;U (requires member Sqrt)<br /><br />Full name: Microsoft.FSharp.Core.Operators.sqrt<br /></div>
+<div class="tip" id="ppifs8">val r1 : BigRational<br /><br />Full name: Untitled.r1<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs9">val r2 : BigRational<br /><br />Full name: Untitled.r2<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs10">val pown : &#39;T -&gt; int -&gt; &#39;T (requires member get_One and member ( * ) and member ( / ))<br /><br />Full name: Microsoft.FSharp.Core.Operators.pown<br /></div>
+<div class="tip" id="ppifs11">val q1 : BigRational<br /><br />Full name: Untitled.q1<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs12">val q2 : BigRational<br /><br />Full name: Untitled.q2<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs13">val series : BigRational -&gt; BigRational -&gt; seq&lt;BigRational&gt;<br /><br />Full name: Untitled.series
+<br /><br /><em>Generates szeries that approximates PI <br />&#160;4/1 - 4/3 + 4/5 - 4/7 + 4/9 (starting from q * 4/n)</em><br /></div>
+<div class="tip" id="ppifs14">val n : BigRational<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs15">val q : BigRational<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs16">Multiple items
+<br />val seq : seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq
+<br /><br />--------------------<br />
+<br />type seq&lt;&#39;T&gt; = System.Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;<br /><br />&#160;&#160;type: seq&lt;&#39;T&gt;<br />&#160;&#160;inherits: System.Collections.IEnumerable<br /></div>
+<div class="tip" id="ppifs17">val pi1 : BigRational<br /><br />Full name: Untitled.pi1<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>
+<div class="tip" id="ppifs18">module Seq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="ppifs19">val take : int -&gt; seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.take<br /></div>
+<div class="tip" id="ppifs20">val reduce : (&#39;T -&gt; &#39;T -&gt; &#39;T) -&gt; seq&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Collections.Seq.reduce<br /></div>
+<div class="tip" id="ppifs21">Multiple items
+<br />val float : &#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float
+<br /><br />--------------------<br />
+<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IComparable&lt;float&gt;<br />&#160;&#160;implements: System.IEquatable&lt;float&gt;<br />&#160;&#160;inherits: System.ValueType<br />
+<br /><br />--------------------<br />
+<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br /><br />&#160;&#160;type: float&lt;&#39;Measure&gt;<br />&#160;&#160;implements: System.IComparable<br />&#160;&#160;implements: System.IConvertible<br />&#160;&#160;implements: System.IFormattable<br />&#160;&#160;implements: System.IComparable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;implements: System.IEquatable&lt;float&lt;&#39;Measure&gt;&gt;<br />&#160;&#160;inherits: System.ValueType<br /></div>
+<div class="tip" id="ppifs22">val pi2 : BigRational<br /><br />Full name: Untitled.pi2<br /><br />&#160;&#160;type: BigRational<br />&#160;&#160;implements: System.IComparable<br /></div>

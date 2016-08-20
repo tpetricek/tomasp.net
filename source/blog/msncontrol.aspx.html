@@ -1,0 +1,88 @@
+<!-- [info]
+
+ - date: 2005-03-08T02:20:05.0000000
+ - description: Co vše lze dělat pomocí COM objektů programu Windows Messenger
+ - tags: 
+ - layout: post
+ - title: Práce s programem Windows Messenger
+ - url: msncontrol.aspx
+
+[/info] -->
+<!-- [abstract]
+Co vše lze dělat pomocí COM objektů programu Windows Messenger
+[/abstract] -->
+
+<h1>Práce s programem Windows Messenger</h1>
+<doc version="1"><body><h1>Práce s programem Windows Messenger</h1><p>Program Messenger dovoluje ostatním aplikacím prostřednictvím COM objektů 
+			v omezené míře používat jeho funkčnost. Je k tomu potřeba nainstalovaný objekt,
+			který je součástí Windows Messenger, ale kupodivu není v programu MSN
+			Messenger - to znamená, že pokud nemáte nainstalovaný Windows Messenger
+			(což se může stát pouze ve Windows 2003), tak nebudete moci s Messengerem 
+			pracovat. To že je objekt součástí Windows Messenger, ale kupodivu neznamená,
+			že při práci s objektem musíte být přihlášeni v tomto programu a tak lze objekt
+			používat i pokud používáte MSN Messenger.</p><h4>Co jde a co nejde udělat?</h4><p>Pomocí objektů lze přistupovat téměř ke všem funkcím Messengera.
+			Bohužel není možné dělat to nejdůležitější to jest posílat zprávy. Podle dokumentace
+			tato funkce dříve existovala, ale v novějších verzích byla (pravděpodobně z 
+			bezpečnostních důvodů) odstraněna. Pokud chcete tedy ze svého programu odesílat
+			zprávy můžete pouze zavolat funkci, která otevře standardní komunikační
+			okno Messengera. Bylo by sice možné po otevření okna pomocí API funkcí okno 
+			najít, poslat mu příslušné zprávy a zase ho zavřít, ale to rozhodně není
+			elegantní řešení.</p><h4>Ukázka práci s objekty</h4><!-- http://blog.vyvojar.cz/dnroot/tomas/msncontrol/contactlist.gif --><p><img src="msncontrol/contactlist.gif" alt="Ovládací prvek na výpis contact listu" /></p><p>Pokud jste někdy otevírali dokument ze SharePoint serveru tak víte, že
+			například Word dokáže zjišťovat kdo s lidí, kteří pracovali s daným 
+			dokumentem je online a umožňuje s nimi komunikovat. Vytvořit takový ovládací prvek 
+			na výpis online uživatelů není příliš komplikované.</p><p>První co je potřeba udělat je přidat referenci na knihovny ve kterých je objekt
+			(a Visual Studio v automaticky vygeneruje .Net wrappery). Stačí kliknout na
+			"Přidat referenci" a vyhledat soubor <code>msmsgs.exe</code> (spouštěcí soubor
+			messengera). Z přidaných referencí stačí jedna a to <code>MessengerAPI</code>.
+			Dále je potřeba vytvořit objekt pro práci s messengerem (a ještě bude potřeba zkusit 
+			uživatele přihlásit pokud je offline):</p><pre><span class="c">// Objekt pro praci s Messengerem</span>
+IMessenger msnObj=msnObj=new MessengerClass();
+  
+<span class="c">// Pokud je uzivatel offline tak ho prihlasime</span>
+if (msnObj.MyStatus==MISTATUS.MISTATUS_OFFLINE) 
+  msnObj.AutoSignin();
+</pre><p>Předcházející kód vytvoří objekt Messengera (pokud není Messenger nainstalovaný
+		vyhodí vyjímku). Pokud není spuštěný ani MSN Messenger ani Windows Messenger,
+		tak se při vytváření spustí druhý uvedený. Po přihlášení uživatele je možné 
+		získat jeho online kontakty a to následujícím způsobem:</p><pre><span class="c">// Objekt pro praci s contact listem</span>
+IMessengerContacts contacts=(IMessengerContacts)msnObj.MyContacts;
+  
+<span class="c">// Pridat kontakty do ListView</span>
+foreach(IMessengerContact contact in contacts)
+{
+  <span class="c">// Do vlastnosti Tag si ulozime contact pro pozdejsi praci s nim</span>
+  ListViewItem lvi=new ListViewItem();
+  lvi.Tag=contact; 
+  lvi.Text=contact.FriendlyName;
+  listViewContacts.Items.Add(lvi);
+}</pre><p>Tento kód sice nevytvoří tak hezký seznam kontaktů jako na výše uvedeném obrázku,
+		ale na ukázku to jistě stačí. Získat další informace o uživateli v kontaktu lze 
+		velmi snadno pomocí vlastností <code>IMessengerContact</code>. To že v cyklu 
+		ukládáme do <code>Tag</code> (což je vlastnost kam si progamátor může uložit co 
+		potřebuje) objekt kontaktu má svůj smysl, protože díky tomu bude velmi snadné napsat
+		zpracování události <code>DoubleClick</code>, která se bude chovat jak by se od ní
+		slušelo, tedy při poklepání na online kontakt zobrazí okno s konverzací a při
+		poklepání na offline kontakt umožní odeslat email na jeho adresu.</p><pre><span class="c">// Pokud neni vybrana jedna polozka tak nic</span>
+if (SelectedItems.Count!=1) return;
+  
+<span class="c">// Zjistit informace o kontaktu z Tag</span>
+IMessengerContact contact=(IMessengerContact)SelectedItems[0].Tag;
+<span class="c">// .. a poslat email/zpravu</span>
+if (contact.Status==MISTATUS.MISTATUS_OFFLINE)
+  msnObj.SendMail(contact);
+else
+  msnObj.InstantMessage(contact);
+</pre><h4>Ovládací prvek na výpis kontaktů</h4><p>Celý ovládací prvek, tak jak je vyobrazen na obrázku nahoře dávám k dispozici
+			včetně zdrojových kódu, takže pokud ho chcete použít a nebo se chcete podívat na
+			celý zdrojový kód můžete si ho stáhnout [<a href="#links214">1</a>]. Proti zde popsané ukázce má ovládací
+			prvek pár vylepšení. Je napsaná tak, aby kontakty přidávala do seznamu
+			pouze jednou a poté pouze aktualizuje zobrazované informace a jako další
+			vylepšení umožňuje kontakty zobrazovat setřízené.</p><p>Používání objektů programu Messenger je hodně omezené a zdaleka není možné
+			dosáhnout všeho, co by bylo potřeba, ale pro jednoduché rozšíření vaší aplikace
+			o možnost komunikace (například s lidmi, kteří se nějak podíleli na tvorbě
+			dokumentu) to mylím stačí. Pokud potřebujete používat nějaký pokročilejší
+			funkce pro komunikaci můžete se podívat na Microsoftí produkt Live 
+			Communications Server [<a href="#links214">3</a>], který je k tomuto přímo určen.</p><h4>Odkazy na související stránky</h4><a name="links214"></a><ul class="externallinks"><li>[1] <a href="http://blog.vyvojar.cz/dnroot/tomas/msncontrol/msncontrol.zip">Ovládací prvek na zobrazení kontaktů</a>
+    		[<a href="http://blog.vyvojar.cz/dnroot/tomas/msncontrol/msncontrol.zip" target="_blank">^</a>] (46,5kB)</li><li>[2] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/WinMessenger/winmessenger/reference/messengeruasdk/cpp_client_entry.asp">Windows Messenger Client Reference</a>
+    		[<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/WinMessenger/winmessenger/reference/messengeruasdk/cpp_client_entry.asp" target="_blank">^</a>] - MSDN</li><li>[3] <a href="http://www.microsoft.com/office/livecomm/prodinfo/overview.mspx">Live Communications Server 2005</a>
+    		[<a href="http://www.microsoft.com/office/livecomm/prodinfo/overview.mspx" target="_blank">^</a>] - Microsoft.com</li></ul></body></doc>

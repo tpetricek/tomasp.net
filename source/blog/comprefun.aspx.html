@@ -1,0 +1,1095 @@
+<!-- [info]
+
+ - date: 2011-07-19T23:28:29.0000000
+ - description: Monad comprehensions are back in Haskell, more powerful than ever before! The recent implementation adds expressive power by generalizing grouping, ordering and also parallel list comprehensions. This article shows how to use this new expressivity for programming with parsers and writing parallel and concurrent computations.
+ - tags: haskell,research,parallel
+ - layout: post
+ - title: Fun with parallel monad comprehensions (The Monad.Reader)
+ - url: comprefun.aspx
+
+[/info] -->
+<!-- [abstract]
+<p style="font-style:italic;">
+This article is a re-publication of an article that I wrote some time ago for 
+<a href="http://themonadreader.wordpress.com/">The Monad.Reader</a> magazine, which is an
+online magazine about functional programming and Haskell. You can also
+read the article in the original PDF format as part of the <a href="http://themonadreader.files.wordpress.com/2011/07/issue18.pdf">Issue 18</a>
+(together with two other interesting articles). The samples from the article can be found <a href="https://github.com/tpetricek/Haskell.Joinads">on Github</a>.
+</p>
+
+<p>Monad comprehensions have an interesting history. They were the first syntactic extension for 
+programming with monads. They were implemented in Haskell, but later replaced with plain list
+comprehensions and monadic <code>do</code> notation. Now, monad comprehensions are back in Haskell,
+more powerful than ever before!</p>
+
+<p>Redesigned monad comprehensions generalize the syntax for working with lists. Quite interestingly, 
+they also generalize syntax for zipping, grouping and ordering of lists. This article shows how to 
+use some of the new expressive power when working with well-known monads. You'll learn what 
+"parallel composition" means for parsers, a poor man's concurrency monad and an evaluation 
+order monad.</p>
+
+<ul>
+  <li><a href="http://tomasp.net/blog/comprefun.aspx">Continue reading on the web...</a></li>
+  <li><a href="http://themonadreader.files.wordpress.com/2011/07/issue18.pdf">Get The Monad.Reader Issue 18</a> (PDF)</li>
+</ul>
+[/abstract] -->
+
+<h1>Fun with parallel monad comprehensions (The Monad.Reader)</h1>
+<p style="font-style:italic;">
+This article is a re-publication of an article that I wrote some time ago for 
+<a href="http://themonadreader.wordpress.com/">The Monad.Reader</a> magazine, which is an
+online magazine about functional programming and Haskell. You can also
+read the article in the original PDF format as part of the <a href="http://themonadreader.files.wordpress.com/2011/07/issue18.pdf">Issue 18</a>
+(together with two other interesting articles). The samples from the article can be found <a href="https://github.com/tpetricek/Haskell.Joinads">on Github</a>.
+</p>
+
+<p>Monad comprehensions have an interesting history. They were the first syntactic extension for 
+programming with monads. They were implemented in Haskell, but later replaced with plain list
+comprehensions and monadic <code>do</code> notation. Now, monad comprehensions are back in Haskell,
+more powerful than ever before!</p>
+
+<p>Redesigned monad comprehensions generalize the syntax for working with lists. Quite interestingly, 
+they also generalize syntax for zipping, grouping and ordering of lists. This article shows how to 
+use some of the new expressive power when working with well-known monads. You'll learn what 
+"parallel composition" means for parsers, a poor man's concurrency monad and an evaluation 
+order monad.</p>
+
+<h2>1&#160; Introduction</h2>
+
+<p>This article is inspired by my earlier work on <em>joinads</em> [<a href="#cpfhr">1</a>], an extension that 
+adds pattern matching on abstract values to the <em>computation expression</em> syntax in F#. 
+Computation expressions are quite similar to the <code>do</code> notation in Haskell. 
+After implementing the F# version of 
+joinads, I wanted to see how the ideas would look in Haskell. I was quite surprised to find out that 
+a recent extension for GHC adds some of the expressive power of joinads to Haskell. </p>
+
+<p>To add some background: the F# computation expression syntax can be used to work with 
+<em>monads</em>, but also with <em>monoids</em> and a few other abstract notions of computation. 
+It also adds several constructs that generalize imperative features of F#, including <code>while</code> 
+and <code>for</code> loops as well as exception handling. The <em>joinads</em> extension adds support for
+pattern-matching on "monadic values". For example, you can define a parallel programming monad
+and use joinads to wait until two parallel computations both complete or wait until the first of 
+the two completes returning a value matching a particular pattern.</p>
+
+<p>How are F# joinads related to Haskell? A recent GHC patch implemented by Nils Schweinsberg 
+[<a href="#cpfhr">2</a>, <a href="#cpfhr">3</a>] brings back support for monad comprehensions to Haskell. 
+The change is now a part of the main branch and will be available in GHC starting with the 7.2 release.
+The patch doesn't just re-implement original monad comprehensions, but also generalizes recent 
+additions to list comprehensions, allowing parallel monad comprehensions and monadic 
+versions of operations like ordering and grouping [<a href="#cpfhr">4</a>]. </p>
+
+<p>The operation that generalizes parallel comprehensions is closely related to a <code>merge</code> operation 
+that I designed for F# joinads. In the rest of this article, I demonstrate some of the 
+interesting programs that can be written using this operation and the elegant syntax provided by 
+the re-designed monad comprehensions. </p>
+
+
+<h3>1.1&#160; Quick review of list comprehensions</h3>
+<p>List comprehensions are a very powerful mechanism for working with lists in Haskell. I expect that 
+you're already familiar with them, but let me start with a few examples. I will use the examples 
+later to demonstrate how the generalized monad comprehension syntax works in a few interesting cases.</p>
+
+<p>If we have a list <code>animals</code> containing "cat" and "dog" and a list <code>sounds</code> containing 
+animal sounds "meow" and "woof", we can write the following snippets:</p>
+
+<pre lang="haskell">
+&gt; [ a ++ " " ++ s | a &lt;- animals, s &lt;- sounds ]
+["cat meow","cat woof","dog meow","dog woof"]
+
+&gt; [ a ++ " " ++ s | a &lt;- animals, s &lt;- sounds, a !! 1 == s !! 1 ]
+["dog woof"]
+
+&gt; [ a ++ " " ++ s | a &lt;- animals | s &lt;- sounds ]
+["cat meow","dog woof"]
+</pre>
+
+<p>The first example uses just the basic list comprehension syntax. It uses two <em>generators</em>
+to implement a Cartesian product of the two collections. The second example adds a guard to specify that we
+want only pairs of strings whose second character is the same. The guard serves as an additional
+filter for the results.</p>
+
+<p>The last example uses parallel list comprehensions. The syntax is available after enabling the 
+<code>ParallelListComp</code> language extension. It allows us to take elements from multiple lists, so
+that the <em>n<sup>th</sup></em> element of the first list is matched with the <em>n<sup>th</sup></em> element of the 
+second list. The same functionality can be easily expressed using the <code>zip</code> function. </p>
+
+
+<h3>1.2&#160; Generalizing to monad comprehensions</h3>
+<p>The three examples we've seen in the previous section are straightforward when working with lists.
+After installing the latest development snapshot of GHC and turning on the
+<code>MonadComprehensions</code> language extension, we can use the same syntax for working
+with further notions of computation. If we instantiate the appropriate type classes, we can even use 
+guards, parallel comprehensions and operations like ordering or grouping. 
+Here are some of the type classes and functions that are used by the desugaring:</p>
+
+<pre lang="haskell">
+class Monad m where
+  (&gt;&gt;=)  :: m a -&gt; (a -&gt; m b) -&gt; m b
+  return :: a -&gt; m a
+
+class (Monad m) =&gt; MonadPlus m where
+  mzero :: m a
+  mplus :: m a -&gt; m a -&gt; m a
+
+class (Monad m) =&gt; MonadZip m where
+  mzip :: m a -&gt; m b -&gt; m (a, b)
+
+guard :: MonadPlus m =&gt; Bool -&gt; m ()
+guard b = if b then return () else mzero
+</pre>
+
+<p>Aside from <code>Monad</code>, the desugaring also uses the <code>MonadPlus</code> and <code>MonadZip</code> 
+type classes. The former is used only for the <code>guard</code> function, which is also defined above. The latter is a new class which has been added as a generalization of parallel
+list comprehensions. The name of the function makes it clear that the
+type class is a generalization of the <code>zip</code> function. The patch also defines a <code>MonadGroup</code>
+type class that generalizes grouping operations inside list comprehensions, but I will not discuss that feature in this article.</p>
+
+<p>You can find the general desugaring rules in the patch description [<a href="#cpfhr">2</a>]. In this 
+article, we'll just go through the examples from the previous section
+and examine what the  translation looks like. The following declaration shows how to
+implement the <code>Monad</code>, <code>MondPlus</code>, and <code>MonadZip</code> type classes
+for lists:</p>
+
+<pre lang="haskell">
+instance Monad [] where
+  source &gt;&gt;= f = concat $ map f source
+  return a = [a]
+
+instance MonadPlus [] where
+  mzero = []
+  mplus = (++)
+
+instance MonadZip [] where
+  mzip = zip
+</pre>
+
+<p>The <code>&gt;&gt;=</code> operation, called bind, applies the provided function to each element of the input list 
+and then concatenates the generated lists. The <code>return</code> function creates a singleton list containing 
+the specified value. The <code>mzero</code> value from <code>MonadPlus</code> type class is an empty list, which 
+means that <code>guard</code> returns <code>[()]</code> when the argument is <code>True</code> and the empty list otherwise. Finally,
+the <code>mzip</code> function for lists is just <code>zip</code>.</p>
+
+<p>Now we have everything we need to look at the desugaring of monad comprehensions. The first
+example from the previous section used multiple generators and can be translated purely in terms
+of <code>Monad</code>:</p>
+
+<pre lang="haskell">
+animals &gt;&gt;= (\a -&gt; sounds &gt;&gt;= (\s -&gt; 
+  return $ a ++ " " ++ b))
+</pre>
+
+<p>Every generator is translated to a binding using <code>&gt;&gt;=</code>. The operations are nested, and
+the innermost operation always returns the result of the output function. The next snippet shows
+what happens when we add a predicate to filter the results:</p>
+
+<pre lang="haskell">
+animals &gt;&gt;= (\a -&gt; sounds &gt;&gt;= (\s -&gt; 
+  guard (a !! 1 == s !! 1) &gt;&gt;= (\_ -&gt; 
+    return $ a ++ " " ++ s) ))
+</pre>
+
+<p>A predicate is translated into a call to the <code>guard</code> function in the innermost part of the 
+desugared expression. When the function returns <code>mzero</code> value (an empty list), the result of the
+binding will also be <code>mzero</code>, so the element for which the predicate doesn't hold will be 
+filtered out. Finally, let's look at the translation of the last example:</p>
+
+<pre lang="haskell">
+(animals `mzip` sounds) &gt;&gt;= (\(a, s) -&gt; 
+  return $ a ++ " " ++ s)
+</pre>
+
+<p>When we use parallel comprehensions, the inputs of the generators are combined using the <code>mzip</code>
+function. The result is passed to the bind operation, which applies the output function to values
+of the combined computation. If we also specified filtering, the <code>guard</code> function would be added 
+to the innermost expression, as in the previous example.</p>
+
+<p>As you can see, the translation of monad comprehensions is quite simple, but it adds
+expressivity to the syntax for working with monads. In particular, the <code>do</code> notation doesn't provide
+an equivalent syntactic extension for writing parallel comprehensions. (Constructs like generalized 
+ordering, using functions of type <code>m a -&gt; m a</code>, and generalized
+grouping, using functions of type <code>m a -&gt; m (m a)</code>, add even more expressivity, but that's a topic for another article.)
+In the next three sections, I show how we could implement the <code>mzip</code> operation for several 
+interesting monads, representing parsers, resumable computations, and
+parallel computations. At the end of the article, I also briefly 
+consider laws that should hold about the <code>mzip</code> operation.</p>
+
+<h2>2&#160; Composing parsers in parallel</h2>
+<p>What does a <em>parallel composition of two parsers</em> mean? Probably the best thing we can do 
+is to run both parsers on the input string and return a tuple with the two results. That sounds
+quite simple, but what is this construct good for? Let's first implement it and then look at 
+some examples. </p>
+
+
+<h3>2.1&#160; Introducing parsers</h3>
+<p>A parser is a function that takes an
+input string and returns a list of possible results. It may be empty (if the parser fails) or 
+contain several items (if there are multiple ways to parse the input). The implementation I use 
+in this article mostly follows the one by Hutton and Meijer [<a href="#cpfhr">5</a>].</p>
+
+<pre lang="haskell">
+newtype Parser a
+  = Parser (String -&gt; [(a, Int, String)])
+</pre>
+
+<p>The result of parsing is a tuple containing a value of type <code>a</code> produced by the parser, the number
+of characters consumed by the parser, and the remaining unparsed part of the string. The <code>Int</code> value
+represents the number of characters consumed by the parser. It is not usually included in the definition,
+but we'll need it in the implementation of <code>mzip</code>.</p>
+
+<p>Now that we have a definition of parsers, we can create our first primitive parser and a 
+function that runs a parser on an input string and returns the results:</p>
+
+<pre lang="haskell">
+item :: Parser Char
+item = Parser (\input -&gt; case input of
+  ""   -&gt; []
+  c:cs -&gt; [(c, 1, cs)])
+
+run :: Parser a -&gt; [a]
+run (Parser p) input = 
+  [ result | (result, _, tail) &lt;- p input, tail == [] ]
+</pre>
+
+<p>The <code>item</code> parser returns the first character of the input string. When it succeeds, it consumes 
+a single character, so it returns 1 as the second element of the tuple. The <code>run</code> function
+applies the underlying function of the parser to a specified input. As specified by the condition
+<code>tail == []</code>, the function returns the results of those parsers which parsed the entire input.
+The next step is to make the parser monadic.</p>
+
+
+<h3>2.2&#160; Implementing the parser monad</h3>
+<p>Parsers are well known examples of <em>monads</em> and of <em>monoids</em>. This means that we can 
+implement both the <code>Monad</code> and the <code>MonadPlus</code> type
+classes for our <code>Parser</code> type. The implementation looks as follows:</p>
+
+<pre lang="haskell">
+instance Monad Parser where
+  return a = Parser (\input -&gt; [(a, 0, input)])
+  (Parser p1) &gt;&gt;= f = Parser (\input -&gt;
+    [ (result, n1 + n2, tail) 
+        | (a, n1, input') &lt;- p1 input
+        , let (Parser p2) = f a
+        , (result, n2, tail) &lt;- p2 input' ])
+
+instance MonadPlus Parser where 
+  mzero = Parser (\_ -&gt; [])
+  mplus (Parser p1) (Parser p2) = Parser (\input -&gt;
+    p1 input ++ p2 input)
+</pre>
+
+<p>The <code>return</code> operation returns a single result containing the specified value that doesn't consume
+any input. The <code>&gt;&gt;=</code> operation can be implemented using ordinary list comprehensions.
+It runs the parsers in sequence, returns the result of the second parser and consumes the sum of 
+characters consumed by the first and the second parser. The <code>mzero</code> operation creates a parser that 
+always fails, and <code>mplus</code> represents a nondeterministic
+choice between two parsers. </p>
+
+<p>The two type class instances allow us to use some of the monad comprehension syntax. We can now 
+use the <code>item</code> primitive to write a few simple parsers:</p>
+
+<pre lang="haskell">
+sat :: (Char -&gt; Bool) -&gt; Parser Char
+sat pred   = [ ch | ch &lt;- item, pred ch ]
+
+char, notChar :: Char -&gt; Parser Char
+char ch    = sat (ch ==)
+notChar ch = sat (ch /=)
+
+some p = [ a:as | a &lt;- p, as &lt;- many p ]
+many p = some p `mplus` return []
+</pre>
+
+<p>The <code>sat</code> function creates a parser that parses a character matching the specified predicate. 
+The <em>generator syntax</em> <code>ch &lt;- item</code> corresponds to monadic binding and is desugared 
+into an application of the <code>&gt;&gt;=</code> operation. Because the <code>Parser</code> type is an instance
+of <code>MonadPlus</code>, we can use the predicate <code>pred ch</code> as a guard. The 
+desugared version of the function is:</p>
+
+<pre lang="haskell">
+sat pred = item &gt;&gt;= (\ch -&gt;
+  guard (pred ch) &gt;&gt;= (\_ -&gt; return ch))
+</pre>
+
+<p>The <code>some</code> and <code>many</code> combinators are mutually recursive. The first creates a parser that 
+parses one or more occurrences of <code>p</code>. We encode it using a monad comprehension with two bindings. 
+The parser parses <code>p</code> followed by <code>many p</code>. Another way to write the <code>some</code> parser would be to 
+use combinators for working with applicative functors. This would allow us to write just 
+<code>(:) &lt;$&gt; p &lt;*&gt; many p</code>. However, using combinators becomes more difficult when we need 
+to specify a guard as in the <code>sat</code> parser. Monad comprehensions provide a uniform
+and succinct alternative. </p>
+
+<p>The order of monadic bindings usually matters. The monad comprehension syntax makes this fact
+perhaps slightly less obvious than the <code>do</code> notation. To demonstrate this, let's look at a parser that
+parses the body of an expression enclosed in brackets:</p>
+
+<pre lang="haskell">
+brackets :: Char -&gt; Char -&gt; Parser a -&gt; Parser a
+brackets op cl body = 
+  [ inner 
+      | _ &lt;- char op
+      , inner &lt;- brackets op cl body `mplus` body
+      , _ &lt;- char cl ]
+
+skipBrackets = brackets '(' ')' (many item)
+</pre>
+
+<p>The <code>brackets</code> combinator takes characters representing opening and closing brackets and a parser for parsing 
+the body inside the brackets. It uses a monad comprehension with three
+binding expressions that parse an
+opening brace, the body or more brackets, and then the closing brace.</p>
+
+<p>If you run the parser using <code>run skipBrackets "((42))"</code> you get a list containing <code>"42"</code>, but also 
+<code>"(42)"</code>. This is because the <code>many item</code> parser can also consume brackets. To correct that, we need
+to write a parser that accepts any character except opening and
+closing brace. As we will see 
+shortly, this can be elegantly solved using parallel comprehensions.</p>
+
+<h3>2.3&#160; Parallel composition of parsers</h3>
+<p>To support parallel monad comprehensions, we need to implement <code>MonadZip</code>. 
+As a reminder, the type class defines an operation <code>mzip</code> with the following type:</p>
+
+<pre lang="haskell">
+mzip :: m a -&gt; m b -&gt; m (a, b)
+</pre>
+
+<p>By looking just at the type signature, you can see that the operation can be implemented in terms
+of <code>&gt;&gt;=</code> and <code>return</code> like this:</p>
+
+<pre lang="haskell">
+mzip ma mb = ma &gt;&gt;= \a -&gt; mb &gt;&gt;= \b -&gt; return (a, b)
+</pre>
+
+<p>This is a reasonable definition for some monads, such as the <code>Reader</code> monad, but not for all of 
+them. For example, <code>mzip</code> for lists should be <code>zip</code>, but the definition above would behave as a
+Cartesian product! A more interesting definition for parsers, which cannot be expressed using other 
+monad primitives, is parallel composition:</p>
+
+<pre lang="haskell">
+instance MonadZip Parser where 
+  mzip (Parser p1) (Parser p2) = Parser (\input -&gt; 
+    [ ((a, b), n1, tail1) 
+        | (a, n1, tail1) &lt;- p1 input
+        , (b, n2, tail2) &lt;- p2 input
+        , n1 == n2 ])
+</pre>
+
+<p>The parser created by <code>mzip</code> independently parses the input string using both of the parsers.
+It uses list comprehensions to find all combinations of results such that the number of 
+characters consumed by the two parsers was the same. For each matching combination, the parser 
+returns a tuple with the two parsing results. Requiring that the two parsers consume the same 
+number of characters is not an arbitrary decision. It means that the remaining unconsumed strings 
+<code>tail1</code> and <code>tail2</code> are the same and so we can return either of them. Using a counter is more efficient
+than comparing strings and it also enables working with infinite strings.</p>
+
+<p>Let's get back to the example with parsing brackets. The following snippet uses parallel 
+monad comprehensions to create a version that consumes all brackets:</p>
+
+<pre lang="haskell">
+skipAllBrackets = brackets '(' ')' body
+  where body = many [ c | c &lt;- notChar '(' | _ &lt;- notChar ')' ]
+</pre>
+
+<p>The parser <code>body</code> takes zero or more of any characters that are not opening or closing brackets.
+The parallel comprehension runs two <code>notChar</code> parsers on the same input. They both read a single
+character and they succeed if the character is not `(' and `)' respectively. The resulting parser
+succeeds only if both of them succeed. Both parsers return the same character, so we
+return the first one as the result and ignore the second.</p>
+
+<p>Another example where this syntax is useful is validation of
+inputs. For example, a valid Cambridge
+phone number consists of 10 symbols, contains only digits, and starts with 1223. The new
+syntax allows us to directly encode these three rules:</p>
+
+<pre lang="haskell">
+cambridgePhone = 
+  [ n | n &lt;- many (sat isDigit)
+      | _ &lt;- replicateM 10 item
+      | _ &lt;- startsWith (string "1223") ]
+</pre>
+
+<p>The encoding is quite straightforward. We need some additional
+combinators, such as <code>replicateM</code>, which repeats a parser a specified
+number of times, and <code>startsWith</code>, which runs a parser and then
+consumes any number of characters.</p>
+
+<p>We could construct a single parser that recognizes valid Cambridge phone numbers without using
+<code>mzip</code>. The point of this example is that we can quite nicely combine several independent rules,
+which makes the validation code easy to understand and extend.</p>
+
+
+<h3>2.4&#160; Parallel composition of context-free parsers</h3>
+
+<p>Monadic parser combinators are very expressive. In fact, they are
+often <em>too</em> expressive, which makes it difficult to implement
+the combinators efficiently. This was a motivation for the development
+of non-monadic parsers, such as the one by Swierstra
+[<a href="#cpfhr">6</a>, <a href="#cpfhr">7</a>], which are less expressive but
+more efficient.  <em>Applicative functors</em>, developed by McBride
+and Paterson [<a href="#cpfhr">8</a>], are a weaker abstraction that can be
+used for writing parsers. The next snippet shows the
+Haskell type class <code>Applicative</code> that represents applicative
+functors.</p>
+
+<pre lang="haskell">
+class (Functor f) =&gt; Applicative f where
+  pure  :: a -&gt; f a
+  (&lt;*&gt;) :: f (a -&gt; b) -&gt; f a -&gt; f b
+</pre>
+
+<p>If you're familiar with applicative functors, you may know that there is an alternative definition 
+of <code>Applicative</code> that uses an operation with the same type signature as <code>mzip</code>. We could use 
+<code>mzip</code> to define an <code>Applicative</code> instance, but this would give us a very different parser definition!
+In some sense, the following example combines two different applicative functors, but I'll write more 
+about that in the next section.</p>
+
+<p>The usual applicative parsers allow us to write parsers where the choice of the next parser 
+doesn't depend on the value parsed so far. In terms of formal language theory, they can express 
+only <em>context-free</em> languages. This is still sufficient for many practical purposes. For 
+example, our earlier <code>brackets</code> parser can be written using the applicative combinators:</p>
+
+<pre lang="haskell">
+brackets op cl body = 
+  pure (\_ inner _ -&gt; inner)
+    &lt;*&gt; char op
+    &lt;*&gt; brackets op cl body `mplus` body
+    &lt;*&gt; char cl
+</pre>
+
+<p>The example first creates a parser that always succeeds and returns a function using the <code>pure</code> 
+combinator. Then it applies this function (contained in a parser) to three arguments (produced
+by the three parsers). The details are not important, but the example shows that comprehensions
+with independent generators can be expressed just using the <code>Applicative</code> interface.</p>
+
+<p>The interesting question is, what operation does <code>mzip</code>
+represent for context-free grammars? A language we obtain if parses for two other languages both 
+succeed is an <em>intersection</em> of the two languages. An intersection of two context-free 
+languages is not necessarily context-free, which can be demonstrated using the following example:</p>
+
+<p style="margin-left:20px">
+A = { a<sup>m</sup> b<sup>m</sup> c<sup>n</sup> | m, n &#8805; 0 }<br /> 
+B = { a<sup>n</sup> b<sup>m</sup> c<sup>m</sup> | m, n &#8805; 0 } <br />
+A &#8745; B = { a<sup>m</sup> b<sup>m</sup> c<sup>m</sup> | m &#8805; 0 }<br />
+</p>
+
+<p>The language <em>A</em> accepts words that start with some number of `a' followed by the same
+number of `b' and then arbitrary number of `c' symbols. The language <em>B</em> is similar, but it
+starts with a group of any length followed by two groups of the same length. Both are context-free. In fact, our parser <code>brackets</code> can be used to parse the two 
+character groups with the same length.</p>
+
+<p>The intersection <em>A &#8745; B</em> is not context-free [<a href="#cpfhr">9</a>], but we can easily
+encode it using parallel composition of parsers. We don't need the full power of monads
+to parse the first group and calculate its length. It could be implemented just in terms of
+<code>Applicative</code> and <code>mzip</code>, but we use the nicer monad comprehension syntax:</p>
+
+<pre lang="haskell">
+[ True | _ &lt;- many $ char 'a', _ &lt;- brackets 'b' 'c' unit
+       | _ &lt;- brackets 'a' 'b' unit, _ &lt;- many $ char 'c' ]
+  where unit = return ()
+</pre>
+
+<p>The example uses both parallel and sequential binding, but the sequential composition doesn't
+involve dependencies on previously parsed results. It uses <code>brackets</code> to parse two groups of the
+same length, followed (or preceded) by <code>many</code> to consume the remaining group of arbitrary length.</p>
+
+
+<h3>2.5&#160; Applicative and parallel parsers</h3>
+<p>Before moving to the next example, let's take a look how <code>mzip</code> relates to applicative functors.
+As already mentioned, an alternative definition of applicative functors ([<a href="#cpfhr">8</a>] section 7) 
+uses an operation with exactly the same type signature as <code>mzip</code>. You can find the alternative 
+definition in the following snippet:</p>
+
+<pre lang="haskell">
+class Functor f =&gt; Monoidal f where
+  unit  :: f ()
+  (&#8902;)   :: f a -&gt; f b -&gt; f (a, b)
+
+pure :: Monoidal f =&gt; a -&gt; f a
+pure a = fmap (const a) unit
+
+(&lt;*&gt;) :: Monoidal f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+f &lt;*&gt; a = fmap (uncurry ($)) (f &#8902; a)
+</pre>
+
+<p>Applicative functors are more general than monads, which means that every monad is also an applicative functor. 
+When introducing the _mzip_ operation, we attempted to define it in terms of _return_ and _&gt;&gt;=_. That code
+was actually a definition of &#8902;. However, as already explained, we cannot use that definition (or the
+&#8902; operation) for _mzip_, because that definition isn't always intuitively right. Referring to 
+intuition is always tricky, so I'll express my expectations more formally in terms of laws at the end of the article. 
+However, if we always just used &#8902; as the <code>mzip</code> operation, we wouldn't get any additional expressive power, so there 
+would be no point in using parallel monad comprehensions. The expression <code>[ e | a &lt;- e1 | b &lt;- e2]</code>
+would mean exactly the same thing as <code>[ e | a &lt;- e1, b &lt;- e2]</code>. </p>
+
+<p>For example, the definition of &#8902; for the usual <code>List</code>
+monad gives us the Cartesian product of lists. This isn't very useful, because we can get that
+behavior using multiple generators. Instead, parallel list comprehensions use zipping of lists, which comes 
+from a different applicative functor, namely <code>ZipList</code>.</p>
+
+<p>The example with parsers is similar. The implementation of &#8902; would give us sequential 
+composition of parsers. This wouldn't be very useful, so I defined <code>mzip</code> as the intersection of 
+parsers. This is an interesting operation that adds expressive power to the language. The <code>mzip</code> 
+operation also defines an instance of applicative functor for parsers, but a different one.</p>
+
+<p>For the fans of category theory, the &#8902; operation is a natural transformation of a 
+<em>monoidal functor</em> that can be defined by the monad we're working with. The <code>mzip</code> operation 
+can be also viewed as a natural transformation of some monoidal functor, but it may 
+be a different one. One of the additional laws that we can require about <code>mzip</code> is commutativity 
+(more about that later), which means that <code>mzip</code> should be defined by a 
+<em>symmetric monoidal functor</em>.</p>
+
+
+<h2>3&#160; Parallelizing cooperative computations</h2>
+
+<p>As the name <em>parallel</em> monad comprehensions suggests, we can use the syntax for 
+running computations in parallel. Unlike comprehensions with multiple generators, parallel
+comprehensions cannot have any dependencies between the composed bindings. This means that the 
+computations can be evaluated independently. </p>
+
+<p>In this section, I demonstrate the idea using a poor man's concurrency monad inspired by Claessen [<a href="#cpfhr">10</a>]. The monad can be used to implement a lightweight cooperative concurrency. When 
+running two computations in parallel, we can allow interleaving of atomic actions from the two 
+threads.</p>
+
+
+<h3>3.1&#160; Modelling resumable computations</h3>
+
+<p>The example I demonstrate here models computations using <em>resumptions</em>. This concept is 
+slightly simpler than the original poor man's concurrency monad (which is based on continuations). 
+A resumption is a computation that has either finished and produced some value or has not
+finished, in which case it can run one atomic step and produce a new resumption:</p>
+
+<pre lang="haskell">
+data Monad m =&gt; Resumption m r 
+  = Step (m (Resumption m r))
+  | Done r
+</pre>
+
+<p>The type is parametrized over a monad and a return type. When evaluating a resumption, we 
+repeatedly run the computation step-by-step. While evaluating, we perform the effects allowed by
+the monad <code>m</code> until we eventually get a result of type <code>r</code>. If you're interested in more details 
+about the <code>Resumption</code> type, you can find similar definitions in Harrison's cheap threads 
+[<a href="#cpfhr">11</a>] and Papaspyrou's resumption transformer [<a href="#cpfhr">12</a>].</p>
+
+<p>Now that we have a type, we can write a function to create a <code>Resumption</code> that runs a single
+atomic action and then completes, and a function that runs a <code>Resumption</code>:</p>
+
+<pre lang="haskell">
+run :: Monad m =&gt; Resumption m r -&gt; m r
+run (Done r) = return r
+run (Step m) = m &gt;&gt;= run
+
+action :: Monad m =&gt; m r -&gt; Resumption m r
+action a = Step [ Done r | r &lt;- a ]
+</pre>
+
+<p>The <code>run</code> function takes a resumption that may perform effects specified by the monad <code>m</code> and
+runs the resumption inside the monad until it reaches <code>Done</code>. The function runs the whole 
+computation sequentially (and it cannot be implemented differently). The cooperative concurrency
+can be added later by creating a combinator that interleaves the steps of two <code>Resumption</code>
+computations.</p>
+
+<p>The <code>action</code> function is quite simple. It returns a <code>Step</code> that runs the specified action 
+inside the monad <code>m</code> and then wraps the result using the <code>Done</code> constructor. I implemented the
+function using monad comprehensions to demonstrate the notation again, but it could be equally 
+written using combinators or the <code>do</code> notation.</p>
+
+
+<h3>3.2&#160; Implementing the resumption monad</h3>
+
+<p>You can see the implementation of <code>Monad</code> instance for
+<code>Resumption m</code> below. 
+The <code>return</code> operation creates a new resumption in the "done" state
+which contains the specified 
+value. The <code>&gt;&gt;=</code> operation constructs a resumption that gets the result of the 
+first resumption and then calls the function <code>f</code>. When the left parameter is <code>Done</code>, we 
+apply the function to the result and wrap the application inside <code>return</code> (because the function
+is pure) and <code>Step</code>. When the left parameter is <code>Step</code>, we create a resumption that runs the
+step and then uses <code>&gt;&gt;=</code> recursively to continue running steps from the left argument until it 
+finishes.</p>
+
+<pre lang="haskell">
+instance Monad m =&gt; Monad (Resumption m) where
+  return a = Done a
+  (Done r) &gt;&gt;= f = Step $ return (f r)
+  (Step s) &gt;&gt;= f = Step $ do
+    next &lt;- s
+    return $ next &gt;&gt;= f
+
+instance MonadTrans Resumption where
+  lift = action
+</pre>
+
+<p>The listing also defines an instance of <code>MonadTrans</code> to make <code>Resumption</code> a monad transformer.
+The <code>lift</code> function takes a computation in the monad <code>m</code> and turns it into a computation in the 
+<code>Resumption</code> monad. This is exactly what our function for wrapping atomic actions does.</p>
+
+<p>Equipped with the two type class instances and the <code>run</code> function, we can write some interesting
+computations. The following function creates a computation that runs for the specified number of
+steps, prints some string in each step and then returns a specified value:</p>
+
+<pre lang="haskell">
+printLoop :: String -&gt; Int -&gt; a -&gt; Resumption IO a
+printLoop str count result = do
+  lift $ putStrLn str
+  if count == 1 then return result
+  else printLoop str (count - 1) result
+
+cats = run $ printLoop "meow" 3 "cat"
+</pre>
+
+<p>The function is written using the <code>do</code> notation. It first prints the specified string, using 
+<code>lift</code> to turn the <code>IO ()</code> action into a single-step <code>Resumption IO ()</code>. When the counter reaches
+one, it returns the result; otherwise it continues looping.</p>
+
+<p>The snippet defines a simple computation <code>cats</code> that prints "meow" three times and then 
+returns a string "cat". The computations created by <code>printLoop</code> are not fully opaque. If we have 
+two computations like <code>cats</code>, we can treat them as sequences of steps and interleave them. 
+This is what the <code>mzip</code> operation does.</p>
+
+
+<h3>3.3&#160; Parallel composition of resumptions</h3>
+
+<p>If we have two resumptions, we can compose them to run in sequence either using the <code>do</code> notation or
+using a monad comprehension with two generators. To run them in parallel, we need to implement
+interleaving of the steps as shown in the next snippet: </p>
+
+<pre lang="haskell">
+instance Monad m =&gt; MonadZip (Resumption m) where
+  mzip (Done a) (Done b) = Done (a, b)
+  mzip sa sb = Step [ mzip a b | a &lt;- step sa, b &lt;- step sb ]
+    where step (Done r) = return $ Done r 
+          step (Step sa) = sa
+</pre>
+
+<p>The result of <code>mzip</code> is a resumption that consists of multiple steps. In each step, it performs
+one step of both of the resumptions given as arguments. When it reaches a state when both of the
+resumptions complete and produce results, it returns a tuple containing the results using <code>Done</code>.
+A step is performed using an effectful <code>step</code> function. To keep the implementation simple, we keep
+applying <code>step</code> to both of the resumptions and then recursively combine the results. Applying
+<code>step</code> to a resumption that has already completed isn't a mistake. This operation doesn't do 
+anything and just returns the original resumption (without performing any effects).</p>
+
+<p>Once we define <code>mzip</code>, we can start using the parallel comprehension syntax for working with 
+resumptions. The next snippet demonstrates two ways of composing resumptions. In both examples, we 
+compose a computation that prints "meow" two times and then returns "cat" with a computation 
+that prints "woof" three times and then returns "dog":</p>
+
+<pre lang="haskell">
+animalsSeq = 
+  [ c ++ " and " ++ d
+     | c &lt;- printLoop "meow" 2 "cat" 
+     , d &lt;- printLoop "woof" 3 "dog" ]
+
+animalsPar = 
+  [ c ++ " and " ++ d
+     | c &lt;- printLoop "meow" 2 "cat" 
+     | d &lt;- printLoop "woof" 3 "dog" ]
+</pre>
+
+<p>The only difference between the two examples is that the first one composes the operations using 
+multiple generators (separated by comma) and the second one uses parallel comprehensions (separated
+by bar).</p>
+
+<p>When you run the first example, the program prints meow, meow, woof, woof, woof and then returns 
+a string "cat and dog". The second program interleaves the steps of the two computations and 
+prints meow, woof, meow, woof, woof and then returns the same string.	</p>
+
+<h2>4&#160; Composing computations in parallel</h2>
+
+<p>In the previous section, we used the parallel comprehension syntax to create computations that 
+model parallelism using resumptions. Resumptions can be viewed as lightweight cooperative threads.
+They are useful abstraction, but the simple implementation in the previous section does not give
+us any speed-up on multi-core CPU. This section will follow a similar approach, but we look at how 
+to implement actual parallelism based on <em>evaluation strategies</em>. </p>
+
+<p>Marlow et al. [<a href="#cpfhr">13</a>] introduced an <code>Eval</code> monad for explicitly 
+specifying evaluation order. I will start by briefly introducing the monad, so don't 
+worry if you're not familiar with it already. I'll then demonstrate how to define a 
+<code>MonadZip</code> instance for this monad. This way, we can use the parallel 
+comprehension syntax for actually running computations in parallel.</p>
+
+
+<h3>4.1&#160; Introducing the evaluation-order monad</h3>
+
+<p>The evaluation-order monad is represented by a type <code>Eval a</code>. When writing code inside the monad,
+we can use several functions of type <code>a -&gt; Eval a</code> that are called <em>strategies</em>. These
+functions take a value of type <code>a</code>, which may be unevaluated, and wrap it inside the monad.
+A strategy can specify how to evaluate the (unevaluated) value. The two most common strategies
+are <code>rpar</code> and <code>rseq</code> (both are functions of type <code>a -&gt; Eval a</code>). The <code>rpar</code> strategy starts 
+evaluating the value in background and <code>rseq</code> evaluates the value eagerly before returning. </p>
+
+<p>A typical pattern is to use the <code>do</code> notation to spawn one computation in parallel and then 
+run another computation sequentially. This way we can easily parallelize two function calls:</p>
+
+<pre lang="haskell">
+fib38 = runEval $ do 
+  a &lt;- rpar $ fib 36
+  b &lt;- rseq $ fib 37
+  return $ a + b
+</pre>
+
+<p>The example shows how to calculate the <em>38<sup>th</sup></em> Fibonacci number. It starts calculating 
+<code>fib 36</code> in parallel with the rest of the computation and then calculates <code>fib 37</code> sequentially.
+The <code>do</code> block creates a value of type <code>Eval Integer</code>. We then pass
+this value to <code>runEval</code>, 
+which returns the wrapped value. Because we used the <code>rpar</code> and <code>rseq</code> combinators when constructing 
+the computation, the returned value will be already evaluated.</p>
+
+<p>However, it is worth noting that the <code>return</code> operation of the monad doesn't specify any evaluation 
+order. The function <code>runEval . return</code> is just an identity function that doesn't force evaluation 
+of the argument. The evaluation order is specified by additional combinators such as <code>rpar</code>.</p>
+
+<p>The <code>Eval</code> monad is implemented in the <code>parallel</code> package [<a href="#cpfhr">14</a>] and very 
+well explained in the paper by Marlow et al. [<a href="#cpfhr">13</a>]. You can find the definition of 
+<code>Eval</code> and its monad instance in the snippet below. We don't need to know how 
+<code>rpar</code> and <code>rseq</code> work, so we omit them from the listing. </p>
+
+<pre lang="haskell">
+data Eval a = Done a
+
+runEval :: Eval a -&gt; a
+runEval (Done x) = x
+
+instance Monad Eval where
+  return x = Done x
+  Done x &gt;&gt;= k = k x
+</pre>
+
+<p>The <code>Eval a</code> type is simple. It just wraps a value of type <code>a</code>. The <code>runEval</code> function unwraps 
+the value and the <code>Monad</code> instance implements composition of computations in the 
+usual way. The power of the monad comes from the evaluation annotations we can add.
+We transform values of type <code>a</code> into values of type <code>Eval a</code>; while doing so, we can specify 
+the evaluation strategy. The strategy is usually given using combinators, but if we add an 
+instance of the <code>MonadZip</code> class, we can also specify the evaluation order using the monad 
+comprehension syntax.</p>
+
+<h3>4.2&#160; Specifying parallel evaluation order</h3>
+
+<p>The <code>mzip</code> operator for the evaluation order monad encapsulates a common pattern that runs two
+computations in parallel. We've seen an example in the previous section - the first 
+computation is started using <code>rpar</code> and the second one is evaluated eagerly in parallel using <code>rseq</code>.
+You can find the implementation in the next snippet.</p>
+
+<pre lang="haskell">
+instance MonadZip Eval where
+  mzip ea eb = do
+    a &lt;- rpar $ runEval ea
+    b &lt;- rseq $ runEval eb
+    return (a, b)
+</pre>
+
+<p>A tricky aspect of <code>Eval</code> is that it may represent computations with explicitly
+specified evaluation order (created, for example, using <code>rpar</code>). We can also create computations 
+without specifying evaluation order using <code>return</code>. The fact that <code>return</code> doesn't evaluate the 
+values makes it possible to implement the <code>mzip</code> function, because the required type signature is 
+<code>Eval a -&gt; Eval b -&gt; Eval (a, b)</code>.</p>
+
+<p>The two arguments already have to be values of type <code>Eval</code>, but we want to specify the evaluation
+order using <code>mzip</code> after creating them. If all <code>Eval</code> values were already evaluated, then the <code>mzip</code>
+operation couldn't have any effect. However, if we create values using <code>return</code>, we can then apply
+<code>mzip</code> and specify how they should be evaluated later. This means that <code>mzip</code> only works for
+<code>Eval</code> computations created using <code>return</code>.</p>
+
+<p>Once we understand this, implementing <code>mzip</code> is quite simple. It extracts the underlying 
+(unevaluated) values using <code>runEval</code>, specifies the evaluation order using <code>rpar</code> and <code>rseq</code> and 
+then returns a result of type <code>Eval (a, b)</code>, which now carries the evaluation order specification. 
+Let's look how we can write a sequential and parallel version of a
+snippet that calculates the
+<em>38<sup>th</sup></em> Fibonacci number:</p>
+
+<pre lang="haskell">
+fibTask n = return $ fib n
+
+fib38seq = runEval [ a + b | a &lt;- fibTask 36
+                           , b &lt;- fibTask 37 ]
+fib38par = runEval [ a + b | a &lt;- fibTask 36
+                           | b &lt;- fibTask 37 ]
+</pre>
+
+<p>The snippet first declares a helper function <code>fibTask</code> that creates a delayed value using 
+the sequential <code>fib</code> function and wraps it inside the <code>Eval</code> monad without specifying evaluation
+strategy. Then we can use the function as a source for generators in the monad comprehension
+syntax. The first example runs the entire computation sequentially - aside from some wrapping
+and unwrapping, there are no evaluation order specifications. The second example runs the 
+two sub-computations in parallel. The evaluation order annotations are added by the <code>mzip</code> 
+function from the desugared parallel comprehension syntax.</p>
+
+<p>To run the program using multiple threads, you need to compile it using GHC with the <code>-threaded</code>
+option. Then you can run the resulting application with command line arguments <code>+RTS -N2 -RTS</code>,
+which specifies that the runtime should use two threads. I measured the performance on a dual-core 
+Intel Core 2 Duo CPU (2.26GHz). The time needed to run the first version was approximately 13 
+seconds while the second version completes in 9 seconds.</p>
+
+<h3>4.3&#160; Writing parallel algorithms</h3>
+<p>The <em>+/- 1.4x</em> speedup is less than the maximal <em>2x</em> speedup, because the example parallelizes two 
+calculations that do not take equally long. To generate a better potential for parallelism,
+we can implement a recursive <code>pfib</code> function that splits the computation into two parallel branches 
+recursively until it reaches some threshold:</p>
+
+<pre lang="haskell">
+pfib :: Integer -&gt; Eval Integer
+pfib n | n &lt;= 35 = return $ fib n
+pfib n = [ a + b | a &lt;- pfib $ n - 1 
+                 | b &lt;- pfib $ n - 2 ]
+</pre>
+
+<p>I hope you'll agree that the declaration looks quite neat. A nice consequence of using parallel 
+comprehensions is that we can see which parts of the computation will run in parallel without any 
+syntactic noise. We just replace a comma with a bar to get a parallel version! The compiler also 
+prevents us from trying to parallelize code that cannot run in parallel, because of data 
+dependencies. For example, let's look at the Ackermann function: </p>
+
+<pre lang="haskell">
+ack :: Integer -&gt; Integer -&gt; Eval Integer
+ack 0 n = return $ n + 1
+ack m 0 = ack (m - 1) 1
+ack m n = [ a | na &lt;- ack m (n - 1)
+              , a &lt;- ack (m - 1) na ]
+</pre>
+
+<p>The Ackermann function is a well-known function from computability theory. It is interesting 
+because it grows very fast (as a result, it cannot be expressed using primitive 
+recursion). For example, the value of <code>ack 4 2</code> is <em>2<sup>65536</sup> - 3</em>. </p>
+
+<p>We're probably not going to be able to finish the calculation, no matter how many cores our CPU 
+has. However, we can still try to parallelize the function by replacing the two sequential 
+generators with a parallel comprehension:</p>
+
+<pre lang="haskell">
+ack m n = [ a | na &lt;- ack m (n - 1)
+              | a &lt;- ack (m - 1) na ]
+</pre>
+
+<p>If you try compiling this snippet, you get an error message saying <code>Not in scope: na</code>. We can 
+easily see what went wrong if we look at the desugared version:</p>
+
+<pre lang="haskell">
+((ack m (n - 1)) `mzip` 
+    (ack (m - 1) na)) &gt;&gt;= (\(na, a) -&gt; a)
+</pre>
+
+<p>The problem is that the second argument to <code>mzip</code> attempts to access the value <code>na</code> which is 
+defined later. The value is the result of the first expression, so we can access it only after 
+both of the two parallelized operations complete. </p>
+
+<p>In other words, there is a data dependency between the computations that we're trying to 
+parallelize. If we were not using parallel monad comprehensions, we could mistakenly think 
+that we can parallelize the function and write the following:</p>
+
+<pre lang="haskell">
+ack m n = runEval $ do 
+  na &lt;- rpar $ ack m (n - 1)
+  a  &lt;- rseq $ ack (m - 1) na
+  return a
+</pre>
+
+<p>This would compile, but it wouldn't run in parallel! The value <code>na</code> needs to be evaluated before 
+the second call, so the second call to <code>ack</code> will block until the first one completes. This 
+demonstrates a nice aspect of writing parallel computations using the comprehension syntax. 
+Not only that the syntax is elegant, but the desugaring also performs a simple sanity check on our code.</p>
+
+
+<h2>5&#160; Parallel comprehension laws</h2>
+<p>I have intentionally postponed the discussion about laws to the end of
+the article. So far, we have looked
+at three different implementations of <code>mzip</code>. I discussed some of the expectations
+informally to aid intuition. The type of <code>mzip</code> partially specifies how 
+the operation should behave, but not all well-typed implementations are intuitively right.</p>
+
+<p>In my understanding, the laws about <code>mzip</code> are still subject to discussion, although some were 
+already proposed in the discussion about the GHC patch [<a href="#cpfhr">2</a>]. I hope to contribute to
+the discussion in this section. We first look at the laws that can be
+motivated by the category theory
+behind the operation, and then discuss additional laws inspired by the work on 
+F# joinads.</p>
+
+
+<h3>5.1&#160; Basic laws of parallel bindings</h3>
+<p>As already briefly mentioned, the <code>mzip</code> operation can be viewed as a <em>natural 
+transformation</em> defined by some <em>monoidal functor</em>
+[<a href="#cpfhr">15</a>]. In practice,
+this means that the <code>mzip</code> operation should obey two laws. The first one is usually called 
+<em>naturality</em> and it specifies the behavior of <code>mzip</code> with respect to the <code>map</code> function of 
+a monad (the function can be implemented in terms of bind and return and corresponds to 
+<code>liftM</code> from the Haskell base library). The second law is <em>associativity</em>, and we can express it 
+using a helper function <code>assoc ((a,b),c) = (a,(b,c))</code>:</p>
+
+<p style="margin-left:20px; font-family:'cambria math', serif;position:relative;">
+  map (<em>f</em> &#215; <em>g</em>) (mzip <em>a</em> <em>b</em>) &#8801; mzip (map <em>f</em> <em>a</em>) (map <em>g</em> <em>b</em>)  <span style="position:absolute;left:400px">(naturality)</span><br />
+  mzip <em>a</em> (mzip <em>b</em> <em>c</em>) &#8801; map assoc (mzip (mzip <em>a</em> <em>b</em>) <em>c</em>)      <span style="position:absolute;left:400px">(associativity)</span>
+</p>
+
+<p>The naturality law specifies that we can change the order of applying 
+<code>mzip</code> and <code>map</code>. The equation has already been identified as a law in the discussion about the
+patch [<a href="#cpfhr">2</a>]. The law is also required by <em>applicative functors</em> 
+[<a href="#cpfhr">8</a>] - this is not surprising as applicative functors
+are also monoidal.</p>
+
+<p>The <em>associativity</em> law is also very desirable. When we write a 
+comprehension such as <code>[e | a &lt;- m1 | b &lt;- m2 | c &lt;- m3]</code>, the desugaring first needs to zip two
+of the three inputs and then zip the third with the result, because <code>mzip</code> is a binary operation. The order
+of zipping feels like an implementation detail, but if we don't require associativity, it may 
+affect the meaning of our code.</p>
+
+<h3>5.2&#160; Parallel binding as monoidal functor</h3>
+
+<p>A monoidal functor in category theory defines a natural transformation (corresponding to our <code>mzip</code>),
+but also a special value called <em>unit</em>. A Haskell representation of monoidal functor is the 
+<code>Monoidal</code> type class. For a monoidal functor <code>f</code>, the
+type of unit is <code>f ()</code>. Every applicative functor in Haskell has a unit.
+For example, the unit value for <code>ZipList</code> is an infinite list of
+<code>()</code> values. We do not necessarily need to add unit to the definition of 
+<code>MonadZip</code>, because it is not needed by the desugaring. However, it is interesting to explore
+how a special <code>munit</code> value would behave.</p>
+
+<p>The laws for monoidal functors specify that if we combine <code>munit</code> with any other value using <code>mzip</code>, 
+we can recover the original value using <code>map snd</code>. In the language
+of monad comprehensions, the law says that the expression <code>[ e | a &lt;- m ]</code> should be equivalent to
+<code>[ e | a &lt;- m | () &lt;- munit]</code>. </p>
+
+<p>It is important to realize that the computation created using monadic <code>return</code> isn't the same thing 
+as unit of the monoidal functor associated with <code>mzip</code>. For lists, <code>return ()</code> creates a singleton 
+list. The <code>return</code> operation is unit of a monoidal functor defined by the monad, but the unit 
+associated with <code>mzip</code> belongs to a different monoidal functor!</p>
+
+
+
+<h3>5.3&#160; Symmetry of parallel binding</h3>
+
+<p>Another sensible requirement for <code>mzip</code> (which exists in F# joinads) is that reordering of 
+the arguments only changes the order of elements in the resulting tuple. In theory, this means that 
+the <em>monoidal functor</em> defining <code>mzip</code> is <em>symmetric</em>. We can specify the law using a 
+helper function <code>swap (a,b) = (b,a)</code>:</p>
+
+
+<p style="margin-left:20px; font-family:'cambria math', serif;position:relative;">
+  mzip <em>a</em> <em>b</em> &#8801; map swap (mzip <em>a</em> <em>b</em>) <span style="position:absolute;left:400px">(symmetry)</span><br />
+</p>
+
+<p>The <em>symmetry</em> law specifies that <code>[(x, y) | x &lt;- a | y &lt;- b]</code> should mean 
+the same thing as <code>[(x, y) | y &lt;- b | x &lt;- a]</code>. This may look like a very strong requirement, but 
+it fits quite well with the usual intuition about the <code>zip</code> operation and parallel monad 
+comprehensions. The symmetry law holds for lists, parsers and the
+evaluation order monad. For the poor 
+man's concurrency monad, it holds if we treat effects that occur within a single step of the 
+evaluation as unordered (which may be a reasonable interpretation). For some monads, such as the
+<code>State</code> monad, it is not possible to define a symmetric <code>mzip</code> operation. </p>
+
+<p>The three laws that we've seen so far are motivated by the category theory laws for
+the <em>(symmetric) monoidal functors</em> that define our <code>mzip</code> 
+operation. However, we also need to relate the functors in some way to
+the monads with which we are combining them.</p>
+
+<h3>5.4&#160; Relations with additional operations</h3>
+
+<p>The discussion about the patch [<a href="#cpfhr">2</a>] suggests one more law that relates the <code>mzip</code>
+operation with the <code>map</code> operation of the monad, called <em>information preservation</em>:</p>
+
+<p style="margin-left:20px; font-family:'cambria math', serif;position:relative;">
+  map fst (mzip <em>a</em> <em>b</em>) &#8801; <em>a</em> &#8801; map snd (mzip <em>b</em> <em>a</em>) <span style="position:absolute;left:400px">(information preservation)</span><br />
+</p>
+
+<p>The law specifies that combining a computation with some other computation using <code>mzip</code> and then 
+recovering the original form of the value using <code>map</code> doesn't lose
+information. However, this law is a bit 
+tricky. For example, it doesn't hold for lists if <em>a</em> and <em>b</em> are
+lists of different length, since 
+the <code>zip</code> function restricts the length of the result to the length of the shorter list. Similarly, it 
+doesn't hold for parsers (from the first section) that consume a different number of characters. </p>
+
+<p>However, the law expresses an important requirement: when we combine certain computations, it should be
+possible to recover the original components. A law that is similar to (\ref{law:ipreserve}) holds for 
+applicative functors, but with a slight twist:</p>
+
+<p style="margin-left:20px; font-family:'cambria math', serif;position:relative;">
+  map fst (mzip <em>a</em> munit) &#8801; <em>a</em> &#8801; map snd (mzip munit <em>a</em>) <span style="position:absolute;left:400px">(applicative information preservation)</span><br />
+</p>
+
+<p>Instead of zipping two arbitrary monadic values, the law for applicative functors zips an arbitrary 
+value with <em>unit</em>. In case of lists, unit is an infinite list, so the law holds. Intuitively,
+this holds because <em>unit</em> has a maximal structure (in this case, the structure is the length 
+of the list).</p>
+
+<p>Ideally, we'd like to say that combining two values with the same structure creates a new value
+which also has the same structure. There is no way to refer to the
+"structure" of a monadic value directly, 
+but we can create values with a given structure using <code>map</code>. This weaker law holds for both lists and 
+parsers. Additionally, we can describe the case when one of the two computations is <code>mzero</code> and
+when both of them are created using <code>return</code>:</p>
+
+<p style="margin-left:20px; font-family:'cambria math', serif;position:relative;">
+  map fst (mzip <em>a</em> (map <em>f</em> <em>a</em>)) &#8801; <em>a</em> &#8801; map snd (mzip (map <em>g</em> <em>a</em>) <em>a</em>)    <span style="position:absolute;left:400px">(weak information preservation)</span><br />
+  map fst (mzip <em>a</em> mzero) &#8801; mzero &#8801; map snd (mzip mzero <em>a</em>) <span style="position:absolute;left:400px">(zero)</span><br />
+  mzip (return <em>a</em>) (return <em>b</em>) &#8801; return (<em>a</em>, <em>b</em>)} <span style="position:absolute;left:400px">(unit merge)</span><br />
+</p>
+
+<p>The <em>weak information preservation</em> law is quite similar to the original <em>information preservation</em> law.
+The only difference is that instead of zipping with an arbitrary monadic value <em>b</em>, we're zipping <em>a</em> 
+with a value constructed using <code>map</code> (for any total functions <em>f</em> and <em>g</em>). This means that the 
+actual value(s) that the monadic value contains (or produces) can be different, but the structure will 
+be the same, because <code>map</code> is required to preserve the structure. </p>
+
+<p>The <em>zero</em> law specifies that <code>mzero</code> is the <em>zero element</em> with respect to 
+<code>mzip</code>. It almost seems that it holds of necessity, because <code>mzero</code> with type <code>m a</code> doesn't contain any value of 
+type <code>a</code>, so there is no way we could construct a value of type 
+<code>(a,b)</code>. This second law complements the 
+first, but it is not difficult to see that it contradicts the 
+original <em>information preservation</em>.</p>
+
+<p>Finally, the <em>unit merge</em> law describes how <code>mzip</code> works with respect to the monadic 
+<code>return</code> operation. This is interesting, because we're relating <code>mzip</code> of one applicative functor with 
+the unit of another applicative functor (defined by the monad). The law isn't completely arbitrary;
+an equation with a similar structure is required for <em>causal commutative arrows</em> [<a href="#cpfhr">16</a>].
+In terms of monad comprehension syntax, the law says that <code>[ e | a &lt;- return e1 | b &lt;- return e2 ]</code> 
+is equivalent to <code>[ e | (a, b) &lt;- return (e1, e2)]</code>.</p>
+
+<p>I believe that the three laws I proposed in this section partly answer
+the question of how to relate
+the two structures combined by parallel monad comprehensions - the <code>MonadPlus</code> type class
+with the symmetric monoidal functor that defines <code>mzip</code>.</p>
+
+<h2>Conclusions</h2>
+<p>After some time, monad comprehensions are back in Haskell! The recent GHC patch makes them even 
+more useful by generalizing additional features of list comprehensions including parallel binding 
+and support for operations like ordering and grouping. In this article, I focused on the first 
+generalization, although the remaining two are equally interesting.</p>
+
+<p>We looked at three examples: parallel composition of parsers (which applies 
+parsers to the same input), parallel composition of resumptions (which interleaves
+the steps of computations) and parallel composition of an evaluation order monad (which runs two 
+computations in parallel). Some of the examples are inspired by my previous work on joinads that add 
+a similar language extension to F#. The F# version includes an operation very similar to 
+<code>mzip</code> from the newly included <code>MonadZip</code> type class. I also proposed several laws - some of 
+them inspired by category theory and some by my work on F# joinads - hoping 
+that this article may contribute to the discussion about the laws required by <code>MonadZip</code>.</p>
+
+<h3>Acknowledgements</h3>
+<p>Thanks to Alan Mycroft for inspiring discussion about some of the monads demonstrated in this article
+and to Dominic Orchard for many useful comments on a draft of the article as well as discussion
+about category theory and the <code>mzip</code> laws. I'm also grateful to Brent Yorgey for proofreading the article
+and suggesting numerous improvements.</p>
+
+<h2>Source code &amp; Links</h2>
+<ul>
+  <li>The article is available as part of <a href="http://themonadreader.files.wordpress.com/2011/07/issue18.pdf">The Monad.Reader Issue 18</a> (PDF)</li>
+  <li>The source code for the samples can be found <a href="https://github.com/tpetricek/Haskell.Joinads">on Github</a></li>
+</ul>
+
+<h2>References<a name="cpfhr">&#160;</a></h2>
+
+<ul>
+<li>[1] <a href="http://www.cl.cam.ac.uk/~tp322/papers/joinads.pdf">Joinads: A retargetable control-flow construct for reactive, parallel and concurrent programming</a> (PDF) - Tomas Petricek and Don Syme</li>
+<li>[2] <a href="http://hackage.haskell.org/trac/ghc/ticket/4370">Bring back monad comprehensions</a> - Haskell Trac</li>
+<li>[3] <a href="http://blog.n-sch.de/2010/11/27/fun-with-monad-comprehensions">Fun with monad comprehensions</a> - Nils Schweinsberg</li>
+<li>[4] <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/list-comp/list-comp.pdf">Comprehensive comprehensions</a> (PDF) - Simon Peyton Jones and Philip Wadler</li>
+<li>[5] <a href="http://eprints.nottingham.ac.uk/223/1/pearl.pdf">Monadic Parsing in Haskell</a> (PDF) - Graham Hutton and Erik Meijer</li>
+<li>[6] <a href="http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.29.2760">Deterministic, error-correcting combinator parsers</a> - S. Doaitse Swierstra and Luc Duponcheel</li>
+<li>[7] <a href="http://www.cs.tufts.edu/~nr/cs257/archive/doaitse-swierstra/combinator-parsing-tutorial.pdf">Combinator parsing: A short tutorial</a> (PDF) - S. Doaitse Swierstra</li>
+<li>[8] <a href="http://www.soi.city.ac.uk/~ross/papers/Applicative.html">Applicative programming with effects</a> - Conor Mcbride and Ross Paterson.</li>
+<li>[9] <a href="http://en.wikipedia.org/wiki/Pumping_lemma_for_context-free_languages">Pumping lemma for context-free languages</a> - Wikipedia</li>
+<li>[10] <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.39.8039">A poor man's concurrency monad</a> - Koen Claessen</li>
+<li>[11] <a href="http://www.cs.missouri.edu/~harrison/drafts/CheapThreads.pdf">Cheap (but functional) threads</a> (PDF) - William L. Harrison</li>
+<li>[12] <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.4304">A resumption monad transformer and its applications in the semantics of concurrency</a> - Nikolaos S. Papaspyrou</li>
+<li>[13] <a href="http://community.haskell.org/~simonmar/papers/strategies.pdf">Seq no more: better strategies for parallel Haskell</a> (PDF) - Simon Marlow, Patrick Maier, Hans-Wolfgang Loidl, Mustafa K. Aswad, and Phil Trinder</li>
+<li>[14] <a href="http://hackage.haskell.org/package/parallel">The parallel package</a> - Haskell Hackage</li>
+<li>[15] <a href="http://en.wikipedia.org/wiki/Monoidal_functor">Monoidal functor</a> - Wikipedia</li>
+<li>[16] <a href="http://www.cs.yale.edu/homes/hl293/download/icfp066-liu.pdf">Causal commutative arrows and their optimization</a> (PDF) - Hai Liu, Eric Cheng, and Paul Hudak</li>
+</ul>

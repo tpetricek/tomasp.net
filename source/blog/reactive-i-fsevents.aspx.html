@@ -1,0 +1,240 @@
+<!-- [info]
+
+ - date: 2008-11-16T17:14:04.0000000
+ - description: The LINQ project and changes in C# 3.0 are interesting because they allow implementing many ideas from functional languages in C#. In this article I'll explain \"first-class events\" in F# and later I'll implemet similar concept using LINQ.
+ - tags: functional,c#,asynchronous,meta-programming,f#
+ - layout: post
+ - title: Reactive programming (I.) - First class events in F#
+ - url: reactive-i-fsevents.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>I believe that the LINQ project and changes in C# 3.0 and VB 9 are interesting because they 
+  allow rewriting of many ideas from functional programming. An ability to express queries easily
+  is one of these ideas, but it is definitely not the only one. There are many other interesting ideas.
+  The C# 3.0 language isn't primary a functional language, so it isn't easy to discover the idea
+  if you use only C#, but it is possible to implement it if you know the idea already.</p>
+<p>I already wrote a few interesting C# examples that were inspired by some functional idea.
+  I'm a big fan of the F# language, so it is not a surprise that I started with an F# version
+  of the problem and then looked at the way to do the same thing in C#. In particular, this is 
+  how my article about building dynamic queries in C# came to the existence - the F# version used
+  <a href="http://tomasp.net/blog/dynamic-flinq.aspx">FLINQ and Quotations</a> and then I demonstrated how to do the same in <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx">C# 
+  using expression trees</a>. Another example is my article about asynchronous 
+  programming in C# <a href="http://tomasp.net/blog/csharp-async.aspx">using iterators</a>, which shows how to implement something 
+  like F# <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx">asynchronous workflows using iterators</a> in C# 2.0.</p>
+
+<h3>Functional Reactive Programming</h3>  
+<p>Today, I'm going to look at another very interesting idea from functional programming. It is 
+  called <em>Functional Reactive Programming</em> and it comes from the Haskell community. You can find 
+  a list of related <a href="http://www.haskell.org/frp/" type="external">Haskell projects here</a>.
+  However, similar things (though they are not purely functional and simplified) are available 
+  in the F# language as well. Don Syme introduced them in his blog post called 
+  <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a>. In this article, I'm going to briefly introduce the implementation
+  available in F# and I'll extend it a little bit to allow some more interesting things. In the 
+  second article from this series, I'll show how to implement the same thing in C# 3.0 (and in VB 9 too!)</p>
+[/abstract] -->
+
+<h1>Reactive programming (I.) - First class events in F#</h1>
+<p>I believe that the LINQ project and changes in C# 3.0 and VB 9 are interesting because they 
+  allow rewriting of many ideas from functional programming. An ability to express queries easily
+  is one of these ideas, but it is definitely not the only one. There are many other interesting ideas.
+  The C# 3.0 language isn't primary a functional language, so it isn't easy to discover the idea
+  if you use only C#, but it is possible to implement it if you know the idea already.</p>
+<p>I already wrote a few interesting C# examples that were inspired by some functional idea.
+  I'm a big fan of the F# language, so it is not a surprise that I started with an F# version
+  of the problem and then looked at the way to do the same thing in C#. In particular, this is 
+  how my article about building dynamic queries in C# came to the existence - the F# version used
+  FLINQ and Quotations [<a href="#react1links">2</a>] and then I demonstrated how to do the same in C# 
+  using expression trees [<a href="#react1links">3</a>]. Another example is my article about asynchronous 
+  programming in C# using iterators [<a href="#react1links">4</a>], which shows how to implement something 
+  like F# asynchronous workflows [<a href="#react1links">5</a>] using iterators in C# 2.0.</p>
+
+<h3>Functional Reactive Programming</h3>  
+<p>Today, I'm going to look at another very interesting idea from functional programming. It is 
+  called <em>Functional Reactive Programming</em> and it comes from the Haskell community. You can find 
+  a list of related <a href="http://www.haskell.org/frp/" type="external">Haskell projects here</a>.
+  However, similar things (though they are not purely functional and somewhat simplified) are available 
+  in the F# language as well. Don Syme introduced them in his blog post called 
+  <em>"F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming"</em> 
+  [<a href="#react1links">1</a>]. In this article, I'm going to briefly introduce the implementation
+  available in F# and I'll extend it a little bit to allow some more interesting things. In the 
+  second article from this series, I'll show how to implement the same thing in C# 3.0 (and in VB 9 too!)</p>  
+
+<p>Actually this relation between functional programming in F# and C# is the key topic for my book 
+  <a href="http://tomasp.net/blog/functional-net-update.aspx">Real-world Functional Programming in .NET</a>. 
+  The book will discuss some of the topics that I'll introduce in this article in a larger detail. In this
+  article I'll talk about events only, but the second important part of functional reactive programming
+  is the use of continuous, time-varying values (such as the position of mouse or the time). In the book,
+  this will be discussed as part of the Chapter 15 and events are the key topic for Chapter 16.</p>
+  
+<h2>Working with events in F#</h2>  
+<img src="/articles/reactive/form_ellipse.png" alt="Form with an ellipse" style="float:right; margin:15px;"/>
+<p>Let's briefly look at the features that are already available in the F# language and libraries. In F#,
+  you can work with events as if they were ordinary objects (in functional terminology, we'd say <em>values</em>).
+  This means that you can write a function that takes an event as an argument and returns an event. This 
+  allows us to write various functions for processing events. We'll demonstrate this soon, but first let's 
+  create some form that we can use for testing. The following example shows how to create a Windows Form 
+  with a small green ellipse somewhere on the form. You can see the expected result in the attached screenshot.
+  If you paste the source code to the F# interactive, a form should appear (Note, you can open the code in 
+  Visual Studio, select it and hit <strong>Alt + Enter</strong> to run it in the F# interactive):</p>
+<pre lang="fsharp">
+#light
+open System.Drawing
+open System.Windows.Forms
+
+// Generate random location for the ellipse
+let rnd = new System.Random()
+let x, y = rnd.Next(550), rnd.Next(350)
+
+// Create the main form
+let frm = new Form(ClientSize=Size(600,400))
+// Add event handler to paint the ellipse
+frm.Paint.Add(fun e -&gt;
+    e.Graphics.FillRectangle(Brushes.White, 0, 0, 600, 400)
+    e.Graphics.FillEllipse(Brushes.DarkOliveGreen, x, y, 50, 50)  
+  )
+frm.Show()
+</pre>
+<p>Nothing very exciting so far; n this example we used events in the traditional way. This means 
+  that we used the <code>Add</code> method to attach a handler to the event and we specified the 
+  event handler in a lambda function (which is just like anonymous delegate in C# 2.0 or function in C# 3.0).
+  This is the usual way for attaching handlers to events in C# too, with the difference that you use 
+  built-in <code>+=</code> operator.</p>
+
+<h3>Processing event streams</h3>
+<p>Now, let's finally take a look at the F# way of processing events. We'll extend the example to
+  display some message when a user clicks on the ellipse. Traditionally, you'd write an event handler
+  that would get <code>MouseEventArgs</code> as an argument. It would test whether the position 
+  of the cursor is inside the ellipse and then show the message.
+  However, there is another way we can think about events. You can imagine that event such as
+  <code>MouseDown</code> is a stream of information about the clicks. Once you click on the form,
+  new information appears in the stream and we can process it. When we think of events in this way,
+  we can see that events (or <em>event streams</em>) are very similar to lists or other collections.
+  This means that we can use techniques for working with collections for processing events. </p>
+<p>I already wrote about functions for working with lists in F# in my F# overview [<a href="#react1links">6</a>], but 
+  very briefly - you can use functions like <code>filter</code> and <code>map</code> for working with 
+  lists. The first one returns a list with elements for which a given predicate is true. The second one
+  uses the given function to transform an element (for example a number <code>n</code>) into something
+  else (for example a type that contains the original number and its square). Let's take a look at an example
+  that demonstrates this:</p>
+<pre lang="fsharp">
+> [1 .. 10]
+    |&gt; List.filter (fun n -&gt; n % 2 = 1)
+    |&gt; List.map (fun n -&gt; (n, n*n));;
+val it : (int * int) list = [(1, 1); (3, 9); (5, 25); (7, 49); (9, 81)]
+</pre>  
+<p>In this example, we took a list of numbers from 1 to 10. Then we filtered it using <code>List.filter</code>, so
+  the result contained only odd numbers. Finally, we used the <code>List.map</code> function to transform the 
+  list into a list that contains a number and its square. We're using the pipeline operator (written as <code>|&gt;</code>)
+  to sequence the operations. This simply means that the result of the operation on the left side will be 
+  used as an argument for the next operation in the pipeline. You can see that the result printed by the F# interactive 
+  contains squares of all odd numbers in that range.</p>
+<p>You may be wondering why I am talking about lists here, when I promised an article about events. The answer is
+  that functions like this make perfect sense for working with events as well. We can use <code>filter</code> to
+  ignore events that are not interesting for us (such as when the user clicks outside of the ellipse) and we 
+  can use <code>map</code> to turn information about the click into something more interesting, such as
+  a message that we'll show to the user. Let's finally implement the code that handles clicks on the ellipse 
+  using these event processing functions:</p>
+<pre lang="fsharp">
+&gt; // Utility function to calculate the distance 
+  open System
+  let dist (x1, y1) (x2, y2) =
+    Math.Sqrt(Math.Pow(x1 - x2, 2.0) + Math.Pow(y1 - y2, 2.0))
+  ;;
+val dist : float * float -> float * float -> float
+
+&gt; let evtMessages =
+    frm.MouseDown
+      |&gt; Event.filter (fun mi -&gt; 
+          // The distance between click location and 
+          // the center of the ellipse is less than 25
+          dist (float mi.X, float mi.Y) (float(x + 25), float(y + 25)) &lt; 25.0 )
+      |&gt; Event.map (fun mi -&gt;
+          // Return message that we'll show to the user
+          if (int (mi.Button &amp;&amp;&amp; MouseButtons.Left) &lt;&gt; 0) then "Left button"
+          elif (int (mi.Button &amp;&amp;&amp; MouseButtons.Right) &lt;&gt; 0) then "Right button"
+          else "Some trick!")
+  ;;
+val evtMessages : IEvent&lt;string&gt;
+</pre>  
+<p>We aren't yet done with the application, but we did two important steps. Let's take a look at them in detail.
+  We first used the <code>Event.filter</code> processing function. The predicate that we gave it tests whether
+  the center of the ellipse <code>(x + 25, y + 25)</code> is close enough to the location of the mouse click.
+  The <code>mi</code> value represents <code>MouseEventArgs</code>, so the location of the click is stored 
+  in <code>(mi.X, mi.Y)</code>. The next processing function we're using is <code>Event.map</code>. This 
+  takes the information about the click and returns some string depending on the button that was used.</p>
+
+<img src="/articles/reactive/form_clicked.png" alt="Clicked on the ellipse" style="float:right; margin:15px;"/>
+<p>I entered the code to the F# interactive, so that we can see what the result is. As you can see, this 
+  creates a value called <code>evtMessages</code> that has a type <code>IEvent&lt;string&gt;</code>. This 
+  is the F# representation of events. This means that the result is an event that will be raised when the 
+  user clicks on the ellipse. The values carried by the event will be of type string. The only thing that 
+  we need to do now is to add handler for the event and display the message in the message box. Our goal
+  is to get something like the message in the screenshot on the right side.</p>  
+
+<h3>Reacting to events</h3>
+<p>The <code>evtMessages</code> value is an ordinary event, so we could use its <code>Add</code> method
+  just like we used <code>Add</code> method of the <code>frm.Paint</code> event earlier. However, F# 
+  gives us more ways to do this and it's a good idea to use the same approach that we used in the previous
+  listing to filter the event stream.</p>
+<p>We need to do two things - first, we'll need to add some additional text to the message and second, 
+  we want to display the message box. This can be written using two primitives. You know the first one already - 
+  we'll use <code>Event.map</code> to turn the event stream with simple messages into a stream that
+  contains messages that we actually want to show to the user. In the next step, we'll use <code>Event.listen</code>.
+  This is a processing function that simply calls a function we give it when the event is raised and doesn't 
+  do anything else. This means that it ends our event processing code and returns <code>unit</code>, which is 
+  just like <code>void</code> in C#. We'll use two more functional tricks - partial function application and 
+  function composition. These are in detail explained in my <a href="http://tomasp.net/blog/functional-net-update.aspx">F# book</a>,
+  but you can get some idea from the F# overview [<a href="#react1links">5</a>] that I wrote some time ago. </p>  
+  
+<pre lang="fsharp">
+evtMessages
+  |&gt; Event.map (sprintf "Hey, you clicked on the ellipse.\nUsing: %s")
+  |&gt; Event.listen (MessageBox.Show &gt;&gt; ignore)
+</pre>
+<p>This time we'll writing processing code for the <code>evtMessages</code> value, which is an event that
+  we constructed in the previous example. In the first line, we use the <code>Event.map</code> function to 
+  format the message. We use the <code>sprintf</code> function and give it a format string that specifies 
+  that the function should expect a string as an argument. This means that the type of the expression in parentheses
+  will be a function that takes a string and returns a string. This is compatible with what <code>Event.map</code>
+  expects - it is a function. We used partial application, which means that we omitted the last argument and 
+  used the expression as a function value.
+</p>
+<p>The second line uses <code>Event.listen</code> to show the message box. As other functions for processing
+  events, this one also expects a function as an argument. The function will get string as an argument and 
+  shouldn't return anything, because <code>Event.listen</code> terminates the event processing. In the example,
+  we use function composition operator (<code>&gt;&gt;</code>) to create a function that will take a string, 
+  call <code>MessageBox.Show</code> and then <code>ignore</code> the value returned by the <code>MessageBox.Show</code>
+  (we have to add <code>ignore</code>, because <code>MessageBox.Show</code> returns a <code>DialogResult</code>
+  and <code>Event.listen</code> expects that nothing will be returned).</p>
+
+<h2>Summary</h2>
+<p>In this article, we've looked at an example that demonstrates the idea behind reactive programming and 
+  working with events as values in F#. I haven't discussed all the details - there are many other operations
+  such as <code>Event.map</code> and <code>Event.filter</code> that you can use to combine event processing
+  code in different ways (and these are indeed discussed in <a href="http://tomasp.net/blog/functional-net-update.aspx">my book</a>). 
+  In the next part of this mini-series, we're going to look how to implement the same ideas in C#. 
+  I'll also introduce my project, which is an implementation of LINQ query operators for events that I call 
+  <strong>Reactive LINQ</strong>.</p>
+<ul>
+  <li><a href="/articles/reactive/reactive1.zip">Download the examples</a> (1.10kB)</li>
+</ul>
+
+<h3>Series links</h3>
+<ul>
+  <li>Reactive programming (I.) - First class events in F#</li>
+  <li><a href="/blog/reactive-ii-csevents.aspx">Reactive programming (II.) - Introducing Reactive LINQ</a></li>
+  <li><a href="/blog/reactive-iii-linqoperators.aspx">Reactive Programming (III.) - Useful Reactive LINQ Operators</a></li>
+  <li><a href="/blog/reactive-iv-reactivegame.aspx">Reactive Programming (IV.) - Developing reactive game in Reactive LINQ</a></li>
+</ul>
+
+
+<h2>References<a name="react1links"></a></h2>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/dsyme/archive/2006/03/24/559582.aspx" type="external">F# First Class Events: Simplicity and Compositionality in Imperative Reactive Programming</a> - Don Syme's WebLog on the F# Language and Related Topics</li>
+  <li>[2] <a href="http://tomasp.net/blog/dynamic-flinq.aspx" type="external">Building LINQ Queries at Runtime in F#</a> - TomasP.Net</li>
+  <li>[3] <a href="http://tomasp.net/blog/dynamic-linq-queries.aspx" type="external">Building LINQ Queries at Runtime in C#</a> - TomasP.Net</li>
+  <li>[4] <a href="http://tomasp.net/blog/csharp-async.aspx" type="external">Asynchronous Programming in C# using Iterators</a> - TomasP.Net</li>
+  <li>[5] <a href="http://blogs.msdn.com/dsyme/archive/2007/10/11/introducing-f-asynchronous-workflows.aspx" type="external">Introducing F# Asynchronous Workflows</a> - Don Syme's WebLog on the F# Language and Related Topics</li>
+  <li>[6] <a href="http://tomasp.net/blog/fsharp-ii-functional.aspx">F# Overview (II.) - Functional programming</a> - TomasP.Net</li>
+</ul>

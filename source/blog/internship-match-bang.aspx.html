@@ -1,0 +1,140 @@
+<!-- [info]
+
+ - date: 2009-05-17T23:00:28.0000000
+ - description: I already mentioned that I was doing my second internship with Don Syme at MSR Cambridge. This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since I left, but as you can guess I didn't have time to write anything about the internship until now...
+ - tags: random thoughts,universe,parallel,asynchronous,joinads
+ - layout: post
+ - title: Internship project: Reactive pattern matching
+ - url: internship-match-bang.aspx
+
+[/info] -->
+<!-- [abstract]
+<a href="http://cid-6ddff5260c96e30a.skydrive.live.com/albums.aspx">
+<img src="http://tomasp.net/articles/internship-match-bang/image.jpg" alt="Cambridge, 2009" class="ldecor" 
+  style="border:0px;float:left; margin:20px" />
+</a>
+
+<p>I already <a href="http://tomasp.net/blog/book-source-available.aspx">mentioned</a> that I was doing my second internship
+  with <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a> at Microsoft Research in Cambridge.
+  This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since 
+  I left, but as you can guess I didn't have time to write anything about the internship until now... There isn't
+  much to say though, because the internship was simply fantastic. Cambridge is a beautiful place (here are
+  some <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2008%20Autumn%20-%20Cambridge" type="external">autumn</a> and <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2009%20Winter%20-%20Cambridge" type="external">winter</a> photos),
+  the Microsoft Research lab in Cambridge is full of smart people, so it is a perferct working environment
+  (except that you realize that you're not as clever as you think :-)). Also, it is just a few meters away from the
+  <a href="http://www.cl.cam.ac.uk" type="external">Computer Laboratory</a> of the Cambridge University, so there are always many 
+  interesting talks and seminars. So, big thanks to Don Syme, James Margetson and everyone else who I had a chance 
+  to work with during the internship.</p>
+  
+<p>One of the reasons why I didn't have much time to write about the internship earlier is that I
+  was invited to the <a href="http://www.langnetsymposium.com/" type="external">Lang.NET Symposium</a> shortly
+  after the end of the internship. I had a chance to talk about my project there as well and there is
+  even a video recording from the talk (the link is below), so you can watch it to find out more about my recent F# work.</p>
+[/abstract] -->
+
+<h1>Internship project: Reactive pattern matching</h1>
+<a href="http://cid-6ddff5260c96e30a.skydrive.live.com/albums.aspx">
+<img src="http://tomasp.net/articles/internship-match-bang/image.jpg" alt="Cambridge, 2009" class="ldecor" 
+  style="border:0px;float:left; margin:20px" />
+</a>
+
+<p>I already <a href="http://tomasp.net/blog/book-source-available.aspx">mentioned</a> that I was doing my second internship
+  with <a href="http://blogs.msdn.com/dsyme/" type="external">Don Syme</a> at Microsoft Research in Cambridge.
+  This time, I was in Cambridge for 6 months from October until April, so it has been more than a month since 
+  I left, but as you can guess I didn't have time to write anything about the internship until now... There isn't
+  much to say though, because the internship was simply fantastic. Cambridge is a beautiful place (here are
+  some <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2008%20Autumn%20-%20Cambridge" type="external">autumn</a> and <a href="http://cid-6ddff5260c96e30a.skydrive.live.com/browse.aspx/2009%20Winter%20-%20Cambridge" type="external">winter</a> photos),
+  the Microsoft Research lab in Cambridge is full of smart people, so it is a perferct working environment
+  (except that you realize that you're not as clever as you think :-)). Also, it is just a few meters away from the
+  <a href="http://www.cl.cam.ac.uk" type="external">Computer Laboratory</a> of the Cambridge University, so there are always many 
+  interesting talks and seminars. So, big thanks to Don Syme, James Margetson and everyone else who I had a chance 
+  to work with during the internship.</p>
+  
+<p>One of the reasons why I didn't have much time to write about the internship earlier is that I
+  was invited to the <a href="http://www.langnetsymposium.com/" type="external">Lang.NET Symposium</a> shortly
+  after the end of the internship. I had a chance to talk about my project there as well and there is
+  even a video recording from the talk (the link is below), so you can watch it to find out more about my recent F# work.</p>
+  
+<p>I was working on a couple of things during the internship. During the first couple of months, I was helping
+  the F# team on Visual Studio language service for F#. This includes IntelliSense, syntax highlighting 
+  and things like that. All the improvements that I and others on the team worked on should be available in Visual 
+  Studio 2010 from the beta 1 version, so I believe the IntelliSense will work noticeably better than it 
+  does in the CTP. The Language Service for F# is quite interesting project in many ways, because the F# compiler
+  needs to do a lot of work in background (most importantly type inference). This means that getting the 
+  right information for the IntelliSense popup window needs to use several different approaches to make sure
+  that you'll see useful items even when the compiler hasn't completed background checking or when the source
+  code just changed.</p>
+
+<h2>Reactive Pattern Matching</h2>
+<p>The other thing that I was working larg part of the time is <em>Reactive Pattern Matching</em>. The goal 
+  of the project was to make it easier to write F# applications that react to external events from the user
+  interface or for example from background working threads. The project focuses on applications (or parts of
+  applications) that are highly reactive and it is based on the F# asynchronous workflows. Here are a couple
+  of points about reactive applications and about the way we tried to make writing them easier in F#:</p>
+<ul>
+  <li><strong>Single threaded</strong> - The application (or for example GUI component) runs as a 
+    single threaded component, but the code is written by creating multiple agents that express parts
+    of the behavior. This makes it easier to reason about how the external events are handled.
+    This of course doesn't mean that the whole application is single-threaded. You can have various background
+    threads doing all sorts of computations. Only the synchronization point (e.g. the GUI) is single-threaded.</li>    
+    
+  <li><strong>Quick reactions</strong> - The agents that we write spend most of the time waiting for
+    some events, which means that the application can consist of a large number of agents. This means
+    that agents are used to structure the source code based on what kind of "workflows" the application performs.</li>    
+  
+  <li><strong>Minimal direct langauge support</strong> - The project uses mostly the existing F# language
+    with a single extension to allow pattern matching in computation expressions (using the <code>match!</code>
+    construct), which is a more generally useful language feature. Aside from this single extension,
+    most of the work is to find the right programming model, which is just a question of implementing
+    the right library and computation expression builders.</li>
+</ul>  
+  
+<p>The project is inspired by <a href="http://www.haskell.org/frp/" type="external">Functional Reactive Programming</a>
+  and it takes some ideas from my <a href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx">Reactive LINQ</a> and
+  also from some examples I wrote for <a href="http://www.functional-programming.net/" type="external">chapter 16 of my book</a>. 
+  However, it is still quite far from being complete and I'm planning to continue working on it, so you'll 
+  definitely hear more about this.</p>
+
+<h2>My talk at Lang.NET Symposium</h2>
+<p>As I mentioned, shortly after returning from Cambridge to Prague, I was on the plane again, but this time 
+  to Redmond for the Lang.NET Symposium. This year, there were quite a few interesting talks. Ted Leung wrote
+  <a href="http://www.sauria.com/blog/2009/04/16/langnet-2009/" type="external">has a nice summary</a> for some
+  of them. I quite liked the fact that the talks ranged from more theoretical and research oriented topics.
+  For example, the talk <a href="http://www.langnetsymposium.com/2009/talks/29-PhilipWadler-Links.html" type="external">Links: Web programming without tiers</a>
+  by Philip Wadlers was quite interesting for me, because the Links project is closely related to my F# WebTools. 
+  On the other hand there were talks about Microsoft projects that are becoming mainstream including
+  <a href="http://www.langnetsymposium.com/2009/talks/34-ManuelFahndrich-CodeContracts.html" type="external">Code Contracts</a>
+  and Luke Hoban's talk <a href="http://www.langnetsymposium.com/2009/talks/25-LukeHoban-FSharpProductization.html" type="external">Productization of F#</a>,
+  which both talk about things that are going to be available in Visual Studio 2010.</p>
+
+<p>There was also a very interesting talk from Erik Meijer about the <a href="http://www.langnetsymposium.com/2009/talks/23-ErikMeijer-LiveLabsReactiveFramework.html" type="external">Live Labs Reactive Framework</a>.
+  The talk was a lot of fun, but more importantly, it was about project that's closely related to what I was working on - in particular 
+  it is related to my <a href="http://tomasp.net/blog/reactive-iv-reactivegame.aspx">Reactive LINQ</a> project and Reactive Pattern Matching for F#. 
+  I also had a chance to chat with <a href="http://blogs.msdn.com/wesdyer/" type="external">Wes Dyer</a>, who is working on this project.
+  </p>  
+  
+<div style="float:left;margin:15px; width:265px; text-align:center">
+<a href="http://www.langnetsymposium.com/2009/talks/22-TomasPatricek-Reactive.html">
+<img src="http://tomasp.net/articles/internship-match-bang/talk.png" alt="Talk Recording" style="border:0px" /></a><br /><small>Click on the image to go to the video.</small>
+</div>
+
+<p><a href="http://www.langnetsymposium.com/2009/talks/22-TomasPatricek-Reactive.html" type="external">My talk</a> at Lang.NET was 
+  about the <em>Reactive Pattern Matching</em> project that I started working on during the internship with Don Syme. The
+  talk provides some background on asynchronous programming in F# using <em>asynchronous workflows</em> and then focuses on the project I was working on.
+  About half of the talk uses only language features that are already available in F#, namely <em>asynchronous workflows</em>,
+  but uses them differently - to write single threaded reactive code that uses asynchronous workflows to wait for events in general rather than just for waiting of a completion of asynchronous I/O operation. </p>
+
+<p>In the second part, the talk looks at reactive programming
+  using the <code>match!</code> construct, which can be used for pattern matching over events. This lets you
+  succinctly write code that for says things like "Wait for the first occurrence MouseDown event or for the MouseMove event 
+  when the X location is more than 100".</p>
+<p> Finally, the talk also mentions how the <code>match!</code> primitive
+  can be used for encoding other interesting programming models. This part didn't limit to single-threaded reactive programming, but talked about concurrency models such as working with futures (from the Task Parallel Library) or Joins known from the
+  <a href="http://research.microsoft.com/en-us/um/cambridge/projects/comega/" type="external">Cω language</a>.</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://tomasp.net/articles/internship-match-bang/lang.net.pptx">Slides from my Lang.NET talk</a> (PPTX)</li>
+  <li><a href="http://tomasp.net/articles/internship-match-bang/lang.net.pdf">Slides from my Lang.NET talk</a> (PDF)</li>
+  <li><a href="http://download.microsoft.com/download/7/6/A/76A69AE5-72B5-4005-BBD9-7EA5F4795014/22-TomasPatricek-Reactive.wmv">Download the video</a> (WMV format, 291MB)</li>
+</ul>

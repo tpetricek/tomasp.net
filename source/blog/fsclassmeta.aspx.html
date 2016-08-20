@@ -1,0 +1,219 @@
+<!-- [info]
+
+ - date: 2006-10-14T01:36:10.0000000
+ - description: This article presents prototype that makes it possible to use F# metaprogramming to analyse and translate classes written in special way.
+ - tags: meta-programming,f#
+ - layout: post
+ - title: F# metaprogramming and classes
+ - url: fsclassmeta.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>F# quotations allows you to easily write programs that manipulate with data representation
+  of program source code. If you're not familiar with quotations I recommend reading my 
+  previous article [<a href="#fsclassmeta-links">1</a>] that contains short introduction
+  to this topic first. Quotations can be used for example for translating subset of the F# language to 
+  another code representation or another language.</p>
+  
+<p>To get the quotation data of the expression you can either use <code>&lt;@@ .. @@&gt;</code> 
+  operator or <code>resolveTopDef</code> function. In the first case the code written
+  between the "<code>&lt;@@</code>" and "<code>@@&gt;</code>" is converted to data during the compilation.
+  The <code>resolveTopDef</code> function allows you to get quotation data of top-level 
+  definition (function) from compiled library at runtime (you have to use <code>--quotation-data</code> 
+  command line switch while compiling the library). I mentioned that quotations can be used to represent 
+  only subset of the F# language. Currently, one of the quotation limitations is that it's not possible to 
+  enclose the whole class in the quotation operators. It is also not possible to get the representation 
+  of the whole class at runtime nor the representation of class members (for example methods). </p>
+<p>In this article I'll present a simple method that makes it possible to use F# quotations for working with classes as well, however this is rather a prototype that can be used for experimenting and discovering areas where working with classes might be useful, not a fully working solution.</p>
+[/abstract] -->
+
+<h1>F# metaprogramming and classes</h1>
+
+
+
+
+<h2>Introduction</h2>
+<p>F# quotations allows you to easily write programs that manipulate with data representation
+  of program source code. If you're not familiar with quotations I recommend reading my 
+  previous article [<a href="#fsclassmeta-links">1</a>] that contains short introduction
+  to this topic first. Quotations can be used for example for translating subset of the F# language to 
+  another code representation or another language.</p>
+  
+<p>To get the quotation data of the expression you can either use <code>&lt;@@ .. @@&gt;</code> 
+  operator or <code>resolveTopDef</code> function. In the first case the code written
+  between the "<code>&lt;@@</code>" and "<code>@@&gt;</code>" is converted to data during the compilation.
+  The <code>resolveTopDef</code> function allows you to get quotation data of top-level 
+  definition (function) from compiled library at runtime (you have to use <code>--quotation-data</code> 
+  command line switch while compiling the library). I mentioned that quotations can be used to represent 
+  only subset of the F# language. Currently, one of the quotation limitations is that it's not possible to 
+  enclose the whole class in the quotation operators. It is also not possible to get the representation 
+  of the whole class at runtime nor the representation of class members (for example methods). </p>
+
+<h2>Class quotations</h2>
+
+<p>In one my project I wanted to be able to translate the class written in F# to another language,
+  so I wanted to make this possible. This option will be probably implemented in the future versions
+  of F#, so it will be possible to do this using more elegant method, but if you want to experiment
+  with quotations and use classes, you can use my solution to implement the prototype.</p>
+
+<p>In the prototype I implemented, you have to write the class and one module that contains 
+  the actual code for the methods. This makes it possible to get the structure of the class using
+  standard .NET reflection classes and to extract quotation data for the class members using
+  F# <code>resolveTopDef</code> function. Of course, you can't create instance of module, but for metaprogramming
+  we only need to be able to get the quoted code and unless you want to use the class from code, you can leave
+  the implementation of the class methods empty.</p>
+
+<p>First I had to design the data structures for representing the class. If I were adding this feature to the F# 
+  metaprogramming, I would probably extended the <code>expr</code> data type to make this possible in
+  consistent way. However I didn't want to modify the F# source code, so I designed the following types
+  that are similar to the <code>expr</code> type (I reversed the order of type declarations, so it 
+  is easier to understand):</p>
+<pre>
+<span class="c">/// Structure that contains information about class -
+/// consists of name, name of base class and members</span><br />
+<span class="k">type</span> classInfo = {
+  name:string;
+  baseName:string option;
+  members:classMember list;
+};;
+
+<span class="c">/// Member of the class 
+/// For working with this type use cmfCtor, cmfMethod, cmfField, cmfProp..</span><br />
+<span class="k">type</span> classMember;;
+
+<span class="c">/// Type for working with class members
+/// Query function tests whether member is of specified type
+/// Make function creates member</span><br />
+<span class="k">type</span> 'a classMemberFamily <span class="k">with</span><br />
+  <span class="k">member</span> Query : classMember -&gt; 'a option
+  <span class="k">member</span> Make : 'a -&gt; classMember
+<span class="k">end</span>;;
+
+<span class="c">/// Constructor declaration 
+/// - parameter should be lambda expression</span><br />
+<span class="k">val</span> cmfCtor : (expr) classMemberFamily;;
+	
+<span class="c">/// Method delcaration
+/// - method name, expression (should be lambda) and return type
+///   (types of parameters are stored in lambda expression)</span><br />
+<span class="k">val</span> cmfMethod : (string*expr*Type option) classMemberFamily;;
+	
+<span class="c">/// Field declaration
+/// - field name, type and init expression</span><br />
+<span class="k">val</span> cmfField : (string*Type*expr option) classMemberFamily;;
+	
+<span class="c">/// Property declaration
+/// - property name, getter and setter (both should be lambda expr) and type</span><br />
+<span class="k">val</span> cmfProp : (string*expr*expr*Type) classMemberFamily;;
+</pre>
+
+<p>This representation is still very limited - for example it isn't possible to represent
+  polymorphic methods. In the previous code, the <code>classMember</code> can be used to 
+  represent any member (similarly to the F# <code>expr</code> that can represent any expression).
+  The <code>cmf[Something]</code> values are equivalent to the 
+  <code>ef[Something]</code> from F# quotation library and allows you to work with
+  <code>classMember</code> type.</p>
+  
+<p>The following example shows how to write simple class with module that can be used for extracting 
+  the quotation data:</p>
+<pre>
+#light
+
+<span class="c">// Module with implementation of methods</span><br />
+<span class="k">module</span> Person_Meta = <span class="k">begin</span>
+  <span class="c">// Simulates field of the class</span>
+  <span class="k">let</span> name = <span class="k">ref</span> ""
+  
+  <span class="c">// Represents constructor</span>
+  <span class="k">let</span> ctor (n) =
+    name := n
+    
+  <span class="c">// Represents method</span>
+  <span class="k">let</span> Say (pre:string) =
+    let s = pre^", my name is "^(!name)^"." in
+    print_string s
+  
+  <span class="c">// Represents property  </span>
+  <span class="k">let</span> get_Name () =
+    (!name)
+  <span class="k">let</span> set_Name (value) =
+    name:=value
+<span class="k">end</span>
+ <br /><br /> 
+<span class="c">// The real class
+// Members are just a placeholders and the quotations
+// are extracted from the previous module</span><br />
+<span class="k">type</span> Person = <span class="k">class </span><br />
+  <span class="k">val mutable</span> name : string;
+  <span class="k">new</span>((n:string)) = { name = ""; }
+  <span class="k">member</span> this.Say(pre:string) = ()
+  <span class="k">member</span> this.Name with get() = "" <span class="k">and</span> set((v:string)) = ()
+<span class="k">end</span>
+</pre>  
+
+<p>In the last code sample, I'll show how the functions I wrote can be used for working 
+  with the previous piece of code. To get the representation that I mentioned earlier of
+  the class <code>Person</code>, you can use function <code>getClassFromType</code>. This function
+  extracts structure of the class (from the class itself) and quoted code from the module
+  with the <code>_Meta</code> suffix. The following example is quite simple. It prints
+  basic class information (name and base name) and then iterates through all the members and
+  prints all available information for every member. For printing the <code>expr</code> type
+  (which represents the quoted code) I used <code>printf</code> function with the <code>output_any</code> formatter.</p>
+
+<pre>
+#light
+<span class="k">do</span><br />
+  <span class="c">// Get the class info for class 'Person'</span><br />
+  <span class="k">let</span> clsInfo = getClassFromType ((typeof() : Person typ).result)
+  
+  <span class="c">// Print name and optional base name</span>
+  Console.WriteLine(<span class="s">"Class '{0}':"</span>, clsInfo.name)
+  <span class="k">if</span> (clsInfo.baseName &lt;&gt; None) <span class="k">then</span>
+    Console.WriteLine(<span class="s">" base: {0}"</span>, clsInfo.baseName)
+  
+  <span class="c">// Iterate through class members</span>
+  clsInfo.members |&gt; List.iter ( <span class="k">fun</span> m -&gt;
+      <span class="k">match</span> cmfMethod.Query m <span class="k">with</span>
+        | Some (name, expr, ret) -&gt;
+            Method <span class="s">"printf ( %s : %a ) = "</span> name output_any ret
+        | _ -&gt;
+      <span class="k">match</span> cmfField.Query m <span class="k">with</span>
+        | Some (name, typ, init) -&gt;
+            printf <span class="s">"Field ( %s : %a) "</span> name output_any typ
+        | _ -&gt;
+      <span class="k">match</span> cmfProp.Query m <span class="k">with</span>
+        | Some (name, getter, setter, typ) -&gt;
+            printf <span class="s">"Property ( %s : %a )\n"</span> name output_any typ
+            printf <span class="s">"get = %a\n"</span> output_any getter
+            printf <span class="s">"set = %a\n\n"</span> output_any setter
+        | _ -&gt;
+      <span class="k">match</span> cmfCtor.Query m <span class="k">with</span>
+        | Some (expr) -&gt;
+            printf <span class="s">"Ctor = %a\n\n"</span> output_any expr
+        | _ -&gt;
+            failwith <span class="s">"Error!"</span>
+    ) 
+</pre>
+
+<h2>Conclusion</h2>
+<p>The aim of this article isn't to present fully working solution, but to suggest a few enhancements
+  to the F# metaprogramming that I think would be useful. You can use the source code attached to this 
+  article to find (and experiment with) some interesting use cases of metaprogramming that require working 
+  with classes, for example translating classes written in F# to another language. The biggest limitation
+  of the solution I presented is, that you have to write every implementation twice - it occurs in the
+  body of the class and in the module used for metaprogramming too (however the code looks very similar).
+  If you want to translate F# code, you don't need to implement methods/properties of the real class, but
+  if the program creates instances of the class at runtime (and uses the quoted code to perform some analysis etc.),
+  you'll need to write both implementations.</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="http://www.tomasp.net/articles/fsclassmeta/source.zip">Download the source code and examples</a> (6.77kB)</li>
+  <li><a href="http://www.tomasp.net/articles/fsclassmeta/article.pdf">Download the article</a> (pdf, 204kB)</li>
+</ul>
+
+<h2>Links and references<a name="fsclassmeta-links"></a></h2>
+<ul>
+  <li>[1] <a href="http://cs.hubfs.net/blogs/tomasp/archive/2006/07/07/413.aspx">F# - Simple quotations transformation</a>
+    [<a href="http://cs.hubfs.net/blogs/tomasp/archive/2006/07/07/413.aspx" target="_blank">^</a>] - My F# Notes</li>  
+</ul>

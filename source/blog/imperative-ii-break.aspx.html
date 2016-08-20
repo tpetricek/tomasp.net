@@ -1,0 +1,293 @@
+<!-- [info]
+
+ - date: 2009-04-25T16:31:15.0000000
+ - description: In the previous article of this series, we've implemented a computation expression that allows us to write imperative 'return' in F#. In this article, we'll add support for 'break' and 'continue'.
+ - tags: functional,f#
+ - layout: post
+ - title: Imperative computation in F# (II.) - Writing break and continue
+ - url: imperative-ii-break.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>As I already wrote in the <a href="http://tomasp.net/blog/imperative-i-return.aspx">first part of this series</a>,
+  the F# language doesn't support some of the language constructs known from imperative
+  languages such as C#. In particular, we cannot use imperative <code>return</code> statement
+  that returns the result of a function from any place in the function code. In functional languages,
+  every construct is an expression, so to get the overall result of the function, the 
+  F# language evaluates the expression and the value of the expression is used as the result.
+  In the previous article, we've seen that we can simulate this construct in the F# language
+  using F# computation expressions and I showed how to implement computation named <code>imperative</code>
+  that allows us to write for example the <code>exists</code> function for working with sequences
+  like this:</p>
+<pre lang="fsharp">
+let exists f inp = imperative {
+  for v in inp do 
+    if f(v) then return true
+  return false }
+</pre>  
+<p>In this article, we're going to look at two more imperative constructs and we're going
+  to talk about <code>break</code> and <code>continue</code>. We'll see that we can quite
+  easily extend the computation builder from the previous article to allow writing code
+  that is syntactically very close to what you would write in C#. As I already mentioned,
+  there are of course some performance overheads when using computation expressions, but 
+  I find it very interesting how nice imperative syntax we can get in functional F#:</p>
+<pre lang="fsharp">
+imperative { 
+  for x in 1 .. 10 do 
+    if (x % 3 = 0) then do! continue
+    printfn "number = %d" x }
+</pre>  
+<p>The only difference between this code and the code we'd probably write if F# supported
+  <code>continue</code> as a keyword is that we need to wrap the code inside the <code>imperative</code>
+  computation and that we need to add the <code>do!</code> primitive before the <code>continue</code>
+  value. Now that we've seen an example of using the <code>continue</code> value inside
+  the imperative computations, let's look how we can extend the computation builder from
+  the previous article to add this feature...</p>
+[/abstract] -->
+
+<h1>Imperative computation in F# (II.) - Writing break and continue</h1>
+<p>As I already wrote in the <a href="http://tomasp.net/blog/imperative-i-return.aspx">first part of this series</a>,
+  the F# language doesn't support some of the language constructs known from imperative
+  languages such as C#. In particular, we cannot use imperative <code>return</code> statement
+  that returns the result of a function from any place in the function code. In functional languages,
+  every construct is an expression, so to get the overall result of the function, the 
+  F# language evaluates the expression and the value of the expression is used as the result.
+  In the previous article, we've seen that we can simulate this construct in the F# language
+  using F# computation expressions and I showed how to implement computation named <code>imperative</code>
+  that allows us to write for example the <code>exists</code> function for working with sequences
+  like this:</p>
+<pre lang="fsharp">
+let exists f inp = imperative {
+  for v in inp do 
+    if f(v) then return true
+  return false }
+</pre>  
+<p>In this article, we're going to look at two more imperative constructs and we're going
+  to talk about <code>break</code> and <code>continue</code>. We'll see that we can quite
+  easily extend the computation builder from the previous article to allow writing code
+  that is syntactically very close to what you would write in C#. As I already mentioned,
+  there are of course some performance overheads when using computation expressions, but 
+  I find it very interesting how nice imperative syntax we can get in functional F#:</p>
+<pre lang="fsharp">
+imperative { 
+  for x in 1 .. 10 do 
+    if (x % 3 = 0) then do! continue
+    printfn "number = %d" x }
+</pre>  
+<p>The only difference between this code and the code we'd probably write if F# supported
+  <code>continue</code> as a keyword is that we need to wrap the code inside the <code>imperative</code>
+  computation and that we need to add the <code>do!</code> primitive before the <code>continue</code>
+  value. Now that we've seen an example of using the <code>continue</code> value inside
+  the imperative computations, let's look how we can extend the computation builder from
+  the previous article to add this feature...</p>  
+  
+<h2>Supporting break and continue</h2>  
+<p>To add support for the <code>break</code> and <code>continue</code> primitives, we'll need to 
+  slightly modify the type that represents the computation and then update the computation builder
+  that we implemented in the previous article. As you can probably guess, the largest changes 
+  will be done in the code that builds computation representing two F# looping constructs - 
+  <code>for</code> and <code>while</code> loops. Let's start by looking at the computation type.</p>
+
+<h3>Designing the computation type</h3>
+<p>In the previous part of the series, we represented the computation as a function that takes
+  <code>unit</code> as the argument and returns <code>option&lt;'T&gt;</code>. This allowed us
+  to represent the case when the computation hasn't yet finished, because the <code>return</code>
+  primitive wasn't used (the function returns <code>None</code>) and the case when the computation
+  already has some result value (returning <code>Some</code>). To support the two jumping constructs,
+  we'll need to add a case that represents a computation that is <em>jumping</em> out of the 
+  iteration of a loop. We can declare the type like this:</p>
+
+<pre lang="fsharp">
+type ImperativeResult&lt;'T&gt; = 
+  | ImpValue of 'T
+  | ImpJump of bool
+  | ImpNone 
+  
+type Imperative&lt;'T&gt; = unit -&gt; ImperativeResult&lt;'T&gt;
+</pre>
+<p>The <code>ImperativeResult&lt;'T&gt;</code> type is in principle just an extension of the 
+  <code>option&lt;'T&gt;</code> type that adds one case - the <code>ImpJump</code> discriminator.
+  The <code>bool</code> parameter specifies whether we want to continue executing the next 
+  iteration of the loop after we break out of the current iteration. The value will be <code>true</code>
+  when the user calls the <code>continue</code> primitive and for <code>break</code> we'll set
+  it to <code>false</code>. The actual type that represents the computation is again
+  just a function that returns one of the possible computation results.</p>
+
+<h3>Implementing the computation builder</h3> 
+<p>We'll split the implementation of the computation expression builder in a similar way
+  as in the previous article and we'll start with the basic primitives that aren't related
+  to loops. </p> 
+
+<pre lang="fsharp">
+type ImperativeBuilder() = 
+  // When returning a value, we'll use the 'ImpValue' discriminator
+  member x.Return(v) : Imperative&lt;_&gt; = 
+    (fun () -&gt; ImpValue(v))
+  // Expression that doesn't represent any value returns 'ImpNone'
+  member x.Zero() = (fun () -&gt; ImpNone)
+  
+  // Create a delayed imperative computation from a function
+  member x.Delay(f:unit -&gt; Imperative&lt;_&gt;) = 
+    (fun () -&gt; f()())
+
+  // Combine two delayed computations that may return or jump
+  member x.Combine(a, b) = (fun () -&gt;
+    match a() with 
+    // The computation doesn't have value - evaluate the next
+    | ImpNone -&gt; b() 
+    // If the computation returned value or called break/return
+    // we'll propagate the value representing the result
+    | res -&gt; res)
+  
+  // Execute the imperative computation given as the argument  
+  member x.Run&lt;'T&gt;(imp) = 
+    // When the computation returns 'ImpJump' it is an indication
+    // that 'break' or 'continue' was used incorrectly.
+    match imp() with
+    | ImpValue(v) -&gt; v
+    | ImpJump _ -&gt; failwith "Invalid use of break/continue!"
+    | _ -&gt; failwith "No value has been returend!"
+
+let imperative = new ImperativeBuilder()  
+</pre>
+<p>If you compare the listing with the code from the previous article, you'll see
+  that there are relatively few changes. First of all, we've changed all occurrences
+  of <code>None</code> into <code>ImpNone</code> and also all uses of <code>Some</code>
+  into <code>ImpValue</code>, which are our new representations of missing or present values.
+  However, there are a few places where we needed to modify the code to correctly handle
+  <code>ImpJump</code> values. In the <code>Combine</code> primitive, we're now 
+  returning the result of the first computation not only when it is a result created
+  using <code>return</code>, but also when the user uses <code>break</code> or <code>continue</code>
+  and we'll get the <code>ImpJump</code> value. This means that when we're combining two 
+  pieces of computations inside the body of the loop, we won't execute the second 
+  computation if the first one contained a jumping construct. As a next change, we also added 
+  a new case to the <code>Run</code> primitive which returns an error if the 
+  computation ends with a value representing a jump. This means that a <code>break</code> or
+  <code>continue</code> construct was used outside of a loop, which is incorrect.</p>  
+ 
+<h3>Adding support for loops</h3>
+<p>Most of the interesting changes in the code will be in the parts that implement
+  looping constructs. In particular, we'll use a different primitive for composing 
+  iterations of the loop - in the previous article we just used the <code>Combine</code>
+  member from both <code>While</code> and <code>For</code>. However, in the new version,
+  we'll need to handle loops differently. Before the computation can start a new iteration
+  of a loop, it needs to check whether the previous iteration returned <code>ImpJump</code>.
+  If it returned value representing <code>break</code> then we'll need to break the loop
+  immediately without returning a result. If the previous iteration contained the <code>continue</code>
+  construct, then we'll just continue executing the next iteration - the jump represented by 
+  <code>continue</code> was already performed because we didn't run any more code after
+  reaching the <code>continue</code> primitive in the previous iteration (this is the 
+  case, because the <code>Combine</code> primitive doesn't call the second computation when
+  it gets <code>ImpJump</code> as the result from the first one).</p>  
+
+<pre lang="fsharp">
+type ImperativeBuilder with 
+  // A local helper used when composing iterations of loops
+  // in the 'For' and 'While' primitives below.
+  member x.CombineLoop(a, b) = (fun () -&gt;
+    match a() with 
+    // When the last iteration returns a value, propagate the result
+    | ImpValue(v) -&gt; ImpValue(v) 
+    // The last iteration contained 'break', so we'll 
+    // return missing value as the result from the loop
+    | ImpJump(false) -&gt; ImpNone
+    // When the last iteration didn't contain any special construct
+    // or when it ended with 'continue', we'll continue looping
+    | ImpJump(true)
+    | ImpNone -&gt; b() )
+  
+  // 'For' and 'While' members that implement the looping constructs
+  // are similar as in the previous version, with the exception that they
+  // compose iterations using the special 'CombineLoop' primitive
+  member x.For(inp:seq&lt;_&gt;, f) =
+    let rec loop(en:IEnumerator&lt;_&gt;) = 
+      if not(en.MoveNext()) then x.Zero() else
+        x.CombineLoop(f(en.Current), x.Delay(fun () -&gt; loop(en)))
+    loop(inp.GetEnumerator())
+  member x.While(gd, body) = 
+    let rec loop() =
+      if not(gd()) then x.Zero() else
+        x.CombineLoop(body, x.Delay(fun () -&gt; loop()))
+    loop()         
+  
+  // A call to this member is inserted when we use the 'do!' construct. If the 'v'
+  // value is either 'break' or 'continue', we will return 'ImpJump' as the result
+  member x.Bind(v:Imperative&lt;unit&gt;, f : unit -&gt; Imperative&lt;_&gt;) = (fun () -&gt;
+    match v() with
+    | ImpJump(kind) -&gt; ImpJump(kind)
+    | _ -&gt; f()() )
+     
+// Primitives that return the 'ImpJump' value when executed 
+let break = (fun () -&gt; ImpJump(false))
+let continue = (fun () -&gt; ImpJump(true))
+</pre>
+
+<p>As you can see, we've added a primitive named <code>CombineLoop</code> and used
+  it instead of the usual <code>Combine</code> when implementing the looping constructs.
+  The reason for this change is that once we introduce <code>break</code> and <code>continue</code>,
+  we need to handle them differently when composing for example a sequence of statements
+  and when composing iterations of a loop. </p>
+<p>The listing also defines two primitive values of the <code>Imperative&lt;'T&gt;</code> type
+  that simply return the <code>ImpJump</code> result. Note that these give us the only
+  way we can use to build a computation that contains jumps. We've also added the <code>Bind</code>
+  member to the computation builder, which means that we can now write <code>do!</code>
+  inside the computation expression. The only values of the <code>Imperative&lt;'T&gt;</code> type
+  that we have available are <code>break</code> and <code>continue</code>, so they are the
+  only two primitives that we can use with the <code>do!</code> construct.</p>  
+  
+<h2>Using 'break' and 'continue' in F#</h2>
+<p>Now we have everything we need to write imperative loops with <code>break</code> or <code>continue</code>
+  in F#. I'm sure you know many cases where these primitives are useful, so let's just briefly look
+  at two simple snippets that demonstrate how we can use them. In the first example, we'll
+  write a <code>for</code> loop and we'll use <code>continue</code> to skip evaluation of some iterations
+  of the loop: </p>
+
+<pre lang="fsharp">
+&gt; imperative { 
+    for x in 1 .. 5 do 
+      if (x % 2 = 0) then do! continue
+      printfn "number = %d" x };;
+<em>number = 1
+number = 3
+number = 5</em>
+</pre>
+
+<p>The second example will use a <code>while</code> loop with <code>true</code> as the condition. However,
+  we can now jump out of the loop, so the loop isn't infinite as it may look. We're using a single
+  mutable variable (using F# reference cell) and we increment it in each iteration. When the number
+  reaches some number, we'll stop looping using <code>break</code>:</p>
+
+<pre lang="fsharp">    
+&gt; imperative { 
+    let x = ref 1
+    while true do
+      if (!x % 4 = 0) then do! break
+      printfn "number = %d" !x
+      x := !x + 1 };;
+<em>number = 1
+number = 2
+number = 3</em>
+</pre>
+
+<h2>Summary</h2>
+<p>As I already wrote in the introduction and in the first article of this series, the most interesting
+  thing about the <code>imperative</code> computation builder is that it gives us a surprisingly elegant
+  syntax to write imperative constructs in F#. The syntax almost doesn't differ from you'd write
+  if F# supported these imperative constructs directly. On the other hand, the performance may be 
+  an issue, because computation expressions are translated into member calls that take lambda 
+  functions as arguments, so there is definitely some overhead.</p>
+<p>The purpose of this article is first of all to demonstrate the flexibility of the F# language
+  and to show an implementation of an interesting <em>computation expression</em>. Actually, 
+  writing <code>break</code> and <code>continue</code> in functional languages isn't a new idea.
+  There is an example how to do this using the <em>continuation monad</em> in Haskell [<a href="#imperfs2">1</a>]
+  and Brian McNamara has posted a translation of this in F# [<a href="#imperfs2">2</a>]. However,
+  none of these get us a very pleasant syntax, which is I believe quite important aspect.</p>
+
+<h2>Downloads &amp; References<a name="imperfs2"></a></h2>
+<ul>
+  <li><a href="/articles/imperative-fsharp/source2.zip">Download the example source code</a></li>
+</ul>
+<ul>
+  <li>[1] <a type="external" href="http://www.haskell.org/all_about_monads/html/contmonad.html">The Continuation monad</a> - haskell.org</li>
+  <li>[2] <a type="external" href="http://cs.hubfs.net/forums/thread/9309.aspx">Best way to express this?</a> - A reply by Brian McNamara at cs.hubfs.net</li>
+</ul>

@@ -1,0 +1,443 @@
+<!-- [info]
+
+ - date: 2011-05-17T13:59:06.0000000
+ - description: This article shows how to extend Haskell's Par monad to support cancellation of computations. This makes it possible to implement speculative parallelism using the monad and to build other high-level abstraction such as the unamb operator designed by Conal Elliott.
+ - tags: research,haskell,parallel
+ - layout: post
+ - title: Explicit speculative parallelism for Haskell's Par monad
+ - url: speculative-par-monad.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Haskell provides quite a few ways for writing parallel programs, but none of them is fully automatic.
+  The programmer has to use some annotations or library to run computations in parallel <em>explicitly</em>. 
+  The most recent paper (and library) for writing parallel programs follows the latter approach. You can find more
+  information about the library in a paper by Simon Marlow et al. <a type="external" href="http://research.microsoft.com/en-us/um/people/simonpj/papers/parallel/monad-par.pdf">A
+  monad for deterministic parallelism</a> and it is also available on <a href="http://hackage.haskell.org/package/monad-par" type="external">Hackage</a>.
+  However, I'll explain all the important bits that I'll use in this article.</p>
+
+<p>The library provides an explicit way for writing parallel programs using a <code>Par</code> monad. The library contains 
+  constructs for spawning computations and sharing state using blocking variables. However, the whole programming model
+  is fully deterministic. I believe that it is sometimes useful to lift the determinacy requirement.
+  Some programs are deterministic, but the fact cannot be (easily) automatically verified. For example, say you have two functions
+  <code>fib1</code> and <code>fib2</code>. They both give the same result, but each of them is more efficient
+  than the other one on certain inputs. To calculate a Fibonacci number, the program could <em>speculatively</em> 
+  try to evaluate both functions in parallel and return the result of the one that finishes first.</p>
+
+<p>Unfortunately, this cannot be safely implemented using a fully deterministic library. In this article, I'll show some
+  examples where speculative parallelism can be useful and I'll talk about an extension to the <code>Par</code> monad
+  that I implemented (available on <a href="https://github.com/tpetricek/Haskell.ParMonad">GitHub</a>). The extension allows 
+  programmers to write <em>speculative computations</em>, provided that they manually verify that their code is 
+  deterministic. </p>
+[/abstract] -->
+
+<h1>Explicit speculative parallelism for Haskell's Par monad</h1>
+<p>Haskell provides quite a few ways for writing parallel programs, but none of them is fully automatic.
+  The programmer has to use some annotations or library to run computations in parallel <em>explicitly</em>. 
+  The most recent paper (and library) for writing parallel programs follows the latter approach. You can find more
+  information about the library in a paper by Simon Marlow et al. <a type="external" href="http://research.microsoft.com/en-us/um/people/simonpj/papers/parallel/monad-par.pdf">A
+  monad for deterministic parallelism</a> [<a href="#spphm">1</a>] and it is also available on <a href="http://hackage.haskell.org/package/monad-par" type="external">Hackage</a>.
+  However, I'll explain all the important bits that I'll use in this article.</p>
+
+<p>The library provides an explicit way for writing parallel programs using a <code>Par</code> monad. The library contains 
+  constructs for spawning computations and sharing state using blocking variables. However, the whole programming model
+  is fully deterministic. I believe that it is sometimes useful to lift the determinacy requirement.
+  Some programs are deterministic, but the fact cannot be (easily) automatically verified. For example, say you have two functions
+  <code>fib1</code> and <code>fib2</code>. They both give the same result, but each of them is more efficient
+  than the other one on certain inputs. To calculate a Fibonacci number, the program could <em>speculatively</em> 
+  try to evaluate both functions in parallel and return the result of the one that finishes first.</p>
+
+<p>Unfortunately, this cannot be safely implemented using a fully deterministic library. In this article, I'll show some
+  examples where speculative parallelism can be useful and I'll talk about an extension to the <code>Par</code> monad
+  that I implemented (available on <a href="https://github.com/tpetricek/Haskell.ParMonad">GitHub</a>). The extension allows 
+  programmers to write <em>speculative computations</em>, provided that they manually verify that their code is 
+  deterministic. </p>
+
+<h2>Introduction</h2>
+<p>In this section, I'll show a basic example that demonstrates how the <code>Par</code> monad works. I'll use a 
+  contrived example of calculating Fibonacci numbers to keep things simple. You can find better examples in
+  the <code>Par</code> monad <a href="https://github.com/simonmar/monad-par/tree/master/examples">examples repository</a>.
+  The performance measurements that I'll include in this article are just for demonstration (executed 
+  on Intel Core 2 Duo CPU). I'll also briefly introduce the <code>unamb</code> operator [<a href="#spphm">3</a>] designed by 
+  <a href="http://conal.net/blog/" type="external">Conal Elliott</a>. This solves a very
+  important problem, originally in Functional Reactive Programming [<a href="#spphm">2</a>], which is closely related to 
+  <em>speculative computations</em>.</p>
+
+<h3>Deterministic parallelism monad</h3>
+<p>The parallelism wraps a computation inside a monad. A parallel version of a function that returns 
+  <code>Int64</code> will have a return type <code>Par Int64</code>. The type represents a computation 
+  that can be started (using the <code>runPar</code> function).</p>
+  
+<p>Here is a basic example:</p>
+
+<pre lang="haskell">
+-- Naive calculation of Fibonacci numbers
+fib :: Int64 -&gt; Int64
+fib x | x &lt; 1 = 1
+fib x = fib (x-2) + fib (x-1)
+
+-- Parallel version of the function
+pfib :: Int64 -&gt; Par Int64
+pfib n | n &lt; 25 = return (fib n)
+pfib n = do 
+  av &lt;- spawn (pfib (n - 1))
+  b  &lt;- pfib (n - 2)  
+  a  &lt;- get av
+  return (a + b)
+</pre>
+
+<p>The <code>fib</code> function is a usual (non-parallel) function for calculating Fibonacci numbers. The 
+  <code>pfib</code> function is a parallel version (as you can see from the type signature). When the argument
+  is smaller than 25, it runs sequential <code>fib</code> to avoid generating too many small work items. 
+  If the argument is sufficiently large, the function <em>spawns</em> a computation to calculate 
+  <code>pfib (n-1)</code> in parallel. The type of the <code>spawn</code> function is:</p>
+<pre lang="haskell">
+spawn :: NFData a =&gt; Par a -&gt; Par (IVar a)
+</pre>
+<p>The <code>NFData</code> requirement specifies that it should be possible to fully evaluate the 
+  data structure. The rest of the signature says that the function takes some computations and returns
+  a variable (wrapped in <code>Par</code>) that will eventually contain the result of the 
+  computation. When writing code in the <code>Par</code> monad, we can get a value from the variable
+  using <code>get</code> function. The function blocks the computation until a value becomes
+  available and has the following type:</p>
+<pre lang="haskell">
+get :: IVar a -&gt; Par a
+</pre>
+<p>Now it should be easy to understand the rest of the <code>pfib</code> body. It spawns one recursive
+  computation (as a background task), then runs the second recursive call on the main thread and then
+  waits until the background operation completes. Finally, it returns the sum of the results.</p>
+
+<p>The following simple snippet shows how to run the two functions and it shows some approximate
+  performance measurements:</p>
+<pre lang="haskell">
+main = do 
+  -- Naive sequential fibonacci (1.8 sec)
+  print $ fib 32
+  -- Parallel version with 25 threshold (1.0 sec)
+  print $ runPar $ pfib 32
+</pre>
+<p>When we have a value of type <code>Par a</code>, we can evaluate it (to get an <code>a</code> value)
+  using the <code>runPar</code> function. When running the parallel function on dual-core machine,
+  it gives you a slightly less than 2x speedup. For comparison, a version implemented using the
+  <code>par</code> and <code>pseq</code> combinators (which is a lower-level parallelism mechanism
+  in GHC) completes in approximately 0.95 seconds.</p>
+
+<p>Finally, it is worth mentioning that the programming model used by the <code>Par</code> monad is 
+  very similar to the model used by <code>async</code> in F#. The <code>spawn</code> function 
+  corresponds to <code>Async.StartChild</code> and the <code>runPar</code> does the same thing as
+  <code>Async.RunSynchronously</code>.</p>
+
+<h3>Unambiguous choice</h3>
+<p>Before discussing the support for speculative programming, I'd like to shortly discuss the 
+  <em>unambiguous choice</em> operator, which was created by <a href="http://conal.net/blog/" type="external">Conal Elliott</a>
+  for his <a href="http://conal.net/papers/push-pull-frp/">Functional Reactive Programming (FRP)</a> implementation, 
+  but is also available as a <a href="http://hackage.haskell.org/package/unamb">separate package on Hackage</a>.</p>
+
+<p>The operator is a function of type <code>a -&gt; a -&gt; a</code>. It takes two arguments, starts
+  evaluating them concurrently and returns a value that becomes available first.
+  When using the operator, the programmer needs to make sure that the two arguments
+  are <em>compatible</em>. This means that if they both finish evaluating, their 
+  values are equal. Formally, the requirement looks like this:</p>
+
+<p style="margin-left:40px;"><em>compatible a b</em> = (<em>a</em> = &#8869;) | (<em>b</em> = &#8869;) | (<em>a</em> = <em>b</em>)</p>
+
+<p>The operator can be used for two purposes. First, it can be used to deal with computations
+  that do not terminate. For example, say you have an expression <code>a &amp;&amp; b</code>. When <code>b</code>
+  is <code>False</code>, the result of the expression should be (logically) also <code>False</code>.
+  However, when <code>a</code> doesn't terminate, the overall expression will also never
+  yield a value, because it will start evaluating <code>a</code> first. Using <code>unamb</code>,
+  you can write:</p>
+<pre lang="haskell">
+import Data.Unamb
+
+c = unamb (a &amp;&amp; b) (b &amp;&amp; a)
+</pre>
+<p>This use clearly matches the compatibility requirement. When both arguments terminate, the
+  result is same in both of the cases. However, the expression returns <code>False</code>
+  even if <code>a</code> is non-terminating computation, because the second argument will 
+  evaluate to <code>False</code>.</p>
+
+<p>The second possible use of <code>unamb</code> is for simple <em>speculative evaluation</em>.
+  I described a typical scenario earlier. We have two functions and one is faster for some of
+  the inputs, but not for all of them. Using <code>unamb</code>, we can write the following 
+  helper that takes two functions and returns the value that is produced first:</p>
+
+<pre lang="haskell">
+tryBoth :: (t -&gt; a) -&gt; (t -&gt; a) -&gt; t -&gt; a
+tryBoth f1 f2 n = unamb (f1 n) (f2 n)
+</pre>
+
+<p>To demonstrate how the function works, I implemented a more clever function for calculating
+  Fibonacci numbers (<code>ffib</code>), which counts from zero and keeps adding last two 
+  generated numbers. If you want to play with it, you can find the complete source code at 
+  the end of the article. The following example shows the results:</p>
+
+<pre lang="haskell">
+main = do
+  -- Naive recursive implementation (~1.7 sec)
+  print fib 32
+  -- Efficient implementation (~0.01 sec)
+  print ffib 32
+  -- Tries evaluating result using both functions (~0.01 sec)
+  tryBoth fib ffib 32 
+</pre>
+
+<p>In this example, we could just call <code>ffib</code>, because it will be always faster.
+ However, that's not always the case. You might have a very fast function that almost always
+ works, but sometimes fails and a backup function that is slow, but always works.
+</p>
+
+<p>The <code>unamb</code> operator doesn't break determinacy of code only when it is
+  used properly. The programmer needs to make sure that the arguments are <em>compatible</em>.
+  However, I believe that this kind of construct is very useful and I hope that the previous
+  examples demonstrated that. In the rest of the article, I'll describe my extension that
+  allows you to use similar concepts in the <code>Par</code> monad.</p>
+
+<h2>Speculative parallelism for Par monad</h2>
+<p>The extension (available on <a href="https://github.com/tpetricek/Haskell.ParMonad">GitHub</a>)
+  adds support for explicit cancellation of computations. When starting a computation, you can 
+  give it a <em>cancellation token</em>. The token can be later used (from another computation)
+  to cancel the background task. The design of the extension is very similar to how cancellation
+  works in F# asynchronous workflows and in Task Parallel Library (TPL) in .NET.</p>
+
+<h3>Parallel unambiguous choice</h3>
+<p>The support for cancellation is a low-level control structure and it is not expected that
+  it will be used directly very often. However, you can use it to implement your own functions
+  that provide higher-level of abstraction. For example, it is quite easy to implement 
+  <code>unamb</code> operator for <code>Par a</code> values:</p>
+
+<pre lang="haskell">
+-- Unambiguous choice between two parallel computations
+-- Assumes that computations p1 and p2 are compatible
+punamb :: NFData a =&gt; Par a -&gt; Par a -&gt; Par a
+punamb p1 p2 = do
+  res &lt;- newBlocking
+  ct1 &lt;- newCancelToken
+  ct2 &lt;- newCancelToken
+  forkWith ct1 (do
+    a &lt;- p1; put res a; cancel ct2)
+  forkWith ct2 (do
+    a &lt;- p2; put res a; cancel ct1)
+  v &lt;- get res
+  return v
+</pre>
+
+<p>The type of the function specifies that the value returned by the function 
+  can be fully evaluated, but it is equally easy to define a version that evaluates the 
+  value to a head-strict form (using <code>put_</code> instead of <code>put</code>). 
+  The body of the <code>punamb</code> first creates some object for implementing the synchronization. 
+  It uses <code>newBlocking</code> to create a variable (of type <code>IVar a</code>) for storing the result. </p>
+<p>A variable created using <code>newBlocking</code> behaves slightly differently than standard variables created
+  using <code>new</code>. When you attempt to write a value to a standard variable for the second time, the 
+  writing fails and causes an exception. However, variables created using <code>newBlocking</code> behave 
+  differently - instead of causing an exception, the second write is just blocked (indefinitely) and the
+  operation never completes. This makes it possible to implement a race between two computations.
+  The next two values <code>ct1</code> and <code>ct2</code> are cancellation tokens that are later used
+  to cancel running computations.</p>
+
+<p>After the initialization, the body starts two background computations using the <code>forkWith</code> function.
+  The function takes a <code>CancelToken</code> as the first argument and a computation of type <code>Par ()</code>
+  as the second argument. When called (from the <code>Par</code>) monad, it starts the computation in 
+  background and associates the cancellation token with it. This allows others to cancel the computation.</p>
+
+<p>The two computations started using <code>forkWith</code> are quite simple. Each of them evaluates
+  one of the <code>punamb</code>'s arguments, then attempts to cancel the other computation and
+  stores the result to the <code>res</code> variable. In a typical case, one of the computations 
+  completes first and canceles the other (which is still running). However, if both complete at the
+  same time, then one wins the race and writes value to <code>res</code>. The other attempts to write
+  the result, but gets blocked. The race doesn't affect determinism, as long as the two computations
+  given as arguments to <code>punamb</code> are <em>compatible</em>.</p>
+
+<p>The following snippet uses <code>punamb</code> to implement an example similar to the 
+  earlier demonstration of <code>unamb</code>. The <code>pffib</code> function (not shown in this
+  article) is a faster implementation of Fibonacci numbers embedded in the <code>Par</code> monad:</p>
+<pre lang="haskell">
+main = do
+  -- Naive recursion using Par monad (~1.1 sec)
+  print $ runPar $ pfib 32
+  -- Efficient recursion using Par monad (~0.01 sec)
+  print $ runPar $ pffib 32
+  -- Tries evaluating both &amp; returns the first (~0.04 sec)
+  print $ runPar $ punamb (pfib 32) (pffib 32)
+</pre>
+<p>As you would expect, the <code>punamb</code> operation behaves similarly to <code>unamb</code>.
+  When given two computations, it finishes after the first one completes. The time is slightly larger,
+  because the first computation (running in parallel) also occupies some of the resources.</p>
+
+<p>You may be wondering how the cancellation works - at which point is a <code>Par</code> 
+  computation cancelled when another computation calls <code>cancel</code>. The following
+  section briefly explains how is the cancellation implemented in my modification of the package.</p>
+
+<h3>How are computations cancelled?</h3>
+<p>The cancellation for the <code>Par</code> monad is cooperative, which means that the 
+  computations can be cancelled only when they are written in a particular way that permits
+  cancellation. In particular, the <code>cancel</code> function will not be able to cancel a
+  <code>Par</code> computation that is created by writing <code>return foo</code> (where 
+  <code>foo</code> is some expression).</p>
+
+<p>A computation can be cancelled at points when it performs some special computation in 
+  the <code>Par</code> monad. Most importantly, this includes the monadic binding (as well as
+  other special calls like forking). The <code>pfib</code> function (demonstrated above) 
+  contains many such points. It can be cancelled when it tries to spawn a recursive call (in
+  background), when it recursively calls itsef as well as when it tries to read the result
+  of the background computation. </p>
+
+<p>You can exlpore the source code of my modification on GitHub. The commit that adds the cancellation support 
+  (<a href="https://github.com/tpetricek/Haskell.ParMonad/commit/c35f7311e7b846aaf087f7604d1d84f247b20d4a">see here</a>)
+  shows the difference compared with the original version. Implementing an un-cooperative 
+  cancellation (as, for example, in <code>unamb</code>) would be also possible, but more
+  difficult. However, I believe that the cooperative cancellation model works very well 
+  for the <code>Par</code> monad, because parallel computations generally consist of 
+  large number of small (atomic) steps.</p>
+
+<p>To finish the blog post, the last section shows a single larger example of implementing
+  tree processing as a <em>speculative computation</em> explicitly using cancellation.</p>
+
+<h2>Speculative tree processing</h2>
+<p>In this section, I present a larger example that uses the <em>cancellation</em> support to implement
+  a speculative processing of a tree. We look how to implement a <code>forall</code> function that checks whether 
+  a specified predicate holds for all leaves of the tree. When the function returns <code>False</code> for some
+  value, the overall result will also be false. In this case, the function can cancel all parallel tasks and return 
+  immediately.</p>
+
+<p>The example uses the following simple tree structure:</p>
+
+<pre lang="haskell">
+data Tree a 
+  = Leaf a
+  | Node (Tree a) (Tree a)
+</pre>
+
+<p>The following snippet shows a basic parallel version of <code>forall</code>. It uses the same recursive
+  parallel processing pattern that was used earlier in the <code>pfib</code> function:</p>
+
+<pre lang="haskell">
+-- Test whether all elements match the given predicate (in parallel)
+forallp :: (a -&gt; Bool) -&gt; Tree a -&gt; Par Bool
+forallp p (Leaf num) = return $ p num
+forallp p (Node left right) = do
+  al' &lt;- spawn $ forallp p left
+  ar  &lt;- forallp p right
+  al  &lt;- get al'
+  return (al &amp;&amp; ar)
+</pre>
+
+<p>When processing a leaf, the function calls the predicate and returns the result. When processing a node, 
+  it spawns processing of the left sub-tree as a background operation (using <code>spawn</code>, which is 
+  implemented using <code>fork</code>) and then processes the right sub-tree. After both operations 
+  complete, it returns logical conjunction of the two results.</p>
+
+<p>When implementing the speculative version, we need to spawn two background computations (to start
+  processing the left and right sub-tree). When any of them completes returning <code>False</code>, we
+  can immediately store the result in some variable, which unblocks the main computation (and it can 
+  return the overall result). When the result is <code>False</code>, the process needs to wait until the
+  other computation completes before it can set the final result.</p>
+
+<p>The following snippet shows the speculative version:</p>
+<pre lang="haskell">
+-- Test whether all elements match the given predicate
+-- (Speculatively - False is returned immediately)
+foralls :: (a -&gt; Bool) -&gt; Tree a -&gt; Par Bool
+foralls p tree = do
+    tok &lt;- newCancelToken
+    r &lt;- forall' p tok tree
+    cancel tok 
+    return r
+  where 
+    -- Recursively start computations using the same cancellation token
+    forall' p tok (Leaf v) = return (p v)
+    forall' p tok (Node left right) = do
+      leftRes &lt;- new
+      rightRes &lt;- new
+      finalRes &lt;- newBlocking
+      forkWith tok (forall' p tok left &gt;&gt;= 
+        completed leftRes rightRes finalRes)
+      forkWith tok (forall' p tok right &gt;&gt;= 
+        completed rightRes leftRes finalRes)
+      get finalRes
+
+    
+    -- Called when one of the branches complete. Write result immediately
+    -- if it is False, otherwise wait for the second computation.
+    completed varA varB fin resA = do
+      put varA resA
+      if not resA then put fin False
+      else get varB &gt;&gt;= put fin . (&amp;&amp; resA)
+</pre>
+
+<p>The main body of the function creates a new <code>CancelToken</code> and then calls a helper that does 
+  the actual processing. The cancellation token is used when starting any background computations during the
+  recursive processing. As a result, when the helper function returns <code>False</code> (meaning that some
+  computations may be still running), we can cancel all (still running, but unnecessary) computations
+  using this single token.</p>
+
+<p>The function that implements the recursive processing first creates three variables. The first two
+  (<code>leftRes</code> and <code>rightRes</code>) are used by their corresponding computations (when a 
+  left computation completes, it writes result to <code>leftRes</code>). The last variable is created using
+  the <code>newBlocking</code> function, because it can be accessed by any of the two computations. Its value
+  is set to the final result as soon as possible. The function then spawns two tasks to process sub-trees
+  and waits for the final result.</p>
+
+<p>The two background computations spawned by the function both make a recursive call and then pass the
+  result to the <code>completed</code> function. It takes all three variables (variable of the currently 
+  completed computation, variable of the other computation and a final result variable) and the result
+  of the computation. If the result is <code>False</code>, then it sets the final result. Otherwise, it
+  waits until the other computation completes (by blocking on the other variable) and then sets the
+  final result (in this case, the computation may race with the other call to <code>completed</code>,
+  but that is not a problem - they both produce the same value and the second one will just block
+  when it attempts to write).</p>
+
+<p>The complete source code contains a full example that you can run to test the function. Assuming we have
+  a tree value named <code>tree</code>, we can write the following test. It demonstrates the performance of a 
+  simple sequential version, parallel version and a speculative version from the last listing:</p>
+<pre lang="haskell">
+main = do
+  -- Binary tree contains ~270 large primes and a single
+  -- non-prime number. The tree is fully evaluated.
+
+  -- Single-threaded version (see source code link) (~3.7 sec)
+  measure "Non-prime num (Seq) " (forall isPrime tree2)
+  -- Simple parallel version (~1.9 sec)
+  measure "Non-prime num (Par) " (runPar $ forallp isPrime tree2)
+  -- Parallel version with shortcircuiting (~0.01 sec)
+  measure "Non-prime num (Shr) " (runPar $ foralls isPrime tree2)
+</pre>
+
+<p>The example generates a tree containing large prime numbers and one number that is not a prime. 
+  Then it ensures that the tree is fully evaluated and processes it using different techniques. 
+  Parallel processing is roughly two times faster than sequential version, but a speculative
+  version is faster by orders of magnitude. This is, of course, the case only when the tree contains
+  at least one non-prime number. The performance depends on the data, but in general, the speculative 
+  parallelism can be used to implement various useful heuristics.</p>
+
+<h2>Summary</h2>
+<p>In this article, I demonstrated a couple of extensions that I implemented for the <code>Par</code>
+  monad that has been recently proposed by Simon Marlow, Ryan Newton and Simon Peyton Jones. The 
+  extension adds functions for cancellation of computations in the monad.</p>
+
+<p>The support for cancellation should be viewed as a low-level mechanism. In practice, it can be 
+  used to implement useful higher-level abstractions such as the <code>unamb</code> operator designed 
+  by Conal Elliott. The operator provides a high-level way for writing speculative computations 
+  (or working with partially undefined functions). When using the operator, the developer is 
+  responsible for ensuring that the arguments are compatible (will give the same result). </p>
+
+<p>In this article, I showed an implementation of <code>unamb</code> for the <code>Par</code> monad
+  and also a larger tree-processing example. The tree processing example cannot be elegantly written
+  using <code>unamb</code>, because it requires more expressive abstraction. This abstraction could be,
+  for example, a Haskell version of <em>joinads</em> [<a href="#spphm">4</a>], a language extension that I designed with Don
+  Syme during an internship at Microsoft Research. I'll write more about that in some future blog post...</p>
+
+<h3>Downloads &amp; Source code</h3>
+<ul>
+  <li><a href="https://github.com/tpetricek/Haskell.ParMonad">Implementation of the <code>Par</code> monad with cancellation</a> (GitHub)</li>
+  <li><a href="https://github.com/tpetricek/Haskell.ParMonad/blob/master/examples/speculative.hs">Complete source code of examples from the article</a> (GitHub)</li>
+</ul>
+
+<h2>References</h2>
+<ul>
+  <li>[1] <a type="external" href="http://research.microsoft.com/en-us/um/people/simonpj/papers/parallel/monad-par.pdf">A monad for deterministic parallelism</a> (PDF) - Simon Marlow, Ryan Newton, Simon Peyton Jones</li>
+  <li>[2] <a type="external" href="http://conal.net/papers/push-pull-frp/">Push-pull functional reactive programming</a> - Conal Elliott</li>
+  <li>[3] <a type="external" href="http://www.haskell.org/haskellwiki/Unamb">Unamb</a> - Haskell Wiki</li>
+  <li>[4] <a type="external" href="http://tomasp.net/academic/joinads/joinads.pdf">Joinads: a retargetable control-flow construct for reactive, parallel and concurrent programming</a> - Tomas Petricek, Don Syme</li>
+</ul>
+<a name="spphm"></a>

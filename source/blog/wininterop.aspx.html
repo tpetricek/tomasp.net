@@ -1,0 +1,77 @@
+<!-- [info]
+
+ - date: 2005-04-25T01:11:52.0000000
+ - description: Tento článek vysvětluje, jak je možné používat WinAPI funkce pomocí platform invoke v .Net aplikaci.
+ - tags: 
+ - layout: post
+ - title: .Net - Používání Windows API funkcí
+ - url: wininterop.aspx
+
+[/info] -->
+<!-- [abstract]
+Tento článek vysvětluje, jak je možné používat WinAPI funkce pomocí platform invoke v .Net aplikaci.
+[/abstract] -->
+
+<h1>.Net - Používání Windows API funkcí</h1>
+<doc version="1"><body><h1>.Net - Používání Windows API funkcí</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak volat z .Net aplikace funkce operačního systému Windows</li><li>Jak přistupovat k oknům cizích aplikací</li></ul><h2>Windows API</h2><p>Operační systém Windows umožňuje aplikacím, které pod ním běží
+    přistupovat k OS pomocí takzavaných API funkcí. Pokud píšete aplikaci pro 
+    Windows, která nepoužívá žádné další knihovny, budete muset přímo volat 
+    tyto API funkce. V knihovně .Net je zaobaleno velké množství funkcí, 
+    takže se vám málokdy stane, že potřebujete dělat něco na co není 
+    v .Netu funkce, přesto ale může být někdy potřeba volat funkci,
+    kterou v .Net Frameworku nenaleznete. .Net naštěstí umožňuje importování
+    API funkcí a jejich volání pomocí takzvaného platform invoke.</p><h2>Ukázková aplikace</h2><p>Ukázkové aplikace bude pomocí API funkce <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/getforegroundwindow.asp" target="_blank">GetForegroundWindow</a> zjišťovat jaké okno je aktivní a pomocí funkce
+    <a href="http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/getwindowtext.asp" target="_blank">GetWindowText</a>.
+    zjistí titulek tohoto okna. Aplikace bude titulek zjišťovat na pozadí 
+    pomocí objektu <code>Timer</code> (který umožňuje vyvolávat událost
+    jednou za daný časový interval). Dále bude aplikace umět minimalizovat hlavní
+    okno jiné aplikace (té aktivní) a to pomocí funkce <a href="http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindow.asp" target="_blank">ShowWindow</a>. Toto se bude dělat také pomocí objektu
+    <code>Timer</code>, protože při kliknutí na tlačítko je vždycky aktivní 
+    naše aplikace. Bude tedy možné kliknout na tlačítko a aplikace po pěti sekundách
+    minimalizuje aktivní okno. Pokud si chcete s okny zkusit i další operace,
+    podívejte se na <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/windowing/windows.asp" target="_blank">funkce pro práci s okny</a>.
+  </p><div style="text-align:center;"><img src="http://www.eeeksoft.net/articles/wininterop/wininterop.gif" alt="Ukázková aplikace" style="margin:10px;" /></div><h2>Deklarace API funkcí</h2><p>Pokud chcete používat API funkce ve vašem programu, musíte nejprve
+    každou funkci nadeklarovat a říct .Net Frameworku jaké má parametry a
+    v jaké se nalézá knihovně. Pokud se podíváte například na funkci <code>ShowWindow</code>,
+    zjistíte že se nalézá v knihovně <code>user32.dll</code> a že její parametry
+    jsou <code>HWND</code> a <code>int</code>. <code>HWND</code> se do .Netu překládá
+    jako <code>IntPtr</code>, takže deklarace funkce v C# bude vypadat následovně
+    (deklarace funkcí musí být vloženy v nějaké třídě jako statické metody):</p><pre><span class="c">// Toto je potreba kvuli atributu DllImport</span>
+using System.Runtime.InteropServices;
+  
+<span class="c">// Import funkce ShowWindow z knihovny user32.dll</span>
+[DllImport("user32.dll")]
+static extern IntPtr ShowWindow(IntPtr hWnd,int nShow);</pre><p>Tyto deklarace lze také nalézt na internetu (viz [<a href="#links">2</a>]). Další funkce,
+  se kterou chceme pracovat je <code>GetWindowText</code>. Import této funkce
+  je trošku obtížnější, protože práce s textovými řetězci v .Netu a WinAPI se
+  liší. Naštěstí .Net obsahuje třídu <code>StringBuilder</code>, kterou je možné
+  předat funkci místo parametru typu <code>LPSTR</code>. Pomocí atributu
+  <code>[Out]</code> ještě dáváme najevo, že parametr je výstupní (ale přesto
+  je nutné objekt inicializovat). Deklarace funkce 
+  <code>GetWindowText</code> tedy vypadá takto:</p><pre><span class="c">// Import funkce pracujici s textovym retezcem</span>
+[DllImport("user32.dll")]
+static extern int GetWindowText(IntPtr hWnd,
+  [Out]StringBuilder lpString,int nMaxCount);
+</pre><h2>Volání API funkcí</h2><p>Pokud máte nadeklarované funkce, můžete s nimi pracovat jako s normálními
+    statickými funkcemi. Je však třeba dávat pozor na některé detaily při volání,
+    které jsou způsobeny tím, že API funkce fungují jinak. Například u funkcí
+    pro práci s textem musíte napřed vytvořit objekt <code>StringBuilder</code>
+    s nějakou kapacitou (do kterého funkce může zkopírovat text) a tuto kapacitu
+    předáte jako další parametr. Kód z ukázkové aplikace, který zjišťuje titulek
+    aktivního okna vypadá takto:</p><pre><span class="c">// Zjistit identifikator (handle) aktivniho okna</span>
+IntPtr handle=GetForegroundWindow();
+
+<span class="c">// Vytvorit StringBuilder s kapacitou 256 znaku</span>
+StringBuilder sb=new StringBuilder(256);
+GetWindowText(handle,sb,sb.Capacity);
+
+<span class="c">// Zobrazit titulek MessageBoxem</span>
+MessageBox.Show(sb.ToString());
+</pre><p>Pokud použijete špatnou deklaraci funkce, nebo se pokusíte importovat 
+    funkci, která neexistuje vyhodí .Net vyjímku až při prvním volání funkce.
+    Vyjímka <code>DllNotFoundException</code> znamená, že jste zadali špatné
+    jméno DLL knihovny s funkcí a vyjímka <code>EntryPointNotFoundException</code>
+    znamená, že se v dané knihovně nenachází požadovaná funkce (máte tedy
+    buď špatně jméno funkce a nebo hledáte funkci v jiné knihovně).</p><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/csref/html/vcwlkplatforminvoketutorial.asp">Platform Invoke Tutorial</a>
+    [<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/csref/html/vcwlkplatforminvoketutorial.asp" target="_blank">^</a>] - Článek o Platform Invoke na MSDN</li><li>[2] <a href="http://www.pinvoke.net/">www.pinvoke.net</a>
+    [<a href="http://www.pinvoke.net/" target="_blank">^</a>] - Stránka, kde naleznete hlavičky většiny API funkcí</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/wininterop/clanek.zip">Stáhnout tento článek v čistém HTML</a> (10 kB)</li><li><a href="http://www.eeeksoft.net/articles/wininterop/sources.zip">Stáhnout ukázkovou aplikaci</a> (16 kB)</li></ul></body></doc>

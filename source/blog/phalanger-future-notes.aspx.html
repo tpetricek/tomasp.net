@@ -1,0 +1,78 @@
+<!-- [info]
+
+ - date: 2007-12-02T23:50:53.0000000
+ - description: This post discusses Phalanger future and relations to the DLR and Silverlight as well as our intention to closely communicate wth the PHP community.
+ - tags: phalanger,mono
+ - layout: post
+ - title: A few notes about Phalanger future
+ - url: phalanger-future-notes.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>First, I'd like to aplogoize for the lack of new about the Phalanger project recently. I spent some time working
+  as an intern with the F# team in MSR Cambridge and I also had final bachelor exam this autumn. Anyway, this doesn't
+  mean that there isn't anything new and interesting regarding the Phalanger project comming soon - actually (as I 
+  believe) the opposite is true! The topics that I'm going to further discuss in this article is our upcomming 
+  support for Silverlight platform, the relation between Phalanger and DLR and also our desire to make 
+  Phalanger more open to the community, so stay tuned!</p>
+[/abstract] -->
+
+<h1>A few notes about Phalanger future</h1>
+<p>First, I'd like to aplogoize for the lack of new about the Phalanger project recently. I spent some time working
+  as an intern with the F# team in MSR Cambridge and I also had final bachelor exam this autumn. Anyway, this doesn't
+  mean that there isn't anything new and interesting regarding the Phalanger project comming soon - actually (as I 
+  believe) the opposite is true! The topics that I'm going to further discuss in this article is our upcomming 
+  support for Silverlight platform, the relation between Phalanger and DLR and also our desire to make 
+  Phalanger more open to the community, so stay tuned!</p>
+
+<h2>Silverlight and PHP</h2>
+<p><em>Silverlight</em> [<a href="#fphpslref">1</a>] was announced by Microsoft this spring - Silverlight is a platform
+  for developing rich web applications, which technically means a plugin for web browsers that can display
+  the rich content including streaming media and can contain program code to controll the application
+  (it is compatible with wide range of browsers and platforms including Mac and thanks to Mono and Moonlight project 
+  also Linux). There are two versions of the platform - the first one (1.0) is now in final version and the 
+  second (1.1, recently renamed to 2.0) is currently in alpha version. </p>
+<p>The 2.0 version has many interesting features, but for developers the most interesting is that it contains
+  a subset of .NET runtime (so we'll have a limited version of .NET running in a browser on any platform that is 
+  supported by Silverlight). This enables the developers to use any programming language for .NET to write the 
+  rich web application code. These languages include traditional C# and VB, but also recent Microsoft implementations
+  of Python and Ruby. What does that mean for PHP programmers? Since Phalanger is a compiler for .NET and Silverlight supports subset of .NET in a web browser it was relatively easy to modify it for Silverlight (though for the first try the compilation of Phalanger core part reported something like 800 errors :-)), so that it can be used 
+  for developing Silverlight applications in PHP, so you'll be able to use PHP for writing rich client-side 
+  applications too! The initial version of the source code with these modifications is already available at CodePlex,
+  however I will publish more polished version and some examples &amp; tutorials in a few days.</p>  
+
+<h2>Phalanger and DLR</h2>
+<p>Another project that is somehow related to Silverlight is <em>Dynamic Language Runtime</em> (DLR) 
+  [<a href="#fphpslref">2</a>]. This is a library that makes it easier to run dynamic langauges on .NET 
+  (and is currently primarilly used to power IronPython and IronRuby on Silverlight). Phalanger was started
+  before this library existed, so it doesn't use it currently. This actually means that Phalanger contains 
+  implementation of similar functionality as the DLR provides (though it was designed to support only
+  PHP and not dynamic languages in general) and some of the functionality is thus duplicated. It is important
+  to note that DLR isn't tightly integrated with CLR - it is just a C# library (it's even avilable with source
+  code under permissive license), so there wouldn't be technically no need for using it if it didn't make Phalanger development easier, however it 
+  has some very appealing features, so we're considering how these could be used in the existing Phalanger implementation.</p>
+<p>Phalanger currently has some features and uses a few optimizations that can't be very well expressed on DLR, 
+  so it isn't currently possible to port whole Phalanger to DLR (mainly because PHP language has some constructs that are not available in DLR), but since DLR is a library we can use just some 
+  parts that for example allow interoperability with other dynamic languages (a nice sample that demonstrates
+  this currently is available as a sample [<a href="#fphpslref">3</a>]), or for calling methods of .NET objects
+  (Phalanger currently supports this, but we could take advantage of the support in DLR).</p>
+
+<h2>PHP on DLR &amp; PHP Community</h2>  
+<p>Because I believe that implementing PHP on DLR has some support in the PHP community I would be very 
+  glad if community was involved in this project, either as developers or as advisors (to make sure it's done 
+  in a way in which the community needs it). To make sure that we can communicate with the community,
+  Wez Furlong created a mailing list on php.net where these topics can be discussed - you can find it here:
+  <a href="http://news.php.net/php.on.dlr">http://news.php.net/php.on.dlr</a>. If you have any comments,
+  especially regarding PHP and Phalanger and Silverlight (and in the future DLR) support, or you want to be engaged
+  in discussions about these problems, feel free to join!
+</p>
+
+<h2>References<a name="fphpslref"></a></h2>
+<ul>
+  <li>[1] <a href="http://silverlight.net" type="external">
+    Silverlight</a> - Silverlight Platform Homepage</li>
+  <li>[2] <a href="http://blogs.msdn.com/hugunin/archive/2007/04/30/a-dynamic-language-runtime-dlr.aspx" type="external">
+    A Dynamic Language Runtime</a> - Jim Hugunin's Thinking Dynamic</li>
+  <li>[3] <a href="http://silverlight.net/Samples/1.1/DLR-Console/python/index.htm" type="external">
+    DLR Console Prototype</a> Silverlight 1.1 Sample</li>
+</ul>

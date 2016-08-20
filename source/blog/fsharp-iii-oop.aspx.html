@@ -1,0 +1,251 @@
+<!-- [info]
+
+ - date: 2007-11-03T00:00:03.0000000
+ - description: In the third part of the F# overview, we will look at the F# features that are essential for a smooth interoperability with other .NET languages and form a second part of the F# core language - that is object oriented and imperative programming.
+ - tags: functional,f#
+ - layout: post
+ - title: F# Overview (III.) - Imperative and Object-Oriented Programming
+ - url: fsharp-iii-oop.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In the third part of the F# Overview article series, we will look at language features that are mostly well known, because they are present in most of the currently used programming languages. Indeed, I'm talking about imperative programming, which is a common way for storing and manipulating application data and about object oriented programming which is used for structuring complex programs.</p>
+<p>In general, F# tries to make using them together with the functional constructs described in the <a href="fsharp-ii-functional.aspx">previous part</a> [<a href="fsharp-ii-functional.aspx" target="_blank">^</a>] as natural as possible, which yields several very powerful language constructs.</p>
+[/abstract] -->
+
+<h1>F# Overview (III.) - Imperative and Object-Oriented Programming</h1>
+<p>In the third part of the F# Overview article series, we will look at language features that are mostly well known, because they are present in most of the currently used programming languages. Indeed, I'm talking about imperative programming, which is a common way for storing and manipulating application data and about object oriented programming which is used for structuring complex programs.</p>
+<p>In general, F# tries to make using them together with the functional constructs described in the <a href="/blog/fsharp-ii-functional.aspx">previous part</a> [<a href="/blog/fsharp-ii-functional.aspx" target="_blank">^</a>] as natural as possible, which yields several very powerful constructs.</p>
+
+<h2>Imperative Programming and Mutable Values</h2>
+<p>Similarly as ML and OCaml, F# adopts an <em>eager evaluation</em> mechanism, which means that a code written using
+  sequencing operator is executed in the same order in which it is written and expressions given as an arguments 
+  to a function are evaluated before calling the function (this mechanism is used in most imperative languages
+  including C#, Java or Python). This makes it semantically reasonable to support 
+  imperative programming features in a functional language. As already mentioned, the F# value bindings are by default 
+  immutable, so to make a variable mutable the <code>mutable</code> keyword has to be used. Additionally F# supports a 
+  few imperative language constructs (like <code>for</code> and <code>while</code>), which are expressions of type <code>unit</code>:</p>
+<pre lang="fsharp">
+&gt; // Imperative factorial calculation
+  let n = 10
+  let mutable res = 1
+  for n = 2 to n do
+    res &lt;- res * n    
+  // Return the result
+  res;;
+val it : int = 3628800</pre>
+<p>The use of the eager evaluation and the ability to use mutable values makes it very easy to interoperate with other 
+  .NET languages (that rely on the use of mutable state), which is an important aspect of the F# language. In addition
+  it is also possible to use the <code>mutable</code> keyword for creating a record type with a mutable field.</p>
+
+<h3>Arrays</h3>
+<p>As mentioned earlier, another type of value that can be mutated is .NET array. Arrays can be either created
+  using <code>[| .. |]</code> expressions (in the following example we use it together with a range expression, 
+  which initializes an array with a range) or using functions from the <code>Array</code> module, for example
+  <code>Array.create</code>. Similarly to the mutable variables introduced in the previous section, the value of 
+  an array element can be modified using the <code>&lt;-</code> operator:</p>
+<pre lang="fsharp">
+&gt; let arr = [| 1 .. 10 |]
+val arr : array&lt;int&gt;
+
+&gt; for i = 0 to 9 do 
+    arr.[i] &lt;- 11 - arr.[i]
+(...)
+
+&gt; arr;;
+val it : array&lt;int&gt; = [| 10; 9; 8; 7; 6; 5; 4; 3; 2; 1 |]
+</pre>
+
+<h2>.NET interoperability</h2>
+
+<p>The .NET BCL is built in an object oriented way, so the ability to work with existing classes is essential for the 
+  interoperability. Many (in fact almost all) of the classes are also mutable, so the eager evaluation and the support 
+  for side-effects are two key features when working with any .NET library. The following example demonstrates working 
+  with the mutable generic <code>ResizeArray&lt;T&gt;</code> type from the BCL (<code>ResizeArray</code> is an alias for a type
+  <code>System.Collections.Generic.List</code> to avoid a confusion with the F# <code>list</code> type):</p>
+<pre lang="fsharp">
+&gt; let list = new ResizeArray&lt;_&gt;()
+  list.Add("hello")
+  list.Add("world")
+  Seq.to_list list;;
+val it : string list = ["hello"; "world"]</pre>
+<p>As you can see, we used the underscore symbol when creating an instance of the generic type, because the 
+  type inference algorithm in F# can deduce the type argument from the code (in this example it infers that the
+  type argument is <code>string</code>, because the <code>Add</code> method is called with a <code>string</code>
+  as an argument). After creating an instance we used <code>Add</code> method to modify the list and add two new items. 
+  Finally, we used a <code>Seq.to_list</code> function to convert the collection to the F# list.</p>
+  
+<p>As a fully compatible .NET language, F# also provides a way for declaring its own classes (called <em>object types</em>
+  in F#), which are compiled into CLR classes or interfaces and therefore the types can be accessed from any other 
+  .NET language as well as used to extend classes written in other .NET languages. This is an important feature that allows 
+  accessing complex .NET libraries like Windows Forms or ASP.NET from F#.</p>
+
+<h2>Object Oriented Programming</h2>
+<h3>Object Types</h3>
+<p>Object oriented constructs in F# are compatible with the OO support in .NET CLR, which implies that F# supports 
+  single implementation inheritance (a class can have one base class), multiple interface inheritance (a class 
+  can implement several interfaces and an interface can inherit from multiple interfaces), subtyping (an inherited class 
+  can be casted to the base class type) and dynamic type tests (it is possible to test whether a value is a 
+  value of an inherited class casted to a base type). Finally, all object types share a common base class which is called 
+  <code>obj</code> in F# and is an alias to the CLR type <code>System.Object</code>.</p>
+<p>F# object types can have fields, constructors, methods and properties (a property is just a syntactic sugar 
+  for getter and setter methods). The following example introduces the F# syntax for object types:</p>
+<pre lang="fsharp">
+type MyCell(n:int) =
+  let mutable data = n + 1
+  do  printf "Creating MyCell(%d)" n
+
+  member x.Data 
+    with get()  = data
+    and  set(v) = data &lt;- v
+    
+  member x.Print() = 
+    printf "Data: %d" data
+    
+  override x.ToString() = 
+    sprintf "(Data: %d)" data
+    
+  static member FromInt(n) = 
+    MyCell(n)</pre>
+<p>The object type <code>MyCell</code> has a mutable field called <code>data</code>, a property called <code>Data</code>, 
+  an instance method <code>Print</code>, a static method <code>FromInt</code> and the type also contains one 
+  overridden method called <code>ToString</code>, which is inherited from the <code>obj</code> type and returns 
+  a string representation of the object. Finally, the type has an implicit constructor. Implicit constructors are 
+  syntactical feature which allows us to place the constructor code directly inside the type declaration and to write the 
+  constructor arguments as part of the <code>type</code> construct. In our example, the constructor initializes the mutable
+  field and prints a string as a side effect. F# also supports <em>explicit</em> constructors that have similar syntax
+  as other members, but these are needed rarely.</p>
+  
+<p>In the previous example we implemented a <em>concrete object type</em> (a class), which means that it is possible
+  to create an instance of the type and call its methods in the code. In the next example we will look at declaration
+  of an interface (called <em>abstract object type</em> in F#). As you can see, it is similar to the declaration of a class:</p>
+<pre lang="fsharp">
+type AnyCell = 
+  abstract Value : int with get, set
+  abstract Print : unit -&gt; unit</pre>
+
+<p>The interesting concept in the F# object oriented support is that it is not needed to explicitly specify whether the 
+  object type is abstract (interface), concrete (class) or partially implemented (class with abstract methods), 
+  because the F# complier infers this automatically depending on the members of the type.
+  Abstract object types (interfaces) can be implemented by a concrete object type (class) or by an object expression,
+  which will be discussed shortly. When implementing an interface in an object type we use the 
+  <code>interface .. with</code> construct and define the members required by the interface. Note that the
+  indentation is significant in the lightweight F# syntax, meaning that the members implementing
+  the interface type have to be indented further:</p>
+<pre lang="fsharp">
+type ImplementCell(n:int) =
+  let mutable data = n + 1  
+  interface AnyCell with
+    member x.Print() = printf "Data: %d" data
+    member x.Value 
+      with get() = data 
+      and set(v) = data &lt;- v</pre>
+      
+<p>The type casts supported by F# are <em>upcast</em>, used for casting an object to a base type or to an implemented interface type
+  (written as <code>o :&gt; TargetType</code>), <em>downcast</em>, used for casting back from a base type 
+  (written as <code>o :?&gt; TargetType</code>), which throws an exception when the value isn’t a value of the specified type 
+  and finally, a <em>dynamic type test</em> (written as <code>o :? TargetType</code>), which tests whether 
+  a value can be casted to a specified type.</p>
+
+<h3>Object expressions</h3>
+<p>As already mentioned, abstract types can be also implemented by an object expression. This allows us to implement
+  an abstract type without creating a concrete type and it is particularly useful when you need to return an implementation
+  of a certain interface from a function or build an implementation on the fly using functions already defined somewhere
+  else in your program. The following example implements the <code>AnyCell</code> type:
+</p>
+<pre lang="fsharp">
+&gt; let newCell n =
+    let data = ref n
+    { new AnyCell with
+      member x.Print() = printf "Data: %d" (!data)
+      member x.Value 
+        with get() = !data
+        and set(v) = data:=v };;
+val newCell : int -&gt; AnyCell</pre>
+<p>In this code we created a function that takes an initial value as an argument and returns a cell holding
+  this value. In this example we use one more type of mutable values available in F#, called <em>reference cell</em>,
+  which are similar to a mutable values, but more flexible (the F# compiler doesn’t allow using an ordinary mutable value
+  in this example). A mutable cell is created by a <code>ref</code> function taking an initial value. The 
+  value is accessed using a prefix <code>!</code> operator and can be modified using <code>:=</code> operator. 
+  When implementing the abstract type, we use a <code>new ... with</code> construct with members implementing
+  the functionality required by the abstract type (an object expression can’t add any members).
+  In this example we need a reference cell to hold the value, so the cell is declared in a function and captured
+  in a <em>closure</em>, which means that it will exist until the returned object will be garbage collected.</p>
+
+<h2>Adding Members to F# Types</h2>
+<p>Probably the most important advantage of using object types is that they hide an implementation of the
+  type, which makes it possible to modify the implementation without breaking the existing code that uses them.
+  On the other side, basic F# types like discriminated unions or records expose the implementation details, which
+  can be problematic in some cases, especially when developing a larger application. Also, the dot-notation used 
+  with object types makes it very easy to discover operations supported by the type. To bridge this problem, F# 
+  allows adding members to both discriminated unions and record types:</p>
+<pre lang="fsharp">
+&gt; type Variant =
+    | Num of int
+    | Str of string with
+    member x.Print() =
+      match x with
+      | Num(n) -&gt; printf "Num %d" n
+      | Str(s) -&gt; printf "Str %s" s;;
+(...)
+
+&gt; let v = Num 42
+  v.Print();;
+Num 42</pre>  
+  
+<p>In this example we declared a type called <code>Variant</code> which can contain either
+  a number or a string value and added a member <code>Print</code> that can be invoked using
+  dot-notation. Aside from adding members (both methods an properties) it is also possible to 
+  implement an abstract object type by a record or discriminated union using the <code>interface ... with</code> 
+  syntax mentioned earlier.</p>
+<p>Rather than writing all code using <code>member</code> syntax, it is often more elegant to implement the 
+  functionality associated with an F# type in a function and then use <em>type augmentations</em> to make 
+  this functionality available as a member via dot-notation. This is a pattern used very often in the F# library 
+  implementation and I personally believe that it makes the code more readable. 
+  The following example re-implements the <code>Variant</code> type using this pattern:</p>
+<pre lang="fsharp">
+type Variant =
+  | Num of int
+  | Str of string
+  
+let print x =   
+  match x with
+  | Num(n) -&gt; printf "Num %d" n
+  | Str(s) -&gt; printf "Str %s" s
+
+type Variant with
+  member x.Print() = print x
+</pre>  
+<p>The construct <code>type ... with</code> is a type augmentation, which adds the member <code>Print</code>
+  to a type declared earlier in the code. The type augmentation has to be included in a same compilation unit as the declared type - 
+  usually in a same file. It is also possible to attach <em>extension members</em> to a type declared in a 
+  different compilation unit - the main difference is that these members are just a syntactical sugar and are not
+  a part of the original type, meaning that they can't access any implementation details of the type. The only reason
+  for using extension members is that they make your function for working with the type available using the dot-notation, 
+  which can simplify the code a lot and it will be easier to find the function (for example it will be available in the Visual Studio
+  IntelliSense). When declaring an extension member you use the same syntax as for type augmentations with the 
+  difference that the name of the type has to be fully qualified as demonstrated in the following example:</p>
+<pre lang="fsharp">
+&gt; type System.Collections.Generic.List&lt;'a&gt; with
+    member x.ToList() = Seq.to_list x;
+(...)
+    
+&gt; let r = new ResizeArray&lt;_&gt;()
+  r.Add(1)
+  r.Add(2)
+  r.ToList();;
+val it : list&lt;int&gt; = [ 1; 2 ]
+</pre>
+<p>In this example we use extension members to add a <code>ToList</code> method to an existing .NET generic
+  type. Note that when declaring the extension members we have to use the original type name and not the F#
+  alias. You should also bear in mind that extension members are resolved by the F# compiler and so calling them
+  from C# will not be easily possible. In general, extension members are not declared very often, but some parts of 
+  the F# library (for example the features for asynchronous and parallel programming) use them.</p>
+
+<h2>Article Series Links</h2>
+<ul>
+  <li><a href="/blog/fsharp-i-introduction.aspx">F# Overview (I.) - Introduction</a></li>
+  <li><a href="/blog/fsharp-ii-functional.aspx">F# Overview (II.) - Functional Programming</a></li>
+  <li>F# Overview (III.) - Object Oriented and Imperative Programming</li>
+  <li><a href="/blog/fsharp-iv-lang.aspx">F# Overview (IV.) - Language Oriented Programming</a></li>
+</ul>

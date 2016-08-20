@@ -1,0 +1,151 @@
+<!-- [info]
+
+ - date: 2005-06-19T00:07:18.0000000
+ - description: V tomto článku se podíváme na to co umožňuje Reflection. Ukážeme si jak lze za běhu zjišťovat informace o objektech a jak je lze používat.
+ - tags: 
+ - layout: post
+ - title: .NET - Úvod do Reflection
+ - url: reflection.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto článku se podíváme na to co umožňuje Reflection. Ukážeme si jak lze za běhu zjišťovat informace o objektech a jak je lze používat.
+[/abstract] -->
+
+<h1>.NET - Úvod do Reflection</h1>
+<doc version="1"><body><h1>.NET - Úvod do Reflection</h1><img src="http://www.eeeksoft.net/articles/reflection/screenshot.png" style="float:right; margin:10px;" alt="Ukázková aplikace" /><h2>Co tento článek ukazuje</h2><ul><li>Základní přehled jmenného prostoru <code>System.Reflection</code></li><li>Procházení typů v assembly a zjišťování detailů o typu</li><li>Zjišťování informací o metodách a vlastnostech třídy</li><li>Vytváření tříd a volání metod pomocí Reflection za běhu</li></ul><p>Reflection je součást .NET Frameworku, pomocí které lze v .NETu
+    pracovat s třídami o kterých v době kompilace nic nevíme. Pomocí reflection
+    lze dynamicky načítat objekty z assemblies (tedy <code>dll</code> nebo <code>exe</code> souborů), zjišťovat informace
+    o těchto objektech, jako například seznam vlastností a metod, parametry jednotlivých
+    metod a v neposlední řadě lze tyto metody také volat.</p><p>To, že potřebujete pracovat s úplně neznámým objektem není úplně typická situace
+    i pokud načítáte objekty dynamicky, protože obvykle znáte bázovou třídu objektu a 
+    nebo interface, který implementuje a pomocí této bázové třídy či interface s objektem
+    pracujete (viz například starší tutoriál o tvorbě aplikací
+    umožňující tvorbu pluginů [<a href="#links">1</a>]). Reflection ale může být občas
+    potřeba a jedná se o velmi mocnou zbraň.</p><h2>Typy v assembly</h2><p>Assembly v .NETu odpovídá <code>dll</code> nebo <code>exe</code> souboru
+    a lze s ní pracovat pomocí třidy <code>Assembly</code>. Tato třída obsahuje 
+    statické metody, které umožňují načítat assembly ze souboru a nebo získat
+    aktuální assembly. Třídy jsou uloženy přímo v assembly a jsou pojmenovány celým
+    jménem včetně jména namespace. Následující kus kódu načte assembly ze souboru
+    <code>Test.dll</code> a pomocí metody <code>GetTypes</code> získá informace o všech
+    typech v assembly (získá objekt <code>System.Type</code>, který popisuje
+    datový typ) a pro každý vypíše jméno a o jaký datový typ se jedná 
+    (třída, struktura, atd..):</p><pre><span class="c">// nacte assembly ze souboru</span>
+Assembly asm=Assembly.LoadFile("Test.dll");
+
+<span class="c">// prochazi typy v assembly</span>
+foreach(Type t in asm.GetTypes())
+{
+  string type="class";
+
+  <span class="c">// delegate je ve skutecnosti trida a lze jej poznat
+  // tak ze je potomkem Deleagete nebo MilticastDelegate</span>
+  if (t.BaseType!=null&amp;&amp;(t.BaseType.FullName=="System.Delegate"
+     ||t.BaseType.FullName=="System.MulticastDelegate"))
+    type="delegate";
+    
+  <span class="c">// Vyctovy datovy typ</span>
+  else if (t.IsEnum)
+    type="enum";
+  
+  <span class="c">// Rozhrani</span>
+  else if (t.IsInterface)
+    type="interface";
+  
+  <span class="c">// Hodnotovy datovy typ - struktura</span>
+  else if (t.IsValueType)
+    type="struct";
+
+  <span class="c">// Vypise typ a jeho jmeno</span>
+  Console.WriteLine("{0} {1}",type,t.FullName);
+}
+</pre><h2>Informace o typu</h2><p>V předcházející ukázce jsme u každého typu v assembly vypisovali
+    pouze o jaký typ se jedná a jméno, ale pomocí objektu 
+    <code>System.Type</code> lze dělat mnohem více. Tento objekt obsahuje
+    metody <code>GetConstructors</code>, <code>GetMethods</code>,
+    <code>GetProperties</code> a další podobné, pomocí kterých lze získat
+    informace o rozhraní datového typu. V následující ukázce se podíváme,
+    jek lze získat seznam metod a jejich parametrů.</p><pre><span class="c">// Pomoci GetMethods ziska seznam metod</span>
+foreach(MethodInfo mi in type.GetMethods())
+{
+  <span class="c">// Vynechame specialni metody (napr. pro kazdou
+  // vlastnost existuje metoda set_Xyz a get_Xyz)</span>
+  if (mi.IsSpecialName) continue;
+
+  <span class="c">// pomoci GetParameters ziska parametry metody</span>
+  string ps="";
+  ParameterInfo[] p=mi.GetParameters();
+  for(int i=0; i&lt;p.Length; i++)
+  {
+    if (i!=0) ps+=",";
+    ps+=p[i].ParameterType.Name+" "+p[i].Name;
+  }
+
+  <span class="c">// Vypise deklaraci metody s parametry</span>
+  Console.WriteLine("{0}({1})",mi.Name,ps);
+}
+</pre><h2>Volání pomocí Reflection</h2><p>V poslední části tohoto tutoriálu se podíváme jak lze dynamicky vytvořit 
+    objekt někajé třídy pokud známe její jméno a assembly a jak lze volat
+    pomocí reflection metody tohoto objektu podle jména. Nejprve kód třídy se 
+    kterou budeme později dynamicky pracovat:</p><pre><span class="c">// Testovaci trida</span>
+class Zamestnanec
+{
+  private string _jmeno,_prijmeni;
+  private int _plat;
+
+  <span class="c">// Vytvori zamestnance</span>
+  public Zamestnanec(string jmeno,string prijmeni)
+  {
+    _plat=10000; _jmeno=jmeno; _prijmeni=prijmeni;
+  }
+
+  <span class="c">// Zjistuje plat zamestnance</span>
+  public int Plat
+  {
+    get { return _plat; }
+  }
+
+  <span class="c">// Zmeni zamestnancovi plat</span>
+  public void ZmenitPlat(float nasobek)
+	{
+    _plat=(int)(nasobek*(float)_plat);
+  }
+}
+</pre><p>K vytvoření objektu 
+    použijeme statickou metodu <code>CreateInstance</code> třídy <code>Activator</code>, 
+    která vytváří instanci objektu podle informací o objektu (<code>System.Type</code>).
+    Při vytváření objektu lze předat metodě <code>CreateInstance</code> pole objektů 
+    podle kterých se při vytváření vybere odpovídající konstruktor (pokud žádný 
+    vhodný neexistuje dojde k vyjímce). Poté pomocí <code>GetMethod</code> získáme
+    objekt typu <code>MethodInfo</code> popisující metodu <code>ZmenitPlat</code> a
+    tuto metodu zavoláme. Nakonec ještě obdobným způsobem zjistíme novou hodnotu
+    vlastnosti <code>Plat</code>.</p><pre><span class="c">// zjistime aktualni assembly</span>
+Assembly asm=Assembly.GetExecutingAssembly();
+<span class="c">// zjisti informace o typuzamestnanec</span>
+Type zamType=asm.GetType("ReflectionDemo2.Zamestnanec");
+
+<span class="c">// vytvori instanci zamestnance
+// obdoba: objZam=new Zamestnanec("Bill","Gates");</span>
+object objZam=Activator.CreateInstance(zamType,
+  new object[] {"Bill","Gates"} );
+
+<span class="c">// Volani metody - zmena plat u
+// obdoba: objZam.ZmenitPlat(2.0f);</span>
+MethodInfo met=zamType.GetMethod("ZmenitPlat");
+met.Invoke(objZam,new object[] {2.0f});
+
+<span class="c">// Zjisteni hodnoty vlastnosti
+// obdoba: Console.WriteLine(objZam.Plat);</span>
+PropertyInfo propPlat=zamType.GetProperty("Plat");
+int plat=(int)propPlat.GetValue(objZam,null);
+Console.WriteLine("Plat={0}",plat);
+</pre><h2>Ukázkové aplikace</h2><p>V přiložených ukázkách naleznete tentokrát dvě aplikace. První 
+    (ReflectionDemo - viz obrázek) načítá základní standardní assembly .NET 
+    Frameorku a vytváří stromovou strukturu, kde jsou třídy zařazeny podle namespace.
+    U každé třídy je také možno zobrazit její metody, vlastnosti a další. Jedná 
+    se o poměrně jednoduchý nástroj, ale co vše lze pomocí reflection dosáhnout 
+    demonstruje například nástroj pojmenovaný .NET Reflector [<a href="#links">2</a>].
+    Druhý ukázkový projekt (ReflectionDemo2) obsahuje mírně rozšířený příklad 
+    z poslední části tohoto článku.</p><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://www.vyvojar.cz/Default.aspx?tabid=1&amp;newsType=ArticleView&amp;articleId=237">WinForms - Aplikace s podporou pluginů</a>
+      [<a href="http://www.vyvojar.cz/Default.aspx?tabid=1&amp;newsType=ArticleView&amp;articleId=237" target="_blank">^</a>] - Vyvojar.cz</li><li>[2] <a href="http://www.aisto.com/roeder/dotnet/">.NET Reflector</a>
+      [<a href="http://www.aisto.com/roeder/dotnet/" target="_blank">^</a>] - Lutz Roeder</li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/reflection/clanek.zip">Stáhnout tento článek v čistém HTML</a> (58 kB)</li><li><a href="http://www.eeeksoft.net/articles/reflection/sources.zip">Stáhnout zdrojové kódy ukázkových aplikací</a> (42 kB)</li></ul></body></doc>

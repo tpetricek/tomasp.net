@@ -1,0 +1,143 @@
+<!-- [info]
+
+ - date: 2005-06-05T21:16:27.0000000
+ - description: V tomto tutoriálu jsou popsány základní techniky, které je potřeba znát při tvorbě ovládacích prvků založených na JavaScriptu.
+ - tags: 
+ - layout: post
+ - title: ASP.NET - Ovládací prvky používající JavaScript
+ - url: aspjavascript.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto tutoriálu jsou popsány základní techniky, které je potřeba znát při tvorbě ovládacích prvků založených na JavaScriptu.
+[/abstract] -->
+
+<h1>ASP.NET - Ovládací prvky používající JavaScript</h1>
+<doc version="1"><body><h1>ASP.NET - Ovládací prvky používající JavaScript</h1><h2>Co tento článek ukazuje</h2><ul><li>Jak vkládat do Asp.Net stránky klientské skripty</li><li>Jak načítat data uložená jako resources v assembly.</li><li>Jak předávat data mezi klientským a serverovým skriptem</li><li>Jak vyvolávat z JavaScriptu postback</li></ul><p>Klientské skriptování (obvykle realizované pomocí JavaScriptu) umožňuje 
+    některé jednodušší operace provádět ve webových prohlížečích na straně klienta.
+    Tím se výrazně zrychlí odezva aplikace a také se sníží zátěž serveru (protože 
+    není potřeba posílat na server dotaz). Při tvorbě klientských skriptů je podstatné
+    uvědomit si rozdíl mezi klientrkým skriptem, nejčastěji JavaScriptem, který je 
+    zpracováván ve webovém prohlížeči a serverovým kódem (C#, Vb.Net), který
+    je zpracováván na straně serveru.</p><h2>Ukázkový ovládací prvek</h2><div style="text-align:center;"><img src="http://www.eeeksoft.net/articles/aspjavascript/screenshot.png" alt="Ukázková aplikace" style="margin:10px;margin-left:auto;margin-right:auto;" /></div><p>Ovládací prvek, na kterém se pokusím demonstrovat práci s JavaScriptem
+    je ovládací prvek (ascx), ve kterém se nachází textové pole a tlačítka 
+    + a -. Pomocí JavaScriptu se při kliknutí na tlačítka zvýší nebo sníží
+    číslo vyplněnné v textovém políčku. Dále se za políčkem vypisuje několik odkazů,
+    které na straně <b>serveru</b> nastaví hodnotu v textovém políčku a vyvolají 
+    serverovou událost. V ukázkové aplikaci se při vyvolání této události
+    zobrazí červený label s informacemi.</p><h2>Předávání dat mezi klientem a serverem</h2><p>Nejprve se podíváme jak lze předávat data mezi klientským a serverovým
+    skriptem. V JavaScriptu i v Asp.Net lze poměrně snadno získat a měnit 
+    hodnotu uloženou ve formulářových ovládacích prvcích, například textové pole
+    nebo zkryté pole (<code>input type=hidden</code>), které umožňuje předávat data 
+    aniž by data viděl uživatel. Jediným problémem je, 
+    že Asp.Net automaticky generuje id ovládacích prvků, takže pokud chcete z
+    JavaScriptu měnit hodnotu v textovém poli pojmenovaném <code>txtNum</code>,
+    musíte vygenerovat část klientského skriptu, která přistupuje k datům.
+    </p><p>Následující příklad ukazuje, jak lze pomocí JavaScriptu měnit 
+    hodnotu zadanou v textovém políčku. V první ukázce je zobrazný
+    kód z ovládacího prvku (<code>ascx</code> soubor) a v druhé ukázce
+    je vidět jaký kód vygeneruje Asp.Net pokud tento ovládací prvek 
+    vložíte do stránky.</p><pre><span style="color:#008000">&lt;!-- Takto vypada kod v ascx souboru --&gt;</span>
+&lt;asp:TextBox runat="server" id="txt"&gt;&lt;/asp:TextBox&gt;
+&lt;input type="button" value="Nastav" onclick="
+  var el=document.getElementById('<b>&lt;%=txt.ClientID %&gt;</b>');
+  el.value='Ahoj'; " /&gt;</pre><pre><span style="color:#008000">&lt;!-- Kod, ktery se vygeneruje muze vypadat takto: --&gt;</span>
+&lt;input name="cc2:txt" type="text" id="cc2_txt" /&gt;
+&lt;input type="button" value="Nastav" onclick="
+  var el=document.getElementById('cc2_txt');
+  el.value='Ahoj'; " /&gt;</pre><p>V ukázkové aplikaci je v ovládacím prvku následující kód, který 
+    používá funkce <code>numInc</code> a <code>numDec</code>. Způsob, kterým 
+    se tyto funkce vkládají do stránky je popsán níže.</p><pre><span style="color:#008000">&lt;!-- Textove pole na zadavni cisla --&gt;</span>
+&lt;asp:TextBox Columns="6" Runat="server" ID="txtNum"&gt;&lt;/asp:TextBox&gt;
+
+<span style="color:#008000">&lt;!-- Tlacitka na prciteni a odecteni 1 --&gt;</span>
+&lt;input type="button" value="+" onclick="
+  numInc(document.getElementById('&lt;%=txtNum.ClientID%&gt;'));"&gt;
+&lt;input type="button" value="-" onclick="
+  numDec(document.getElementById('&lt;%=txtNum.ClientID%&gt;'));"&gt;
+</pre><p>Pokud byste chtěli místo <code>asp:TextBox</code>, který umožňuje uživateli 
+    přímo měnit hodnotu použít neviditelný prvek, vypadal by první řádek v první
+    ukázce takto: <code>&lt;input type="hidden" id="txt" runat="server" /&gt;</code>.
+    Asp.Net v současné době neobsahuje pro neviditelné pole ovládací prvek, proto
+    je potřeba použít standardní HTML ovládací prvek, s nastaveným atributem 
+    <code>runat=server</code>. <br /><b>Pozor:</b> Pokud používáte v klientském skriptu pole, které se nezobrazuje 
+    uživateli neznamená to, že do něj uživatel-útočník nemůže vložit hodnotu, 
+    kterou neočekáváte. Je tedy nutné s těmito daty pracovat s největší opatrností! </p><h2>Vkládání JavaScriptového kódu</h2><img src="http://www.eeeksoft.net/articles/aspjavascript/properties.png" alt="Okno Properties" style="float:right; margin:10px;" /><p>Pokud máte ovládací prvek, kde je větší množství JavaScriptového kódu
+    (například několik JS funkcí), není vhodné aby se tento kód vkládal do 
+    stránky s každým ovládacím prvke, ale stačí, když se tento kód vloží do
+    stránky pouze jednou. Dále je vhodné, když je skript uložen v souboru, 
+    který je připojen k assembly jako resource (protože tak můžete mít skript
+    v zvláštním souboru). Při vkládání skriptu do stránky poté stačí pouze
+    načíst soubor z assembly a vložit ho do stránky. Soubor připojíte k projektu
+    jako resource tak, že v okně 'Properties' zvolíte z nabídky 'Build Action'
+    volbu 'Embedded resource'. Při načítání je potřeba dávat pozor na jméno
+    resource, které je ve tvaru <code>Namespace.Soubor.xyz</code>,
+    kde <code>Namespace</code> je jméno výchozího jmenného prostoru (lze jej nalézt 
+    ve vlastnostech projektu).</p><pre><span style="color:#008000">// Zajisti, ze se skript bude vkladat pouze jednou</span>
+if (!Page.IsClientScriptBlockRegistered("cont-control"))
+{
+  <span style="color:#008000">// pomoci reflection ziska aktualni assembly</span>
+  Assembly asm=Assembly.GetExecutingAssembly();
+  
+  <span style="color:#008000">// nacte z assembly soubor "script.html"</span>
+  StreamReader sr=new StreamReader
+    (asm.GetManifestResourceStream("UsingJavaScript.script.html"));
+    
+  <span style="color:#008000">// a vlozi do stranky JS blok </span>
+  Page.RegisterClientScriptBlock("cont-control",sr.ReadToEnd());
+  sr.Close();
+}</pre><p><small>Poznámka: Ač chceme vložit do stránky JavaScriptový kód je
+    potřeba vkládat i tag <code>&lt;script&gt;</code> a proto je skript 
+    v resources uložený jako HTML soubor.</small></p><h2>Vyvolávání post-backu</h2><p>Další téma tohoto článku je problém, jak z klientského skriptu vyvolat
+    post-back (tedy jak po nějaké akci uživatele odeslat požadavek na server).
+    Jediné HTML prvky, které automaticky odesílají data zpět na server jsou
+    <code>input type=submit</code> a <code>input type=image</code>, nicméně 
+    v Asp.Net existují i další ovládací prvky, které potřebují odesílat
+    data na server podobným způsobem. K tomu se v Asp.Net používá klientské
+    skriptování, konkrétně funkce <code>__doPostBack</code>, které jste
+    si mohli všímnout v generovaném HTML kódu Asp.Net stránek.</p><p>Tuto funkci není nutné používat přímo, protože v Asp.Net existují
+    metody, které tvorbu takových ovládacích prvků zjednodušují.
+    Pokud chcete ve vašem ovládacím prvku vygenerovat kód, který 
+    vyvolá post-back a po odeslání událost zpracovat budete potřebovat 
+    implementovat rozhraní <code>IPostBackEventHandler</code>. Toto rozhraní 
+    obsahuje jedinou metodu, která je zodpovědná za zpracování post-backu.
+    Ke generování klientského skriptu, který postback vyvolá se používá metoda
+    <code>Page.GetPostBackClientHyperlink</code>. Jak vyvolávat a zpracovávat
+    postback demonstruje následující ukázka:</p><p><small>Jedná se pouze o upravenou část kódu. Pro komletní ukázku se podívejte do přiložených zdrojových kódů.</small></p><pre><span style="color:#008000">// Ovladaci prvek, ktery vyuziva post-back</span>
+public class CountControl : 
+  System.Web.UI.UserControl, <b>IPostBackEventHandler</b>
+{
+  <span style="color:#008000">// Do tohoto ovladaciho prvku se vlozi generovane odkazy </span>
+  protected Literal ltrLinks;
+  
+  <span style="color:#008000">// Vygenerovat odkazy..</span>
+  private void Page_Load(object sender, System.EventArgs e)
+  {
+    StringBuilder sb=new StringBuilder();
+    for(int i=1; i&lt;=10; i++)
+    {
+      <span style="color:#008000">// generuje kod, ktery pouziva __doPostBack.
+      // Pri kliknuti na generovany odkaz se zavola
+      // metoda RaisePostBackEvent (s parametrem 'i')</span>
+      sb.AppendFormat("&lt;a href=\"{0}\"&gt;{1}&lt;/a&gt;",
+        <b>Page.GetPostBackClientHyperlink</b>(this,i.ToString()),i);
+    }
+    ltrLinks.Text=sb.ToString();		
+  }
+  
+  <span style="color:#008000">// Metoda z rozhrani IPostBackEventHandler
+  // Vola se po kliknuti na odkaz a zpracovava post-back
+  // eventArgument je parametr (v tomto pripade cislo)</span>
+  public void RaisePostBackEvent(string eventArgument)
+  {
+    <span style="color:#008000">// .. zpracovat kliknuti na odkaz ..</span>
+  }
+}
+  </pre><p>Všimněte si, že volání funkce <code>__doPostBack</code> za
+    vás obstará samotné Asp.Net a proto, pokud se v některé následující
+    verzi Asp.Net změní způsob jakým je post-back vyvoláván, nebude
+    takový problém aplikaci upravit. Nevýhodou ale je, že pokud v JavaScriptu
+    něco spočítáte, nemůže tuto hodnotu předat serveru přímo jako parametr.
+    K tomuto účelu lze ale použít výše popsanou techniku, kdy si vypočtenou
+    hodnotu uložíte do pole <code>input type=hidden</code>, vyvoláte post-back
+    a na straně serveru uloženou hodnotu opět načtete.</p><h2>Soubory na stažení a odkazy</h2><ul class="externallinks"><li><a href="http://www.eeeksoft.net/articles/aspjavascript/clanek.zip">Stáhnout tento článek v čistém HTML</a> (45 kB)</li><li><a href="http://www.eeeksoft.net/articles/aspjavascript/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (24 kB)</li></ul></body></doc>

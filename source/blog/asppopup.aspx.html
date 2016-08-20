@@ -1,0 +1,113 @@
+<!-- [info]
+
+ - date: 2004-11-20T04:07:14.0000000
+ - description: Highly customizable JavaScript popup control for web page wrapped in ASP.NET custom control.
+ - tags: 
+ - layout: post
+ - title: ASP.NET Popup Control
+ - url: asppopup.aspx
+
+[/info] -->
+<!-- [abstract]
+Highly customizable JavaScript popup control for web page wrapped in ASP.NET custom control.
+[/abstract] -->
+
+<h1>ASP.NET Popup Control</h1>
+<doc version="1"><body><h1>ASP.NET Popup Control</h1><ul class="download"><li><a href="asppopup/demo.zip">Download demo project (C# and VB.NET) - 38.1 Kb</a></li><li><a href="asppopup/source.zip">Download control with source - 37.7 Kb</a></li><li><a href="asppopup/doc.zip">Download control documentation - 71.1 Kb</a></li></ul><div style="text-align:center"><img alt="Popup control in Internet Explorer and Mozilla" src="asppopup/ieandmoz.gif" /></div><ul class="externallinks"><li><a href="http://www.eeeksoft.net/files/popuptest">Open online sample</a> [<a href="http://www.eeeksoft.net/files/popuptest" target="_blank">^</a>].</li><li>If first link won't work, try following <a href="http://eeeksoft.aspweb.cz/">mirror</a> [<a href="http://eeeksoft.aspweb.cz/" target="_blank">^</a>] please. </li></ul><h2>Introduction</h2><img alt="Customizable colors" src="asppopup/custcols.gif" style="float:right;" /><p>This article describes an ASP.NET popup control. This control imitates MSN Messenger alert, but it is designed for use in a web page.
+		 Graphical appearance of this control can be completely changed by using one of predefined styles or by modifying all colors used on
+		 the control. Control supports Drag&amp;Drop, so user can move control on the page, where he wants.</p><p>A very important feature of this control is, that it can be used on most of the current browsers. It is tested with 
+		 latest version of Mozilla, Internet Explorer and Opera. The look of the control is different on browsers that doesn't
+		 support filters (filters are supported only in newer versions of MSIE). You can also use HTML in lot of control properties,
+		 so you can get popup with icon or anything you want.</p><h2>Actions</h2><p>The control has two events, <code>LinkClicked</code> (link in popup was clicked) and <code>PopupClosed</code> 
+		 (user clicked on 'X' button in popup). There are three ways how this events can be handled. The method that will 
+		 be used is determined by <code>ActionType</code> property. There can be the following three types of actions:</p><img alt="Actions - Open window" src="asppopup/window.gif" style="float:right;" /><ul><li><code>MessageWindow</code> (default) - If this action is selected, control will open new browser window with text specified by <code>Text</code> property. </li><li><code>OpenLink</code> - In this case, control allows you to do any JavaScript operation or open link to any other page (<code>Link</code> property). You can also change <code>target</code> attribute of generated <code>&lt;A&gt;</code> tag. Generated code will look like this: <code>&lt;a href="[Link]" target="[LinkTarget]"&gt;Link..&lt;/a&gt;</code>, so be careful when using quotes in <code>Link</code>. (<code>Target</code> attribute is added only when <code>LinkTarget</code> isn't empty string.) </li><li><code>RaiseEvents</code> - When you select this option, popup control will raise <code>LinkClicked</code> or <code>PopupClosed</code> events on server-side. </li></ul><h2>Using this control</h2><p>Adding the control to a web page is very simple. In VS.NET, you can just use <i>Add/Remove Toolbox Items</i> and select 
+		 control's DLL file. Control will appear in toolbox and you can add it to a page.</p><h3>Designer</h3><p>Control has rich support for designer, so you can change every property of control at design-time. In category 'Action', 
+		 you can define what the control should do when user clicks on link or closes popup element. Properties in categories 
+		 'Texts' and 'Design' allow you to modify control look and displayed messages. In 'Behavior', you can change timing 
+		 (when popup will be displayed and hidden). <code>AutoShow</code> property indicates whether control will be displayed 
+		 after page is loaded. This is useful when you want to show control later using Anchor control. If you set <code>DragDrop</code> 
+		 to <code>true</code>, user can change control's position and move it on the page. 'Window' category allows you to 
+		 change properties of window that will appear if you set <code>ActionType</code> to <code>MessageWindow</code>. 
+		 Last properties are added to category 'Layout' and it makes possible to modify position, where window will be 
+		 displayed (offsets from bottom-left or bottom-right window corner).</p><h3>Code</h3><p>Following code describes how to change a few properties and show popup control from code:</p><pre><span class="c">&lt;!-- Popup.aspx --&gt;</span>
+&lt;%@@ Register TagPrefix="cc1" Namespace="EeekSoft.Web"
+  Assembly="EeekSoft.Web.PopupWin" %&gt;
+
+&lt;cc1:popupwin id="popupWin" runat="server" visible="False" 
+  colorstyle="Blue" width="230px" height="100px" dockmode="BottomLeft" 
+  windowscroll="False" windowsize="300, 200"&gt;&lt;/cc1:popupwin&gt;</pre><pre><span class="c">// Popup.aspx.cs</span><span class="c">// Change action type</span>
+popupWin.ActionType=EeekSoft.Web.PopupAction.MessageWindow;
+
+<span class="c">// Set popup and window texts</span>
+popupWin.Title="This is popup";
+popupWin.Message="&lt;i&gt;Message&lt;/i&gt; displayed in popup";
+popupWin.Text="Text to show in new window..";
+
+<span class="c">// Change color style</span>
+popupWin.ColorStyle=EeekSoft.Web.PopupColorStyle.Green;
+
+<span class="c">// Change timing</span>
+popupWin.HideAfter=5000;
+popupWin.ShowAfter=500;
+
+<span class="c">// Show popup (after page is loaded)</span>
+popupWin.Visible=true;</pre><h2>Using anchor control</h2><h3>Designer</h3><img alt="Page Designer" src="asppopup/dpage.gif" style="float:left;" /><img alt="Edit properties" src="asppopup/prop.gif" style="float:right;" /><p>Adding anchor control to page at design-time is similar as adding popup control. When you add anchor to page, you can 
+		 select ID of existing server-side control, or write ID of any other element, and choose its client-side event you want 
+		 to handle. If you want to only reopen popup, you don't need to do anything else. You only have to ensure that popup 
+		 window control will be rendered to output page (it must be visible). If you don't want to open popup when page is 
+		 loaded, set <code>AutoShow</code> to <code>false</code> and popup will open after specified event occurs.</p><p>You can also change texts on popup control using <code>PopupWinAnchor</code>. To do this, set property <code>ChangeTexts</code>
+		 of anchor control to <code>true</code>. If this is selected, anchor control will change title of popup to <code>NewTitle</code>, 
+		 message to <code>NewMessage</code> and text in optional new browser window to <code>NewText</code>, when client-side event is raised.</p><h3>Code</h3><p>Following example shows how <code>PopupWinAnchor</code> control can be used to reopen once closed popup control:</p><pre><span class="c">&lt;!-- Anchor.aspx --&gt;</span>
+&lt;%@@ Register TagPrefix="cc1" Namespace="EeekSoft.Web"
+  Assembly="EeekSoft.Web.PopupWin" %&gt;
+
+&lt;cc1:popupwin id="popupWin" runat="server" visible="False" 
+  colorstyle="Blue" width="230px" height="100px" dockmode="BottomLeft" 
+  windowscroll="False" windowsize="300, 200"&gt;&lt;/cc1:popupwin&gt;
+  
+&lt;cc1:popupwinanchor id="popupAnchor" runat="server"
+  changetexts="False"&gt;&lt;/cc1:popupwinanchor&gt;
+ 
+&lt;span id="spanReopen"&gt; Click here to reopen popup ! &lt;/span&gt;</pre><pre><span class="c">// Anchor.aspx.cs</span><span class="c">// Handle onclick event ..</span>
+popupAnchor.HandledEvent="onclick";
+<span class="c">// .. of spanReopen element</span>
+popupAnchor.LinkedControl="spanReopen";
+<span class="c">// Show popupWin when event occurs</span>
+popupAnchor.PopupToShow="popupWin";
+
+<span class="c">// Popup win is visible ..</span>
+popupWin.Visible=true;
+<span class="c">// .. and will be displayed when page is loaded</span>
+popupWin.AutoShow=true;</pre><h2>Creating control at runtime</h2><p>There were problems with creating controls at runtime. This is fixed in latest version and here is an example 
+		 of how to create <code>PopupWindow</code> with <code>PopupWinAnchor</code> control at runtime. Following code 
+		 will create one popup window that will be displayed (using JavaScript) after user clicks on <code>spanReopen</code> 
+		 element. (This sample assumes, that you have an element called <code>spanReopen</code> on your page).</p><pre><span class="c">// Create popup window and popup win anchor control (in Page_Load)</span>
+PopupWin popupWin=new PopupWin();
+PopupWinAnchor popupAnchor=new PopupWinAnchor();
+
+<span class="c">// Add controls to page</span>
+placeHolder.Controls.Add(popupAnchor);   
+placeHolder.Controls.Add(popupWin);
+
+<span class="c">// Set anchor properties</span>
+popupAnchor.PopupToShow=popupWin.ClientID;
+popupAnchor.LinkedControl="spanReopen";
+popupAnchor.HandledEvent="onclick";
+
+<span class="c">// Set popup win properties</span>
+popupWin.ActionType=EeekSoft.Web.PopupAction.MessageWindow;
+popupWin.Title="This is popup";
+popupWin.Message="Message displayed in popup";
+
+<span class="c">// Show popup</span>
+popupWin.Visible=true;
+popupWin.AutoShow=false;</pre><h2>Who can use it ?</h2><p>This control can be well used to notify users about important information. For example, in a web 
+		 email client, you may want to notify the user about new message. In applications where users can 
+		 communicate inside system, you can use this control to alert user, that someone wants to talk to him. 
+		 Benefit of this control is, that it doesn't need any fixed space on web page and it is remarkable, so 
+		 user will notice it. Another way of how to use it is to show advertising information in it instead of 
+		 using big Flash animations (See <a href="http://www.eeeksoft.net/files/popuptest" target="_blank">online demo</a> for CodeProject banner).</p><p>Anchor control makes it possible to use popup control faster and with less page reloading. For example, 
+		 you can use popup control to show quick help on form fields like 
+		 <a href="http://www.eeeksoft.net/files/popuptest/anchor.aspx" target="_blank">in this sample</a>. 
+		 Quick help is displayed when textbox receives focus. Another way of how to use it for quick help is to
+		 add button behind each textbox and when user clicks on this button, popup will be displayed.</p><h2>History</h2><ul><li><i>20/04/2004</i> - <code>PopupSpeed</code> added (you can change sliding speed of popup window). </li><li><i>20/04/2004</i> - Few minor bugs fixed. Sample that shows how to generate controls at runtime added. </li><li><i>26/02/2004</i> - <code>ShowLink</code> property added (allows not to generate link in popup control). </li><li><i>11/30/2003</i> - DLL compiled both .NET 1.0 and .NET 1.1, <code>OpenLink</code> error fixed, Drag &amp; drop support, VB.NET sample added (1.2). </li><li><i>11/18/2003</i> - <code>PopupWinAnchor</code> added (1.1). <i>Thanks to Oskar Austegard for his suggestion.</i></li><li><i>11/15/2003</i> - First version of article (Published at <a href="http://www.codeproject.com/aspnet/asppopup.asp" target="_blank">CodeProject.Com</a>).</li></ul></body></doc>

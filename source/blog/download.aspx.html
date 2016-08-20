@@ -1,0 +1,123 @@
+<!-- [info]
+
+ - date: 2006-04-09T13:42:35.0000000
+ - description: V tomto úvodu jsou popsané základní postupy pro stahování textových a binárních souborů z internetu.
+ - tags: 
+ - layout: post
+ - title: .NET - Stahování souborů z internetu
+ - url: download.aspx
+
+[/info] -->
+<!-- [abstract]
+V tomto úvodu jsou popsané základní postupy pro stahování textových a binárních souborů z internetu.
+[/abstract] -->
+
+<h1>.NET - Stahování souborů z internetu</h1>
+<doc version="1"><body><h1>.NET - Stahování souborů z internetu</h1><h2>Co tento článek ukazuje</h2><ul><li>Stahování textových souboru pomocí třídy WebClient</li><li>Totéž pomocí WebRequest a WebResponse</li><li>Stahování binárních souborů</li></ul><div style="text-align:center;"><img src="download/download.gif" alt="Ukázková aplikace" style="margin:10px;" /></div><p>Občas člověk ve své aplikaci potřebuje stahovat různé soubory (například aktualizace,
+    nové pluginy - viz článek o tvorbě pluginů) z internetu. Může se jednat buď o textové
+    soubory (například html stránky) a nebo o binární soubory. To jak soubor stáhnout
+    a jak s ním dále pracovat bude popsáno v tomto článku.</p><h2>Třída WebClient</h2><p>V .NET Frameworku jsou obvyklé operace se soubory na internetu snadno realizovatelné 
+    pomocí standardních objektů, které naleznete v namespace (jmenném prostoru) 
+    <code>System.Net</code>. Nejjednodušší objekt, pomocí kterého lze stáhnout soubor
+    z internetu je objekt <code>WebClient</code>. Jediné co je potřeba udělat, je 
+    zadat objektu adresu souboru, který se má stáhnout a <code>WebClient</code> vrátí
+    <code>Stream</code> pomocí kterého lze stažená data načítat.<br /><br /><small>(Tento článek předpokládá, že máte povědomí o tom co je Stream a jak s ním 
+    pracovat, pokud ne doporučuji článek o práci se soubory: viz. [<a href="#links">1</a>])</small></p><pre><span class="c">// Vytvorit objekt WebClient</span>
+WebClient wc=new WebClient();
+
+<span class="c">// Otevre stream pro cteni dat ze zadane adresy</span>
+Stream stream=wc.OpenRead(url);
+<span class="c">// Nacte obsah celeho souboru do textoveho retezce</span>
+StreamReader sr=new StreamReader(stream);
+string ret=sr.ReadToEnd();
+
+<span class="c">// Uzavrit stream</span>
+sr.Close();
+</pre><h2>Pokročilejší postup pomocí WebRequest</h2><p>Výše uvedené stahování souborů pomocí objektu <code>WebClient</code> je velmi jednoduché,
+    ale často se může stát, že budete potřebovat něco více než pouze získat
+    <code>Stream</code> pro čtení dat. V tomto případě budete potřebovat dvojici tříd
+    <code>WebRequest</code> a <code>WebResponse</code>. Obě třídy jsou abstraktní,
+    což znamená, že samy o sobě nic nedělají a všechna funkcionalita je v 
+    třídách od nich odvozených - v našem případě budeme tedy potřebovat ještě
+    odvozenou třídu <code>HttpWebRequest</code>.</p><p>Při práci s těmito třídami si napřed vytvoříme dotaz (objekt odvozený od
+    <code>WebRequest</code>) a tento dotaz poté vykonáme a tím získéme odpověď
+    ze serveru (objekt odvozený od <code>WebResponse</code>). Oproti předcházející ukázce 
+    umožňuje objekt <code>WebRequest</code> nastavit mnoho dalších 
+    parametrů pro dotaz na server (lze například nastavit dobu po které se přestane
+    čekat na server, nebo je možné nastavit různé http hlavičky). Následující
+    příklad ukazuje jak používat tyto dva objekty (zatím bez dalšího nastavování):</p><pre><span class="c">// Vytvori dotaz na server</span>
+WebRequest request=HttpWebRequest.Create(url);
+
+<span class="c">// Ziska odpoved od serveru</span>
+WebResponse response=request.GetResponse();
+
+<span class="c">// Ziska stream pro cteni dat a nacte data</span>
+Stream responseStream=response.GetResponseStream();
+StreamReader reader=new StreamReader(responseStream);
+string ret=reader.ReadToEnd();
+
+<span class="c">// Ukoncit komunikaci</span>
+response.Close();
+</pre><p>Jak jsem již psal, tento způsob umožňuje nastavovat mnoho dalších vlastností
+    pro dotaz. Následující ukázka pracuje přímo s objektem <code>HttpWebRequest</code>
+    a přidává několik specifických HTTP hlaviček (jediné co se mění oproti
+    předcházející ukázce je vytváření dotazu).</p><pre><span class="c">// Vytvori HTTP dotaz na server </span>
+HttpWebRequest request=(HttpWebRequest)WebRequest.Create(url);
+
+<span class="c">// Nastavi dotazu nejake dalsi vlastnosti</span>
+request.Referer="http://www.vyvojar.cz";
+request.UserAgent="Muj Webovy Prohlizec";
+request.Headers.Add("Accept-Language","cs,en");
+
+<span class="c">// Ziska odpoved od serveru a nacte data</span>
+WebResponse response=request.GetResponse();
+<span class="c">// ...</span></pre><h2>Kódování souboru</h2><p>S kódováním souborů na internetu byly problémy od doby kdy něco jako kódování
+    vzniklo a tomuto problému se nevyhnete bohužel ani v .NETu. Pokud v aplikaci
+    stahujete soubor, který jste sami vytvořili je situace docela snadná, protože
+    znáte kódování souboru. V tomto případě stačí nastavit kódování jako 
+    parametr objektu <code>StreamReader</code>, který načítá data z internetu
+    a ten načte soubor korektně.</p><pre><span class="c">// Nacte data se spravnym kodovanim</span>
+StreamReader reader=new StreamReader(responseStream,
+  System.Text.Encoding.GetEncoding("windows-1251"));
+string ret=reader.ReadToEnd();</pre><p>Doposud bylo vše relativně snadné, ale pokud se pokusíte stahovat 
+    libovolnou webovou stránku nevíte dopředu v jakém kódování stránka bude.
+    Kódování by mělo být možné zjistit z objektu <code>WebResponse</code> (zkuste se
+    podívat na vlastnost <code>ContentType</code>),
+    ale ani to obecně neplatí. U některých stránek lze kódování zjistit
+    až z HTML kódu (pomocí tagu <code>meta</code>), ale abych mohl toto kódování
+    zjišťovat bude potřeba nejprve načíst stránku do paměti, poté hledat kódování
+    a nakonec stránku převést do řetězce s použitím příslušného kódování.
+    To je trošku komplikovanější (a je to mimo rozsah tohoto článku), ale naštěstí
+    existuje volně dostupný kód, která toto řeší (viz [<a href="#links">2</a>]).</p><h2>Stahování binárních souborů</h2><p>Pokud budete potřebovat stahovat binární soubor, můžete použít již zmíněný
+    objekt <code>WebClient</code> a jeho metodu <code>DownloadData</code>, která
+    vrací pole bytů. Pokud ale budete chtít vytvářet dotaz pomocí <code>WebRequest</code>
+    (a nastavovat více vlastností) nebo budete stahovat velký soubor, který se 
+    nevejde celý do paměti budete muset stažená data kopírovat do souboru postupně,
+    jak ukazuje poslední ukázka.</p><p>Kód funguje tak, že si nejprve vytvoří pomocné pole (<code>buffer</code>),
+    do kterého načte vždy maximálně 10kB a takto načtená data uloží do výstupního
+    souboru. Kopírování se ukončí až když metoda <code>Read</code> načte 0
+    bytů a to nastane až po zkopírování celého souboru.</p><pre><span class="c">// ... ziska stream pro cteni dat a nacte data</span>
+Stream responseStream=response.GetResponseStream();
+
+<span class="c">// Vytvori soubor kam se ulozi obsah z internetu</span>
+Stream writeStream=File.Create("C:\\soubor.bin");
+
+<span class="c">// Zkopirovat data</span>
+byte[] buffer=new byte[10240];
+int bytesRead;
+while(true)
+{
+  <span class="c">// pokud nacte 0 bytu tak je zkopirovano vse</span>
+  bytesRead=responseStream.Read(buffer,0,buffer.Length);
+  if (bytesRead==0) break;
+  
+  <span class="c">// ulozit nacteny buffer</span>
+  writeStream.Write(buffer,0,bytesRead);
+}
+
+<span class="c">// Zavrit streamy</span>
+responseStream.Close();
+writeStream.Close();
+</pre><h2>Soubory na stažení a odkazy</h2><a name="links"></a><ul class="externallinks"><li>[1] <a href="http://www.aspnet.cz/entry/article-20050128.aspx">Práce s obsahem souborů v .NET</a>
+    [<a href="http://www.aspnet.cz/entry/article-20050128.aspx" target="_blank">^</a>] - Projekt Asp.Net</li><li>[2] <a href="http://blog.vyvojar.cz/michal/archive/2004/01/10/440.aspx">Korektní získání obsahu HTML stránky včetně kódování</a> 
+    [<a href="http://blog.vyvojar.cz/michal/archive/2004/01/10/440.aspx" target="_blank">^</a>] - Michalův zápisníček</li></ul><ul class="externallinks"><li><a href="download/clanek.zip">Stáhnout tento článek v čistém HTML</a> (9 kB)</li><li><a href="download/sources.zip">Stáhnout zdrojové kódy ukázkové aplikace</a> (21 kB)</li></ul></body></doc>

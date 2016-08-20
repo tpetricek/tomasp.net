@@ -1,0 +1,213 @@
+<!-- [info]
+
+ - date: 2010-09-06T10:00:00.0000000
+ - description: In this article series, I'll introduce the F# version of samples for the Parallel Programming with Microsoft .NET book written by the patterns &amp
+ - tags: functional,parallel,asynchronous,f#
+ - layout: post
+ - title: Parallel Programming in F# (I.): Introducing the samples
+ - url: fsharp-parallel-samples.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/fsharp-parallel-samples/book.png" style="float:right;margin:20px;"/>
+<p><a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> is a 
+  guide written by the patterns &amp; practices group at Microsoft. It introduces .NET programmers to
+  patterns for including parallelism in their applications (using support for parallel programming in
+  .NET 4.0). It introduces techniques such as parallel loops, parallel tasks, data aggregation and so on.
+  The book includes numerous samples in C# and Visual Basic that can be easily copied and adapted 
+  to match your needs.</p>
+
+<p>As part of a contracting work for the F# team, I developed an F# version of the samples, which is 
+  now available on the <a href="http://parallelpatterns.codeplex.com/" type="external">book web site</a>.
+  You can get it by downloading <a href="http://parallelpatterns.codeplex.com/releases/view/50473">F# code samples</a> (ZIP) from the 1.0 release, or you can download the <a href="http://parallelpatterns.codeplex.com/SourceControl/list/changesets" 
+  type="external">latest version of the source code</a> directly. The F# version of the
+  code is mostly a direct translation of the C# versions, but there are a few interesting places that
+  are worth discussing. In particular, some of the samples use the <code>PSeq</code> module from F#
+  PowerPack and I also added a version of one example that uses F# asynchronous workflows.</p>
+
+<p>In this article series, I'll look at several interesting examples from the F# version of the source code.
+  We'll look how to use PLINQ and Tasks (which are available in .NET 4.0) from F# (Part II.) including some advanced topics such 
+  as the Map-Reduce algorithm (Part III.). We'll also look at a larger example built using tasks and an alternative 
+  implementation using asynchronous workflows (Part IV.) Here are links to the individual articles:</p>
+
+<ul>
+  <li><strong>Parallel Programming in F# (I.): Introducing the samples</strong></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-plinq.aspx">Parallel Programming in F# (II.): Using PLINQ and Tasks</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-aggregate.aspx">Parallel Programming in F# (III.): Aggregating data</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx">Parallel Programming in F# (IV.): Financial dashboard example</a></li>
+</ul>
+[/abstract] -->
+
+<h1>Parallel Programming in F# (I.): Introducing the samples</h1>
+<img src="http://tomasp.net/articles/fsharp-parallel-samples/book.png" style="float:right;margin:20px;"/>
+<p><a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> is a 
+  guide written by the patterns &amp; practices group at Microsoft. It introduces .NET programmers to
+  patterns for including parallelism in their applications (using support for parallel programming in
+  .NET 4.0). It introduces techniques such as parallel loops, parallel tasks, data aggregation and so on.
+  The book includes numerous samples in C# and Visual Basic that can be easily copied and adapted 
+  to match your needs.</p>
+
+<p>As part of a contracting work for the F# team, I developed an F# version of the samples, which is 
+  now available on the <a href="http://parallelpatterns.codeplex.com/" type="external">book web site</a>.
+  You can get it by downloading <a href="http://parallelpatterns.codeplex.com/releases/view/50473">F# code samples</a> (ZIP) from the 1.0 release, or you can download the <a href="http://parallelpatterns.codeplex.com/SourceControl/list/changesets" 
+  type="external">latest version of the source code</a> directly. The F# version of the
+  code is mostly a direct translation of the C# versions, but there are a few interesting places that
+  are worth discussing. In particular, some of the samples use the <code>PSeq</code> module from F#
+  PowerPack and I also added a version of one example that uses F# asynchronous workflows.</p>
+
+<p>In this article series, I'll look at several interesting examples from the F# version of the source code.
+  We'll look how to use PLINQ and Tasks (which are available in .NET 4.0) from F# (Part II.) including some advanced topics such 
+  as the Map-Reduce algorithm (Part III.). We'll also look at a larger example built using tasks and an alternative 
+  implementation using asynchronous workflows (Part IV.) Here are links to the individual articles:</p>
+
+<ul>
+  <li><strong>Parallel Programming in F# (I.): Introducing the samples</strong></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-plinq.aspx">Parallel Programming in F# (II.): Using PLINQ and Tasks</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-aggregate.aspx">Parallel Programming in F# (III.): Aggregating data</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx">Parallel Programming in F# (IV.): Financial dashboard example</a></li>
+</ul>
+
+<h2>Structure of F# samples</h2>
+<p>In this article, we'll briefly look at the general structure of F# versions of the samples.
+  In the C# version, there is usually a source file that contains both implementation of the 
+  examples and the <code>Main</code> method. In F#, I split the file into two - one file contains
+  the examples (e.g. "Examples.fs") and another file runs them (e.g. "Program.fs"). This makes
+  it possible to add a script file (e.g. "Script.fsx") that allows you to run the samples
+  easily in F# Interactive.</p>
+
+<h3>Code file</h3>
+<p>In this section, we'll briefly look at one example of the main source file that runs
+  examples as a standalone program. For example, the "Program.fs" file from the "BasicTaskSamples"
+  project in Chapter 3 looks as follows:</p>
+<pre>
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'tippintr1', 1)" onmouseover="showTip(event, 'tippintr1', 1)" class="i">main</span>() <span class="o">=</span>
+<span class="l"> 2: </span>    <span onmouseout="hideTip(event, 'tippintr2', 2)" onmouseover="showTip(event, 'tippintr2', 2)" class="i">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr3', 3)" onmouseover="showTip(event, 'tippintr3', 3)" class="i">WriteLine</span>(<span class="s">&quot;</span><span class="s">Basic</span><span class="s"> </span><span class="s">Parallel</span><span class="s"> </span><span class="s">Tasks</span><span class="s"> </span><span class="s">Samples</span><span class="s">\n</span><span class="s">&quot;</span>)
+<span class="l"> 3: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Run</span><span class="c"> </span><span class="c">several</span><span class="c"> </span><span class="c">samples</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">measure</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">time</span><span class="c"> </span><span class="c">taken</span>
+<span class="l"> 4: </span>    <span onmouseout="hideTip(event, 'tippintr4', 4)" onmouseover="showTip(event, 'tippintr4', 4)" class="i">SampleUtilities</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr5', 5)" onmouseover="showTip(event, 'tippintr5', 5)" class="i">TimedAction</span> <span class="s">&quot;</span><span class="s">2</span><span class="s"> </span><span class="s">steps</span><span class="s">,</span><span class="s"> </span><span class="s">sequential</span><span class="s">&quot;</span> (<span class="k">fun</span> () <span class="k">-&gt;</span>
+<span class="l"> 5: </span>        <span onmouseout="hideTip(event, 'tippintr6', 6)" onmouseover="showTip(event, 'tippintr6', 6)" class="i">Chapter3Sample01Sequential</span>() )
+<span class="l"> 6: </span>    <span onmouseout="hideTip(event, 'tippintr4', 7)" onmouseover="showTip(event, 'tippintr4', 7)" class="i">SampleUtilities</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr5', 8)" onmouseover="showTip(event, 'tippintr5', 8)" class="i">TimedAction</span> <span class="s">&quot;</span><span class="s">2</span><span class="s"> </span><span class="s">steps</span><span class="s">,</span><span class="s"> </span><span class="s">parallel</span><span class="s"> </span><span class="s">invoke</span><span class="s">&quot;</span> (<span class="k">fun</span> () <span class="k">-&gt;</span>
+<span class="l"> 7: </span>        <span onmouseout="hideTip(event, 'tippintr7', 9)" onmouseover="showTip(event, 'tippintr7', 9)" class="i">Chapter3Sample01ParallelInvoke</span>() )
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">(Other</span><span class="c"> </span><span class="c">samples</span><span class="c"> </span><span class="c">omitted)</span>
+<span class="l"> 9: </span>
+<span class="l">10: </span><span class="c">//</span><span class="c"> </span><span class="c">Run</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">main</span><span class="c"> </span><span class="c">testing</span><span class="c"> </span><span class="c">program</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">thread</span><span class="c"> </span><span class="c">pool</span>
+<span class="l">11: </span><span class="k">do</span> <span onmouseout="hideTip(event, 'tippintr8', 10)" onmouseover="showTip(event, 'tippintr8', 10)" class="i">Task</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr9', 11)" onmouseover="showTip(event, 'tippintr9', 11)" class="i">Factory</span><span class="o">.</span><span onmouseout="hideTip(event, 'tippintr10', 12)" onmouseover="showTip(event, 'tippintr10', 12)" class="i">StartNew</span>(<span onmouseout="hideTip(event, 'tippintr1', 13)" onmouseover="showTip(event, 'tippintr1', 13)" class="i">main</span>)<span class="o">.</span><span class="i">Wait</span>()
+</pre>
+
+
+<p>The sample uses <code>SampleUtilities</code> module (which is defined in the "Utilities" project)
+  to measure the time of an operation. In this case, the <code>main</code> function simply runs 
+  all the examples in the project. Some examples provide more options for configuration - you can 
+  adjust various constants in the program code or provide them as command line arguments. 
+  However, in F# it is more comfortable to run the sample from F# Interactive and adjust the 
+  sample configuration directly in the script file...</p>
+
+<h3>Script files</h3>
+<p>To demonstrate a typical script file that can be used to run samples in F# Interactive, 
+  we'll look at "Script.fsx" from the "BasicParallelLoops" project in Chapter 2. Every script
+  file first needs to load several references and then loads files that implement the examples:</p>
+<pre lang="fsharp">
+&gt; #r @@"..\..\Utilities\bin\Release\Utilities.dll"
+  #load @@"..\..\PSeq.fs"
+  #load "ParallelForExample.fs";;
+</pre>
+<p>The first <code>#r</code> directive loads the "Utilities" project, which contains various
+  helper functions that are used by most of the samples (e.g. calculations, simulation of CPU and I/O
+  bound tasks). Next, we load the <code>PSeq</code> module from a file that is distributed as part
+  of the release. This is a local version copied from the latest version of <a href="http://fsharppowerpack.codeplex.com/" type="external">F# PowerPack</a>.
+  The release uses a local copy to make it easier to use the samples (you don't need to install PowerPack)
+  and also because the local copy contains several minor improvements; for example the <code>mapReduce</code>
+  function that we'll use in part III. of this series.</p>
+
+<p>In the next step, we open necessary namespaces and create a configuration for running the samples
+  (in this case, configuration is a simple record that is passed to the example). In F# Interactive we 
+  can also use built-in support for time measurement, so we turn it on using <code>#time "on"</code>:</p>
+
+<pre lang="fsharp">
+&gt; open System
+  open Microsoft.Practices.ParallelGuideSamples.BasicParallelLoops.Examples;;
+
+&gt; let opts = { LoopBodyComplexity = 10000; NumberOfSteps = 10000 }
+      VerifyResult = false; SimulateInternalError = false };;
+val opts : ExampleOptions = { (...) }
+
+&gt; #time "on";;
+--&gt; Timing now on
+</pre>
+
+<p>Now we have everything we need to run the samples. Thanks to the interactive environment
+  it is quite easy to run the samples that you're interested in as well as to go back to the
+  configuration, change some properties of the sample and re-run it. The following example compares sequential version of a sample with a parallel version using the <code>PSeq</code> module (which we'll discuss in part II. of the series).</p>
+
+<pre lang="fsharp">
+&gt; let results = Chapter2.Example01 opts;; // Sequential 'for'
+Real: 00:00:00.986, CPU: 00:00:00.998, GC gen0: 0, gen1: 0, gen2: 0
+val results : float [] =
+  [|0.0; 250025000.0; 500050000.0; (...) |]
+
+&gt; let results = Chapter2.Example04 opts;; // Parallel using F# PSeq
+Real: 00:00:00.543, CPU: 00:00:00.998, GC gen0: 0, gen1: 0, gen2: 0
+val results : float [] =
+  [|0.0; 250025000.0; 500050000.0; (...) |]
+</pre>
+
+<h2>Additional Information</h2>
+<p>Below are links to the book homepage at CodePlex, F# PowerPack project which is used in some of the 
+  examples, blogs by authors of Parallel Programming with .NET and other resources that you may find interesting.</p>
+<ul>
+  <li><a type="external" href="http://parallelpatterns.codeplex.com/">Parallel Programming with Microsoft .NET</a> - Book homepage at CodePlex</li>
+  <li><a type="external" href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> - Project homepage at CodePlex</li>
+  <li><a type="external" href="http://www.ademiller.com/blogs/tech/">Ade Miller: #2782</a> - Blog by one of the authors</li>
+  <li><a type="external" href="http://blogs.msdn.com/toub/">Stephen Toub: .NET, MSDN Magazine, and other Adventures in Life</a> - Blog by one of the authors</li>
+  <li><a type="external" href="http://blogs.msdn.com/b/pfxteam/">Parallel Programming with .NET</a> - Team Blog</li>
+</ul>
+
+
+
+<div class="tip" id="tippintr1">val main : unit -&gt; unit<br /><br />Full name: Program.main<br /></div>
+<div class="tip" id="tippintr2">type Console =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static member BackgroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member Beep : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member Beep : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member BufferHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member BufferWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member CapsLock : bool<br />&#160;&#160;&#160;&#160;static member Clear : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member CursorLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorSize : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorTop : int with get, set<br />&#160;&#160;&#160;&#160;static member CursorVisible : bool with get, set<br />&#160;&#160;&#160;&#160;static member Error : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member ForegroundColor : System.ConsoleColor with get, set<br />&#160;&#160;&#160;&#160;static member In : System.IO.TextReader<br />&#160;&#160;&#160;&#160;static member InputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member KeyAvailable : bool<br />&#160;&#160;&#160;&#160;static member LargestWindowHeight : int<br />&#160;&#160;&#160;&#160;static member LargestWindowWidth : int<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member MoveBufferArea : int * int * int * int * int * int * char * System.ConsoleColor * System.ConsoleColor -&gt; unit<br />&#160;&#160;&#160;&#160;static member NumberLock : bool<br />&#160;&#160;&#160;&#160;static member OpenStandardError : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardError : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardInput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : unit -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member OpenStandardOutput : int -&gt; System.IO.Stream<br />&#160;&#160;&#160;&#160;static member Out : System.IO.TextWriter<br />&#160;&#160;&#160;&#160;static member OutputEncoding : System.Text.Encoding with get, set<br />&#160;&#160;&#160;&#160;static member Read : unit -&gt; int<br />&#160;&#160;&#160;&#160;static member ReadKey : unit -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadKey : bool -&gt; System.ConsoleKeyInfo<br />&#160;&#160;&#160;&#160;static member ReadLine : unit -&gt; string<br />&#160;&#160;&#160;&#160;static member ResetColor : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetBufferSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetCursorPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetError : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetIn : System.IO.TextReader -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetOut : System.IO.TextWriter -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowPosition : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member SetWindowSize : int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Title : string with get, set<br />&#160;&#160;&#160;&#160;static member TreatControlCAsInput : bool with get, set<br />&#160;&#160;&#160;&#160;static member WindowHeight : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowLeft : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowTop : int with get, set<br />&#160;&#160;&#160;&#160;static member WindowWidth : int with get, set<br />&#160;&#160;&#160;&#160;static member Write : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member Write : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : unit -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : bool -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : decimal -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : float32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint32 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : int64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : uint64 -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : char [] * int * int -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj -&gt; unit<br />&#160;&#160;&#160;&#160;static member WriteLine : string * obj * obj * obj * obj -&gt; unit<br />&#160;&#160;end<br /><br />Full name: System.Console<br /></div>
+<div class="tip" id="tippintr3">Multiple overloads
+<br />Console.WriteLine() : unit
+<br />Console.WriteLine(value: string) : unit
+<br />Console.WriteLine(value: obj) : unit
+<br />Console.WriteLine(value: uint64) : unit
+<br />Console.WriteLine(value: int64) : unit
+<br />Console.WriteLine(value: uint32) : unit
+<br />Console.WriteLine(value: int) : unit
+<br />Console.WriteLine(value: float32) : unit
+<br />Console.WriteLine(value: float) : unit
+<br />Console.WriteLine(value: decimal) : unit
+<br />&#160;&#160;&#160;<em>(+9 other overloads)</em><br /></div>
+<div class="tip" id="tippintr4">module SampleUtilities<br /><br />from Microsoft.Practices.ParallelGuideSamples.Utilities<br /></div>
+<div class="tip" id="tippintr5">val TimedAction : string -&gt; (unit -&gt; 'a) -&gt; 'a<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.Utilities.SampleUtilities.TimedAction<br /></div>
+<div class="tip" id="tippintr6">val Chapter3Sample01Sequential : unit -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.BasicParallelTasks.Examples.Chapter3Sample01Sequential
+<br /><em><br /><br />&#160;Execute two operations sequentially</em><br /></div>
+<div class="tip" id="tippintr7">val Chapter3Sample01ParallelInvoke : unit -&gt; unit<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.BasicParallelTasks.Examples.Chapter3Sample01ParallelInvoke
+<br /><em><br /><br />&#160;Execute operations in parallel using Parallel.Invoke</em><br /></div>
+<div class="tip" id="tippintr8">Multiple items
+<br />type Task&lt;'TResult&gt; =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;inherit System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;'TResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;new : System.Func&lt;obj,'TResult&gt; * obj * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&lt;'TResult&gt;&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TNewResult&gt; : System.Func&lt;System.Threading.Tasks.Task&lt;'TResult&gt;,'TNewResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TNewResult&gt;<br />&#160;&#160;&#160;&#160;member Result : 'TResult with get, set<br />&#160;&#160;&#160;&#160;static member Factory : System.Threading.Tasks.TaskFactory&lt;'TResult&gt;<br />&#160;&#160;end<br /><br />Full name: System.Threading.Tasks.Task&lt;_&gt;<br /><br />&#160;&#160;type: Task&lt;'TResult&gt;<br />&#160;&#160;implements: Threading.IThreadPoolWorkItem<br />&#160;&#160;implements: IAsyncResult<br />&#160;&#160;implements: IDisposable<br />&#160;&#160;inherits: Task<br />
+<br /><br />--------------------<br />
+<br />type Task =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : System.Action -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;new : System.Action&lt;obj&gt; * obj * System.Threading.CancellationToken * System.Threading.Tasks.TaskCreationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member AsyncState : obj<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.CancellationToken -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.Tasks.TaskContinuationOptions -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member ContinueWith : System.Action&lt;System.Threading.Tasks.Task&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task<br />&#160;&#160;&#160;&#160;member ContinueWith&lt;'TResult&gt; : System.Func&lt;System.Threading.Tasks.Task,'TResult&gt; * System.Threading.CancellationToken * System.Threading.Tasks.TaskContinuationOptions * System.Threading.Tasks.TaskScheduler -&gt; System.Threading.Tasks.Task&lt;'TResult&gt;<br />&#160;&#160;&#160;&#160;member CreationOptions : System.Threading.Tasks.TaskCreationOptions<br />&#160;&#160;&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Exception : System.AggregateException<br />&#160;&#160;&#160;&#160;member Id : int<br />&#160;&#160;&#160;&#160;member IsCanceled : bool<br />&#160;&#160;&#160;&#160;member IsCompleted : bool<br />&#160;&#160;&#160;&#160;member IsFaulted : bool<br />&#160;&#160;&#160;&#160;member RunSynchronously : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member RunSynchronously : System.Threading.Tasks.TaskScheduler -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Start : System.Threading.Tasks.TaskScheduler -&gt; unit<br />&#160;&#160;&#160;&#160;member Status : System.Threading.Tasks.TaskStatus<br />&#160;&#160;&#160;&#160;member Wait : unit -&gt; unit<br />&#160;&#160;&#160;&#160;member Wait : System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;member Wait : System.Threading.CancellationToken -&gt; unit<br />&#160;&#160;&#160;&#160;member Wait : int -&gt; bool<br />&#160;&#160;&#160;&#160;member Wait : int * System.Threading.CancellationToken -&gt; bool<br />&#160;&#160;&#160;&#160;static member CurrentId : System.Nullable&lt;int&gt;<br />&#160;&#160;&#160;&#160;static member Factory : System.Threading.Tasks.TaskFactory<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] -&gt; unit<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * System.TimeSpan -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * int -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * System.Threading.CancellationToken -&gt; unit<br />&#160;&#160;&#160;&#160;static member WaitAll : System.Threading.Tasks.Task [] * int * System.Threading.CancellationToken -&gt; bool<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * System.TimeSpan -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * System.Threading.CancellationToken -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * int -&gt; int<br />&#160;&#160;&#160;&#160;static member WaitAny : System.Threading.Tasks.Task [] * int * System.Threading.CancellationToken -&gt; int<br />&#160;&#160;end<br /><br />Full name: System.Threading.Tasks.Task<br /><br />&#160;&#160;type: Task<br />&#160;&#160;implements: Threading.IThreadPoolWorkItem<br />&#160;&#160;implements: IAsyncResult<br />&#160;&#160;implements: IDisposable<br /></div>
+<div class="tip" id="tippintr9">Multiple items
+<br />property Task.Factory: TaskFactory
+<br /><br />--------------------<br />
+<br />property Task.Factory: TaskFactory&lt;'TResult&gt;<br /></div>
+<div class="tip" id="tippintr10">Multiple items
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(action: Action) : Task
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(action: Action&lt;obj&gt;, state: obj) : Task
+<br />TaskFactory.StartNew(action: Action, creationOptions: TaskCreationOptions) : Task
+<br />TaskFactory.StartNew(action: Action, cancellationToken: Threading.CancellationToken) : Task
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew&lt;'TResult&gt;(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />&#160;&#160;&#160;<em>(+6 other overloads)</em><br />--------------------<br />
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;'TResult&gt;, cancellationToken: Threading.CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;'TResult&gt;
+<br />TaskFactory.StartNew(function: Func&lt;obj,'TResult&gt;, state: obj, cancellationToken: Threading.CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;'TResult&gt;<br /></div>

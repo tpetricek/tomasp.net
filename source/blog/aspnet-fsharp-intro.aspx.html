@@ -1,0 +1,157 @@
+<!-- [info]
+
+ - date: 2006-08-13T21:06:33.0000000
+ - description: This article shows how ASP.NET can be extended to support F# language using CodeDOM provider.
+ - tags: web,f#
+ - layout: post
+ - title: ASP.NET web applications in F#
+ - url: aspnet-fsharp-intro.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>CodeDOM (Code Document Object Model) is set of objects (located in <code>System.CodeDom</code> namespace) that can be used
+    for representing logical structure of .NET source code. These classes are used for generating Web service references
+    (using <code>wsdl.exe</code> tool), for generating typed datasets and in many other situations. The most interesting
+    use of CodeDOM classes is in ASP.NET where ASP.NET generates code from <code>aspx</code>/<code>ascx</code> files and 
+    compiles this code into web site assemblies (together with the code written in code behind files).</p>
+
+  <p>This means, that you can use any language for developing ASP.NET web sites, as long as you implement CodeDOM provider
+    that generates source code from CodeDOM structure and can compile these source files (this can be simply done by executing 
+    command line compiler). 
+I was recently working on CodeProvider for the F# language, and finally it supports everything
+    what is needed by ASP.NET (however it is complete and it doesn't work for example with <code>wsdl.exe</code>). Using this
+    CodeDOM provider you can write ENTIRE web site in F# (including in-line code enclosed in &lt;% ... source code ... %&gt;).
+    I also created project template for F# web site that can be imported to Visual Studio 2005, so you can easilly try 
+    writing web pages in F#...</p>
+[/abstract] -->
+
+<h1>ASP.NET web applications in F#</h1>
+
+
+<div class="note">
+<h3>More recent article available</h3>
+This article is no longer up-to-date. Although the techniques described in the article might still work (with a lot of adjustments to the newer version of F#), it is now recommended to use a different approach. Note that CodeDOM provider is now a part of F# Power Pack. For more recent information see:
+<ul>
+  <li><a href="http://tomasp.net/blog/fsharp-mvc-web.aspx">ASP.NET and F# (I.) - Creating MVC web applications in F#</a></li>
+</ul>
+</div>
+
+  <h2>CodeDOM and providers</h2>
+  <p>CodeDOM (Code Document Object Model) is set of objects (located in <code>System.CodeDom</code> namespace) that can be used
+    for representing logical structure of .NET source code. For example you can use <code>CodeTypeDeclaration</code> class
+    to represent class declaration or <code>CodeAssignStatement</code> to represent assignment in the body of method. CodeDom 
+    is language independent and CodeDOM structure can be translated to source code in specified language using code generator 
+    (class that implements <code>ICodeGenerator</code> namespace). The CodeDOM structure can be also compiled to assembly 
+    using code compiler (implementation of <code>ICodeCompiler</code> interface). Microsoft provides several code providers 
+    with .NET Framework (for C#, VB.Net, JScript and C++), but you can add your own by by implementing previously mentioned 
+    interfaces.</p>
+  <p>In the .NET Framework, CodeDOM is used for automatic code generation. For example when you add web reference to 
+    your project, the wrapper class that calls web service is generated using CodeDom. Some more examples are
+    typed dataset (generated from XSD files) and generator for data layer in the upcoming LINQ project,
+    but the most interesting use for CodeDOM for me is in ASP.NET 2.0. </p>
+  <p>Typical ASP.NET web page consists of several <code>aspx</code>/<code>ascx</code> files and associated code behind files 
+    written in one of the .NET languages. When building web page, ASP.NET uses CodeDOM for building <code>aspx</code>/<code>ascx</code>
+    files. It parses these files and generates according CodeDOM structure. For example <code>&lt;asp:Button id="btn" runat="server" /&gt;</code> 
+    declaration is translated to declaration of <code>btn</code> member and code that assigns new instance of
+    <code>Button</code> object to this member. This generated structure is compiled to .NET assemblies using code compiler
+    and the web page is ready to use. If you use any in-line code in ASP.NET page, it is included in the 
+    CodeDOM structure as literal, which means that if the generated CodeDOM is compiled using C# code compiler,
+    it can contain literals only in C# language (because you can't mix languages in one source file).</p>
+  
+  <h2>ASP.NET and F#</h2>
+  <p>In ASP.NET 1.1 you could compile code behind files using different compiler than the rest of the page 
+    (source generated from <code>aspx</code>/<code>ascx</code>). This method is used by ASP.NET in F# demo by 
+    Robert Pickering [<a href="#aspfsintrol">1</a>]. The more complex approach that is available in ASP.NET 2 is
+    to write <code>CodeDomProvider</code> implementation for F#. This makes it possible to write F# in-line code
+    in web pages and this method allows you to fully benefit of ASP.NET compilation model (for example you can
+    use Publish Web Site command in Visual Studio).
+    </p>
+  
+  <h3>FSharpCodeProvider &amp; AspNetFsharpCodeProvider</h3>
+  <p>I wanted to implement CodeDomProvider for the F# language, for the reasons mentioned above. Currently, I'm 
+    presenting version of provider that is able to compile ASP.NET pages quite well, however I implemented only features 
+    required by ASP.NET, so the provider is not complete. There are also some problems that has to be handled
+    specially (for example, F# doesn't support partial classes), so apart from standard provider (<code>FsharpCodeProvider</code>),
+    I also implemented <code>AspNetFsharpCodeProvider</code> that contains several 'hacks' for ASP.NET.</p>
+  
+  <h3>How to use it?</h3>
+  <p><strong>Important:</strong> For correct functionality of F# CodeDOM compiler, you have to modify your
+    system variable PATH to include 'bin' directory of your F# installation folder. This is because, code compiler
+    uses <code>fsc.exe</code> for compilation and there is no simple way for finding where the F# is installed. </p>
+  <p>The most simple way to start creating ASP.NET web sites in F# is to use VS.NET project template that you can 
+    find in the downloads section. Using this template, you can create web page that is already configured
+    to use F# language. After installation, select <i>File</i> - <i>New</i> - <i>WebSite..</i> and in the dialog select language 
+    'Visual C#' (it is not possible to add another language AFAIK) and than select 'F# WebSite' template.</p>
+  <p>If you want to configure ASP.NET web site to use F# code provider manually, you have to do the following steps. 
+    First modify the <code>web.config</code> file to include the following elements in the <code>compilation</code> section:</p>
+    <pre>
+&lt;?xml version="1.0"?&gt;
+&lt;configuration&gt;
+  &lt;system.web&gt;
+    &lt;compilation debug="true"&gt;
+      &lt;compilers&gt;
+        &lt;compiler language="F#;f#;fs;fsharp" extension=".fs" 
+          type="EeekSoft.FSharp.CodeDom.AspNetFSharpCodeProvider, fscodeprovider"/&gt;
+      &lt;/compilers&gt;
+    &lt;/compilation&gt;
+  &lt;/system.web&gt;
+&lt;/configuration&gt;</pre>
+  <p>This adds reference to the assembly that contains the 
+    <code>AspNetFShaprCodeProvider</code> class and it configures ASP.NET to use F# code generator for <code>aspx</code> 
+    files which <code>Language</code> attribute is set to "F#". When this is done, you can add F# page by adding
+    <code>aspx</code> and code behind <code>fs</code> files. In the <code>Page</code> directive, set the 
+    <code>Language</code> attribute to "F#" and define the code behind class in the <code>fs</code> file.</p>
+  <p>The following example shows code behind class for simple web page (that contains one button with ID set 
+    to <code>btnOk</code>):</p>
+<pre>
+namespace FSharpWeb
+
+open System;;
+open System.Web.UI.WebControls;;
+
+<span class="c">// Code behind class declaration</span>
+type Default = class inherit System.Web.UI.Page as base
+  <span class="c">// Declaration of button control</span>
+  val mutable btnOk : Button;
+  <span class="c">// All fields must be initialized in constructor</span>
+  new() = { btnOk = null; }
+  <span class="c">// Set text of button in onload</span>
+  override this.OnLoad (e) =
+    btnOk.Text &lt;- "Hello world!";
+    base.OnLoad (e);
+end;;
+</pre>  
+  <p>There is still one little difference when compared with C#, which is that it is required to
+    manually declare all controls (with ID) that are on the page (<code>btnOk</code> in this example). 
+    This is because F# doesn't (currently) support partial classes and so the partial class with
+    control declarations that is generated by ASP.NET is dropped by the CodeDOM provider. The rest is
+    very similar to how you develop ASP.NET pages in other languages; you can see more examples if you 
+    download attached example application. More information regarding object oriented programming in F# 
+    can be found in F# manual available at F# homepage [<a href="#aspfsintrol">3</a>]. </p>
+  
+  <h2>Other CodeDom provider notes</h2>
+  <p>As I mentioned earlier, the CodeDOM generator I created is still very limited and it is tested
+    only with ASP.NET. You can find list of not implemented features in the release notes (see downloads).
+    In the future, I'd like to extend it to support generating code for accessing web services too
+    (code is generated using <code>wsdl</code> tool). If you have any interesting idea, how it could be
+    used or if you have any other comments, ideas, bug fixes, etc., please let me know (at 
+    <a href="mailto:tomas@tomas.net">tomas@tomasp.net</a>).</p>
+  <p></p>
+  
+  <h2>Downloads &amp; links<a name="aspfsintrol"></a></h2>
+  <ul>
+    <li><a href="http://tomasp.net/projects/aspnetfsharp/sources.zip">
+      F# CodeGenerator including sources and sample F# Web application</a> (ZIP, 174kB)</li>
+    <li><a href="http://tomasp.net/projects/aspnetfsharp/vstemplate.vsi">
+      F# WebSite template for Visual Studio 2005</a> (VSI, 65.7kB)</li>
+    <li><a href="http://tomasp.net/projects/aspnetfsharp/notes.txt">Release notes (known issues and not implemented features)</a>
+      [<a href="http://tomasp.net/projects/aspnetfsharp/notes.txt" target="_blank">^</a>]</li>
+  </ul>
+  <ul>
+    <li>[1] <a href="http://strangelights.com/fsharp/AspfDemo/default.aspx">F# Resources - Aspf Demo</a>
+      [<a href="http://strangelights.com/fsharp/AspfDemo/default.aspx" target="_blank">^</a>] - StrangeLights.Com</li>
+    <li>[2] <a href="http://kahu.zoot.net.nz/codedom/">Sample CodeDom Provider</a>
+      [<a href="http://kahu.zoot.net.nz/codedom/" target="_blank">^</a>] - Reference CodeDomProvider implementation</li>
+    <li>[3] <a href="http://research.microsoft.com/fsharp/fsharp.aspx">F#</a>
+      [<a href="http://research.microsoft.com/fsharp/fsharp.aspx" target="_blank">^</a>] - Microsoft Research</li>
+  </ul>

@@ -1,0 +1,342 @@
+<!-- [info]
+
+ - date: 2010-09-06T10:20:00.0000000
+ - description: In this article, we'll take a look at F# samples from Chapter 4 of Parallel Programming with Microsoft .NET. We'll discuss several options for implementing the Map/Reduce pattern.
+ - tags: functional,parallel,f#
+ - layout: post
+ - title: Parallel Programming in F# (III.): Aggregating data
+ - url: fsharp-parallel-aggregate.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>In this part of the Parallel Programming in F# series, we'll explore examples of parallel aggregation 
+  from Chapter 4 of <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel 
+  Programming with Microsoft .NET</a>, which is a guide that introduces common parallel programming patterns
+  on .NET 4.0. The C# version of the sample is in details discussed in the guide. In this article,
+  we'll look at the F# translation and in particular at several functions from the <code>PSeq</code>
+  module. Some of the functionality is currently available only in the "PSeq.fs" distributed with the
+  samples, but will eventually appear in F# PowerPack as well. </p>
+
+<p>Aggregation of data in parallel is an interesting problem. As we've seen in the previous article, 
+  PLINQ and tasks make it easy to parallelize independent blocks of code that don't share any state.
+  Unfortunatelly, not all programs are like that. In particular, we often need to aggregate all
+  elements of a sequence - when writing sequential code in F#, you would use the <code>Seq.fold</code>
+  function. In this article, we'll look at functions that implement fold parallel.</p>
+[/abstract] -->
+
+<h1>Parallel Programming in F# (III.): Aggregating data</h1>
+<p>In this part of the Parallel Programming in F# series, we'll explore examples of parallel aggregation 
+  from Chapter 4 of <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel 
+  Programming with Microsoft .NET</a>, which is a guide that introduces common parallel programming patterns
+  on .NET 4.0. The C# version of the sample is in details discussed in the guide. In this article,
+  we'll look at the F# translation and in particular at several functions from the <code>PSeq</code>
+  module. Some of the functionality is currently available only in the "PSeq.fs" distributed with the
+  samples, but will eventually appear in F# PowerPack as well. </p>
+
+<p>Aggregation of data in parallel is an interesting problem. As we've seen in the previous article, 
+  PLINQ and tasks make it easy to parallelize independent blocks of code that don't share any state.
+  Unfortunatelly, not all programs are like that. In particular, we often need to aggregate all
+  elements of a sequence - when writing sequential code in F#, you would use the <code>Seq.fold</code>
+  function. In this article, we'll look at functions that implement fold parallel.</p>  
+
+<p>For discussion about other F# examples from Parallel Programming with Microsoft .NET, 
+  you can refer to other parts of this article series. So far, the series covers the following topics:</p>
+
+<ul>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-samples.aspx">Parallel Programming in F# (I.): Introducing the samples</a></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-plinq.aspx">Parallel Programming in F# (II.): Using PLINQ and Tasks</a></li>
+  <li><strong>Parallel Programming in F# (III.): Aggregating data</strong></li>
+  <li><a href="http://tomasp.net/blog/fsharp-parallel-adash.aspx">Parallel Programming in F# (IV.): Financial dashboard example</a></li>
+</ul>
+
+
+<h2>Aggregation with Parallel LINQ</h2>
+<p>We start by looking at the aggregation operators provided by Parallel LINQ. As we've seen in part II.
+  of this series, there are two ways of calling PLINQ from F#. We can either call the extension 
+  methods (from <code>ParallelEnumerable</code> type) directly or we can use the F# functions
+  from the <code>PSeq</code> module. We 
+
+</p>
+<h3>Basic aggregation</h3>
+<p>Let's start by looking at two functions from the "Examples.fs" file in the "BasicAggregation" 
+  project (Chapter 4). The first function takes an array of floats as argument, normalizes the 
+  values and then adds them. This can be done using built in query operator <code>Sum</code> or the
+  <code>PSeq.sum</code> function:</p>
+<pre>
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstip1', 1)" onmouseover="showTip(event, 'fstip1', 1)" class="i">Chapter4Sample02Plinq</span> (<span onmouseout="hideTip(event, 'fstip2', 2)" onmouseover="showTip(event, 'fstip2', 2)" class="i">data</span><span class="o">:</span>_[]) <span class="o">=</span>
+<span class="l">2: </span>    <span onmouseout="hideTip(event, 'fstip2', 3)" onmouseover="showTip(event, 'fstip2', 3)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip3', 4)" onmouseover="showTip(event, 'fstip3', 4)" class="i">AsParallel</span>()
+<span class="l">3: </span>        <span class="o">.</span><span class="i">Select</span>(<span onmouseout="hideTip(event, 'fstip4', 5)" onmouseover="showTip(event, 'fstip4', 5)" class="i">normalize</span>)
+<span class="l">4: </span>        <span class="o">.</span><span class="i">Sum</span>()
+<span class="l">5: </span>
+<span class="l">6: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstip5', 6)" onmouseover="showTip(event, 'fstip5', 6)" class="i">Chapter4Sample02PSeq</span> <span onmouseout="hideTip(event, 'fstip6', 7)" onmouseover="showTip(event, 'fstip6', 7)" class="i">data</span> <span class="o">=</span>
+<span class="l">7: </span>    <span onmouseout="hideTip(event, 'fstip6', 8)" onmouseover="showTip(event, 'fstip6', 8)" class="i">data</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstip7', 9)" onmouseover="showTip(event, 'fstip7', 9)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip8', 10)" onmouseover="showTip(event, 'fstip8', 10)" class="i">map</span> <span onmouseout="hideTip(event, 'fstip4', 11)" onmouseover="showTip(event, 'fstip4', 11)" class="i">normalize</span>
+<span class="l">8: </span>         <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstip7', 12)" onmouseover="showTip(event, 'fstip7', 12)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip9', 13)" onmouseover="showTip(event, 'fstip9', 13)" class="i">sum</span>
+</pre>
+<p>The parallelization of the aggregation operation is a tricky problem. You can find more information
+  about this topic in two blog posts on the PLINQ team blog [<a href="#fsps3links">1</a>, <a href="#fsps3links">2</a>].
+  A typical use of simple aggregations that do not use CPU intensive function is together with 
+  some other operation. In the above example, we first normalize all elements and then sum the 
+  results. This means that the sum operator can aggregate elements as they are generated from the
+  normalization code.</p>
+
+<p>The next example will be similar with the difference that we'll provide a custom aggregation function.
+  Instead of adding all numbers, we'll multiply them:</p>
+
+<pre>
+<span class="l">1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstip10', 14)" onmouseover="showTip(event, 'fstip10', 14)" class="i">Chapter4Sample03Plinq</span> (<span onmouseout="hideTip(event, 'fstip2', 15)" onmouseover="showTip(event, 'fstip2', 15)" class="i">data</span><span class="o">:</span>_[]) <span class="o">=</span>
+<span class="l">2: </span>    <span onmouseout="hideTip(event, 'fstip2', 16)" onmouseover="showTip(event, 'fstip2', 16)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip3', 17)" onmouseover="showTip(event, 'fstip3', 17)" class="i">AsParallel</span>()
+<span class="l">3: </span>        <span class="o">.</span><span class="i">Select</span>(<span onmouseout="hideTip(event, 'fstip4', 18)" onmouseover="showTip(event, 'fstip4', 18)" class="i">normalize</span>) 
+<span class="l">4: </span>        <span class="o">.</span><span class="i">Aggregate</span>(<span class="n">1.0</span>, <span class="k">fun</span> <span onmouseout="hideTip(event, 'fstip11', 19)" onmouseover="showTip(event, 'fstip11', 19)" class="i">y1</span> <span onmouseout="hideTip(event, 'fstip12', 20)" onmouseover="showTip(event, 'fstip12', 20)" class="i">y2</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fstip11', 21)" onmouseover="showTip(event, 'fstip11', 21)" class="i">y1</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fstip12', 22)" onmouseover="showTip(event, 'fstip12', 22)" class="i">y2</span>)
+<span class="l">5: </span>
+<span class="l">6: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'fstip13', 23)" onmouseover="showTip(event, 'fstip13', 23)" class="i">Chapter4Sample03PSeq</span> <span onmouseout="hideTip(event, 'fstip6', 24)" onmouseover="showTip(event, 'fstip6', 24)" class="i">data</span> <span class="o">=</span>
+<span class="l">7: </span>    <span onmouseout="hideTip(event, 'fstip6', 25)" onmouseover="showTip(event, 'fstip6', 25)" class="i">data</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstip7', 26)" onmouseover="showTip(event, 'fstip7', 26)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip8', 27)" onmouseover="showTip(event, 'fstip8', 27)" class="i">map</span> <span onmouseout="hideTip(event, 'fstip4', 28)" onmouseover="showTip(event, 'fstip4', 28)" class="i">normalize</span>
+<span class="l">8: </span>         <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fstip7', 29)" onmouseover="showTip(event, 'fstip7', 29)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fstip14', 30)" onmouseover="showTip(event, 'fstip14', 30)" class="i">fold</span> <span class="o">(*)</span> <span class="n">1.0</span>
+</pre>
+
+
+<p>In the first version, we use PLINQ extension methods directly. This is relatively convenient thanks
+  to the fact that F# automatically converts function values to delegates. The second version uses
+  the <code>PSeq</code> module and so it looks like idiomatic functional list processing code. For this
+  reason, I would personally prefer the second option. Also note that the call to <code>AsParallel</code>
+  is done implicitly whenever we use functions from the <code>PSeq</code> module.</p>
+
+<h3>Social network example</h3>
+<p>Let's now look at a more complicated aggregation example. This is a more realistic example and 
+  so it performs a larger number of operations in a sequence. As a result, PLINQ has better control
+  over the execution and can better optimize the parallel execution. </p>
+<p>In this example, we'll have a social network which has a dictionary of members (named <code>subscribers</code>)
+  that has the ID of a person as the key. We'll use <code>subscribers.[id]</code> to find a record with
+  information about member identified by <code>id</code>. A member has friends which are stored 
+  as a list of IDs in the <code>Friends</code> property. The following example implements an algorithm
+  that suggests possible friends for the given member <code>subId</code>:</p>
+<pre>
+<span class="l"> 1: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'tipssoc1', 1)" onmouseover="showTip(event, 'tipssoc1', 1)" class="i">candidates</span> <span class="o">=</span>
+<span class="l"> 2: </span>  <span onmouseout="hideTip(event, 'tipssoc2', 2)" onmouseover="showTip(event, 'tipssoc2', 2)" class="i">subscribers</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'tipssoc3', 3)" onmouseover="showTip(event, 'tipssoc3', 3)" class="i">subId</span>]<span class="o">.</span><span class="i">Friends</span>
+<span class="l"> 3: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Get</span><span class="c"> </span><span class="c">friends</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">friends</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">filter</span><span class="c"> </span><span class="c">not</span><span class="c"> </span><span class="c">relevant</span>
+<span class="l"> 4: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipssoc4', 4)" onmouseover="showTip(event, 'tipssoc4', 4)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipssoc5', 5)" onmouseover="showTip(event, 'tipssoc5', 5)" class="i">collect</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'tipssoc6', 6)" onmouseover="showTip(event, 'tipssoc6', 6)" class="i">friend</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'tipssoc2', 7)" onmouseover="showTip(event, 'tipssoc2', 7)" class="i">subscribers</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'tipssoc6', 8)" onmouseover="showTip(event, 'tipssoc6', 8)" class="i">friend</span>]<span class="o">.</span><span class="i">Friends</span>)
+<span class="l"> 5: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipssoc4', 9)" onmouseover="showTip(event, 'tipssoc4', 9)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipssoc7', 10)" onmouseover="showTip(event, 'tipssoc7', 10)" class="i">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'tipssoc8', 11)" onmouseover="showTip(event, 'tipssoc8', 11)" class="i">foaf</span> <span class="k">-&gt;</span>
+<span class="l"> 6: </span>        <span class="c">//</span><span class="c"> </span><span class="c">Remove</span><span class="c"> </span><span class="c">self</span><span class="c"> </span><span class="c">and</span><span class="c"> </span><span class="c">existing</span><span class="c"> </span><span class="c">friends</span>
+<span class="l"> 7: </span>        <span onmouseout="hideTip(event, 'tipssoc8', 12)" onmouseover="showTip(event, 'tipssoc8', 12)" class="i">foaf</span> <span class="o">&lt;&gt;</span> <span onmouseout="hideTip(event, 'tipssoc3', 13)" onmouseover="showTip(event, 'tipssoc3', 13)" class="i">subId</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'tipssoc9', 14)" onmouseover="showTip(event, 'tipssoc9', 14)" class="i">not</span> (<span onmouseout="hideTip(event, 'tipssoc2', 15)" onmouseover="showTip(event, 'tipssoc2', 15)" class="i">subscribers</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'tipssoc3', 16)" onmouseover="showTip(event, 'tipssoc3', 16)" class="i">subId</span>]<span class="o">.</span><span class="i">Friends</span><span class="o">.</span><span class="i">Contains</span>(<span onmouseout="hideTip(event, 'tipssoc8', 17)" onmouseover="showTip(event, 'tipssoc8', 17)" class="i">foaf</span>)))
+<span class="l"> 8: </span>    <span class="c">//</span><span class="c"> </span><span class="c">Aggregate</span><span class="c"> </span><span class="c">friends</span><span class="c"> </span><span class="c">to</span><span class="c"> </span><span class="c">get</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">most</span><span class="c"> </span><span class="c">frequent</span>
+<span class="l"> 9: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipssoc4', 18)" onmouseover="showTip(event, 'tipssoc4', 18)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipssoc10', 19)" onmouseover="showTip(event, 'tipssoc10', 19)" class="i">groupBy</span> <span onmouseout="hideTip(event, 'tipssoc11', 20)" onmouseover="showTip(event, 'tipssoc11', 20)" class="i">id</span>
+<span class="l">10: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipssoc4', 21)" onmouseover="showTip(event, 'tipssoc4', 21)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipssoc12', 22)" onmouseover="showTip(event, 'tipssoc12', 22)" class="i">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'tipssoc13', 23)" onmouseover="showTip(event, 'tipssoc13', 23)" class="i">k</span>, <span onmouseout="hideTip(event, 'tipssoc14', 24)" onmouseover="showTip(event, 'tipssoc14', 24)" class="i">v</span>) <span class="k">-&gt;</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'tipssoc15', 25)" onmouseover="showTip(event, 'tipssoc15', 25)" class="i">IDMultisetItem</span>(<span onmouseout="hideTip(event, 'tipssoc13', 26)" onmouseover="showTip(event, 'tipssoc13', 26)" class="i">k</span>, <span onmouseout="hideTip(event, 'tipssoc14', 27)" onmouseover="showTip(event, 'tipssoc14', 27)" class="i">v</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipssoc16', 28)" onmouseover="showTip(event, 'tipssoc16', 28)" class="i">Count</span>()))
+</pre>
+
+
+<p>The example consists of two phases. In the first phase, we take all friends of friends 
+  of the current user using <code>PSeq.collect</code>. This gives us a (possibly) very large
+  list of possible friends. Then we filter the list to remove the current user (because she
+  is also a friend of her friends) and we also remove her current friends, because we don't
+  want to suggest them.</p>
+<p>In the second phase, we perform aggregation. As discussed earlier, there is already a lot of
+  processing before the aggregation, so PLINQ can effectively parallelize the code. The aggregation
+  is implemented using the <code>groupBy</code> function. It takes a function that gives us the
+  key to be used for the aggregation. In the above example, we have a list of integers (IDs), so we
+  can simply use identity function <code>id</code> to return the integer value itself. The grouping
+  operation in <code>PSeq</code> module returns tuples containing the key and a collection of
+  values in the group - in the final step we turn this tuple into an object that stores the
+  ID of a possible friend and number of occurrences. To suggest possible friends, we'll simply 
+  take people who were suggested the most frequently.</p>
+
+<h2>Aggregation with Map/Reduce</h2>
+<p>In this section, we'll look at another example that more directly uses the Map/Reduce pattern.
+  The idea of Map/Reduce is that we split the work into two phases. First phase performs some
+  work that can be easily parallelized and the second phase aggregates the results from the 
+  first phase. In some sense, the previous examples were all implementations of this idea, but
+  in this section, we'll look at a more explicit version.</p>
+<p>The Map/Reduce pattern [<a href="#fsps3links">3</a>] has been popularized by Google, which 
+  uses a distributed implementation of a variant of this algorithm for most of their data processing.
+  However, the idea is as old as functional programming. The name comes from the names of functions
+  <code>map</code> and <code>reduce</code> (which is called <code>fold</code> in F#).</p>
+
+<h3>MapReduce function</h3>
+<p>In this section, we'll look at the <code>mapReduce</code> function, which is one way 
+  to implement the Map/Reduce pattern. The function wraps one of the overloads of the 
+  <code>Aggregate</code> operator from PLINQ and makes it more comfortably usable from F#.
+  It is available in the <code>PSeq</code> module distributed with the 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with Microsoft .NET</a> 
+  samples and will be eventually included in F# PowerPack too. Let's start by looking 
+  at the type signature of the function:</p>
+
+<pre lang="fsharp">
+val mapReduce :
+    initf:    (unit -&gt; 'TState) -&gt;                 // (1)
+    processf: ('TState -&gt; 'TInput -&gt; 'TState) -&gt;   // (2)
+    mergef:   ('TState -&gt; 'TState -&gt; 'TState) -&gt;   // (3)
+    resultf:  ('TState -&gt; 'TResult) -&gt;             // (4)
+    input:    pseq&lt;'TInput&gt; -&gt;     // Input data sequence
+              'TResult             // Calculated result
+</pre>
+
+<p>The function looks rather complex, but once you understand what is going on, it should become
+  quite clear. It takes four functions as parameters followed by a parallel input sequence 
+  and returns a result, which can be of any type. The following diagram demonstrates what the
+  function does:</p>
+
+<div style="text-align:center;">
+  <img src="http://tomasp.net/articles/fsharp-paralllel-aggregate/mapreduce.png" style="margin:10px" />
+</div>
+
+<p>The boxes in the upper row represent the input sequence. The sequence is partitioned into 
+  several groups (dynamically, depending on the number of CPUs), which are shown in different colors.
+  Next, the function processes all elements in each group. Each group is processed on a separate
+  thread and has a local state that can be mutable (because it will be only accessed on the single thread).
+  The local state is generated using the <code>initf</code> (1) function passed as the first
+  parameter and the processing is done using the <code>processf</code> (2) function (it takes the 
+  current state and element and returns the new state, but it can also mutate the current state 
+  and return it).</p>
+
+<p>In the next phase, the function aggregates all local states into a single state. This is done 
+  as the individual threads complete, so it can be partly parallelized. The aggregation uses
+  the <code>mergef</code> function, which takes two local states and returns a single merged state.
+  When all states are aggregated, the processing uses <code>resultf</code> to build the 
+  final result from the state.</p>
+
+<h3>MapReduce example</h3>
+<p>The following example is taken from the "AggregateSimulation" project in Chapter 4. The example
+  generates several values (for example by running a simulation or by looking at colors in a picture)
+  and groups them into a histogram. The histogram is the local state and is represented as 
+  a mutable array (so that values can be efficiently grouped). In the second phase, the histograms
+  are combined into a single one that is then returned as the result:
+  </p>
+
+<pre>
+<span class="l"> 1: </span><span class="c">///</span><span class="c"> </span><span class="c">Runs</span><span class="c"> </span><span class="c">simulation</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">several</span><span class="c"> </span><span class="c">randomly</span><span class="c"> </span><span class="c">generated</span><span class="c"> </span><span class="c">inputs</span><span class="c"> </span><span class="c">and</span><span class="c"> </span>
+<span class="l"> 2: </span><span class="c">///</span><span class="c"> </span><span class="c">stores</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">in</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">bucket</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">histogram</span><span class="c"> </span><span class="c">(sequentially)</span>
+<span class="l"> 3: </span><span class="k">let</span> <span onmouseout="hideTip(event, 'tipsagg1', 1)" onmouseover="showTip(event, 'tipsagg1', 1)" class="i">doParallelAggregationPSeq</span> <span onmouseout="hideTip(event, 'tipsagg2', 2)" onmouseover="showTip(event, 'tipsagg2', 2)" class="i">count</span> <span onmouseout="hideTip(event, 'tipsagg3', 3)" onmouseover="showTip(event, 'tipsagg3', 3)" class="i">mean</span> <span onmouseout="hideTip(event, 'tipsagg4', 4)" onmouseover="showTip(event, 'tipsagg4', 4)" class="i">stdDev</span> <span class="o">=</span>
+<span class="l"> 4: </span>    [ <span class="n">0</span> <span class="o">..</span> <span onmouseout="hideTip(event, 'tipsagg2', 5)" onmouseover="showTip(event, 'tipsagg2', 5)" class="i">count</span> ] 
+<span class="l"> 5: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipsagg5', 6)" onmouseover="showTip(event, 'tipsagg5', 6)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipsagg6', 7)" onmouseover="showTip(event, 'tipsagg6', 7)" class="i">ofList</span>
+<span class="l"> 6: </span>    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'tipsagg5', 8)" onmouseover="showTip(event, 'tipsagg5', 8)" class="i">PSeq</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipsagg7', 9)" onmouseover="showTip(event, 'tipsagg7', 9)" class="i">mapReduce</span>
+<span class="l"> 7: </span>        <span class="c">//</span><span class="c"> </span><span class="c">Initialize</span><span class="c"> </span><span class="c">local</span><span class="c"> </span><span class="c">state</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">each</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">partitions</span>
+<span class="l"> 8: </span>        (<span class="k">fun</span> () <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'tipsagg8', 10)" onmouseover="showTip(event, 'tipsagg8', 10)" class="i">makeEmptyHistogram</span>(), <span class="k">new</span> <span onmouseout="hideTip(event, 'tipsagg9', 11)" onmouseover="showTip(event, 'tipsagg9', 11)" class="i">Random</span>(<span onmouseout="hideTip(event, 'tipsagg10', 12)" onmouseover="showTip(event, 'tipsagg10', 12)" class="i">makeRandomSeed</span>()))
+<span class="l"> 9: </span>
+<span class="l">10: </span>        <span class="c">//</span><span class="c"> </span><span class="c">Run</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">simulation,</span><span class="c"> </span><span class="c">modifying</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">local</span><span class="c"> </span><span class="c">state</span>
+<span class="l">11: </span>        (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'tipsagg11', 13)" onmouseover="showTip(event, 'tipsagg11', 13)" class="i">histogram</span><span class="o">:</span><span onmouseout="hideTip(event, 'tipsagg12', 14)" onmouseover="showTip(event, 'tipsagg12', 14)" class="i">int</span>[], <span onmouseout="hideTip(event, 'tipsagg13', 15)" onmouseover="showTip(event, 'tipsagg13', 15)" class="i">rnd</span><span class="o">:</span><span onmouseout="hideTip(event, 'tipsagg9', 16)" onmouseover="showTip(event, 'tipsagg9', 16)" class="i">Random</span>) <span onmouseout="hideTip(event, 'tipsagg14', 17)" onmouseover="showTip(event, 'tipsagg14', 17)" class="i">i</span> <span class="k">-&gt;</span>
+<span class="l">12: </span>            <span class="c">//</span><span class="c"> </span><span class="c">Perform</span><span class="c"> </span><span class="c">a</span><span class="c"> </span><span class="c">simulation</span><span class="c"> </span><span class="c">trial</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">sample</span><span class="c"> </span><span class="c">value</span>
+<span class="l">13: </span>            <span class="k">let</span> <span onmouseout="hideTip(event, 'tipsagg15', 18)" onmouseover="showTip(event, 'tipsagg15', 18)" class="i">sample</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'tipsagg13', 19)" onmouseover="showTip(event, 'tipsagg13', 19)" class="i">rnd</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipsagg16', 20)" onmouseover="showTip(event, 'tipsagg16', 20)" class="i">NextDouble</span>()
+<span class="l">14: </span>            <span class="k">let</span> <span onmouseout="hideTip(event, 'tipsagg17', 21)" onmouseover="showTip(event, 'tipsagg17', 21)" class="i">simulationResult</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'tipsagg18', 22)" onmouseover="showTip(event, 'tipsagg18', 22)" class="i">doSimulation</span> <span onmouseout="hideTip(event, 'tipsagg15', 23)" onmouseover="showTip(event, 'tipsagg15', 23)" class="i">sample</span> <span onmouseout="hideTip(event, 'tipsagg3', 24)" onmouseover="showTip(event, 'tipsagg3', 24)" class="i">mean</span> <span onmouseout="hideTip(event, 'tipsagg4', 25)" onmouseover="showTip(event, 'tipsagg4', 25)" class="i">stdDev</span>
+<span class="l">15: </span>
+<span class="l">16: </span>            <span class="c">//</span><span class="c"> </span><span class="c">Put</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">into</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">histogram</span><span class="c"> </span><span class="c">of</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">local</span><span class="c"> </span><span class="c">accumulator</span>
+<span class="l">17: </span>            <span class="k">let</span> <span onmouseout="hideTip(event, 'tipsagg19', 26)" onmouseover="showTip(event, 'tipsagg19', 26)" class="i">idx</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'tipsagg12', 27)" onmouseover="showTip(event, 'tipsagg12', 27)" class="i">int</span> (<span onmouseout="hideTip(event, 'tipsagg20', 28)" onmouseover="showTip(event, 'tipsagg20', 28)" class="i">Math</span><span class="o">.</span><span onmouseout="hideTip(event, 'tipsagg21', 29)" onmouseover="showTip(event, 'tipsagg21', 29)" class="i">Floor</span>(<span onmouseout="hideTip(event, 'tipsagg17', 30)" onmouseover="showTip(event, 'tipsagg17', 30)" class="i">simulationResult</span> <span class="o">/</span> <span onmouseout="hideTip(event, 'tipsagg22', 31)" onmouseover="showTip(event, 'tipsagg22', 31)" class="i">float</span> <span onmouseout="hideTip(event, 'tipsagg23', 32)" onmouseover="showTip(event, 'tipsagg23', 32)" class="i">bucketSize</span>))
+<span class="l">18: </span>            <span onmouseout="hideTip(event, 'tipsagg11', 33)" onmouseover="showTip(event, 'tipsagg11', 33)" class="i">histogram</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'tipsagg19', 34)" onmouseover="showTip(event, 'tipsagg19', 34)" class="i">idx</span>] <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'tipsagg11', 35)" onmouseover="showTip(event, 'tipsagg11', 35)" class="i">histogram</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'tipsagg19', 36)" onmouseover="showTip(event, 'tipsagg19', 36)" class="i">idx</span>] <span class="o">+</span> <span class="n">1</span>
+<span class="l">19: </span>            (<span onmouseout="hideTip(event, 'tipsagg11', 37)" onmouseover="showTip(event, 'tipsagg11', 37)" class="i">histogram</span>, <span onmouseout="hideTip(event, 'tipsagg13', 38)" onmouseover="showTip(event, 'tipsagg13', 38)" class="i">rnd</span>))
+<span class="l">20: </span>        
+<span class="l">21: </span>        <span class="c">//</span><span class="c"> </span><span class="c">Aggregate</span><span class="c"> </span><span class="c">states</span><span class="c"> </span><span class="c">for</span><span class="c"> </span><span class="c">all</span><span class="c"> </span><span class="c">partitions</span>
+<span class="l">22: </span>        (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'tipsagg24', 39)" onmouseover="showTip(event, 'tipsagg24', 39)" class="i">histogram1</span>, _) (<span onmouseout="hideTip(event, 'tipsagg25', 40)" onmouseover="showTip(event, 'tipsagg25', 40)" class="i">histogram2</span>, _) <span class="k">-&gt;</span>
+<span class="l">23: </span>            <span onmouseout="hideTip(event, 'tipsagg26', 41)" onmouseover="showTip(event, 'tipsagg26', 41)" class="i">combineHistograms</span> <span onmouseout="hideTip(event, 'tipsagg24', 42)" onmouseover="showTip(event, 'tipsagg24', 42)" class="i">histogram1</span> <span onmouseout="hideTip(event, 'tipsagg25', 43)" onmouseover="showTip(event, 'tipsagg25', 43)" class="i">histogram2</span>, <span class="k">null</span>)
+<span class="l">24: </span>        
+<span class="l">25: </span>        <span class="c">//</span><span class="c"> </span><span class="c">Function</span><span class="c"> </span><span class="c">that</span><span class="c"> </span><span class="c">extracts</span><span class="c"> </span><span class="c">result</span><span class="c"> </span><span class="c">from</span><span class="c"> </span><span class="c">the</span><span class="c"> </span><span class="c">aggregated</span><span class="c"> </span><span class="c">state</span>
+<span class="l">26: </span>        <span onmouseout="hideTip(event, 'tipsagg27', 44)" onmouseover="showTip(event, 'tipsagg27', 44)" class="i">fst</span>
+</pre>
+
+
+<p>The <code>'TState</code> type is actually a tuple containing a histogram and a random number
+  generator. The type <code>Random</code> is not thread-safe, so we need a separate instance
+  for every thread. The function representing the first phase runs a simulation and adds the
+  result to the current histogram. The aggregate function uses <code>combineHistograms</code>
+  to create a new histogram from two local histograms and the last function (<code>fst</code>)
+  simply returns the histogram (first element of a tuple) as the final result.</p>
+
+<h2>Summary</h2>
+<p>In this article, we looked at F# versions of some of the samples from Chapter 4 of 
+  <a href="http://parallelpatterns.codeplex.com/" type="external">Parallel Programming with 
+  Microsoft .NET</a>. The examples show how to parallelize code that needs to aggregate some data. 
+  In order to make the parallelization efficient, it is important to run the aggregation together
+  with some other processing of the data. This approach is called the Map/Reduce pattern. We've seen
+  two ways of implementing the pattern. We can use PLINQ operators such as <code>PSeq.groupBy</code> and
+  <code>PSeq.fold</code> in combination with other PLINQ processing or we can use the <code>PSeq.mapReduce</code>
+  function, which allows us to specify both of the phases at once.</p>
+
+<h2>Downloads and References<a name="fsps3links">&#160;</a></h2>
+<ul>
+  <li><a href="http://parallelpatterns.codeplex.com" type="external">Parallel Programming with Microsoft .NET</a> - Book homepage at CodePlex </li>
+  <li><a href="http://parallelpatterns.codeplex.com/releases/view/50473" type="external">F# Code Samples</a> - Parallel Programming with Microsoft .NET </li>
+</ul>
+<ul>
+  <li>[1] <a href="http://blogs.msdn.com/b/pfxteam/archive/2008/01/22/7211660.aspx" type="external">Parallel Aggregation in PLINQ</a> - Parallel Programming with .NET blog</li>
+  <li>[2] <a href="http://blogs.msdn.com/b/pfxteam/archive/2008/06/05/8576194.aspx" type="external">More Powerful Aggregations in PLINQ</a> - Parallel Programming with .NET blog</li>
+  <li>[3] <a href="http://en.wikipedia.org/wiki/MapReduce">MapReduce</a> - Wikipedia.org</li>
+</ul>
+
+<div class="tip" id="fstip1">val Chapter4Sample02Plinq : float [] -&gt; float<br /><br />Full name: Chapter04.Chapter4Sample02Plinq<br /></div>
+<div class="tip" id="fstip2">val data : float []<br /><br />&#160;&#160;type: float []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;float&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;float&gt;<br />&#160;&#160;implements: seq&lt;float&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="fstip3">Multiple overloads
+<br />Collections.IEnumerable.AsParallel() : ParallelQuery
+<br />Collections.Generic.IEnumerable.AsParallel&lt;'TSource&gt;() : ParallelQuery&lt;'TSource&gt;<br /></div>
+<div class="tip" id="fstip4">val private normalize : float -&gt; float<br /><br />Full name: Chapter04.normalize
+<br /><em><br /><br />&#160;General transformation before calculating aggregate sum</em><br /></div>
+<div class="tip" id="fstip5">val Chapter4Sample02PSeq : seq&lt;float&gt; -&gt; float<br /><br />Full name: Chapter04.Chapter4Sample02PSeq<br /></div>
+<div class="tip" id="fstip6">val data : seq&lt;float&gt;<br /><br />&#160;&#160;type: seq&lt;float&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="fstip7">module PSeq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="fstip8">val map : ('a -&gt; 'b) -&gt; seq&lt;'a&gt; -&gt; ParallelQuery&lt;'b&gt;<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.map<br /></div>
+<div class="tip" id="fstip9">val sum : seq&lt;'T&gt; -&gt; 'T (requires member ( + ) and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.sum<br /></div>
+<div class="tip" id="fstip10">val Chapter4Sample03Plinq : float [] -&gt; float<br /><br />Full name: Chapter04.Chapter4Sample03Plinq<br /></div>
+<div class="tip" id="fstip11">val y1 : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fstip12">val y2 : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="fstip13">val Chapter4Sample03PSeq : seq&lt;float&gt; -&gt; float<br /><br />Full name: Chapter04.Chapter4Sample03PSeq<br /></div>
+<div class="tip" id="fstip14">val fold : ('State -&gt; 'T -&gt; 'State) -&gt; 'State -&gt; seq&lt;'T&gt; -&gt; 'State<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.fold<br /></div>
+
+
+<div class="tip" id="tipssoc1">val candidates : ParallelQuery&lt;IDMultisetItem&gt;<br /><br />&#160;&#160;type: ParallelQuery&lt;IDMultisetItem&gt;<br />&#160;&#160;implements: seq&lt;IDMultisetItem&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: ParallelQuery<br /></div>
+<div class="tip" id="tipssoc2">val subscribers : Dictionary&lt;SubscriberID,Subscriber&gt;<br /><br />&#160;&#160;type: Dictionary&lt;SubscriberID,Subscriber&gt;<br />&#160;&#160;implements: IDictionary&lt;SubscriberID,Subscriber&gt;<br />&#160;&#160;implements: ICollection&lt;KeyValuePair&lt;SubscriberID,Subscriber&gt;&gt;<br />&#160;&#160;implements: seq&lt;KeyValuePair&lt;SubscriberID,Subscriber&gt;&gt;<br />&#160;&#160;implements: Collections.IDictionary<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;implements: Runtime.Serialization.ISerializable<br />&#160;&#160;implements: Runtime.Serialization.IDeserializationCallback<br />
+<br /><em><br /><br />&#160;Collection of all subscribers in the repository</em><br /></div>
+<div class="tip" id="tipssoc3">val subId : SubscriberID<br /><br />&#160;&#160;type: SubscriberID<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipssoc4">module PSeq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="tipssoc5">val collect : ('a -&gt; #seq&lt;'U&gt;) -&gt; seq&lt;'a&gt; -&gt; ParallelQuery&lt;'U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.collect<br /></div>
+<div class="tip" id="tipssoc6">val friend : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipssoc7">val filter : ('a -&gt; bool) -&gt; seq&lt;'a&gt; -&gt; ParallelQuery&lt;'a&gt;<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.filter<br /></div>
+<div class="tip" id="tipssoc8">val foaf : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipssoc9">val not : bool -&gt; bool<br /><br />Full name: Microsoft.FSharp.Core.Operators.not<br /></div>
+<div class="tip" id="tipssoc10">val groupBy : ('T -&gt; 'Key) -&gt; seq&lt;'T&gt; -&gt; ParallelQuery&lt;'Key * seq&lt;'T&gt;&gt; (requires equality)<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.groupBy<br /></div>
+<div class="tip" id="tipssoc11">val id : 'T -&gt; 'T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id<br /></div>
+<div class="tip" id="tipssoc12">val map : ('a -&gt; 'b) -&gt; seq&lt;'a&gt; -&gt; ParallelQuery&lt;'b&gt;<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.map<br /></div>
+<div class="tip" id="tipssoc13">val k : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipssoc14">val v : seq&lt;int&gt;<br /><br />&#160;&#160;type: seq&lt;int&gt;<br />&#160;&#160;inherits: Collections.IEnumerable<br /></div>
+<div class="tip" id="tipssoc15">type IDMultisetItem = KeyValuePair&lt;SubscriberID,int&gt;<br /><br />Full name: Microsoft.Practices.ParallelGuideSamples.SocialNetwork.IDMultisetItem<br /><br />&#160;&#160;type: IDMultisetItem<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipssoc16">Multiple overloads
+<br />IEnumerable.Count&lt;'TSource&gt;() : int
+<br />IEnumerable.Count&lt;'TSource&gt;(predicate: Func&lt;'TSource,bool&gt;) : int<br /></div>
+
+
+
+<div class="tip" id="tipsagg1">val doParallelAggregationPSeq : int -&gt; float -&gt; float -&gt; int []<br /><br />Full name: Script.doParallelAggregationPSeq
+<br /><em><br /><br />&#160;Runs simulation for several randomly generated inputs and <br />&#160;stores the result in a bucket of a histogram (sequentially)</em><br /></div>
+<div class="tip" id="tipsagg2">val count : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg3">val mean : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg4">val stdDev : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg5">module PSeq<br /><br />from Microsoft.FSharp.Collections<br /></div>
+<div class="tip" id="tipsagg6">val ofList : 'T list -&gt; ParallelQuery&lt;'T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.ofList<br /></div>
+<div class="tip" id="tipsagg7">val mapReduce : (unit -&gt; 'TAccumulate) -&gt; ('TAccumulate -&gt; 'TSource -&gt; 'TAccumulate) -&gt; ('TAccumulate -&gt; 'TAccumulate -&gt; 'TAccumulate) -&gt; ('TAccumulate -&gt; 'TResult) -&gt; pseq&lt;'TSource&gt; -&gt; 'TResult<br /><br />Full name: Microsoft.FSharp.Collections.PSeqModule.mapReduce<br /></div>
+<div class="tip" id="tipsagg8">val makeEmptyHistogram : unit -&gt; int []<br /><br />Full name: Script.makeEmptyHistogram<br /></div>
+<div class="tip" id="tipsagg9">type Random =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;new : unit -&gt; System.Random<br />&#160;&#160;&#160;&#160;new : int -&gt; System.Random<br />&#160;&#160;&#160;&#160;member Next : unit -&gt; int<br />&#160;&#160;&#160;&#160;member Next : int -&gt; int<br />&#160;&#160;&#160;&#160;member Next : int * int -&gt; int<br />&#160;&#160;&#160;&#160;member NextBytes : System.Byte [] -&gt; unit<br />&#160;&#160;&#160;&#160;member NextDouble : unit -&gt; float<br />&#160;&#160;end<br /><br />Full name: System.Random<br /></div>
+<div class="tip" id="tipsagg10">val makeRandomSeed : (unit -&gt; int)<br /><br />Full name: Script.makeRandomSeed<br /></div>
+<div class="tip" id="tipsagg11">val histogram : int []<br /><br />&#160;&#160;type: int []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;int&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;int&gt;<br />&#160;&#160;implements: seq&lt;int&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="tipsagg12">Multiple items
+<br />val int : 'T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int
+<br /><br />--------------------<br />
+<br />type int&lt;'Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;<br /><br />&#160;&#160;type: int&lt;'Measure&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;int&lt;'Measure&gt;&gt;<br />&#160;&#160;implements: IEquatable&lt;int&lt;'Measure&gt;&gt;<br />&#160;&#160;inherits: ValueType<br />
+<br /><br />--------------------<br />
+<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg13">val rnd : Random<br /></div>
+<div class="tip" id="tipsagg14">val i : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg15">val sample : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg16">Random.NextDouble() : float<br /></div>
+<div class="tip" id="tipsagg17">val simulationResult : float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg18">val doSimulation : float -&gt; float -&gt; float -&gt; float<br /><br />Full name: Script.doSimulation
+<br /><em><br /><br />&#160;Placeholder for a user-written simulation routine. For example, this <br />&#160;could be a financial simulation that explores various risk outcomes.<br />&#160;This placeholder just transforms the value so that the outputs of<br />&#160;simulation will follow a bell curve.</em><br /></div>
+<div class="tip" id="tipsagg19">val idx : int<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg20">type Math =<br />&#160;&#160;class<br />&#160;&#160;&#160;&#160;static val PI : float<br />&#160;&#160;&#160;&#160;static val E : float<br />&#160;&#160;&#160;&#160;static member Abs : System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Abs : int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Abs : int -&gt; int<br />&#160;&#160;&#160;&#160;static member Abs : int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Abs : float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Abs : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Abs : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Acos : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Asin : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Atan : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Atan2 : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member BigMul : int * int -&gt; int64<br />&#160;&#160;&#160;&#160;static member Ceiling : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Ceiling : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Cos : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Cosh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member DivRem : int * int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member DivRem : int64 * int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Exp : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Floor : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Floor : float -&gt; float<br />&#160;&#160;&#160;&#160;static member IEEERemainder : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Log10 : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Max : System.SByte * System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Max : System.Byte * System.Byte -&gt; System.Byte<br />&#160;&#160;&#160;&#160;static member Max : int16 * int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Max : uint16 * uint16 -&gt; uint16<br />&#160;&#160;&#160;&#160;static member Max : int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Max : uint32 * uint32 -&gt; uint32<br />&#160;&#160;&#160;&#160;static member Max : int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Max : uint64 * uint64 -&gt; uint64<br />&#160;&#160;&#160;&#160;static member Max : float32 * float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Max : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Max : decimal * decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Min : System.SByte * System.SByte -&gt; System.SByte<br />&#160;&#160;&#160;&#160;static member Min : System.Byte * System.Byte -&gt; System.Byte<br />&#160;&#160;&#160;&#160;static member Min : int16 * int16 -&gt; int16<br />&#160;&#160;&#160;&#160;static member Min : uint16 * uint16 -&gt; uint16<br />&#160;&#160;&#160;&#160;static member Min : int * int -&gt; int<br />&#160;&#160;&#160;&#160;static member Min : uint32 * uint32 -&gt; uint32<br />&#160;&#160;&#160;&#160;static member Min : int64 * int64 -&gt; int64<br />&#160;&#160;&#160;&#160;static member Min : uint64 * uint64 -&gt; uint64<br />&#160;&#160;&#160;&#160;static member Min : float32 * float32 -&gt; float32<br />&#160;&#160;&#160;&#160;static member Min : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Min : decimal * decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Pow : float * float -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : float * int -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : float * System.MidpointRounding -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal * int -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : decimal * System.MidpointRounding -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Round : float * int * System.MidpointRounding -&gt; float<br />&#160;&#160;&#160;&#160;static member Round : decimal * int * System.MidpointRounding -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Sign : System.SByte -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int16 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : int64 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : float32 -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : float -&gt; int<br />&#160;&#160;&#160;&#160;static member Sign : decimal -&gt; int<br />&#160;&#160;&#160;&#160;static member Sin : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Sinh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Sqrt : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Tan : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Tanh : float -&gt; float<br />&#160;&#160;&#160;&#160;static member Truncate : decimal -&gt; decimal<br />&#160;&#160;&#160;&#160;static member Truncate : float -&gt; float<br />&#160;&#160;end<br /><br />Full name: System.Math<br /></div>
+<div class="tip" id="tipsagg21">Multiple overloads
+<br />Math.Floor(d: float) : float
+<br />Math.Floor(d: decimal) : decimal<br /></div>
+<div class="tip" id="tipsagg22">Multiple items
+<br />val float : 'T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float
+<br /><br />--------------------<br />
+<br />type float&lt;'Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;<br /><br />&#160;&#160;type: float&lt;'Measure&gt;<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IComparable&lt;float&lt;'Measure&gt;&gt;<br />&#160;&#160;implements: IEquatable&lt;float&lt;'Measure&gt;&gt;<br />&#160;&#160;inherits: ValueType<br />
+<br /><br />--------------------<br />
+<br />type float = Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />&#160;&#160;type: float<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;float&gt;<br />&#160;&#160;implements: IEquatable&lt;float&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg23">val bucketSize : int<br /><br />Full name: Script.bucketSize<br /><br />&#160;&#160;type: int<br />&#160;&#160;implements: IComparable<br />&#160;&#160;implements: IFormattable<br />&#160;&#160;implements: IConvertible<br />&#160;&#160;implements: IComparable&lt;int&gt;<br />&#160;&#160;implements: IEquatable&lt;int&gt;<br />&#160;&#160;inherits: ValueType<br /></div>
+<div class="tip" id="tipsagg24">val histogram1 : int []<br /><br />&#160;&#160;type: int []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;int&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;int&gt;<br />&#160;&#160;implements: seq&lt;int&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="tipsagg25">val histogram2 : int []<br /><br />&#160;&#160;type: int []<br />&#160;&#160;implements: ICloneable<br />&#160;&#160;implements: Collections.IList<br />&#160;&#160;implements: Collections.ICollection<br />&#160;&#160;implements: Collections.IStructuralComparable<br />&#160;&#160;implements: Collections.IStructuralEquatable<br />&#160;&#160;implements: Collections.Generic.IList&lt;int&gt;<br />&#160;&#160;implements: Collections.Generic.ICollection&lt;int&gt;<br />&#160;&#160;implements: seq&lt;int&gt;<br />&#160;&#160;implements: Collections.IEnumerable<br />&#160;&#160;inherits: Array<br /></div>
+<div class="tip" id="tipsagg26">val combineHistograms : int [] -&gt; int [] -&gt; int []<br /><br />Full name: Script.combineHistograms<br /></div>
+<div class="tip" id="tipsagg27">val fst : ('T1 * 'T2) -&gt; 'T1<br /><br />Full name: Microsoft.FSharp.Core.Operators.fst<br /></div>

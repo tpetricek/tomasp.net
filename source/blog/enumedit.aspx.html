@@ -1,0 +1,163 @@
+<!-- [info]
+
+ - date: 2004-12-31T03:54:54.0000000
+ - description: Asp.Net and WinForms control for editing any enumeration data type
+ - tags: 
+ - layout: post
+ - title: Universal enumeration editor control
+ - url: enumedit.aspx
+
+[/info] -->
+<!-- [abstract]
+Asp.Net and WinForms control for editing any enumeration data type
+[/abstract] -->
+
+<h1>Universal enumeration editor control</h1>
+<doc version="1"><body><h1>Universal enumeration editor control</h1><ul class="download"><li><a href="enumedit/source.zip">Download source files (22 kB)</a></li><li><a href="enumedit/demo.zip">Download demo applications (58 kB)</a></li><li><a href="enumedit/doc.zip">Download controls documentation (42 kB)</a></li></ul><ul class="externallinks"><li><a href="http://www.eeeksoft.net/files/demo/enumedit/demo.aspx">Asp.Net demo application online</a> [<a href="http://www.eeeksoft.net/files/demo/enumedit/demo.aspx" target="_blank">^</a>]</li><!--
+		<li><a href="http://www.eeeksoft.net">Run WinForms demo application</a><br />
+		<small>Thanks to .Net security policy this is safe action for you.</small></li>
+		--></ul><h2>Introduction</h2><p>At first I'd like to say that this control exists in two versions. First version is windows forms user control 
+		(namespace <code>EeekSoft.­WinForms.­Controls</code>) and second is web control that can be used from Asp.Net applications 
+		(namespace <code>EeekSoft.­Web.­Controls</code>). Each control is compiled to single independent dll file, so you can use 
+		first assembly in win forms application and second in web application. Both controls has same (or very similar) functionality 
+		so I decided to put this two controls in one article.</p><p>This controls can be used to allow user to enter value of any enumeration data type (in C# it is <code>enum</code> and in 
+		VB.Net <code>Enum</code> data type). This is possible thanks to reflections, because using reflection control can get all
+		enumeration values and its names. One problem is that enumeration can be used for selecting one value from specified 
+		options or to store data as bitwise flags and the control must be able to edit both of this types. Also there are some 
+		other usefull features that will be discussed later.</p><div style="text-align:center"><img src="enumedit/webforms.gif" alt="Asp.Net Control screenshot" style="margin-right:50px;" /><img src="enumedit/winforms.gif" alt="WinForms Control screenshot" style="margin-right:50px;" /></div><h2>Background </h2><p>This control generates set of <code>RadioButton</code> or <code>CheckBox</code> (when enum allows to choose more values) 
+		controls. You can specify this using <code>EditorType</code> property, which can have one of following values. 
+		<code>Flags</code> means that user can choose more values (<code>CheckBox</code>es), <code>Options</code> means that
+		user can choose only one value (<code>RadioButton</code>s) and third value is <code>Auto</code>. In the third case
+		control checks whether enumeration is marked using <code>FlagsAttribute</code> attribute (this is standard attribute
+		used with enumerations) and behaves as <code>Flags</code> editor or <code>Options</code> editor automaticly.</p><h3>Reflection</h3><p>Thanks to reflection it is possible to edit any kind of enumeration using this controls. First interesting thing that 
+			I'd like to discuss is how to get list of all values of enum. Following code will first get <code>System.Type</code> object 
+			of enumeration using <code>typeof</code> operator. Than it gets all its fields using <code>GetFields</code> method.
+			This method returns array of all fields of type, so it is simple to loop through it and find all acceptable fields. </p><pre><span class="c">// First we need to get list of all enum fields</span>
+FieldInfo[] fields=typeof(MyEnum).GetFields();
+foreach(FieldInfo field in fields)
+{
+  <span class="c">// Continue only for normal fields</span>
+  if (field.IsSpecialName) continue;
+
+  <span class="c">// Parameter should be instance of object, but it is ignored
+  // for static fileds (this case) so it is not important</span>
+  object valObj=field.GetValue(0));
+  <span class="c">// Convert value to integer - this works only for enums which use Int32
+  // for storing data (in control there is block of try-catch) </span>
+  int val=(int)valObj;
+  
+  <span class="c">// Add control with specified value and title</span>
+  AddControl(val,field.Name);
+}</pre><h3>Attributes</h3><p>I also used attributes to control behavior of controls. I already mentioned attribute <code>FlagsAttribute</code> thath
+			is used for determinating enumeration type. Other used attributes are from namespace 
+			<code>System.ComponentModel</code>. First attribute (<code>BrowsableAttribute</code>) is used to choose which
+			values of enum should be user able to select and second (<code>DescriptionAttribute</code>) allows you to add
+			description for each value.</p><p>Following code shows how to find out if field should be hidden (it is hidden when it is marked with attribute 
+			<code>Browsable(false)</code> and get description of value. It uses method <code>GetCustomAttributes</code>,
+			of <code>FieldInfo</code> which returns array with information about attributes of specified type.</p><pre><span class="c">// Array used for retrieving attributes</span>
+object[] attrs;
+
+<span class="c">// Get array of BrowsableAttribute attributes</span>
+attrs=field.GetCustomAttributes(typeof(BrowsableAttribute),false);
+if (attrs.Length==1)
+{
+  <span class="c">// If attribute exists and its value is false continue to the next field...</span>
+  BrowsableAttribute brAttr=(BrowsableAttribute)attrs[0];
+  if (brAttr.Browsable==false) continue;
+}
+
+<span class="c">// Additional description for the field</span>
+string description="";
+<span class="c">// Get DescriptionAttribute associated with the filed (if exists)</span>
+attrs=field.GetCustomAttributes(typeof(DescriptionAttribute),false);
+if (attrs.Length&gt;0) 
+{
+  description=((DescriptionAttribute)attrs[0]).Description;
+}</pre><h2>How to use this controls</h2><p>Both controls work similar, but there are some little differences that will be discussed later. In all examples
+			I will use following two enumerations (First is marked with <code>FlagsAttribute</code>, so user can select more
+			than one flags - control will generate <code>CheckBox</code>es and second enum can be used to select only one of
+			three values, so editor will contain <code>RadioButton</code>s):</p><pre><span class="c">// This enum is used for demonstration of flags editor functionality</span>
+[Flags]
+enum MyFlagsEnum
+{
+  <span class="c">// Hidden fields (will not be displayed in editor)</span>
+  [Browsable(false)] None=0,
+  [Browsable(false)] BothFlags=3,
+
+  [Description("First flag")]  FirstFlag=1,
+  [Description("Second flag")] SecondFlag=2,
+  [Description("Third flag")]  ThirdFlag=4
+}
+
+<span class="c">// This enum is used for demonstration of options editor functionality</span>
+enum MyOptionsEnum
+{
+  [Description("First option")]  FirstOpt=1,
+  [Description("Second option")] SecondOpt=2,
+  [Description("Third option")]  ThirdOpt=3
+}</pre><h3>WinForms control</h3><p>If you want to add this control to your form you can use designer (If you want to add control to your
+			toolbox click on 'Add/Remove items' in toolbox context menu and select assembly with control). 
+			You can modify only properties which affect control look in designer and the rest (enumeration type) 
+			can be changed only from code. <code>ControlSpacing</code> property specifies vertical offset of generated controls.
+			<code>LabelFormat</code> property allows you to set format of text labels. You can use two parameters: <code>{0}</code> 
+			specifies name of value and <code>{1}</code> is description stored in <code>DescriptionAttribute</code> attribute.
+			As I said before, you can override default controls behavior. If you want to use it as bitwise flags editor, set
+			<code>EditorType</code> to <code>Flags</code>) and for choosing one option use <code>Options</code>.
+			One thing, that can't be done using designer is to set type of enumeration (property <code>EnumType</code> as you 
+			can see in following example. Control has one event called <code>Change</code> that is raised when 
+			value of enumeration changes.</p><pre><span class="c">// Initialize enumeration editors</span>
+private void TestForm_Load(object sender, System.EventArgs e)
+{
+  <span class="c">// Flags editor</span>
+  myFlagsEditor.EnumType=typeof(MyFlagsEnum);
+  myFlagsEditor.EnumValue=(long)
+    (MyFlagsEnum.FirstFlag | MyFlagsEnum.SecondFlag);
+	
+  <span class="c">// Options editor</span>
+  myOptsEditor.EnumType=typeof(MyOptionsEnum);
+  myOptsEditor.EnumValue=(long)MyOptionsEnum.ThirdOpt;
+}</pre><h3>Asp.Net control</h3><p>Asp.Net version of control is very similar to WinForms control. After you add control to toolbox you can put it on the
+			web form and set it's design properties using web forms designer, but as in WinForms version you must set type of 
+			edited enum manually (for example in <code>Page_Load</code> event handler).</p><p>Only one important difference between properties of WinForms and Asp.Net controls is that Asp.Net version doesn't have
+			a <code>ControlSpacing</code> property (because I think it is better not to use absolute positioning in 
+			web applications for this). Instead of this, you can use <code>ControlSeparator</code> property to specify HTML tags 
+		  which will control put between every two generated <code>RadiButton</code>s or <code>CheckBox</code>es. The default value
+			for this property is <code>&lt;br /&gt;</code>, but if you prefer to use table layout you can simply modify it.
+			Also there is little modification in event model. 
+			Property <code>AutoPostBack</code> allows you to set when page postback should occur. If you set it to <code>true</code>
+			page will do postback (and <code>Change</code> event will be called) whenever the value is changed and if you set it to 
+			<code>false</code> control will never raise postback and <code>Change</code> event will be called after page is sent back
+			to the server for some other reason.</p><p>Following code sample shows how to add enum editor control to web form and how to use it from codebehind 
+			(code in <code>cs</code> file presumes, that you set event handler for <code>Change</code> event in designer):</p><pre><span class="c">&lt;!-- EnumEditorDemo.aspx --&gt;</span>
+&lt;%@@ Page language="c#" Codebehind="EnumEditorDemo.aspx.cs" 
+    Inherits="WebFormsDemo.EnumEditorDemo" %&gt;
+&lt;%@@ Register TagPrefix="ec" Namespace="EeekSoft.Web.Controls"
+    Assembly="EeekSoft.Web.EnumEditor" %&gt;
+...
+  &lt;ec:enumeditor id="myFlagsEditor" LableFormat="{0} - {1}" 
+      runat="server" ControlSeparator="&lt;br /&gt;"&gt;&lt;/ec:enumeditor&gt;
+  &lt;asp:label id="valueLabel" runat="server"&gt;&lt;asp:label&gt;
+...</pre><pre><span class="c">// EnumEditorDemo.aspx.cs</span>
+private void Page_Load(object sender, EventArgs e)
+{
+  if (!Page.IsPostBack)
+  {
+    <span class="c">// Set edited enumeration type and default value</span>
+    myFlagsEditor.EnumType=typeof(MyFlagsEnum);
+    myFlagsEditor.EnumValue=(long)
+      (MyFlagsEnum.FirstFlag | MyFlagsEnum.SecondFlag);
+  }
+}
+
+<span class="c">// Value of edited enumeration changed</span>
+private void myFlagsEditor_Change(object sender, EventArgs e)
+{
+  <span class="c">// Show name of selected value using label</span>
+  valueLabel.Text=((MyFlagsEnum)myFlagsEditor.EnumValue).ToString();
+}
+</pre><h2>Who can use it?</h2><p>I think that both Asp.Net and WinForms versions of control can be very usefull if you want to allow user to 
+			modify settings of your application and especially if you store this settings in enumerations. Typical use case
+			may be when you load integer containing value of enumeration from database and you want to allow user to simply 
+			change its value and save it back to database. In this case you can write lot of code and add lot of <code>CheckBox</code>
+			and <code>RadioButton</code> controls or you can use this control and define structure of data very simply and
+			clearly using <code>enum</code> (and this solution is also very easy to maintain).</p></body></doc>

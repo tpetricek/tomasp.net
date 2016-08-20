@@ -1,0 +1,365 @@
+<!-- [info]
+
+ - date: 2007-07-30T02:10:17.0000000
+ - description: Common criticism of LINQ is that it doesn't support a scenario where queries are build dynamically at the runtime. In this article I show that this can be acutally done very well for most of the common scenarios.
+ - tags: c#
+ - layout: post
+ - title: Building LINQ Queries at Runtime in C#
+ - url: dynamic-linq-queries.aspx
+
+[/info] -->
+<!-- [abstract]
+<p>Since the first beta versions of LINQ we could hear comments that it is perfect for 
+  queries known at compile-time, however it is not possible to use it for building queries 
+  dynamically at runtime. In this article I show that this can be actually done very well for 
+  most of the common cases. The solution offered by Microsoft (mentioned in [<a href="#dynqlinks">1</a>]) is to 
+  build query from a string, however this has many limitations and it in fact goes completely 
+  against what LINQ tries to achieve, which is writing queries in a type-safe way with full 
+  compile-time checking. In this article I will first show a few support functions to make the life 
+  a bit easier and then we will use them for building two sample applications that allows user to 
+  build a query dynamically. The solution is largely motivated by my previous use of F#, where 
+  working with “expressions” is possible at more advanced level, however I’ll write about F# later 
+  and now let’s get back to C# 3.0...</p>
+[/abstract] -->
+
+<h1>Building LINQ Queries at Runtime in C#</h1>
+<p>Since the first beta versions of LINQ we could hear comments that it is perfect for 
+  queries known at compile-time, however it is not possible to use it for building queries 
+  dynamically at runtime. In this article I show that this can be actually done very well for 
+  most of the common cases. The solution offered by Microsoft (mentioned in [<a href="#dynqlinks">1</a>]) is to 
+  build query from a string, however this has many limitations and it in fact goes completely 
+  against what LINQ tries to achieve, which is writing queries in a type-safe way with full 
+  compile-time checking. In this article I will first show a few support functions to make the life 
+  a bit easier and then we will use them for building two sample applications that allows user to 
+  build a query dynamically. The solution is largely motivated by my previous use of F#, where 
+  working with “expressions” is possible at more advanced level, however I’ll write about F# later 
+  and now let’s get back to C# 3.0.</p>
+  
+<h2>Linq Utilities #1: Expandable Queries</h2>
+<p>First of all, we will need an extension that I wrote some time ago, which allows us to “call functions in LINQ queries” as 
+  demonstrated in the following example:</p>
+<pre lang="csharp">
+// Lambda expression that calculates the price
+Expression&lt;Func&lt;Nwind.Product, decimal?&gt;&gt; calcPrice = 
+  (p) =&gt; p.UnitPrice * 1.19m;
+
+// Query that selects products 
+var q = 
+  from p in db.Products.ToExpandable()  
+  where calcPrice.Expand(p) &gt; 30.0m
+  select new { 
+    p.ProductName, 
+    OriginalPrice = p.UnitPrice,
+    ShopPrice = calcPrice.Expand(p) };
+</pre>
+
+<p>It works relatively simple – you can write a function you want to call in a query using anonymous 
+  function declared as an Expression, than you’ll have to add a ToExpandable call to the data table and finally, 
+  you can call your functions (which are actually expressions) using the Expand extension method (note that 
+  in the earlier versions I used Invoke, but the name conflicts with some standard functions in the newest beta 
+  versions). You can read more about this in my earlier blog post [<a href="#dynqlinks">2</a>], but in an essence, the ToQueryable creates a 
+  thin layer that processed the entire LINQ query before it is sent to the “LINQ to SQL” translator and it replaces 
+  all occurrences of the Expand call with the body of the function, so that the “LINQ to SQL” can understand the query.
+  The latest version of these extensions is available at CodePlex [<a href="#dynqlinks">3</a>], but the DLL is also included in the 
+  downloads at the end of this article.</p>
+  
+<h2>Linq Utilities #2: Type Inference for Anonymous Functions</h2>
+<p>The second little utility will allow us to use C# implicitly typed variables (using the var keyword) to declare 
+  anonymous functions and lambda expressions (i.e. data representation of the anonymous function). As you probably know you, 
+  the decision whether anonymous function will be compiled as a Func delegate (that can be invoked) or as an Expression data 
+  structure (that can be for example translated to SQL) depends on the variable type:</p>
+
+<pre lang="csharp">
+Func&lt;int,int,int&gt; func = (int a, int b) =&gt; a + b;
+Expression&lt;Func&lt;int,int,int&gt;&gt; expr = (int a, int b) =&gt; a + b;
+</pre>
+<p>Obviously the following code looks very confusing:</p>
+<pre lang="csharp">var func = (int a, int b) =&gt; a + b;</pre>
+<p>The problem is that the compiler doesn’t know if func should be of type Expression or Func and indeed, if you 
+  try it you will get a compiler error message saying “Cannot assign lambda expression to an implicitly-typed local variable”. 
+  Unfortunately this forces you to write the type, which can be really complicated sometimes and also this way of declaring 
+  anonymous functions makes it impossible to write an anonymous function returning C# 3.0 anonymous type:</p>
+  
+<pre lang="csharp">Func&lt;int,int,???&gt; func = (int a, int b) =&gt; new { Sum = a + b, Mul = a * b };</pre>
+<p>When you want to return anonymous type you can no longer write name of the type (because it is anonymous!), so 
+  writing expression like this looks like an impossible task. Luckily we can implement really simple workaround for this problem:</p>
+<pre lang="csharp">
+public static class Linq {
+  // Returns the given anonymous method as a lambda expression
+  public static Expression&lt;Func&lt;T, R&gt;&gt; 
+      Expr&lt;T, R&gt;(Expression&lt;Func&lt;T, R&gt;&gt; f) {
+    return f;
+  }
+
+  // Returns the given anonymous function as a Func delegate
+  public static Func&lt;T, R&gt; 
+      Func&lt;T, R&gt;(Func&lt;T, R&gt; f) {
+    return f;
+  }
+}</pre>
+<p>You can see that we declared two simple static methods that just return the argument, however the type of the 
+  argument (which is a Func delegate in case of the Func method and Expression data type in case of the Expr method) 
+  tells the compiler if we want to build an expression or a delegate. Using this class we can rewrite the previous examples as following:</p>
+<pre lang="csharp">
+// Let’s start with the simple examples:
+var func = Linq.Func((int a, int b) =&gt; a + b);
+var expr = Linq.Expr((int a, int b) =&gt; a + b);
+
+// .. and using anonymous types is possible as well!
+var func = Linq.Func((int a, int b) =&gt; 
+  new { Sum = a + b, Mul = a * b });
+var expr = Linq.Expr ((int a, int b) =&gt; 
+  new { Sum = a + b, Mul = a * b });
+</pre>
+<p>Note that when using Linq.Func or Linq.Expr you have to explicitly specify the type of the arguments, because the 
+  compiler can’t infer this from the type of the variable, however the code is usually shorter anyway and in addition you can use anonymous types!</p>
+
+<h2>Dynamic Queries #1: Selecting Customers</h2>
+<p>All right, let’s finally look how we can build a LINQ query dynamically at runtime! In the first example we will implement 
+  one feature that may be quite common in a lot of applications. We will build a query for selecting customers from the 
+  Northwind database and we will let user to choose what property of the <code>Customer</code> type he wants to enter. For simplicity 
+  we will give a choice between <code>CompanyName</code>, <code>Country</code> and a <code>ContactName</code>. Once the user selects what property he wants to 
+  query, we will ask for the value and run a query that will return all customers whose property selected by the user 
+  contains the entered value (as a substring). To implement this we first create a data context and then we write a function 
+  that will build a LINQ query once it gets a value entered by the user and a lambda expression representing a function 
+  that reads the selected property from of the customer. It may sound a bit confusing, but I’ll explain everything soon:</p>
+<pre lang="csharp">
+NorthwindDataContext db = new NorthwindDataContext();
+
+var queryBuilder = Linq.Func
+  ((Expression&lt;Func&lt;Customer, string&gt;&gt; selector, string val) =&gt;
+      from c in db.Customers.ToExpandable()
+      where selector.Expand(c).IndexOf(val) != -1
+      select c);
+</pre>
+<p>Before digging deeper, let’s look how the queryBuilder function can be used:</p>
+<pre lang="csharp">
+var q = queryBuilder(c =&gt; c.CompanyName, "ab");
+foreach (var cust in q)
+  Console.WriteLine(cust);
+</pre>
+<p>So what exactly happens here? We built a function (or maybe parameterized query would be better name) called <code>queryBuilder</code> 
+  that has two arguments. The second argument is a value that the user entered and the first argument is a lambda expression 
+  (named <code>selector</code>) that specifies what property of the <code>Customer</code> type we want to look for – when we give it an anonymous method 
+  that returns company name of a customer as an argument it will build a query that returns all customers with the specified company name.</p>
+  
+<p>When you run the code, it executes the <code>queryBuilder</code> function with the lambda expression reading company name and a value 
+  “ab”. The <code>queryBuilder</code> then returns a query that calls the lambda expression using the <code>Expand</code> method which I talked about 
+  earlier (in <strong>Linq Utilities #1</strong>). It is also important to note that the query uses the <code>ToExpandable</code> method, because this has to 
+  be present anywhere where we want to use <code>Expand</code> to call some lambda expression in a LINQ query.</p>
+  
+<p>Let’s now finish the sample and write a code that actually allows user to choose how he wants to query the <code>Customers</code> data table:</p>
+<pre lang="csharp">
+var dict = new Dictionary&lt;string, Expression&lt;Func&lt;Customer, string&gt;&gt;&gt; 
+  { { "CompanyName", c =&gt; c.CompanyName },
+    { "Country",     c =&gt; c.Country },
+    { "ContactName", c =&gt; c.ContactName } };
+
+// Get the input from the user
+Console.Write("Filter - field name (CompanyName, ContactName, Country):\n&gt; ");
+string field = Console.ReadLine();
+
+Console.Write("Filter - value:\n&gt; ");
+string value = Console.ReadLine();
+
+// Build the query using query builder and run it
+var q = queryBuilder(dict[field], value);
+foreach (var cust in q)
+  Console.WriteLine(cust);
+</pre>
+<p>The application (just a simple console program) creates a dictionary that contains string as a key and a lambda 
+  expression for reading specific properties of a customer as a value. When user enters a string representing the 
+  property, it looks it up in the dictionary and gets a lambda expression that can be given as an argument to our 
+  parameterized query declared earlier. And that’s all! You could very easily use the same principle in a Windows 
+  Forms applications and let user select the property for example from a drop down list, which is probably the most 
+  common scenario for building LINQ queries at runtime.</p>
+
+<h2>Dynamic Queries #2: Combining Functions Using “OR” and “AND”</h2>
+<p>In this example, we will write slightly more complex application that builds LINQ query dynamically.
+  It will allow user to choose if he wants to combine several criteria using <code>AND</code> or <code>OR</code>
+  logical operator and then enter the values to find for every property (again, we use <code>Customer</code> 
+  table from a Northwind database). This means that the user we will be able to enter queries like <code>(CompanyName = "Google") OR 
+  (Country = "Czech Republic")</code> or <code>(CompanyName = "Microsoft") AND (Country = "USA")</code>. The key aspect in
+  this example is that query is combined from several basic conditions without knowing the number of these conditions in advance, 
+  so this principle could be used when you want to allow the user to add any number of conditions he wants.
+</p>
+<p>We will again need a dictionary for mapping string (entered by the user) to a lambda expression returning
+  the property of the <code>Customer</code> object. To make the code a bit more readable then in the previous example
+  we will define an abbreviation for this rather complex type, which can be done thanks to the C# <code>using</code> construct
+  (unfortunately there are a few limitations, so we have to use fully qualified namespace names):
+  </p>
+<pre lang="csharp">
+using CustomerPropSelector = System.Linq.Expressions
+  .Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, string&gt;&gt;;
+</pre>
+<p>Now we can use the <code>CustomerPropSelector</code> type as a value in a dictionary (it is actually the
+  same dictionary as the one we used in the previous example):</p>
+<pre lang="csharp">
+NorthwindDataContext db = new NorthwindDataContext();
+var dict = new Dictionary&lt;string, CustomerPropSelector&gt; 
+   { { "CompanyName", c =&gt; c.CompanyName },
+     { "Country",     c =&gt; c.Country },
+     { "ContactName", c =&gt; c.ContactName } };
+</pre>
+<p>The next type abbreviation that we will use in the code will represent a condition telling whether
+  specified customer matches the specified criteria or not. The condition is a lambda expression
+  taking a <code>Customer</code> object as an argument and returning a boolean value:</p>
+<pre lang="csharp">
+using CustomerCondition = System.Linq.Expressions
+  .Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;;
+</pre>
+<p>We can now define two primitive conditions that we will need later - to define a condition
+  we use the C# anonymous function syntax, so you can easily write a condition that for example
+  tests whether a customer is from UK or something like that. The two primitive conditions that we need
+  are however really trivial - one of them returns <code>true</code> for every customer and the other <code>false</code>:  </p>
+<pre lang="csharp">
+CustomerCondition trueCond  = (c) =&gt; true;
+CustomerCondition falseCond = (c) =&gt; false;
+</pre>
+<p>Now, we will need a way for combining two conditions, so we can write a <em>combinator</em> that can be used
+  to produce a condition from two of them. We will use two such combinators later. One will be <code>OR</code> which 
+  takes two conditions and returns <code>true</code> when any of them returns <code>true</code> and the other
+  will be <code>AND</code> which will return <code>true</code> when both conditions return <code>true</code>, 
+  as you would expect. The interesting is the type of these combinators - it is a function taking two conditions
+  and returning a condition as a result, so we could write them as <code>Func&lt;CustomerCondition, CustomerCondition, CustomerCondition&gt;</code>.
+  Unfortunately, the C# <code>using</code> statement doesn't allow using nested abbreviations, so we have to 
+  replace <code>CustomerCondition</code> in the previous type and we'll get somewhat ugly type:
+</p>
+
+<pre lang="csharp">
+using CustomerConditionCombinator = 
+  System.Func&lt;System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;, 
+              System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;, 
+              System.Linq.Expressions.Expression&lt;System.Func&lt;EeekSoft.LinqDemos.Customer, bool&gt;&gt;&gt;;
+</pre>
+<p>Despite the fact that C# forces us to write this in a really ugly way, it isn't that difficult to understand what it actually does - 
+  it just takes two conditions (which are actually lambda expressions returning a boolean value when given 
+  <code>Customer</code> as an argument) and returns a condition that can call these two conditions and produces 
+  boolean as a result, very likely by performing some logical operation on the values
+  returned by these two conditions. We can now write two basic combinators for logical <code>OR</code> and <code>AND</code>.
+  The combinator receives two conditions (<code>f</code> and <code>g</code>) as arguments, and returns a
+  new lambda expression as the result. This lambda expression takes a <code>Customer</code> value as an argument,
+  calls the two conditions using the <code>Expand</code> method and performs the logical operation on the result: </p>
+<pre lang="csharp">
+CustomerConditionCombinator combineOr = 
+  (f, g) =&gt; (c) =&gt; f.Expand(c) || g.Expand(c);
+
+CustomerConditionCombinator combineAnd = 
+  (f, g) =&gt; (c) =&gt; f.Expand(c) &amp;&amp; g.Expand(c);
+</pre>
+
+<p>Now we have everything we need to finally start building the query! Let me first demonstrate how we can
+  build a query using the <code>combineOr</code> combinator from two simple conditions, one testing whether
+  the customer is from UK and the other testing if it's from Seattle:</p>
+<pre lang="csharp">
+// Define two simple conditions first
+CustomerCondition isUk = (c) =&gt; c.Country == "UK";
+CustomerCondition isSeattle = (c) =&gt; c.City == "Seattle"
+
+// Combine the conditions using OR
+CustomerCondition expr = combineOr(isUk, isSeattle);
+
+// Build a query (using 'Expand' and 'ToExpandable')
+var q = from c in db.Customers.ToExpandable()
+        where expr.Expand(c) select c;
+</pre>
+<p>If you run this example, it will indeed return all customers that are either from UK or live in Seattle.
+  Note that we still have to use the <code>Expand</code> to call the condition we built in the 
+  LINQ query and it is also important not to forget the <code>ToExpandable</code> call, otherwise the “LINQ to SQL”
+  will give an error message that it doesn't understand the query. </p>
+<p>Let's now move to the final example - here we will actually let user construct a query he wants. Let's assume
+  we have a value <code>generateOr</code> saying if we want to build a query by combinating several conditions using
+  <code>OR</code> or using <code>AND</code>. To build a query we will start with one of our primitive conditions and
+  add a condition using the combinator for every property of the customer. This means that when combining conditions
+  using <code>OR</code> we will start with a query representing <code>"false"</code>, than we will append first condition
+  and get something like <code>"(false || cond1)"</code>, after adding second condition we will get
+  <code>"(false || cond1) || cond2"</code> and so on. You can see that when building a sequence of 
+  <code>OR</code>s we need to start with <code>falseCond</code>, so that the condition returns <code>true</code> only
+  when any of the conditions succeeds and when building sequence of <code>AND</code>s, we have to start with <code>trueCond</code>, 
+  so that the condition succeeds when all conditions return <code>true</code>.</p>
+<p>The code to build a condition in the way described in the previous paragraph can be written as a <code>foreach</code> loop
+  (working with the <code>KeyValuePair</code> from the dictionary declared above) that modifies the variable
+  holding the current expression (<code>expr</code>) in every iteration:</p>
+<pre lang="csharp">
+// Select the combinator and initial condition
+CustomerConditionCombinator combinator = 
+  generateOr ? combineOr : combineAnd;
+CustomerCondition expr = 
+  generateOr ? falseCond : trueCond;
+  
+// Loop over all properties in the dictionary  
+foreach (var item in dict)
+{
+  // Read the value from the user
+  Console.Write("Enter value for '{0}':\n&gt; ", item.Key);
+  string enteredVal = Console.ReadLine();
+  CustomerPropSelector propSelector = item.Value;
+  
+  // Build a condition testing whether entered value is a substring
+  CustomerCondition currentCond = (c) =&gt; 
+    propSelector.Expand(c).IndexOf(enteredVal) != -1;
+    
+  // Finally, combine expressions using the combinator
+  expr = combinator(expr, currentCond);
+}
+</pre>
+<p>Since C# 3.0 and LINQ in general use some of the concepts from functional programming, we can actually used
+  one nice functional trick to write the code in a slightly shorter and less error-prone way. We can use
+  a query operator called <code>Fold</code> (it was part of the LINQ in earlier version, but it seems to be missing
+  now, so I added it to my LINQ Extensions [<a href="#dynqlinks">3</a>] project). What does this operation do?
+  It takes some initial value and runs a specified function to combine the value with every element in the 
+  sequence step by step. In our case the initial value is a condition (either <code>trueCond</code> or <code>falseCond</code>)
+  and the function to combine values is essentially the body of the <code>foreach</code> loop. This means that
+  function will ask user for the value and return the value newly produced by the combinator:</p>
+  
+<pre lang="csharp">
+CustomerConditionCombinator combinator = 
+  generateOr ? combineOr : combineAnd;
+
+// Build expression using the 'Fold' aggregate operator
+var expr = dict.Fold((e, item) =&gt; {
+    // Read the value from the user
+    Console.Write("Enter value for '{0}':\n&gt; ", item.Key);
+    string enteredVal = Console.ReadLine();
+    CustomerPropSelector propSelector = item.Value;    
+    
+    // Build a condition testing whether entered value is a substring
+    CustomerCondition currentCond = (c) =&gt; 
+      propSelector.Expand(c).IndexOf(enteredVal) != -1;
+      
+    // Finally, return the combined expression
+    return combinator(e, currentCond); 
+  }, generateOr ? falseCond : trueCond);
+</pre>
+
+<p>Finally, we can use a simple LINQ query to run the generated condition (<code>expr</code> variable) - as mentioned in 
+  other places of this article, we can call it using <code>Expand</code> and we shouldn't forgot <code>ToExpandable</code>
+  call which processes our combined expression before calling the “LINQ to SQL” translator:</p>
+<pre lang="csharp">
+var q = from c in db.Customers.ToExpandable()
+        where expr.Expand(c) select c;
+</pre>
+<h2>Summary</h2>
+<p>I hope this article convinced you that there is quite reasonable way for building queries dynamically at runtime in LINQ,
+  which is much safer and less error-prone than building a string. Even though it may look complicated at the beginning after
+  defining a few primitive constructs the code for building queries looks reasonable and is also extensible, so you're not limited
+  to combining conditions sequentially using only two operators as I demonstrated in the example, in fact it could be easily
+  modified to build for example a tree representing more complex logical combinations of conditions.
+  To run this code you'll need a few (not very difficult to write, but important) extensions that are part of my LINQ Extensions
+  project available at CodePlex. Finally, I'd like to give a credit to the authors of the F# language where this kind of expression
+  processing is natively supported, because without my experiences with F# I probably wouldn't think of building queries in a way
+  I present it in this article.
+  </p>
+
+<h2>Downloads and Related Links<a name="dynqlinks"></a></h2>
+<ul>
+<li><a href="/articles/dynamic-linq-queries/sources.zip">Download the examples</a> (51 kB)</li>
+</ul>
+<ul>
+  <li>[1] <a href="http://209.85.135.104/search?hl=en&amp;q=cache%3Ahttp%3A%2F%2Fforums.microsoft.com%2FMSDN%2FShowPost.aspx%3FPostID%3D1752078%26SiteID%3D1">Dynamic SQL and LINQ, Post by Anders Hejlsberg</a>
+    [<a href="http://209.85.135.104/search?hl=en&amp;q=cache%3Ahttp%3A%2F%2Fforums.microsoft.com%2FMSDN%2FShowPost.aspx%3FPostID%3D1752078%26SiteID%3D1" target="_blank">^</a>] - MSDN Forums - LINQ</li>
+  <li>[2] <a href="http://tomasp.net/blog/linq-expand.aspx">Calling functions in LINQ queries</a>
+    [<a href="http://tomasp.net/blog/linq-expand.aspx">^</a>] - Blog | TomasP.Net</li>    
+  <li>[3] <a href="http://www.codeplex.com/linqextensions">LINQ Extensions</a>
+    [<a href="http://www.codeplex.com/linqextensions" target="_blank">^</a>] - CodePlex</li>
+</ul>

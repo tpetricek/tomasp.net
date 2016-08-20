@@ -1,0 +1,178 @@
+<!-- [info]
+
+ - date: 2011-11-02T02:30:26.0000000
+ - description: This article is the first article of a series where I'll explain some of the F# features that are useful for numeric computing as well as some functionality from the F# PowerPack library.
+ - tags: functional,f#,writing,math and numerics
+ - layout: post
+ - title: F# Math - Numerical computing and F# PowerPack
+ - url: powerpack-introduction.aspx
+
+[/info] -->
+<!-- [abstract]
+<img src="http://tomasp.net/articles/powerpack-series/z5snip.png" style="float:right;margin:0px 0px 5px 15px" />
+<p>This article is the first article of a series where I'll explain some of the
+  F# features that are useful for numeric computing as well as some functionality from 
+  the F# PowerPack library. Most of the content was originally written for 
+  the <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numerical Computing in F#</a> chapter on MSDN (that I 
+  <a href="http://tomasp.net/blog/real-world-book-msdn.aspx">announced earlier</a>), 
+  but then we decided to focus on using F# with third party libraries that provide more
+  efficient implementation and richer set of standard numeric functionality that's 
+  needed when implementing machine learning and probabilistic algorithms or performing 
+  statistical analysis. If you're interested in these topics, then the last section 
+  (below) gives links to the important MSDN articles.</p>
+
+<p>However, F# PowerPack still contains some useful functionality. It includes two
+  additional numeric types and an implementation of matrix that integrates nicely
+  with F#. The series also demonstrates how to use features of the F# language 
+  (and core libraries) to write numeric code elegantly. In particular, we'll use the
+  following aspects:</p>
+
+<ul class="spaces">
+  <li><strong>Overloaded operators.</strong> Any type can provide overloaded version of standard numeric 
+    operators such as +, -, * and / as well as other non-standard operators (such as .*). 
+    As a result, libraries can implement their own numeric types which are 
+    indistinguishable from built-in types such as int.</li>
+
+  <li><strong>Numeric literals.</strong> F# math libraries can enable using new numeric literals in the code. For example, you can 
+    write a <code>BigRational</code> value representing one third as <code>1N/3N</code>. The <code>N</code> suffix used in the 
+    notation is not hardcoded in the F# language and we'll see how to define similar 
+    numeric type.</li>
+
+  <li><strong>Static constraints.</strong> F# supports static member constraints, which can be used for writing functions that 
+    work with any numeric type. For example, the <code>List.sum</code> function uses this feature. It 
+    can sum elements of any list containing numbers.</li>
+</ul>
+
+<p>
+These are just a few of the F# language features that are useful when writing numeric code, but
+there are many others. The usual F# development style using interactive tools, type safety that
+prevents common errors, units of measure as well the expressivity of F# make it a great tool for
+writing numeric code. For more information, take a look at the MSDN overview article 
+<a href="http://msdn.microsoft.com/en-us/library/hh304366.aspx">Writing Succinct and Correct Numerical Computations with F#</a>.
+</p>
+[/abstract] -->
+
+<h1>F# Math - Numerical computing and F# PowerPack</h1>
+<img src="http://tomasp.net/articles/powerpack-series/z5snip.png" style="float:right;margin:0px 0px 5px 15px" />
+<p>This article is the first article of a series where I'll explain some of the
+  F# features that are useful for numeric computing as well as some functionality from 
+  the F# PowerPack library. Most of the content was originally written for 
+  the <a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numerical Computing in F#</a> chapter on MSDN (that I 
+  <a href="http://tomasp.net/blog/real-world-book-msdn.aspx">announced earlier</a>), 
+  but then we decided to focus on using F# with third party libraries that provide more
+  efficient implementation and richer set of standard numeric functionality that's 
+  needed when implementing machine learning and probabilistic algorithms or performing 
+  statistical analysis. If you're interested in these topics, then the last section 
+  (below) gives links to the important MSDN articles.</p>
+
+<p>However, F# PowerPack still contains some useful functionality. It includes two
+  additional numeric types and an implementation of matrix that integrates nicely
+  with F#. The series also demonstrates how to use features of the F# language 
+  (and core libraries) to write numeric code elegantly. In particular, we'll use the
+  following aspects:</p>
+
+<ul class="spaces">
+  <li><strong>Overloaded operators.</strong> Any type can provide overloaded version of standard numeric 
+    operators such as +, -, * and / as well as other non-standard operators (such as .*). 
+    As a result, libraries can implement their own numeric types which are 
+    indistinguishable from built-in types such as int.</li>
+
+  <li><strong>Numeric literals.</strong> F# math libraries can enable using new numeric literals in the code. For example, you can 
+    write a <code>BigRational</code> value representing one third as <code>1N/3N</code>. The <code>N</code> suffix used in the 
+    notation is not hardcoded in the F# language and we'll see how to define similar 
+    numeric type.</li>
+
+  <li><strong>Static constraints.</strong> F# supports static member constraints, which can be used for writing functions that 
+    work with any numeric type. For example, the <code>List.sum</code> function uses this feature. It 
+    can sum elements of any list containing numbers.</li>
+</ul>
+
+<p>
+These are just a few of the F# language features that are useful when writing numeric code, but
+there are many others. The usual F# development style using interactive tools, type safety that
+prevents common errors, units of measure as well the expressivity of F# make it a great tool for
+writing numeric code. For more information, take a look at the MSDN overview article 
+<a href="http://msdn.microsoft.com/en-us/library/hh304366.aspx">Writing Succinct and Correct Numerical Computations with F#</a>.
+</p>
+
+<h2>Numerical computing and F# PowerPack</h2>
+
+<p>If you're looking for information about other PowerPack components,
+  then Daniel Mohl (<a href="http://twitter.com/dmohl">@@dmohl</a>) wrote a series that covers
+  numerical types and modules (<a href="http://bloggemdano.blogspot.com/2011/08/getting-started-with-f-powerpack.html">Part 1</a>),
+  asynchronous extensions (<a href="http://bloggemdano.blogspot.com/2011/08/getting-started-with-f-powerpack-part-2.html">Part 2</a>),
+  additional collection types (<a href="http://bloggemdano.blogspot.com/2011/08/getting-started-with-f-powerpack-part-3.html">Part 3</a>),
+  as well as lexing, parsing and SI units (<a href="http://bloggemdano.blogspot.com/2011/09/getting-started-with-f-powerpack-part-4.html">Part 4</a>).</p>
+
+<p>In this article series, we look at most of the numerical computing features provided by 
+  the F# PowerPack library. The following list shows the upcoming articles of the series:</p>
+
+<ul class="spaces">
+  <li><h3><a href="http://tomasp.net/blog/powerpack-numeric.aspx">F# Math (I.) - Numeric types in PowerPack</a></h3>
+    <p>The PowerPack library provides two additional numeric types. The type 
+    <code>BigRational</code> type represents arbitrary precision rational numbers and 
+    <code>complex</code> represents complex numbers. This article briefly demonstrates
+    both of the types. The version for .NET 2.0 also provides arbitrary size integers 
+    (which are available for .NET 4 in the <code>System.Numerics.dll</code> assembly).</p> </li>
+
+  <li><h3><a href="http://tomasp.net/blog/powerpack-matrix.aspx">F# Math (II.) - Using matrices for graph algorithms</a></h3>
+    <p>The <code>matrix</code> type can be used for working with matrices that store 
+    floating point numbers. It supports many of the common operations such as matrix 
+    multiplication, point-wise addition and others. There is also a generic variant of 
+    the type named <code>Matrix&lt;'T&gt;</code>, which can be used for working with matrices 
+    that contain values of type int or decimal.
+    This article demonstrates how to use the <code>matrix</code> type to represent
+    a graph using an <em>adjacency matrix</em> and how to calculate reachability in 
+    the graph.</p></li>
+
+  <li><h3><a href="http://tomasp.net/blog/fsharp-custom-numeric.aspx">F# Math (III.) - Defining custom numeric types</a></h3>
+    <p>This step-by-step tutorial shows how to define a numeric type that can be written
+      using a custom numeric literal and can be used with standard operators. The tutorial
+      also uses <code>GlobalAssociations</code> module from F# PowerPack to allow using 
+      the custom type as an element of F# <code>Matrix&lt;'T&gt;</code> type.</p></li>
+
+  <li><h3>F# Math (IV.) - Writing generic code &#160;<span style="font-size:80%; font-weight:normal;">(Not available yet)</span></h3>
+    <p>The article discusses two options for writing generic code that works with an
+    any numeric type (such as <code>float</code> and <code>complex</code>). The first approach
+    is based on F# <em>static member constraints</em> and the second is based on the 
+    <code>GlobalAssociations</code> module from F# PowerPack. In this article, we compare
+    both options and discuss which approach is preferable in what cases.</p></li>
+</ul>
+
+<h2>Numerical Computing in F# (MSDN)</h2>
+<p>As already mentioned, F# PowerPack provides only basic implementation of matrices, which
+  is not suitable for tasks that require efficient matrix multiplication. The library also
+  does not implement any advanced operations such matrix decomposition or any support for 
+  working with probability distributions or statistical analysis.</p>
+
+<p>If you're interested in writing highly-efficient numeric code in F#, then it is recommended
+  to use a third-party library (such as open-source <a href="http://mathnetnumerics.codeplex.com/">Math.NET Numerics</a>) that
+  provide more efficient implementation and wider range of features. The MSDN section 
+  <a href="TBD">Introduction to Numerical Computing in F#</a> provides more information
+  including a review of existing libraries. It also includes examples that demonstrate the 
+  following three options:</p>
+
+<ul class="spaces">
+  <li><h3><a href="http://msdn.microsoft.com/en-us/library/hh304363.aspx">Tutorial: Using Math.NET Numerics in F#</a></h3>
+    <p>Math.NET Numerics aims to be the standard open source math library for .NET Framework. It is 
+    released under the MIT license and so it can be used in both commercial and non-commercial projects, 
+    as well as modified and redistributed. This tutorial gives an introduction on how to use the 
+    various components of this library. </p></li>
+
+  <li><h3><a href="http://msdn.microsoft.com/en-us/library/hh304371.aspx">Tutorial: Using Microsoft Sho in F#</a></h3>
+    <p>Microsoft Sho is a numerical computing platform with support for linear algebra, optimization, 
+    and visualization. This article gives an introduction to Sho and shows how to call its .NET 
+    libraries from F#.</p></li>
+
+  <li><h3><a href="http://msdn.microsoft.com/en-us/library/hh304365.aspx">Tutorial: Using the F# PowerPack and the F# MathProvider</a></h3>
+    <p>The F# PowerPack provides types for vectors and matrices, and the F# MathProvider supports 
+    linear algebra operations on these types. This article presents an introduction to the two libraries.</p></li>
+</ul>
+
+
+<h2>References &amp; Links</h2>
+<ul>
+  <li><a href="http://fsharppowerpack.codeplex.com/">F# PowerPack</a> (source code and binary packages) - CodePlex</li>
+  <li><a href="http://msdn.microsoft.com/en-us/library/hh273075.aspx">Numeric Computing</a> - Real World Functional Programming on MSDN</li>
+  <li><a href="http://bloggemdano.blogspot.com/2011/08/getting-started-with-f-powerpack.html">Getting Started with the F# PowerPack</a> (first article of four part series) - Daniel Mohl</li>
+</ul>
