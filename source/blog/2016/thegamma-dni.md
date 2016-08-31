@@ -1,4 +1,4 @@
-The Gamma and Digital News Innovation Fund
+﻿The Gamma and Digital News Innovation Fund
 ==========================================
 
  - date: 2016-08-31T14:38:26.4848325+02:00
@@ -9,7 +9,7 @@ The Gamma and Digital News Innovation Fund
     DNI Innovation Fund and I'll be working on this topic over the next year at the Alan Turing
     Institute in London.
  - layout: post
- - image: http://tomasp.net/blog/2016/thegamma-dni/dni-logo.png
+ - image: http://tomasp.net/blog/2016/thegamma-dni/dni-square.png
  - tags: thegamma,data journalism,programming languages
  - title: Philosophical questions about programming
  
