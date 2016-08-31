@@ -28,7 +28,7 @@ your outcome is very often a report or a _story_ that aims to influence people's
 company decisions. No matter whether you are a journalist writing an article about government
 spending or an analyst producing internal sales reports, you are _telling stories with data_.
 
-Being able to tell stories with data (but also verify and asses other people's stories that 
+Being able to tell stories with data (but also verify and assess other people's stories that 
 can be backed by data) is becoming a vital skill in the modern world, which is partly why I find
 this topic extremely important and interesting. But to do this currently, you need to be a 
 skilled programmer, great designer and good storyteller, all at the same time!
