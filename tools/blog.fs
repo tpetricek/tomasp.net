@@ -156,8 +156,8 @@ let generateRss target (cfg:SiteConfig) title description posts =
         XElement
           ( !"item", 
             XElement(!"title", item.Title),
-            XElement(!"guid", cfg.Root + "/blog/" + item.Url),
-            XElement(!"link", cfg.Root + "/blog/" + item.Url + "/index.html"),
+            XElement(!"guid", item.Url),
+            XElement(!"link", item.Url),
             XElement(!"pubDate", item.Date.ToUniversalTime().ToString("r")),
             XElement(!"description", (item.Abstract:string)) ) |]
   let channel = 
