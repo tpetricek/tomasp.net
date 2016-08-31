@@ -15,7 +15,7 @@
  
 --------------------------------------------------------------------------------
 
-Last year, I wrote about a bit about my interest in [building programming tools for data 
+Last year, I wrote a bit about my interest in [building programming tools for data 
 journalism](http://tomasp.net/blog/2015/thegamma/). Data journalism might sound like a niche 
 field, but that is not the case if we talk about data-driven storytelling more generally,
 
