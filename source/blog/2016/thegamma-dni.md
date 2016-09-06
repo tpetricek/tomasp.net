@@ -192,24 +192,3 @@ I will be writing about the project I did on [Visualizing Olympic
 Medalists](http://rio2016.thegamma.net/) - this is an early version showing some of the
 ideas of what I'd like to build as part of The Gamma (with all source code available
 [on GitHub](https://github.com/the-gamma))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-~
