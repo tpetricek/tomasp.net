@@ -28,6 +28,7 @@ our thinking or scientific method on different basic principles?
 ## Draft and more information
 
  - Download [the PPIG 2016 paper (PDF)](unthinkable-ppig.pdf)
+ - [Talk slides](http://tpetricek.github.io/Talks/2016/unthinkable/ppig/) from PPIG 2016
 
 ## Comments are welcome!
 

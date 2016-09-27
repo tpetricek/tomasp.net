@@ -11,7 +11,7 @@
  - layout: post
  - image: http://tomasp.net/blog/2016/thegamma-dni/dni-square.png
  - tags: thegamma,data journalism,programming languages
- - title: Philosophical questions about programming
+ - title: The Gamma and Digital News Innovation Fund
  
 --------------------------------------------------------------------------------
 
