@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Can programming be liberated from function abstraction? - Tomas Petricek</title>
+
+  <meta name="description" content=" Functions are the reason why many nice features become hard or impossible to implement.
+Functions make type inference hard and they make it impossible to use tools that rely on
+manipulation with concrete values - because functions introduce names with unknown values
+and types. Can we take inspiration from spreadsheet programming and build alternative
+abstraction mechanism that does not introduce this problematic property?" />
+  <meta name="keywords" content="thegamma, research, programming languages, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Can programming be liberated from function abstraction?" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2016/no-functions/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2016/no-functions/lambda.png" />
+  <meta property="og:description" content=" Functions are the reason why many nice features become hard or impossible to implement.
+Functions make type inference hard and they make it impossible to use tools that rely on
+manipulation with concrete values - because functions introduce names with unknown values
+and types. Can we take inspiration from spreadsheet programming and build alternative
+abstraction mechanism that does not introduce this problematic property?" />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Can programming be liberated from function abstraction?" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2016/no-functions/lambda.png" />
+  <meta name="twitter:description" content=" Functions are the reason why many nice features become hard or impossible to implement.
+Functions make type inference hard and they make it impossible to use tools that rely on
+manipulation with concrete values - because functions introduce names with unknown values
+and types. Can we take inspiration from spreadsheet programming and build alternative
+abstraction mechanism that does not introduce this problematic property?" />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Can programming be liberated from function abstraction?",
+    "headline": "Can programming be liberated from function abstraction?",
+  	"description": " Functions are the reason why many nice features become hard or impossible to implement.
+Functions make type inference hard and they make it impossible to use tools that rely on
+manipulation with concrete values - because functions introduce names with unknown values
+and types. Can we take inspiration from spreadsheet programming and build alternative
+abstraction mechanism that does not introduce this problematic property?",
+  	"url": "http://tomasp.net/blog/2016/no-functions/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2016-09-27T16:53:32.8941805+01:00",
+  	"datePublished": "2016-09-27T16:53:32.8941805+01:00",
+    "dateModified": "2016-09-27T16:53:32.8941805+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2016/no-functions/",
+  	"image": "http://tomasp.net/blog/2016/no-functions/lambda.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2016/no-functions/lambda.png",
+  	"keywords": ["thegamma", "research", "programming languages",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-soruce libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming langauges, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-soruce projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper hidden-xs-home">
+  <nav>
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com"><span class="hidden-sm">F#</span> Trainings</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Talks<span class="hidden-sm"> and books</span></a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/" class="last-left">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article class="post">
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Can programming be liberated from function abstraction?</h1>
+<img src="http://tomasp.net/blog/2016/no-functions/lambda.png" style="width:180px" class="rdecor" />
+<p>When you start working in the programming language theory business, you'll soon find out that
+lambda abstraction and functions break many nice ideas or, at least, make your life very hard.
+For example, type inference is easy if you only have <code>var x = ...</code>, but it gets hard once you
+want to infer type of <code>x</code> in something like <code>fun x -&gt; ...</code> because we do not know what is
+assigned to <code>x</code>. Distributed programming is another example - sending around data is easy, but
+once you start sending around function values, things become hard.</p>
+<p>Every programming language researcher soon learns this trick. When someone tells you about a nice
+idea, you reply <em>"Interesting... but how does this interact with lambda abstraction?"</em> and the
+other person replies <em>"Whoa, hmm, let me think more about this."</em> Then they go back and either give up,
+because it does not work, or produce something that works, in theory, well with lambda abstraction,
+but is otherwise quite unusable.</p>
+<p>When working on <a href="http://tomasp.net/blog/2016/thegamma-olympic-medalists">The Gamma project</a> and the
+little <a href="github.com/the-gamma/thegamma-script">scripting language it runs</a>, I recently went through
+a similar thinking process. Instead of letting lambda abstraction spoil the party <em>again</em>,
+I think we need to think about different ways of code reuse.</p>
+<h2>On not adding functions to The Gamma</h2>
+<p>I wrote about <a href="http://tomasp.net/blog/2016/thegamma-dni">The Gamma project</a> in the last blog post.
+The goal of the project is to build easy to use programming tools that can be used to build
+open and reproducible data-driven stories. Rather than including a chart in an article, you should
+be able to embed a piece of code that <em>gets the data</em> and <em>creates the chart</em>. This way, anyone
+can see how the data is processed and can also modify and reuse the code. The <a href="http://tomasp.net/blog/2016/thegamma-olympic-medalists/">Olympic medalists
+visualization</a> illustrates the ideas.</p>
+<p>The Gamma implements a <a href="https://github.com/the-gamma/thegamma-script">simple programming language</a>
+that runs in the web browser and lets you get the data and build visualizations. It uses type
+providers for integrating data into the language. In the Olympics visualization, you can get all
+US and UK medalists for marathon as follows:</p>
+<div class="imgbox">
+  <img src="blog-1.gif" style="display:none" id="img1a" />
+  <img src="blog-1-still.gif" class="imgvid" id="img1b" /><br />
+  (<a href="blog-1.gif" target="_blank">Open the image in a new window</a>)<!--_ -->
+</div>
+<p>The example shows a case where we might want to use a function to avoid code duplication. Rather
+than getting the medalists for the two countries and then filtering them by discipline <em>twice</em>,
+could we write a function to perform filtering by discipline and then call it with data for
+the two countries?</p>
+<p>The obvious answer is to add functions (either named or lambda functions). However, this would
+break many of the nice features that can work exactly because the language does not have functions.</p>
+<p>For the record, I'm mainly thinking about scripting and data analytics and so if you read this
+article with data analytics in mind, it might make more sense. That said, I think the same ideas
+would apply to "complex systems" - it just requires more imagination.</p>
+<h2>What is wrong with function abstraction</h2>
+<p>Let me go through two examples that illustrate some of the problems with function abstraction.
+The first one will be using the <a href="http://fsharp.github.io/FSharp.Data/library/WorldBank.html">World Bank type provider</a>
+in F# Data and it illustrates difficulties with <em>types</em>. The second one is using the Chrome
+JavaScript console and illustrates difficulties with <em>values</em>.</p>
+<h3>How functions break type-based tooling</h3>
+<p>The World Bank type provider lets you easily access information about countries from F#. The
+type provider imports country names and available indicators into the <em>type system</em> and so you
+can find available data just by typing <code>.</code>. This works beautifully in scripts, but what if
+we want to remove code duplication and write a function that returns the GDP (in current
+US dollars) for a given country in a given year? This is not so easy:</p>
+<div class="imgbox">
+  <img src="blog-2.gif" style="display:none" id="img2a" />
+  <img src="blog-2-still.gif" class="imgvid" id="img2b" /><br />
+  (<a href="blog-2.gif" target="_blank">Open the image in a new window</a>)<!--_ -->
+</div>
+<p>When you define a function taking <code>country</code> and try access the members using <code>.</code>, F# will only
+offer you members that all .NET objects have. This is not very useful. Now, there is a number
+of options that we have:</p>
+<ul>
+<li>
+<p>In F#, you can add a type annotation that specifies the type of <code>country</code>. With World Bank
+type provider, the provided type is somewhat hard to find, but it has a name and you can
+use it. This is harder with some type providers where types of entities do not have obvious
+names and so finding the right type for a type annotation is not something you'd want to do.</p>
+</li>
+<li>
+<p>In languages with structural type system, you could allow the user to access property of any
+name (say <code>GDP (current USD)</code>) and infer a type specifying that the <code>country</code> value needs to
+have this property. But this means the auto-completion cannot give you any useful hints and
+you'll only discover typos when you try calling the function - telling you that the name is
+actually <code>US$</code> and not <code>USD</code>.</p>
+</li>
+<li>
+<p>You could do some more fancy whole-program type inference and deduce the type of <code>getGdpInYear</code>
+from the later part of the code where you call the function, but this forces you to write the
+code in an odd order - you need to declare your function, then use it and then go back to
+actually implement it.</p>
+</li>
+</ul>
+<h3>How functions break value-based tooling</h3>
+<p>I think the F# example illustrates an issue that is not F#-specific, but in case it did not
+convince you, let's look at another example. This time, I'm using the Chrome developer console
+to extract title of a page and then I want to wrap it into a helper function <code>getTitle</code>:</p>
+<div class="imgbox">
+  <img src="blog-3.gif" style="display:none" id="img3a" />
+  <img src="blog-3-still.gif" class="imgvid" id="img3b" /><br />
+  (<a href="blog-3.gif" target="_blank">Open the image in a new window</a>)<!--_ -->
+</div>
+<p>Even though JavaScript is dynamic, Chrome developer tools can give you useful auto-completion
+hints. This seems to be based mostly on values. When you have a value <code>el</code> in scope and you type
+<code>el.</code> the auto-complete can just give you access to all members of the object. Chrome also uses
+various heuristic hints (like name of the variable) and so it sometimes gives you more (or less)
+useful hints on other variables.</p>
+<p>Is there any chance for making value-based auto-completion to work in presence of functions?
+I think the best that can be done will inevitably rely on making a best guess. This also means
+that we do not get other nice things that are possible when we know values of every variable in
+scope that various live programming systems have
+(like <a href="http://research.microsoft.com/en-us/um/people/smcdirm/apx/">Sean McDirmid's work</a>
+or <a href="http://www.pythontutor.com/">Python tutor</a> project).</p>
+<p>In the F# example, the problem with functions is that we do not know the <em>type</em> of their arguments.
+In the JavaScript example, the problem is that we do not know the <em>value</em> of their arguments. With
+types, you can give the type explicitly (via annotation). With values, you could give a sample
+value for primitives (numbers or strings), but I doubt this can be done in a usable way for
+complex values (say, a chart skeleton).</p>
+<h2>Abstraction without functions</h2>
+<p>Looking at the vertical scroll bar, I'm sure you're wondering when am I finally going to offer my
+alternative solution to this problem. How can we program in a reasonable way without a mechanism
+similar to functions? I do not have a clear answer, but there is one programming system that
+has all the properties I would like regular programming languages to have:</p>
+<ol>
+<li>When you have a variable, you always know what is its type and value</li>
+<li>You can reuse existing piece of code and apply it to multiple inputs</li>
+</ol>
+<h3>Formula abstraction in Excel</h3>
+<p>The one programming tool that has both of these properties is Excel. You might not think about
+Excel as a programming language, but <a href="https://vimeo.com/145492419">in many ways, it is one</a>.
+The following example illustrates how "abstraction" works in excel. I want to do a simple
+calculation over all rows of a table, so I write the calculation using one concrete value (row)
+and then "drag it down" to apply the same calculation on the whole table:</p>
+<div class="imgbox">
+  <img src="blog-4.gif" style="display:none" id="img4a" />
+  <img src="blog-4-still.gif" class="imgvidnb" id="img4b" /><br />
+  (<a href="blog-4.gif" target="_blank">Open the image in a new window</a>)<!--_ -->
+</div>
+<p>Excel spreadsheets have many issues, but I think the way it lets you apply the same computation
+on multiple inputs while <em>always</em> working with <em>concrete, relevant values</em> is one thing that it
+does amazingly well. The Excel feature does have good and bad aspects:</p>
+<ul>
+<li>
+<p>The formula in the above example is copied and the reference to the original one is lost,
+so changing the formula in all rows of the table is error-prone.</p>
+</li>
+<li>
+<p>If you mark the data as table explicitly, Excel will let you refer to columns using the <code>[@Rate]</code>
+syntax, which makes the formulas nicer and it also automatically extends the formula over all
+rows, but this works because spreadsheets are dealing with a fairly simple grid.</p>
+</li>
+</ul>
+<h3>From spreadsheets to general-purpose programming</h3>
+<p>I do not think any programming language achieves quite the same experience as Excel. In the above
+example, Excel works so nicely because you never work with a name that does not have a
+concrete value. You can only refer to cells using their index (B4 or C4) and those always have
+valid values.</p>
+<ul>
+<li>
+<p>In the Haskell <a href="https://wiki.haskell.org/Pointfree">point-free style</a>,
+you can write <code>(sum .) . zipWith (*)</code> with no names (aside from known functions). Here, we are
+not transforming values, but instead composing a function. There are no concrete values <em>at all</em>.
+You might like this style for many reasons, but it does not make it possible to get the nice
+programming tooling that that you get with <code>.</code> when you know the value of an object.</p>
+</li>
+<li>
+<p>Language that is perhaps the closest to this idea is Smalltalk with its runtime system
+where you work with concrete objects (values) and you modify them live. However, in Smalltalk,
+this works good at the entire-system level, but it is not (as far as I'm aware) used that much
+when it comes to writing code at message-level.</p>
+</li>
+<li>
+<p>A possibly related design point is LINQ in C# and <a href="https://msdn.microsoft.com/en-us/library/bb384667.aspx">especially in Visual
+Basic</a>. In VB, you start your query
+by specifying data source using <code>From</code> and then select members at the end using <code>Select</code>.
+According to a rumor I've heard, the original proposal was to use SQL-style with
+<code>Select .. From ..</code>, but there was no way to make the user experience as good as if the
+names refer to objects of known types.</p>
+</li>
+<li>
+<p>Interestingly, visual tools for UI design have similar problem. For example, tools for
+Silverlight have <a href="https://msdn.microsoft.com/en-us/library/ee341450(v=expression.40).aspx">elaborate methods for generating sample data</a>,
+so that when you design the UI, you are working with concrete values. But having to explicitly
+generate fake data does not sound like a reasonable general mechanism to me.</p>
+</li>
+</ul>
+<h2>Conclusions</h2>
+<p>The one principle that makes Excel's dragging of formulas work extremely nicely in contrast
+to functions in main-stream programming languages like F# and JavaScript is that the Excel
+abstraction mechanism never produces names without concrete values (or at least types).</p>
+<p>Could there be an abstraction mechanism that works nicely in a general-purpose programming
+language, which has the same property? Even though I have not yet implemented it, I think
+the answer is <em>yes</em>. I imagine you should be able to write data analytics script using
+concrete input and then attach name to it and specify which of the inputs can be overridden.
+This is something that we absolutely need for project like <a href="http://thegamma.net/">The Gamma</a>,
+which tries to make data exploration accessible to everyone, but there might be useful lessons
+for general purpose programming too. To keep an eye on future developments arond The Gamma, follow
+<a href="https://twitter.com/thegamma_net">@thegamma_net</a> on Twitter.</p>
+<style>
+.imgbox { padding:0px;margin:10px auto 10px auto;text-align:center; }
+.imgvid { max-width:100%;cursor:pointer;border:1px solid #d8d8d8;border-radius:6px;padding:10px;margin:0px auto 5px auto; }
+.imgvidnb { max-width:100%;cursor:pointer;border:1px solid white;border-radius:6px;padding:10px;margin:0px auto 5px auto; }
+</style>
+<script>
+function setupVid(i) {
+  var p = false;
+  document.getElementById("img" + i + "b").onclick = function() {
+    document.getElementById("img" + i + "b").src = 
+      p ? "blog-" + i + "-still.gif" : document.getElementById("img" + i + "a").src;
+    p = !p;
+  };  
+}
+setupVid(1);
+setupVid(2);
+setupVid(3);
+setupVid(4);
+</script>
+
+
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f&amp;text=Can+programming+be+liberated+from+function+abstraction%3fvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f&title=Can+programming+be+liberated+from+function+abstraction%3f">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Can%20programming%20be%20liberated%20from%20function%20abstraction%3f&body=%20Functions%20are%20the%20reason%20why%20many%20nice%20features%20become%20hard%20or%20impossible%20to%20implement.%0d%0aFunctions%20make%20type%20inference%20hard%20and%20they%20make%20it%20impossible%20to%20use%20tools%20that%20rely%20on%0d%0amanipulation%20with%20concrete%20values%20-%20because%20functions%20introduce%20names%20with%20unknown%20values%0d%0aand%20types.%20Can%20we%20take%20inspiration%20from%20spreadsheet%20programming%20and%20build%20alternative%0d%0aabstraction%20mechanism%20that%20does%20not%20introduce%20this%20problematic%20property%3f%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 27 September 2016, 4:53 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/thegamma/">thegamma</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under Apache 2.0.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    var small = (window.innerWidth * window.innerHeight) < 500000;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
+  </script>
+</body>
+</html>
