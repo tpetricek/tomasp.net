@@ -210,7 +210,7 @@ Error as the unavoidable: Let it crash
 <img src="http://tomasp.net/blog/2015/failures/hero3.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
 
 A group that takes a very different approach to errors is the Erlang community. This was represented by
-the third here from the introduction who even used the famous Erlang slogan "let it crash". In the Erlang
+the third hero from the introduction who even used the famous Erlang slogan "let it crash". In the Erlang
 mindset, there are two separate (and quite different) situations that can cause problems. Here is a nice
 summary from Joe Armstrong:
 
@@ -264,7 +264,7 @@ Error as an inspiration: Live coding
 <img src="http://tomasp.net/blog/2015/failures/hero4.png" style="float:right;margin:10px 0px 10px 10px;height:200px;" />
 
 In all of the three previous cases, the miscomputations or errors were never visible to the end
-user. Our third hero is going to change this. But let me start by going back to the early history
+user. Our fourth hero is going to change this. But let me start by going back to the early history
 of programming and the Algol research programme. Although the Algol programme (with its focus on
 formal proofs) become very influential, there were other languages. One of the first ones that
 took a very different perspective was Smalltalk in 1970s:
