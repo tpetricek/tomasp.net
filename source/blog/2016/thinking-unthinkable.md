@@ -277,3 +277,19 @@ work of art or fiction.
 > planning](https://github.com/tpetricek/anarchy-workshop/blob/master/proposal.md). To keep in 
 > touch leave a [comment on GitHub](https://github.com/tpetricek/anarchy-workshop/issues/3), ping me
 > at [@tomaspetricek](http://twitter.com/tomaspetricek) or email [tomas@tomasp.net](mailto:tomas@tomasp.net)!_
+
+References
+----------
+
+The following is just a list of some of the papers and books that contributed to the ideas in this 
+article in one way or another. You will find proper citations in the 
+[original paper](http://tomasp.net/academic/drafts/unthinkable/unthinkable-ppig.pdf).
+
+ 1. Thomas Kuhn. _The structure of scientific revolutions_. University of Chicago Press, 1962
+ 2. Paul Feyerabend. _Against method_. Verso Books, 1975
+ 3. Michael Foucault. _The Order of Things: An Archaeology of the Human Sciences_. Routledge, 1966
+ 4. Imre Lakatos. _The methodology of scientific research programmes_. Cambridge University Press, 1978
+ 5. Nathan Ensmenger. _The computer boys take over_. MIT Press, 2012
+ 6. Mark Priestley. _A science of operations_. Springer, 2011
+ 7. John von Neumann. _First Draft of a Report on the EDVAC_. University of Pennsylvania, 1945
+ 
