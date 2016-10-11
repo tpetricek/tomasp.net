@@ -1,4 +1,4 @@
-Thinking the unthinkable: What we cannot think in programming
+﻿Thinking the unthinkable: What we cannot think in programming
 =============================================================
 
  - date: 2016-10-11T11:30:37.3906045-05:00
@@ -9,7 +9,7 @@ Thinking the unthinkable: What we cannot think in programming
      research. What are assumptions that we never question and what might the world look like 
      if we based our design method on different basic principles?
  - layout: post
- - image-large: http://tomasp.net/blog/2016/thinking-unthinkable/bufo.jpg
+ - image: http://tomasp.net/blog/2016/thinking-unthinkable/bufo.jpg
  - tags: philosophy,programming languages
  
 ----------------------------------------------------------------------------------------------------
