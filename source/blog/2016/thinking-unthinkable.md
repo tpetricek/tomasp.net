@@ -1,7 +1,7 @@
 Thinking the unthinkable: What we cannot think in programming
 =============================================================
 
- - date: 2016-10-01T16:37:01.8024177+01:00
+ - date: 2016-10-11T11:30:37.3906045-05:00
  - description: Our thinking is shaped by basic assumptions that we rarely question. 
      As described by philosophers of science, research paradigms determine how scientists 
      approach problems and what questions are accepted as valid scientific theories.
