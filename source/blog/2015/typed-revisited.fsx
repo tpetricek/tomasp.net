@@ -513,7 +513,7 @@ have different features and different levels of safety).
 
 Programming languages that we use today were not designed with these constraints
 in mind. They assume that programs live in a closed world (where everything has
-been created in the same langauge or comes from the same runtime). 
+been created in the same language or comes from the same runtime). 
 
 Integrating with the open world is much easier for dynamically-typed languages
 like Clojure with ClojureScript. In the world of statically-typed languages,
