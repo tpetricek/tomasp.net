@@ -290,7 +290,7 @@ case study, what do they need to look like?
 
 ### Integrating with external data sources
 
-Statically-typed programming langauges are designed with the assumption that 
+Statically-typed programming languages are designed with the assumption that 
 the program runs in a world that is closed - all we can call and access comes 
 from a library that is defined _within_ the world of the language. This is not
 the case. Even before the web, applications need to perform I/O, but the web
