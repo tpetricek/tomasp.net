@@ -152,7 +152,7 @@ now implemented in a [fully managed and extensible way](http://fsharp.github.io/
 but it has also been open-sourced. The community has already used it to develop useful [addins for the
 Visual Studio IDE](http://fsprojects.github.io/VisualFSharpPowerTools/) as well as [other tools](http://tpetricek.github.io/FSharp.Formatting/).
 
-The new langauge features in C# 6 make the language significantly more powerful and expressive.
+The new language features in C# 6 make the language significantly more powerful and expressive.
 The only worry expressed by some is: <em>"Doesn't C# 6.0 look a little like F#?"</em> Anders Hejlsberg
 dismisses this worry:
 
