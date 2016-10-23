@@ -290,7 +290,7 @@ case study, what do they need to look like?
 
 ### Integrating with external data sources
 
-Statically-typed programming langauges are designed with the assumption that 
+Statically-typed programming languages are designed with the assumption that 
 the program runs in a world that is closed - all we can call and access comes 
 from a library that is defined _within_ the world of the language. This is not
 the case. Even before the web, applications need to perform I/O, but the web
@@ -513,7 +513,7 @@ have different features and different levels of safety).
 
 Programming languages that we use today were not designed with these constraints
 in mind. They assume that programs live in a closed world (where everything has
-been created in the same langauge or comes from the same runtime). 
+been created in the same language or comes from the same runtime). 
 
 Integrating with the open world is much easier for dynamically-typed languages
 like Clojure with ClojureScript. In the world of statically-typed languages,
