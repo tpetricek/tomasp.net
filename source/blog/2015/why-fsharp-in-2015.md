@@ -180,7 +180,7 @@ email at [tomas@tomasp.net](mailto:tomas@tomasp.net) if you're interested!
 
 The FastTrack to F# course is a 2 day course that combines introduction to the language 
 (to get you started in the first day) with a focus on solving practical problems ranging
-from working with data and type providers to testing and domain specific langauges in the
+from working with data and type providers to testing and domain specific languages in the
 second day.
 
 ### On-site trainings from fsharpWorks
