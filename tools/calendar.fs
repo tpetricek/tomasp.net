@@ -66,7 +66,7 @@ let uploadCalendarFiles (cfg:SiteConfig) =
           let file =
             if size = -1 then source 
             else resizeFile size source target.FileName; target.FileName
-          writeCalendarImage (blob suffix) target.FileName          
+          writeCalendarImage (blob suffix) file          
         writeFile -1 "-original.jpg"
         writeFile 700 ".jpg"
         writeFile 240 "-preview.jpg"
