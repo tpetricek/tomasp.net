@@ -108,7 +108,8 @@ let registerFiltersByName name =
   let asm = Assembly.GetExecutingAssembly()
   let typ = 
     asm.GetTypes()
-    |> Array.filter (fun t -> t.FullName.EndsWith(name) && not(t.FullName.Contains("<StartupCode")))
+    |> Seq.collect (fun t -> Seq.append [t] (t.GetNestedTypes()))
+    |> Seq.filter (fun t -> t.FullName.EndsWith(name) && not(t.FullName.Contains("<StartupCode")))
     |> Seq.last
   Template.RegisterFilter typ
 

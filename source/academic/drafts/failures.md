@@ -1,34 +1,58 @@
-# Miscomputation in software development Learning to live with errors
+# Miscomputation in software: Learning to live with errors
 
 
- - description:  The paper records a classroom discussion about failures in software engineering.
-    Tau advocates that all errors must be eliminated using proofs, Alpha and Beta believe
-    in testing, Epsilon argues that we need to live with errors and finally, live coder
-    Omega embraces errors as the source of creative inspiration.
+ - description:  Computer programs do not always work as expected. In fact, ominous warnings about 
+    the desperate state of the software industry continue to be released with almost ritualistic 
+    regularity. In this paper, we look at the 60 years history of programming and at the different 
+    practical methods that software community developed to live with programming errors.
  - tags: academic, publication, draft
  - layout: paper
- - date: 4 April 2016
- - title: Miscomputation in software development Learning to live with errors
- - subtitle: Tomas Petricek. Submitted in April 2016.
+ - date: 16 January 2017
+ - title: Miscomputation in software: Learning to live with errors
+ - subtitle: Tomas Petricek. Submitted in November 2016.
  
-
 > Tomas Petricek
 >
 > Draft - Work in progress
 
-The discussion takes place in an imaginary class room. The teacher points out that we have been
-trying to eliminate errors from programs for over 50 years now and the class discusses different
-kind of errors and different strategies that have been developed over time to deal with errors.
+Computer programs do not always work as expected. In fact, ominous warnings about the desperate 
+state of the software industry continue to be released with almost ritualistic regularity.
+In this paper, we look at the 60 years history of programming and at the different practical 
+methods that software community developed to live with programming errors.
 
-A lively discussion develops between the pupils. Tau advocates that all errors must be eliminated
-using formal proofs. Alpha and Beta believe that software is an engineering discipline that should
-rely on testing. Epsilon argues that errors cannot be fully eliminated and we need to live with
-them. Finally, live coder Omega embraces errors as the source of creative inspiration.
+We do so by observing a class of students discussing different approaches to programming errors.
+While learning about the different methods for dealing with errors, we uncover basic assumptions
+that proponents of different paradigms follow. We learn about the mathematical attempt to eliminate 
+errors through formal methods, scientific method based on testing, a way of building reliable
+systems through engineering methods, as well as an artistic approach to live coding that accepts 
+errors as a creative inspiration.
+
+This way, we can explore the differences and similarities among the different paradigms. By 
+inviting proponents of different methods into a single discussion, we hope to open potential for
+new thinking about errors. When should we use which of the approaches? And what can software 
+development learn from mathematics, science, engineering and art? 
+
+When programming or studying programming, we are often enclosed in small communities and we
+take our basic assumptions for granted. Through the discussion in this paper, we attempt to 
+map the large and rich space of programming ideas and provide reference points for exploring,
+perhaps foreign, ideas that can challenge some of our assumptions.
 
 ## Draft and more information
 
- - Download [the draft (PDF)](failures.pdf)
- - [Slides from a talk](http://tpetricek.github.io/Talks/2015/living-with-errors/) at HaPoC 2015
+ - Download [the latest draft of the paper (PDF)](failures-v2.pdf)
+ - [Slides from CodeMesh 2016 talk](http://tpetricek.github.io/Talks/2016/living-with-errors/) online
+ - There are also [old slides](http://tpetricek.github.io/Talks/2015/living-with-errors/) from HaPoC 2015
+   and [earlier draft](failures-v1.pdf).
+
+## Watch the talk
+
+I had the pleasure of presenting a talk based on the paper at [CodeMesh 2016 in London](http://www.codemesh.io/),
+the Alternative Programming Conference focusing on promoting useful non-mainstream technologies to the software industry.
+You can watch the CodeMesh talk here (and attend next year for great talks)!
+
+<div style="padding-left:20px">
+<iframe width="640" height="360" src="https://www.youtube.com/embed/ytW6dPdTj3g" frameborder="0" allowfullscreen></iframe>
+</div>
 
 ## Comments are welcome!
 
