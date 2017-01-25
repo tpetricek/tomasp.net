@@ -4,16 +4,6 @@
     <link>http://tomasp.net</link>
     <description>Tomas is a computer scienctist, open-source developer and an occasional philosopher of science. I'm working on tools for data-driven storytelling, contribute to a number of F# projects and I run trainings and offer consulting via fsharpWorks.</description>
     <item>
-      <title>[DRAFT] The Gamma dataviz package now available!</title>
-      <guid>http://tomasp.net/blog/2017/thegamma-talk/</guid>
-      <link>http://tomasp.net/blog/2017/thegamma-talk/</link>
-      <pubDate>Tue, 31 Jan 2017 12:38:26 GMT</pubDate>
-      <description>&lt;p&gt;tbd&lt;/p&gt;
-
-
-</description>
-    </item>
-    <item>
       <title>The Gamma dataviz package now available!</title>
       <guid>http://tomasp.net/blog/2017/thegamma-package/</guid>
       <link>http://tomasp.net/blog/2017/thegamma-package/</link>
@@ -585,6 +575,33 @@ from multiple sources and then build visualizations (or reports) to tell the rig
 &lt;p&gt;The goal of FsLab is to make this process easier. FsLab combines the power of F# type providers,
 the efficiency and robustness of Mono and .NET and the high quality engineering of the
 open-source ecosystem around F# and C#.&lt;/p&gt;
+
+
+</description>
+    </item>
+    <item>
+      <title>Comparing date range handling in C# and F#</title>
+      <guid>http://tomasp.net/blog/2015/restricting-ranges/</guid>
+      <link>http://tomasp.net/blog/2015/restricting-ranges/</link>
+      <pubDate>Wed, 22 Apr 2015 15:55:20 GMT</pubDate>
+      <description>&lt;p&gt;I was recently working on some code for handling date ranges in
+&lt;a href="http://github.com/blueMountainCapital/Deedle"&gt;Deedle&lt;/a&gt;. Although Deedle is written in F#,
+I also wrote some internal integration code in C#. After doing that, I realized that the
+code I wrote is actually reusable and should be a part of Deedle itself and so I went through
+the process of rewriting a simple function from (fairly functional) C# to F#. This is a small
+(and by no means representative!) example, but I think it nicely shows some of the reasons why
+I like F#, so I thought I'd share it.&lt;/p&gt;
+&lt;p&gt;One thing that we are adding to Deedle is a "BigDeedle" implementation of internal data
+structures. The idea is that you can load very big frames and series without actually loading
+all data into memory.&lt;/p&gt;
+&lt;p&gt;When you perform slicing on a large series and then merge some of the parts of the series
+(say, years 2010, 2012 and 2014), you end up with a series that combines a
+couple of chunks. If you then restrict the series (say, from June 2012 to June 2014), you
+need to restrict the ranges of the chunks:&lt;/p&gt;
+&lt;img src="http://tomasp.net/blog/2015/restricting-ranges/drawing.png" alt="Demonstration" style="margin:15px; width:370px" /&gt;
+&lt;p&gt;As the diagram shows, this is just a matter of iterating over the chunks, keeping those
+in the range, dropping those outside of the range and restrictingthe boundaries of the other
+chunks. So, let's start with the C# version I wrote.&lt;/p&gt;
 
 
 </description>
