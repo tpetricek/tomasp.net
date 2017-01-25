@@ -19,7 +19,7 @@ open FsBlog
 open Fake.Git.CommandHelper
 
 // --------------------------------------------------------------------------------------
-// Blog configuration
+// Blog configuration 
 // --------------------------------------------------------------------------------------
 
 let fullPath p = Path.GetFullPath(__SOURCE_DIRECTORY__ </> p)

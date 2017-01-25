@@ -9,7 +9,7 @@ The Gamma dataviz package now available!
     work that you can use in your data visualization projects.
  - layout: post
  - image-large: http://tomasp.net/blog/2017/thegamma-package/facts.jpg
- - tags: thegamma,data journalism,data science,research,academic,open source,type providers,visualization,programming languages
+ - tags: thegamma,data journalism,data science,research,visualization
  - title: The Gamma dataviz package now available!
  
 ----------------------------------------------------------------------------------------------------

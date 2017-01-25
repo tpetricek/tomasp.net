@@ -44,6 +44,7 @@ let private readArticles cfg files =
           traceException e
           None
     | _ -> None ) 
+  |> Seq.filter (fun p -> not (p.Title.Contains("[DRAFT]")))
   |> Seq.sortByDescending (fun p -> p.Date) 
   |> Seq.toArray  
 
