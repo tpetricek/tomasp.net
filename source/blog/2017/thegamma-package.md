@@ -1,12 +1,16 @@
 The Gamma dataviz package now available!
 ==============================================
 
- - date: 2017-01-31T14:38:26.4848325+02:00
- - description:
+ - date: 2017-01-25T12:31:14.3580990+00:00
+ - description: There were a lot of rumors recently about the death of facts and statistics.
+    I believe the core of the problem is that working with facts is quite tedious and the results 
+    are often not particularly exciting. This is the problem that I'm trying to address with 
+    The Gamma project - and today, I'm happy to share the first reusable component based on the 
+    work that you can use in your data visualization projects.
  - layout: post
  - image-large: http://tomasp.net/blog/2017/thegamma-package/facts.jpg
  - tags: thegamma,data journalism,data science,research,academic,open source,type providers,visualization,programming languages
- - title: The Gamma and Digital News Innovation Fund
+ - title: The Gamma dataviz package now available!
  
 ----------------------------------------------------------------------------------------------------
 
