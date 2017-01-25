@@ -49,7 +49,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper [paper page on ACM](http://dl.acm.org/citation.cfm?id=2908115)
 
     [lang=tex]
-    @@inproceedings{fsharp-data-pldi2016,
+    @inproceedings{fsharp-data-pldi2016,
       author    = {Petricek, Tomas and Guerra, Gustavo and Syme, Don},
       title     = {Types from data: Making structured
                    data first-class citizens in F\#},
@@ -62,4 +62,4 @@ get full details from the paper [paper page on ACM](http://dl.acm.org/citation.c
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

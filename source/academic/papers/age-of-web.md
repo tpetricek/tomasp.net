@@ -49,7 +49,7 @@ Thanks to the ML workshop organizers, the video from my original talk,
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @@inproceedings{web-ml14,
+    @inproceedings{web-ml14,
       author    = {Petricek, Tomas and Syme, Don and Bray, Zach},
       title     = {In the Age of Web: Typed Functional-First Programming Revisited},
       booktitle = {Post-proceedings of ML Workshop},
@@ -60,4 +60,4 @@ If you want to cite the paper, you can use the following BibTeX information.
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

@@ -306,14 +306,14 @@ Two cases look like this:
     let rec translate ctx e =
       match e with
       | Expr.Number(n) -> Expr.Number(n)
-      | Expr.Var(v) -> Expr.Builtin("counit") |@@| ctx
+      | Expr.Var(v) -> Expr.Builtin("counit") |@| ctx
       | (*[omit:(more cases omitted)]*)(more cases omitted)(*[/omit]*)
 
 The function takes `ctx` which is an expression that represents a newly generated variable
 that keeps the context. If the expression `e` is a number, we just turn it into a number.
 When translating a variable access `Var(v)`, we produce an expression that calls a special
 _counit_ operation on the context carried by the variable represented by `ctx`. (The
-`|@@|` operator is just a custom operator that creates `Expr.App` value).
+`|@|` operator is just a custom operator that creates `Expr.App` value).
 
 ### And even the user interface
 
@@ -359,5 +359,5 @@ Most of the features in the interactive essay are really experiments based on wh
 could be useful when learning about _coeffects_. I would really like to hear from you - do you
 think this is useful? Should every PhD thesis come with an interactive essay? There is a [brief
 survey you can fill on the page](https://docs.google.com/forms/d/17iptGK2LBtAkYLIi-g7bGesdFa9-ZVhFoFpzJhn1Bk8/viewform)
-or contact me directly at [@@tomaspetricek](http://twitter.com/tomaspetricek) or
-[tomas@@tomasp.net](mailto:tomas@tomasp.net).
+or contact me directly at [@tomaspetricek](http://twitter.com/tomaspetricek) or
+[tomas@tomasp.net](mailto:tomas@tomasp.net).

@@ -49,7 +49,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper [paper page on ACM](http://dl.acm.org/citation.cfm?id=2628160).
 
     [lang=tex]
-    @@inproceedings{coeffects-icfp14,
+    @inproceedings{coeffects-icfp14,
       author    = {Petricek, Tomas and Orchard, Dominic and Mycroft, Alan},
       title     = {Coeffects: A calculus of context-dependent computation},
       booktitle = {Proceedings of International Conference on Functional Programming},
@@ -60,4 +60,4 @@ get full details from the paper [paper page on ACM](http://dl.acm.org/citation.c
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

@@ -67,7 +67,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](#).
 
     [lang=tex]
-    @@inproceedings{computation-zoo-padl14,
+    @inproceedings{computation-zoo-padl14,
       author    = {Petricek, Tomas and Syme, Don},
       title     = {The F\# Computation Expression Zoo},
       booktitle = {Proceedings of Practical Aspects of Declarative Languages},
@@ -78,4 +78,4 @@ get full details from the [paper page on ACM](#).
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

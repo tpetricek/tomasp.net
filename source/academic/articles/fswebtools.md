@@ -43,7 +43,7 @@ This is an unreviewed article, but it still has some good ideas and inspired rec
 so if you want to cite the article, you can use roughly the following:
 
     [lang=tex]
-    @@other{fswebtools,
+    @other{fswebtools,
       author       = {Petricek, Tomas and Syme, Don},
       title        = {F# Web Tools: Rich client/server web applications in F#},
       howpublished = {Unpublished draft, available online},
@@ -53,4 +53,4 @@ so if you want to cite the article, you can use roughly the following:
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

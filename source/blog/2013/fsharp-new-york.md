@@ -16,7 +16,7 @@ Hello New York. Learn some F#!
 Exactly two weeks ago, I started a three month internship at BlueMountain Capital in New York.
 They have a [technical blog](http://techblog.bluemountaincapital.com/) and should be well known to the
 F# community thanks to the [R type provider](https://github.com/BlueMountainCapital/FSharpRProvider)
-which was written by Howard Mansell ([@@hmansell](https://twitter.com/hmansell)).
+which was written by Howard Mansell ([@hmansell](https://twitter.com/hmansell)).
 I'll have the pleasure of working with Howard on some more open source data-science related tools for F#
 (and C#). I'll write more about these when we have something to share, but if you want to
 contribute and help us, join the Data and Machine Learning [working group at F# Foundation](http://fsharp.org/technical-groups/).
@@ -35,7 +35,7 @@ convince your colleagues or boss that F# is a good choice.
 Exactly two weeks ago, I started a three month internship at BlueMountain Capital in New York.
 They have a [technical blog](http://techblog.bluemountaincapital.com/) and should be well known to the
 F# community thanks to the [R type provider](https://github.com/BlueMountainCapital/FSharpRProvider)
-which was written by Howard Mansell ([@@hmansell](https://twitter.com/hmansell)). 
+which was written by Howard Mansell ([@hmansell](https://twitter.com/hmansell)). 
 I'll have the pleasure of working with Howard on some more open source data-science related tools for F#
 (and C#). I'll write more about these when we have something to share, but if you want to 
 contribute and help us, join the Data and Machine Learning [working group at F# Foundation](http://fsharp.org/technical-groups/).
@@ -81,6 +81,6 @@ founding members of the [F# Foundation](http://fsharp.org), I can help explainin
 how it helps you save time & money and get things done faster. I also have various material from
 previous talks, including topics relevant to option pricing, data analysis, concurrency etc.
 
-So, if you want to meet and have a chat, get in touch on Twitter ([@@tomaspetricek](https://twitter.com/tomaspetricek))
+So, if you want to meet and have a chat, get in touch on Twitter ([@tomaspetricek](https://twitter.com/tomaspetricek))
 or email me. BlueMountain has offices on [280 Park Avenue](http://goo.gl/maps/ZtUvP), so let me
 know if you work nearby!

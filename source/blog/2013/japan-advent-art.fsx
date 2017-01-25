@@ -34,9 +34,9 @@ Advent Art：北斎の絵を生成する
 私は去年からTwitterでadvent calendarをチェックしていて、
 今年からは私も参加しようと思い、記事を書きたいと申し出ました。
 そうしたところ、数名の方からの協力を得ることができました。
-[@@igeta](https://twitter.com/igeta) には参加手続きの諸々とレビューを、
-[@@yukitos](http://twitter.com/yukitos) にはこの記事の翻訳を、そして
-[@@gab_km](http://twitter.com/gab_km) には翻訳のレビューをしていただきました。
+[@igeta](https://twitter.com/igeta) には参加手続きの諸々とレビューを、
+[@ukitos](http://twitter.com/yukitos) にはこの記事の翻訳を、そして
+[@gab_km](http://twitter.com/gab_km) には翻訳のレビューをしていただきました。
 ありがとう！
 
 けれども何についての記事を書くのがよいのでしょう？
@@ -46,7 +46,7 @@ Advent Art：北斎の絵を生成する
 少し考えてみたところ、以下のようなプランを思いつきました：
 
  * まず、日本の絵画について学ぶために [F# Data][fsdata] ライブラリと [Freebase](http://www.freebase.com) を組み合わせて使う。
-   このライブラリにはいまや [日本語ドキュメント][fsdatajp] があり、作成してくれた [@@yukitos](https://twitter.com/yukitos) に感謝しています。
+   このライブラリにはいまや [日本語ドキュメント][fsdatajp] があり、作成してくれた [@yukitos](https://twitter.com/yukitos) に感謝しています。
 
  * そして絵画作品を1つ選択して、F#でその作品を再生成する。
    私の絵画スキルでは到底無理なのですが、試してみることはできます :-)
@@ -80,9 +80,9 @@ Advent Art：北斎の絵を生成する
 私は去年からTwitterでadvent calendarをチェックしていて、
 今年からは私も参加しようと思い、記事を書きたいと申し出ました。
 そうしたところ、数名の方からの協力を得ることができました。
-[@@igeta](https://twitter.com/igeta) には参加手続きの諸々とレビューを、
-[@@yukitos](http://twitter.com/yukitos) にはこの記事の翻訳を、そして
-[@@gab_km](http://twitter.com/gab_km) には翻訳のレビューをしていただきました。
+[@igeta](https://twitter.com/igeta) には参加手続きの諸々とレビューを、
+[@yukitos](http://twitter.com/yukitos) にはこの記事の翻訳を、そして
+[@gab_km](http://twitter.com/gab_km) には翻訳のレビューをしていただきました。
 ありがとう！
 
 けれども何についての記事を書くのがよいのでしょう？
@@ -92,7 +92,7 @@ Advent Art：北斎の絵を生成する
 少し考えてみたところ、以下のようなプランを思いつきました：
 
  * まず、日本の絵画について学ぶために [F# Data][fsdata] ライブラリと [Freebase](http://www.freebase.com) を組み合わせて使う。
-   このライブラリにはいまや [日本語ドキュメント][fsdatajp] があり、作成してくれた [@@yukitos](https://twitter.com/yukitos) に感謝しています。
+   このライブラリにはいまや [日本語ドキュメント][fsdatajp] があり、作成してくれた [@yukitos](https://twitter.com/yukitos) に感謝しています。
 
  * そして絵画作品を1つ選択して、F#でその作品を再生成する。
    私の絵画スキルでは到底無理なのですが、試してみることはできます :-)

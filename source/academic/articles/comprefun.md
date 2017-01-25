@@ -37,7 +37,7 @@ Haskell. For more information about the magazine, see [The Monad.Reader](http://
 on Haskell wiki. To cite the article, use:
 
     [lang=tex]
-    @@other{comprefun,
+    @other{comprefun,
       author       = {Petricek, Tomas},
       title        = {{F}un with {P}arallel {M}onad {C}omprehensions},
       howpublished = {Available online in {T}he {M}oand.{R}eader {I}ssue 18},
@@ -47,4 +47,4 @@ on Haskell wiki. To cite the article, use:
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

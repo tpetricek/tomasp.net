@@ -156,7 +156,7 @@ and compares countries in the world based on their CO2 emissions:
 
 > This is very much work in progress. I focused on building a demo that illustrates the 
 > idea, but there are certainly issues. You can [report them on GitHub](https://github.com/tpetricek/TheGamma)
-> and if the whole demo is down, ping me at [@@tomaspetricek](http://twitter.com/tomaspetricek)!
+> and if the whole demo is down, ping me at [@tomaspetricek](http://twitter.com/tomaspetricek)!
 
 <div style="position:absolute;width:100%;z-index:-100">
 <div style="position:relative;left:100%;width:260px;margin-top:25px;display:none;padding:10px;border:1px solid #d0d0d0;background:#f0f0f0" id="carbon-side">
@@ -255,4 +255,4 @@ misleading information? And how can we build on top of it to explore the informa
 and get better understanding?
 
 This is exactly what I'm trying to do with The Gamma project and I would like to hear from anyone
-interested! Get in touch at [tomas@tomasp.net](mailto:tomas@tomasp.net) or [@@tomaspetricek](http://twitter.com/tomaspetricek).
+interested! Get in touch at [tomas@tomasp.net](mailto:tomas@tomasp.net) or [@tomaspetricek](http://twitter.com/tomaspetricek).

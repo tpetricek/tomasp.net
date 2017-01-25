@@ -274,4 +274,4 @@ philosophy of science can give you a new perspective in many ways:
 In this blog post I shared some of the books that I read on the topic in the last few years,
 that I found interesting and that even inspired me to write [a couple of essays](/blog/tag/philosophy/)
 on this topic myself. There are many great books missing. I have a couple of my reading list 
-already, but I always welcome recommendations. Send them to [@@tomaspetricek](http://twitter.com/tomaspetricek)!
+already, but I always welcome recommendations. Send them to [@tomaspetricek](http://twitter.com/tomaspetricek)!

@@ -78,7 +78,7 @@ data manipulation and business domain modelling.
 
 As a special offer, we'll be able to give a *free ticket* to **F# eXchange** if you book a ticket for our course!
 So, if you want to get 3 days of intensive F# learning this April, [drop me an email](mailto:tomas@tomasp.net)
-or [ping me at @@tomaspetricek](http://twitter.com/tomaspetricek). (If you're interested just in the course, let
+or [ping me at @tomaspetricek](http://twitter.com/tomaspetricek). (If you're interested just in the course, let
 me know too - we can, at least, give you a 10% discount.)
 
 F# Deep Dives: Deal of the day
@@ -113,4 +113,4 @@ machine learning and data science, domain modelling and business application dev
 
 So, if you're interested in consulting related to F# or a private training to get you and your 
 team started with F#, [drop us an email](mailto:info@fsharpworks.com) or ping us at 
-[@@fsharpworks](http://twitter.com/fsharpworks)!
+[@fsharpworks](http://twitter.com/fsharpworks)!

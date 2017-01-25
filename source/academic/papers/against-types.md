@@ -44,7 +44,7 @@ about the topic of the paper at Lambda Days 2016 conference organized by
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @@inproceedings{against-types-onward15,
+    @inproceedings{against-types-onward15,
       author    = {Petricek, Tomas},
       title     = {Against a Universal Definition of 'Type'},
       booktitle = {Proceedings of Onward! Essays},
@@ -54,4 +54,4 @@ If you want to cite the paper, you can use the following BibTeX information.
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

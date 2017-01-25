@@ -36,7 +36,7 @@ get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=
 for the [MSR technical report](http://research.microsoft.com/apps/pubs/default.aspx?id=173076).
 
     [lang=tex]
-    @@inproceedings{inforich-ddfp,
+    @inproceedings{inforich-ddfp,
       author    = {Syme, Don and Battocchi, Keith and Takeda, 
                    Kenji and Malayeri, Donna and Petricek, Tomas},
       title     = {Themes in information-rich functional programming 
@@ -64,4 +64,4 @@ for the [MSR technical report](http://research.microsoft.com/apps/pubs/default.a
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

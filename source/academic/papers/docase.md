@@ -56,7 +56,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=2034675.2034677&coll=DL&dl=GUIDE&CFID=375487526&CFTOKEN=86636259).
 
     [lang=tex]
-    @@inproceedings{joinads-haskell11,
+    @inproceedings{joinads-haskell11,
       author    = {Petricek, Tomas and Mycroft, Alan and Syme, Don},
       title     = {Extending {M}onads with {P}attern {M}atching},
       booktitle = {Proceedings of Haskell Symposium},
@@ -66,4 +66,4 @@ get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

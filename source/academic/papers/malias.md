@@ -52,7 +52,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on arXiv](http://arxiv.org/abs/1202.2921).
 
     [lang=tex]
-    @@inproceedings{malias-msfp12,
+    @inproceedings{malias-msfp12,
       author    = {Petricek, Tomas},
       title     = {Evaluations strategies for monadic computations},
       booktitle = {Proceedings of Mathematically Structured Functional Programming},
@@ -62,4 +62,4 @@ get full details from the [paper page on arXiv](http://arxiv.org/abs/1202.2921).
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

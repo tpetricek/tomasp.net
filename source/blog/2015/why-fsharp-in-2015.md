@@ -93,7 +93,7 @@ One of the reasons why I'm really excited about the F# community is that it take
 very seriously. I guess that this can be summarized by the following tweet:
 
 <div style="margin-left:20px">
-<blockquote class="twitter-tweet" lang="en"><p>Wow. Already 114 pull requests for the official <a href="https://twitter.com/VisualFSharp">@@VisualFSharp</a> compiler. As comparison <a href="https://twitter.com/hashtag/roslyn?src=hash">#roslyn</a> has 18. <a href="https://twitter.com/hashtag/fsharp?src=hash">#fsharp</a> community rocks.</p>&mdash; Steffen Forkmann (@@sforkmann) <a href="https://twitter.com/sforkmann/status/508869959364386816">September 8, 2014</a></blockquote>
+<blockquote class="twitter-tweet" lang="en"><p>Wow. Already 114 pull requests for the official <a href="https://twitter.com/VisualFSharp">@VisualFSharp</a> compiler. As comparison <a href="https://twitter.com/hashtag/roslyn?src=hash">#roslyn</a> has 18. <a href="https://twitter.com/hashtag/fsharp?src=hash">#fsharp</a> community rocks.</p>&mdash; Steffen Forkmann (@sforkmann) <a href="https://twitter.com/sforkmann/status/508869959364386816">September 8, 2014</a></blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 

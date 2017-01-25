@@ -34,9 +34,9 @@ this year, I offered to write an article too. You might have noticed that I post
 [Japanse version of the article](http://tomasp.net/blog/2013/japan-advent-art/index.html)
 in December as part of the [advent calendar 2013](http://connpass.com/event/3935/).
 
-A number of people helped to make this happen - [@@igeta](http://twitter.com/igeta) arranged everything and 
-helped with reviewing, [@@yukitos](http://twitter.com/yukitos) translated the article and 
-[@@gab_km](http://twitter.com/gab_km) reviewed the translation. Thanks!
+A number of people helped to make this happen - [@igeta](http://twitter.com/igeta) arranged everything and 
+helped with reviewing, [@yukitos](http://twitter.com/yukitos) translated the article and 
+[@gab_km](http://twitter.com/gab_km) reviewed the translation. Thanks!
 
 But what should I write about? It would be nice to look at some of the F# open-source libraries
 and projects that have been developing over the last year in the F# community. At the same time,
@@ -44,7 +44,7 @@ can I relate the topic of the article to Japan? After some thinking, I came up w
 plan:
 
  * First, we'll use the [F# Data][fsdata] library and the [Freebase](http://www.freebase.com) to learn
-   something about Japanese art. I should add that thanks to [@@yukitos](https://twitter.com/yukitos) the library now also has 
+   something about Japanese art. I should add that thanks to [@yukitos](https://twitter.com/yukitos) the library now also has 
    a [documentation in Japanese][fsdatajp].
 
  * Then we'll pick one art work and try to recreate it in F#. Given my artistic skills, this 
@@ -77,9 +77,9 @@ this year, I offered to write an article too. You might have noticed that I post
 [Japanese version of the article](http://tomasp.net/blog/2013/japan-advent-art/index.html)
 in December as part of the [advent calendar 2013](http://connpass.com/event/3935/).
 
-A number of people helped to make this happen - [@@igeta](http://twitter.com/igeta) arranged everything and 
-helped with reviewing, [@@yukitos](http://twitter.com/yukitos) translated the article and 
-[@@gab_km](http://twitter.com/gab_km) reviewed the translation. Thanks!
+A number of people helped to make this happen - [@igeta](http://twitter.com/igeta) arranged everything and 
+helped with reviewing, [@yukitos](http://twitter.com/yukitos) translated the article and 
+[@gab_km](http://twitter.com/gab_km) reviewed the translation. Thanks!
 
 But what should I write about? It would be nice to look at some of the F# open-source libraries
 and projects that have been developing over the last year in the F# community. At the same time,
@@ -87,7 +87,7 @@ can I relate the topic of the article to Japan? After some thinking, I came up w
 plan:
 
  * First, we'll use the [F# Data][fsdata] library and the [Freebase](http://www.freebase.com) to learn
-   something about Japanese art. I should add that thanks to [@@yukitos](https://twitter.com/yukitos) the library now also has 
+   something about Japanese art. I should add that thanks to [@yukitos](https://twitter.com/yukitos) the library now also has 
    a [documentation in Japanese][fsdatajp].
 
  * Then we'll pick one art work and try to recreate it in F#. Given my artistic skills, this 

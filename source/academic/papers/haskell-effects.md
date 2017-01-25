@@ -43,7 +43,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper page on ACM (TBA).
 
     [lang=tex]
-    @@incollection{haskell-effects,
+    @incollection{haskell-effects,
       title={Embedding effect systems in Haskell},
       author={Orchard, Dominic and Petricek, Tomas},
       booktitle = {Proceedings of Haskell Symposium},
@@ -53,4 +53,4 @@ get full details from the paper page on ACM (TBA).
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

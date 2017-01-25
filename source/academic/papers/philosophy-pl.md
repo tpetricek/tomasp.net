@@ -41,7 +41,7 @@ If you want to cite the paper, you can use the following BibTeX information, or
 find more information at the [AISB proceedings page](http://doc.gold.ac.uk/aisb50/).
 
     [lang=tex]
-    @@inproceedings{philosophy-pl-aisb14,
+    @inproceedings{philosophy-pl-aisb14,
       author    = {Petricek, Tomas},
       title     = {What can Programming Language Research Learn from the Philosophy of Science?},
       booktitle = {Proceedings of the 50th Anniversary Convention of the AISB},
@@ -51,4 +51,4 @@ find more information at the [AISB proceedings page](http://doc.gold.ac.uk/aisb5
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
