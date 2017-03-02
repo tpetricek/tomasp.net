@@ -1,10 +1,14 @@
-# The Gamma: Making data-driven facts great again!
+# The Gamma: Democratizing data science
 
- - title: Functional Programming in F#
+ - title: The Gamma: Democratizing data science
  - layout: post
  - tags: thegamma, data journalism
- - date: 1 March 2009
- - description: zzz
+ - date: 2 February 2017
+ - description: The goal of The Gamma project is to democratize data science. Our tools encourage 
+   everyone — including journalists and interested citizens — to understand how presented claims are 
+   justified, explore data on their own and make their own transparent factual claims. If the society 
+   is to benefit from the possibilities available through data science, it is essential to make 
+   data-driven storytelling widely accessible, open and engaging.
  
 ----
 
@@ -37,7 +41,7 @@ The Gamma aims to build programming tools that let anyone explore data from a wi
 data sources, including open government data, and publish data-driven reports that are:
  
  1. **Transparent and accountable.** Readers can review how data is used and discover misleading uses of data.
- 2. **Reproducible and connected.** Readers can rerun the analysis using the original data source.
+ 2. **Reproducible and connected.** Readers can run the analysis themselves using the original data source.
  3. **Open and engaging.** Readers can modify parameters and share reports on different aspects of the data.
 
 To achieve this, we treat data-driven reports as reproducible programs written in a simple 
