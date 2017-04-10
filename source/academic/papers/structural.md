@@ -7,7 +7,7 @@
  - tags: academic, publication
  - layout: paper
  - title: Coeffects: A calculus of context-dependent computation
- - subtile: Tomas Petricek, Dominic Orchard and Alan Mycroft. In Proceedings of ICFP 2014
+ - subtitle: Tomas Petricek, Dominic Orchard and Alan Mycroft. In Proceedings of ICFP 2014
  - date: 29 August 2014
  
 > Tomas Petricek, Dominic Orchard and Alan Mycroft
