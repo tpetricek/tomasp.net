@@ -1,11 +1,15 @@
 The mythology of programming language ideas
 ===========================================
 
- - date: 2017-03-03T11:53:51.5028774+00:00
- - description: ...
+ - date: 2017-03-07T15:31:34.8373202+00:00
+ - description: What can computer science learn from the fantastically wrong theories of 16th 
+    century science? What is amazing about the old stories is that the conclusions that now seem 
+    funny often had very solid reasoning behind them. In the same way, it is likely that some of 
+    our current beliefs about computer science and programming will appear fantastically wrong to
+    a computer scientist of 24th century.
  - layout: post
- - image: http://tomasp.net/blog/2017/thegamma-talk/ati.jpg
- - tags: ...
+ - image: http://tomasp.net/blog/2017/programming-mythology/heliocentric-sq.jpg
+ - tags: academic, programming languages, philosophy
  - title: The mythology of programming language ideas
  
 ----------------------------------------------------------------------------------------------------
