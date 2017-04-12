@@ -5,15 +5,15 @@
      requires expert programming skills. In this paper, we describe the design of a data 
      exploration language that makes the task more accessible by embedding advanced programming 
      concepts into a simple core language.
- - tags: academic, publication, draft
+ - tags: academic, publication
  - layout: paper
- - date: 1 March 2017
+ - date: 12 April 2017
  - title: Data exploration through dot-driven development
- - subtitle: Tomas Petricek. Submitted 2017.
+ - subtitle: Tomas Petricek. To appear in proceedings of ECOOP 2017.
  
 > Tomas Petricek
 >
-> Submitted, March 2017
+> To appear in proceedings of ECOOP 2017
 
 Data literacy is becoming increasingly important in the modern world. While spreadsheets make 
 simple data analytics accessible to a large number of people, creating transparent scripts that 
@@ -36,7 +36,7 @@ understand in order to write scripts for exploring data.
 
 ## Draft and more information
 
- - Download [the paper draft (PDF)](pivot-draft.pdf)
+ - Download [pre-print of the paper (PDF)](pivot-ecoop17.pdf)
  - Watch [Fellow Short Talk](https://www.youtube.com/watch?v=aHjgpmzFjOA) from Alan Turing Institute
 
 ## Comments are welcome!

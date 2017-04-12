@@ -6,7 +6,7 @@
  - tags: academic, publication
  - layout: paper
  - title: Effect systems revisited - control-flow algebra and semantics
- - subtitle: Alan Mycroft, Dominic Orchard, Tomas Petricek. Semantics, Logics, and Calculi, 2016
+ - subtitle: Alan Mycroft, Dominic Orchard, Tomas Petricek.<br /> Semantics, Logics, and Calculi, 2016
  - date: 10 January 2016
 
 > Alan Mycroft, Dominic Orchard, Tomas Petricek

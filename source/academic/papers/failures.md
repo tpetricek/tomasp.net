@@ -8,7 +8,7 @@
  - layout: paper
  - date: 3 April 2017
  - title: Miscomputation in software: Learning to live with errors
- - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, volume 1, issue 2, 2017
+ - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, 2017
  
 > Tomas Petricek
 >
