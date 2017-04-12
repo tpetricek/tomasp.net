@@ -1,18 +1,18 @@
 Papers we Scrutinize: How to critically read papers
 ===================================================
 
- - date: 2017-04-12T14:05:48.9378708+01:00
- - description: It is very easy to see academic papers as containing eternal and unquestionable 
+- date: 2017-04-12T14:05:48.9378708+01:00
+- description: It is very easy to see academic papers as containing eternal and unquestionable 
     truths, rather than as something that the reader should actively interact with. I recently 
     remarked about this saying that just reading papers is too passive. In this blog post, I 
     try to uncover some of the caveats when reading papers - how we misread history and ignore 
     historical context in which paper was written. I discuss different ways of reading papers
     and suggest a more active way of reading.
- - layout: post
- - image: http://tomasp.net/blog/2017/papers-we-scrutinize/medium-sq.png
- - tags: academic, programming languages, philosophy
- - title: Papers we Scrutinize: How to critically read papers
- 
+- layout: post
+- image: http://tomasp.net/blog/2017/papers-we-scrutinize/medium-sq.png
+- tags: academic, programming languages, philosophy
+- title: Papers we Scrutinize: How to critically read papers
+
 ----------------------------------------------------------------------------------------------------
 
 As someone who enjoys being at the intersection of the academic world and the world of
@@ -59,17 +59,15 @@ What are some of the common irregularities to be aware of (not just) when readin
 <a href="http://amzn.to/2nZuJgA"><img src="medium.png" class="rdecor" style="width:300px"/></a>
 
 The first thing to keep in mind about academic papers is that, to quote Marshal McLuhan, 
-_medium is the message_. Papers are a specific format and the nature of the format party limits
+_medium is the message_. Papers are a specific format and the nature of the format partly limits
 what you can find in papers. What do you find in programming language papers? A minimal calculus
-or a formalization is the perfect kind of content, because it presents and idea in a static way
+or a formalization is the perfect kind of content, because it presents an idea in a static way
 that fits in the limited space of a paper, can be printed and can be comprehended by reading.
 
 The format affects not only what _answers_ we give, but also what _questions_ we ask. If the format
 makes it easy to discuss formal calculi, it is not surprising that we will ask questions about
-properties of the formal calculi. As noted by Hacking in [Representing and Intervening](http://amzn.to/2ppjmQ7),
-there is also "a certain class or caste difference between the theorizer and the experimenter" and
-"we find prejudices in favor of theory, as far back as there is institutionalized science". 
-What this means is that academic papers are much more likely to discuss a theory. However, this
+properties of the formal calculi. As noted by Hacking in [Representing and Intervening](http://amzn.to/2ppjmQ7), there is also "a certain class or caste difference between the theorizer and the experimenter" and
+"we find prejudices in favor of theory, as far back as there is institutionalized science". What this means is that academic papers are much more likely to discuss a theory. However, this
 is not necessarily because the theory provides a deeper insight – it might as well be a combination
 of the format constraints and scientific prejudices.
 
@@ -126,8 +124,7 @@ This topic is nicely discussed by Bruno Latour in chapter on literature in [Scie
 Action](http://amzn.to/2ovH93C). The summary is that the future of a paper often lies in the hands
 of those who follow-up on the work and refer to the paper.
 
-In other words, we are obsessed with the idea of the role of an individual paper in the history.
-What makes a paper important is not just the ideas that appear in it, but also all the follow-up 
+In other words, we are obsessed with the idea of the role of an individual paper in the history. What makes a paper important is not just the ideas that appear in it, but also all the follow-up 
 work that applied the ideas in a wide range of contexts. This is especially the case in programming
 languages research, where good papers can change how we think about a problem. For example, I doubt
 _monads_ would arguably never become so popular if they did not get used for I/O in Haskell and
@@ -154,8 +151,7 @@ follow a mix of the first two readings:
 
 As mentioned earlier, sciences often fabricate the impression
 that research follows a linear straight line forward towards some ideal knowledge. It is easy 
-to ignore that the direction changes and the line is not always straight. When read in this way,
-a paper will appear as contributing a step along the direct line towards the ideal knowledge. 
+to ignore that the direction changes and the line is not always straight. When read in this way, a paper will appear as contributing a step along the direct line towards the ideal knowledge. 
 
 This is a useful way of reading paper for a scientist, because it gives us a sense of direction
 that we can follow and extrapolate. It also provides grounding for the current research work.
@@ -163,7 +159,7 @@ Reading the paper by Alonzo Church in this way, you can see it as a basis for ty
 languages such as Haskell. You can trace many functional programming ideas back to this
 paper. Using this reading, it is easy to believe that functional programming is the right 
 direction for programming language research, because it has solid theoretical foundations. 
-  
+
 
 ### #2 Inspiration in modern context
 
@@ -225,7 +221,7 @@ your way of working and what aspects of the paper provide inspiration in your co
 critical commentary may sound like a daunting task, but keep in mind the "prejudices in favor of
 theory" that I mentioned earlier. A part of the aura of perfectness that surrounds academic 
 papers comes from the format and a commentary from someone operating in a different context than
-the authors (say, someone working in the industry) can be extremely valuable bridge between the
+the authors (say, someone working in the industry) can be an extremely valuable bridge between the
 two worlds. 
 
 ## Summary
