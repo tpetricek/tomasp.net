@@ -1,7 +1,7 @@
 Papers we Scrutinize: How to critically read papers
 ===================================================
 
- - date: 2017-05-07T15:31:34.8373202+00:00
+ - date: 2017-04-12T14:05:48.9378708+01:00
  - description: It is very easy to see academic papers as containing eternal and unquestionable 
     truths, rather than as something that the reader should actively interact with. I recently 
     remarked about this saying that just reading papers is too passive. In this blog post, I 
@@ -9,7 +9,7 @@ Papers we Scrutinize: How to critically read papers
     historical context in which paper was written. I discuss different ways of reading papers
     and suggest a more active way of reading.
  - layout: post
- - image: http://tomasp.net/blog/2017/papers-we-scrutinize/message-sq.png
+ - image: http://tomasp.net/blog/2017/papers-we-scrutinize/medium-sq.png
  - tags: academic, programming languages, philosophy
  - title: Papers we Scrutinize: How to critically read papers
  
