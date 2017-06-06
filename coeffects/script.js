@@ -7355,7 +7355,7 @@ Flat__translate$FSharpMap_2_String__Tuple_2_Coeffect__Type_1FSharpMap_2_String__
               }
               else
               {
-                throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\translation.fs", 70, 16)));
+                throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\translation.fs", 70, 16)));
                 return null;
               };
             };
@@ -9238,7 +9238,7 @@ Html__printExpr$FSharpMap_2_String__Tuple_2_Coeffect__Type_1_Coeffect_FSharpMap_
                                   }
                                   else
                                   {
-                                    throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
+                                    throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
                                     _22588 = null;
                                   };
                                 };
@@ -9313,7 +9313,7 @@ Html__printExpr$FSharpMap_2_String__Tuple_2_Coeffect__Type_1_Coeffect_FSharpMap_
                                 }
                                 else
                                 {
-                                  throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
+                                  throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
                                   _22588 = null;
                                 };
                               };
@@ -9416,7 +9416,7 @@ Html__printExpr$FSharpMap_2_String__Tuple_2_Coeffect__Type_1_Coeffect_FSharpMap_
                                 }
                                 else
                                 {
-                                  throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
+                                  throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
                                   _22588 = null;
                                 };
                               };
@@ -9491,7 +9491,7 @@ Html__printExpr$FSharpMap_2_String__Tuple_2_Coeffect__Type_1_Coeffect_FSharpMap_
                               }
                               else
                               {
-                                throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
+                                throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\pretty.fs", 249, 12)));
                                 _22588 = null;
                               };
                             };
@@ -9647,7 +9647,7 @@ Html__printTyp$ = (function(kind,typ,sb)
               }
               else
               {
-                _23470 = Errors__unexpected$Coeffect_Coeffect_("Pretty printer cannot format coeffect langauge expression with mixed flat and structural coeffects.");
+                _23470 = Errors__unexpected$Coeffect_Coeffect_("Pretty printer cannot format coeffect language expression with mixed flat and structural coeffects.");
               };
             };
             var c = _23470;
@@ -20926,7 +20926,7 @@ MathJax__typ$ = (function(kind,colored,t,ar)
             }
             else
             {
-              _27051 = Errors__unexpected$Coeffect_Coeffect_("Pretty printer cannot format coeffect langauge expression with mixed flat and structural coeffects.");
+              _27051 = Errors__unexpected$Coeffect_Coeffect_("Pretty printer cannot format coeffect language expression with mixed flat and structural coeffects.");
             };
           };
           var _c = _27051;
@@ -32621,7 +32621,7 @@ Solver__remove$FSharpSet_1_String_FSharpSet_1_String_ = (function(f,list)
         }
         else
         {
-          throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 111, 8)));
+          throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 111, 8)));
           return null;
         };
       };
@@ -32732,7 +32732,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -32805,7 +32805,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                           }
                           else
                           {
-                            throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                            throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                             return null;
                           };
                         };
@@ -32858,7 +32858,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                         }
                         else
                         {
-                          throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                          throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                           return null;
                         };
                       };
@@ -32911,7 +32911,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -32965,7 +32965,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                   }
                   else
                   {
-                    throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                    throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                     return null;
                   };
                 };
@@ -33050,7 +33050,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                           }
                           else
                           {
-                            throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                            throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                             return null;
                           };
                         };
@@ -33123,7 +33123,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                               }
                               else
                               {
-                                throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                                throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                                 return null;
                               };
                             };
@@ -33176,7 +33176,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                             }
                             else
                             {
-                              throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                              throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                               return null;
                             };
                           };
@@ -33229,7 +33229,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                           }
                           else
                           {
-                            throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                            throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                             return null;
                           };
                         };
@@ -33283,7 +33283,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -33352,7 +33352,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                         }
                         else
                         {
-                          throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                          throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                           return null;
                         };
                       };
@@ -33425,7 +33425,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                             }
                             else
                             {
-                              throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                              throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                               return null;
                             };
                           };
@@ -33478,7 +33478,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                           }
                           else
                           {
-                            throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                            throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                             return null;
                           };
                         };
@@ -33531,7 +33531,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                         }
                         else
                         {
-                          throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                          throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                           return null;
                         };
                       };
@@ -33585,7 +33585,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                     }
                     else
                     {
-                      throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                      throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                       return null;
                     };
                   };
@@ -33654,7 +33654,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -33727,7 +33727,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                           }
                           else
                           {
-                            throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                            throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                             return null;
                           };
                         };
@@ -33780,7 +33780,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                         }
                         else
                         {
-                          throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                          throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                           return null;
                         };
                       };
@@ -33833,7 +33833,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -33887,7 +33887,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                   }
                   else
                   {
-                    throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                    throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                     return null;
                   };
                 };
@@ -33957,7 +33957,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                   }
                   else
                   {
-                    throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                    throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                     return null;
                   };
                 };
@@ -34030,7 +34030,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                       }
                       else
                       {
-                        throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                        throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                         return null;
                       };
                     };
@@ -34083,7 +34083,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                     }
                     else
                     {
-                      throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                      throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                       return null;
                     };
                   };
@@ -34136,7 +34136,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
                   }
                   else
                   {
-                    throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                    throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                     return null;
                   };
                 };
@@ -34190,7 +34190,7 @@ Solver__solve$ = (function(constraints,assigns,cequals)
               }
               else
               {
-                throw ((new MatchFailureException___ctor$("c:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
+                throw ((new MatchFailureException___ctor$("C:\\Tomas\\Public\\coeffects\\coeffects-playground\\solver.fs", 35, 10)));
                 return null;
               };
             };
@@ -43906,7 +43906,7 @@ TypeChecker__check$ = (function(ctx,_arg1)
               {
                 if (((ctx.CoeffectMode & 2) == 2)) 
                 {
-                  _6651 = Errors__syntaxError$Tuple_2_Coeffect__FSharpMap_2_String__Tuple_2_Coeffect__Type_Tuple_2_Coeffect__FSharpMap_2_String__Tuple_2_Coeffect__Type_("Structural coeffect langauge only supports simple variable patterns.");
+                  _6651 = Errors__syntaxError$Tuple_2_Coeffect__FSharpMap_2_String__Tuple_2_Coeffect__Type_Tuple_2_Coeffect__FSharpMap_2_String__Tuple_2_Coeffect__Type_("Structural coeffect language only supports simple variable patterns.");
                 }
                 else
                 {
@@ -44097,7 +44097,7 @@ TypeChecker__check$ = (function(ctx,_arg1)
                         {
                           if (((ctx.CoeffectMode & 2) == 2)) 
                           {
-                            _9953 = Errors__syntaxError$FSharpMap_2_String__Tuple_2_Coeffect__Type_1FSharpMap_2_String__Tuple_2_Coeffect__Type_1("Structural coeffect langauge only supports simple variable patterns.");
+                            _9953 = Errors__syntaxError$FSharpMap_2_String__Tuple_2_Coeffect__Type_1FSharpMap_2_String__Tuple_2_Coeffect__Type_1("Structural coeffect language only supports simple variable patterns.");
                           }
                           else
                           {
