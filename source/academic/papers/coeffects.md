@@ -4,7 +4,7 @@
     _requirements_ that computations place on the environment. We present a unified
     coeffect system that can be used for checking liveness and properties of
     data-flow or distributed programs,
- - tags: academic, publication
+ - tags: academic, publication, top
  - layout: paper
  - title: Coeffects: Unified static analysis of context-dependence
  - date: 17 June 2013

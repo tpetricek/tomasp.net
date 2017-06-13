@@ -5,7 +5,7 @@
      requires expert programming skills. In this paper, we describe the design of a data 
      exploration language that makes the task more accessible by embedding advanced programming 
      concepts into a simple core language.
- - tags: academic, publication
+ - tags: academic, publication, top
  - layout: paper
  - date: 12 April 2017
  - title: Data exploration through dot-driven development
@@ -13,7 +13,7 @@
  
 > Tomas Petricek
 >
-> To appear in proceedings of ECOOP 2017
+> In proceedings of ECOOP 2017
 
 Data literacy is becoming increasingly important in the modern world. While spreadsheets make 
 simple data analytics accessible to a large number of people, creating transparent scripts that 
@@ -39,6 +39,17 @@ understand in order to write scripts for exploring data.
  - Download [pre-print of the paper (PDF)](pivot-ecoop17.pdf)
  - Watch [Fellow Short Talk](https://www.youtube.com/watch?v=aHjgpmzFjOA) from Alan Turing Institute
  
+## Watch the talk
+
+My talk about the paper has been pre-recorded at the Alan Turing Institute and so you can watch
+it below. If you are looking for a more general introduction to The Gamma project, then consider
+watching the [Fellow Short Talk](../storytelling) that is available for a more general paper about
+the project.
+
+<div style="padding-left:20px">
+<iframe width="640" height="360" src="https://www.youtube.com/embed/hel0ElbGong" frameborder="0" allowfullscreen></iframe>
+</div>
+
 ## <a id="cite">Bibtex</a>
 If you want to cite the paper, you can use the following BibTeX information.
 

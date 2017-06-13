@@ -27,15 +27,36 @@
   <div class="container">  
     <div class="row">
     <div class="col-sm-12 col-md-6">
-      <h2 class="first">List of published papers</h2>
-      <p>I published papers about programming languages including type providers, theory of coeffects,
-        concurrent and reactive programming, but also philosophy and history of programming.
-        The full list of published papers is below.</p>
+      <h2 class="first">Journal and conference publications</h2>
+      <p>The following papers have been published in recognized top-tier programming language 
+        conferences and in journals and present my most important results. Further workshop 
+        publications and abstracts, many of which are highly-cited, are listed below.</p>
+        
+      {% for post in model.Papers %}
+      {% if post.Tags contains "top" %}
+        <div itemscope itemtype="http://schema.org/Article">
+          <h4 itemprop="name"><a itemprop="sameAs" href="{{ post.Url }}">{{ post.Title }}</a></h4>
+          <meta itemprop="image" content="" />
+          <meta itemprop="datePublished" content="{{ post.Date | dateNice }}" />
+          <meta itemprop="headline" content="{{ post.Title }}" />
+          <p class="h3-datepub" itemprop="author publisher">{{ post.Subtitle }}</p>            
+          <div itemprop="description">            
+            <p>{{ post.Description }}</p>
+          </div>
+        </div>
+      {% endif %}
+      {% endfor %}
+
+      <h2>Workshop papers and abstracts</h2>
+      <p>The following papers cover a wide range of topics from data journalism, theory and practice 
+        of programming to philosophy and history of compter science. They appeared in workshop and
+        conference proceedings, but many have been highly influential.</p>
         
       {% for post in model.Papers %}
       {% if post.Tags contains "article" %}
       {% elsif post.Tags contains "thesis" %}
       {% elsif post.Tags contains "draft" %}
+      {% elsif post.Tags contains "top" %}
       {% else %}
         <div itemscope itemtype="http://schema.org/Article">
           <h4 itemprop="name"><a itemprop="sameAs" href="{{ post.Url }}">{{ post.Title }}</a></h4>
