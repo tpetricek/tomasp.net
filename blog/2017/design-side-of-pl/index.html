@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>The design side of programming language design - Tomas Petricek</title>
+
+  <meta name="description" content=" The word "design" is often used when talking about programming languages. In fact, 
+it even made it into the name of one of the most prestigious academic programming conferences.
+Yet, it is almost impossible to come across a paper about programming languages that uses design
+methods to study its subject. In this article, I want to convince you that this is a missed
+opportunity." />
+  <meta name="keywords" content="academic, research, programming languages, philosophy, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="The design side of programming language design" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2017/design-side-of-pl/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg" />
+  <meta property="og:description" content=" The word "design" is often used when talking about programming languages. In fact, 
+it even made it into the name of one of the most prestigious academic programming conferences.
+Yet, it is almost impossible to come across a paper about programming languages that uses design
+methods to study its subject. In this article, I want to convince you that this is a missed
+opportunity." />
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="The design side of programming language design" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg" />
+  <meta name="twitter:description" content=" The word "design" is often used when talking about programming languages. In fact, 
+it even made it into the name of one of the most prestigious academic programming conferences.
+Yet, it is almost impossible to come across a paper about programming languages that uses design
+methods to study its subject. In this article, I want to convince you that this is a missed
+opportunity." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "The design side of programming language design",
+    "headline": "The design side of programming language design",
+  	"description": " The word "design" is often used when talking about programming languages. In fact, 
+it even made it into the name of one of the most prestigious academic programming conferences.
+Yet, it is almost impossible to come across a paper about programming languages that uses design
+methods to study its subject. In this article, I want to convince you that this is a missed
+opportunity.",
+  	"url": "http://tomasp.net/blog/2017/design-side-of-pl/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2017-07-12T14:05:48.9378708+01:00",
+  	"datePublished": "2017-07-12T14:05:48.9378708+01:00",
+    "dateModified": "2017-07-12T14:05:48.9378708+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2017/design-side-of-pl/",
+  	"image": "http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg",
+  	"thumbnailUrl": "http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg",
+  	"keywords": ["academic", "research", "programming languages", "philosophy",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-source libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming languages, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper hidden-xs-home">
+  <nav>
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com"><span class="hidden-sm">F#</span> Trainings</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Talks<span class="hidden-sm"> and books</span></a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/" class="last-left">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article class="post">
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>The design side of programming language design</h1>
+<div style="text-align:center">
+<a href="http://amzn.to/2gVxn8W">
+  <img src="http://tomasp.net/blog/2017/design-side-of-pl/parsons.jpg" class="rdecor"
+    style="max-width:220px;margin-left:30px;margin-top:20px;margin-bottom:20px;width:75%" /></a></div>
+<p>The word "design" is often used when talking about programming languages. In fact, it even made
+it into the name of one of the most prestigious academic programming conferences, <a href="http://www.sigplan.org/Conferences/PLDI/">Programming
+Language Design and Implementation (PLDI)</a>. Yet, it is
+almost impossible to come across a paper about programming languages that uses design methods to
+study its subject. We intuitively feel that "design" is an important aspect of programming
+languages, but we never found a way to talk about it and instead treat programming languages as
+mathematical puzzles or as engineering problems.</p>
+<p>This is a shame. Applying design thinking, in the sense used in applied arts, can let us talk
+about, explore and answer important questions about programming languages that are ignored when
+we limit ourselves to mathematical or engineering methods. I think the programming language
+community is, perhaps unconsciously, aware of this - one of the reviews of <a href="http://tomasp.net/academic/papers/fsharp-data/">my recent PLDI
+paper</a> said <em>"this is a nice, novel design paper,
+and the community often wants more design papers in our conferences"</em>. The problem is that we
+we do not know how to write and evaluate work that follows design methodology.</p>
+<p>To better understand how design works, I recently read <a href="http://amzn.to/2gVxn8W">The Philosophy of Design</a>
+by Glenn Parsons. The book perhaps did not answer many of my questions about design, but it did give
+me a number of ideas about what design is, what questions it can explore and how those could be
+relevant for the study of programming languages...</p>
+<h2>Is "programming language design" a design activity?</h2>
+<p>First of all, is it useful to explore how design thinking applies to programming languages?
+Perhaps the word "design" in the term "programming language design" is misleading and it really
+is just engineering and mathematical task. In the first section, Parsons tries to answer the
+question "What is design?" and many of the points made in the section made me think of programming
+languages, so I believe (some aspects of) programming language design are, indeed, design activities.</p>
+<h3>How design changes the world</h3>
+<p>One of the very broad definitions of design says that "design [is] the intentional creation of
+plans for a new kind of thing". This is perhaps too broad, but it captures an important fact -
+design is relevant when you are trying to create something innovative and new that did not exist
+before. For me, this is the most interesting part of programming languages, but it is the one that
+we rarely talk about. Instead, we evaluate (prove, measure, compare) different aspects of a
+language once it is created, but we almost never discuss how that creation happened.</p>
+<blockquote>
+<p>Design produces items that have the <em>primary</em> function of altering the world, rather than
+explaining it, whereas in sciences, the primary function is explanation.</p>
+</blockquote>
+<p>The iPhone was a successful design work, because it changed the world by creating a new kind of
+thing. It changed how most of us live today. For me, programming language design is interesting
+for the same reasons. It has the potential to transform how we interact with computers and,
+possibly, the world.</p>
+<h3>How programming languages change the world</h3>
+<p>Object-oriented programming certainly changed how we think about and construct programs. In case
+of Smalltalk, this was a part of <a href="https://en.wikipedia.org/wiki/Dynabook">more ambitious Dynabook design vision</a>,
+yet, when you read the <a href="https://en.wikipedia.org/wiki/Smalltalk">Wikipedia page on Smalltalk</a>, it
+spends half of the page on syntax and control structures and says very little about the design
+thinking behind it. Similarly, I find type providers interesting because they changes how we interact
+with data and can perhaps <a href="https://thegamma.net/">democratizing access to data</a>, yet,
+<a href="http://tomasp.net/academic/papers/fsharp-data/">my aforementioned paper</a> was accepted because
+it had sufficiently convincing proofs.</p>
+<p>Once we start looking at programming languages through the design perspective, we can start
+thinking about the principles behind a particular design and the subtle influences that such
+design decision has on the world. Let's look at two examples.</p>
+<h2>Exhibit 1: Abstraction and design</h2>
+<img src="http://tomasp.net/blog/2017/design-side-of-pl/table.jpg" class="rdecor"
+  style="max-width:400px;margin-left:30px;margin-top:20px;margin-bottom:20px;width:calc(100% - 60px)" />
+<p>Design may seem merely a matter of aesthetics, but this is not the case. The way everyday
+things are designed can have subtle influence. A nice example mentioned by Parsons is the
+design of a dining table:</p>
+<blockquote>
+<p>The design of a dining table might seem to be a mere aesthetic choice, but this is not quite so.
+At a rectangular table, someone sits at the "head position," whereas at a round table, everyone
+has an equal position. The effect is subtle, something that the people involved may not even be
+aware of, but differences of hierarchy and status are often shaped and maintained by just
+such subtle influences.</p>
+</blockquote>
+<p>This is a great example of an influence of design that you will not realize unless you explicitly
+think about design. Exploring the consequences of design choices on how people think about and
+use programming languages seems like one interesting area of work.</p>
+<h3>Subtle influence of design</h3>
+<p>The fact that a table is rectangular does not mean that people involved cannot be equal partners,
+but its subtle influence makes this unlikely. Similarly, a programming language can make certain
+things possible, but it can be designed in a way that makes people unlikely to use them. As a
+simple example, if you declare mutable variables using <code>let mutable</code> as opposed to just <code>let</code>,
+you will probably use immutable variables more often.</p>
+<p>This is a simple obvious example, but it is an example of design aspect of programming language
+that we rarely talk about. Are there more notable examples of the subtle influence of design
+in programming languages? I think abstraction is one of them...</p>
+<h3>Abstraction and power</h3>
+<p>Many programming languages provide some mechanism for <a href="https://en.wikipedia.org/wiki/Abstraction_(software_engineering)">abstraction</a>.
+In object-oriented languages, you can make some members of an object private and you control
+what is exposed via a public interface. Similarly, a function in most languages exposes just
+a public interface - you can call it - but it hides the internals of how it works. The idea is
+that the functioning of a function or internals of an object are irrelevant and the caller should
+not see them.</p>
+<p>This design decision has an important consequence. It means that the library author becomes the
+person at the "head position." They get to decide what is the right use of their components and
+what is not. The class distinction caused by abstraction has been hugely influential and people
+nowadays often say that a certain complex language feature (e.g. fancy types) need to be understood
+only by "library authors" and not by "library users".</p>
+<p>Would an alternative design be possible and reasonable? In a paper <a href="https://refuses.github.io/preprints/avatars.pdf">Tracing a Paradigm for
+Externalization: Avatars and the GPII Nexus (PDF)</a>
+from <a href="https://refuses.github.io/">Salon des Refusés</a>, Colin Clark and Antranig Basman very
+convincingly argue that systems which do not hide internals behind abstraction can be
+surprisingly long-living, precisely because they do not dictate how the components should be used.</p>
+<p>Perhaps then, thinking about programming language design from the design perspective would let
+us discover more of such subtle influences of design, explore the alternatives and advance the
+discipline.</p>
+<h2>Exhibit 2: Modernist ideas and programming</h2>
+<img src="http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg" class="rdecor"
+  style="max-width:400px;margin-left:30px;margin-top:20px;margin-bottom:20px;width:calc(100% - 60px)" />
+<p>Mathematical models can be used to prove properties about models of programs. Engineering methods
+can be used to make the construction process more robust. Design thinking complements these two
+by letting us talk about how programming languages, libraries and programs are created. What are
+the guiding principles that made them look the way they look? And what are these principles aiming
+to achieve?</p>
+<h3>Form follows function</h3>
+<p>Parson's book frames the discussion about design using modernist ideas:</p>
+<blockquote>
+<p>Modernism's "reconceptualization" of Design problems is nicely summed up in
+the famous slogan "Form follows Function." The central idea is that if the Designer merely
+constructs the object to perform its function, then expression, aesthetic value and
+mediation become, as it were, "spin-off" values that follow effortlessly.</p>
+</blockquote>
+<p>What would the design of a programming language or a library look if it followed the modernist
+slogan "Form follows Function?" Whether this is a design principle worth following for programming
+or not is another question - just like you might prefer Art Deco architecture over modernist
+architecture, perhaps you prefer more decorative programming languages over modernist ones.</p>
+<p>However, framing discussion about programming languages in terms of guiding design ideas might
+give make the design process easier and clearer and it can also help us avoid some of the
+pointless discussions about languages. For example, very few people argue whether "modernism is
+<em>better</em> than postmodernism". People discuss the differences and their personal preference, but
+the question of which one is <em>better</em> makes little sense.</p>
+<h3>Ornament and modernism in programming</h3>
+<p>As an example of what I have in mind with different design principles, let's look at two
+small examples of parser combinator code snippets. I think the topic is worth a separate
+post, but I wanted a quick illustration. First, here is a part of the JSON parser using
+the <a href="http://www.quanttec.com/fparsec/tutorial.html">FParsec library for F#</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="f">listBetweenStrings</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">sOpen</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">sClose</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">pElement</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="i">f</span> <span class="o">=</span>
+  <span class="i">between</span> (<span class="i">str</span> <span onmouseout="hideTip(event, 'fs2', 6)" onmouseover="showTip(event, 'fs2', 6)" class="i">sOpen</span>) (<span class="i">str</span> <span onmouseout="hideTip(event, 'fs3', 7)" onmouseover="showTip(event, 'fs3', 7)" class="i">sClose</span>)
+          (<span class="i">ws</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">.</span> <span class="i">sepBy</span> (<span onmouseout="hideTip(event, 'fs4', 8)" onmouseover="showTip(event, 'fs4', 8)" class="i">pElement</span> <span class="o">.</span><span class="o">&gt;&gt;</span> <span class="i">ws</span>) (<span class="i">str</span> <span class="s">&quot;,&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">.</span> <span class="i">ws</span>) <span class="o">|&gt;&gt;</span> <span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="i">f</span>)
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 10)" onmouseover="showTip(event, 'fs6', 10)" class="i">jlist</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs1', 11)" onmouseover="showTip(event, 'fs1', 11)" class="f">listBetweenStrings</span> <span class="s">&quot;[&quot;</span> <span class="s">&quot;]&quot;</span> <span class="i">jvalue</span> <span class="i">JList</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 12)" onmouseover="showTip(event, 'fs7', 12)" class="i">keyValue</span> <span class="o">=</span> 
+  <span class="i">stringLiteral</span> <span class="o">.</span><span class="o">&gt;&gt;.</span> (<span class="i">ws</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">.</span> <span class="i">str</span> <span class="s">&quot;:&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">.</span> <span class="i">ws</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">.</span> <span class="i">jvalue</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>In this example, there is more to the "Form" than just the "Function". To make the code shorter
+and nicer to read, the form of it uses a number of custom ornamental operators such as
+<code>.&gt;&gt;.</code>, <code>&gt;&gt;.</code> and <code>|&gt;&gt;</code>. You need to learn what is behind those ornaments, but then you might
+appreciate reading code written in this style.</p>
+<p>If you prefer a modernist design and believe that <a href="https://en.wikipedia.org/wiki/Ornament_and_Crime">ornament is a
+crime</a>, you might prefer to write the
+code in a way where the form directly follows function. As an example consider the following
+<a href="https://github.com/youngnh/parsatron">Brainfuck parser in Clojure</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="clojure">(defparser instruction []
+  (choice (char \&gt;) (char \&lt;) (char \+)
+          (char \-) (char \.) (char \,)
+          (between (char \[) (char \]) (many (instruction)))))
+
+(defparser bf []
+  (many (instruction))
+  (eof))
+</code></pre></td></tr></table>
+<p>Here, the form follows directly the function given the material (language) constraints. Two
+notes are in order. First, I'm not saying that one is better than the other. I have my
+personal preference, but that is just a personal preference. Second, I don't think the language
+dictates the style in this case. I can perfectly imagine ornamental parser library for Clojure
+and modernist parser library for F#.</p>
+<p>Just like with the subtle influence of design, I think the above example is merely scratching
+the surface. I believe the modernist principle that form follows function could be used as a
+building block for a new, interesting, kind of programming languages. This way of thinking
+about programming is very much unexplored. As far as I'm aware, the only relevant paper here is
+<a href="http://homepages.mcs.vuw.ac.nz/~kjx/papers/nopp.pdf">Notes on postmodern programming (PDF)</a> by
+James Noble and Robert Biddle. I think there should be many more!</p>
+<h2>Side-note: How design lost to mathematics and science</h2>
+<p>Before wrapping up, there was one more remark in Parsons book that I found very interesting in
+the context of programming languages. One of the design movements mentioned in the book aimed
+to create "design science", partly in reply to the fact that design was not recognized as a
+reputable academic discipline:</p>
+<blockquote>
+<p>Simon (...) argued that the reliance on intuition had led to a marginalization of Design
+within the contemporary university. In the university setting, Simon argued, the highest
+prestige accrues to the pure sciences, due to their much vaunted "scientific method" (...).
+Situated next to the pure sciences, Design (...) looked flimsy and amateurish.</p>
+</blockquote>
+<p>I believe this also explains why design thinking got lost from academic thinking about
+programming languages. Compared to aspects that can be measured or formally proved, the
+design issues do perhaps look flimsy, but I believe they are equally important - they simply
+look at questions that cannot be answered with engineering, scientific or mathematical ways
+of thinking. In contrast to design, computer science took the right approach in order to
+succeed in the modern university. As noted by Nathan Ensmenger in <a href="http://amzn.to/2vU4v3D">The Computer Boys Take
+Over</a>:</p>
+<blockquote>
+<p>The rise of theoretical computer science was anything but inevitable. (...) Advocates of
+theoretical computer science pursued a strategy that served them well within the university,
+but increasingly alienated them from their colleagues in the industry.</p>
+</blockquote>
+<p>Thanks to the success of theoretical computer science, there are now academic departments that
+study things like programming languages. Sadly, it also means that the methods of study are
+limited to those that the are prestigious in the academic environment. I believe that there is
+a room for looking at programming languages from the perspective of intuitive, (flimsy and
+amateurish) design perspective, because it is the best we have for answering a number of
+important programming language questions.</p>
+<h2>Summary: Towards resurrecting design</h2>
+<p>In this blog post, I looked at two aspects of design thinking that can be applied to
+programming language design. The first was the subtle influence of design - seemingly
+standard and uninteresting features of design such as rectangular shape of a table have
+important consequences. The same is the case with, for example, abstraction in programming
+languages. The second theme was design principles such the modernist mantra that form follows
+function. How can those principles be exhibited in programming language design and what
+other guiding principles can we find?</p>
+<p>I believe that asking those questions would enrich the discussion about programming languages.
+As mentioned earlier, design is the intentional creation of plans for a new kind of thing
+with the primary function of altering the world - I think that there is a lot of unexplored
+space in programming languages and treating them from the design perspective is one way to
+exploring those new areas.</p>
+<p>I also believe that interesting programming language research is not about finding a keyword
+that will make writing <code>for</code> loops 3x easier, but about changing how we interact with the
+world. For example, <a href="https://www.youtube.com/watch?v=aHjgpmzFjOA">can programming language research help democratize access to
+data and fight "fake news"?</a></p>
+<p>One initiative in this direction has been the recent <a href="http://2017.programmingconference.org/track/refuses-2017">Salon des Refusés
+workshop</a> that I helped to organize.
+We hope to host another one at <a href="https://twitter.com/programmingconf">@programmingconf</a> in Nice
+in 2018 and we will also be launching a new web page for the Salon soon, so if you made
+it to the end, follow me at <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a> to hear more
+soon! I would also love to hear your ideas about how design thinking can be applied to
+programming languages and what good materials on "design thinking" are there!</p>
+
+
+<div class="tip" id="fs1">val listBetweenStrings : sOpen:&#39;a -&gt; sClose:&#39;b -&gt; pElement:&#39;c -&gt; f:&#39;d -&gt; &#39;e<br /><br />Full name: designsideofpl.listBetweenStrings</div>
+<div class="tip" id="fs2">val sOpen : &#39;a</div>
+<div class="tip" id="fs3">val sClose : &#39;b</div>
+<div class="tip" id="fs4">val pElement : &#39;c</div>
+<div class="tip" id="fs5">val f : &#39;d</div>
+<div class="tip" id="fs6">val jlist : obj<br /><br />Full name: designsideofpl.jlist</div>
+<div class="tip" id="fs7">val keyValue : obj<br /><br />Full name: designsideofpl.keyValue</div>
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2017%2fdesign-side-of-pl%2f&amp;text=The+design+side+of+programming+language+designvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2017%2fdesign-side-of-pl%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2017%2fdesign-side-of-pl%2f&title=The+design+side+of+programming+language+design">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=The%20design%20side%20of%20programming%20language%20design&body=%20The%20word%20%22design%22%20is%20often%20used%20when%20talking%20about%20programming%20languages.%20In%20fact%2c%20%0d%0ait%20even%20made%20it%20into%20the%20name%20of%20one%20of%20the%20most%20prestigious%20academic%20programming%20conferences.%0d%0aYet%2c%20it%20is%20almost%20impossible%20to%20come%20across%20a%20paper%20about%20programming%20languages%20that%20uses%20design%0d%0amethods%20to%20study%20its%20subject.%20In%20this%20article%2c%20I%20want%20to%20convince%20you%20that%20this%20is%20a%20missed%0d%0aopportunity.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2017%2fdesign-side-of-pl%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Wednesday, 12 July 2017, 2:05 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a>, <a
+          href="/blog/tag/philosophy/">philosophy</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2017/">July 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>  
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    var small = (window.innerWidth * window.innerHeight) < 500000;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
+  </script>
+</body>
+</html>
