@@ -2,8 +2,8 @@ The design side of programming language design
 ==============================================
 
  - title: The design side of programming language design
- - date: 2017-07-12T14:05:48.9378708+01:00
- - description: The word "design" is often used when talking about programming languages. In fact, 
+ - date: 2017-09-12T17:42:38.3286628+01:00
+ - description: The word design is often used when talking about programming languages. In fact, 
     it even made it into the name of one of the most prestigious academic programming conferences.
     Yet, it is almost impossible to come across a paper about programming languages that uses design 
     methods to study its subject. In this article, I want to convince you that this is a missed
@@ -41,6 +41,12 @@ me a number of ideas about what design is, what questions it can explore and how
 relevant for the study of programming languages...
 
 ----------------------------------------------------------------------------------------------------
+
+> _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>
+> If you are interested in new ways of thinking about programming, please join our new
+> [Shift Society mailing list](https://groups.google.com/forum/#!forum/shift-society). We'll
+> use it to share announcements about events like [Salon des Refusés](https://refuses.github.io/)
+> and provide space for discussions on the future of programming._
 
 ## Is "programming language design" a design activity?
 
@@ -278,3 +284,9 @@ in 2018 and we will also be launching a new web page for the Salon soon, so if y
 it to the end, follow me at [@tomaspetricek](http://twitter.com/tomaspetricek) to hear more
 soon! I would also love to hear your ideas about how design thinking can be applied to 
 programming languages and what good materials on "design thinking" are there!
+
+> _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>
+> If you are interested in new ways of thinking about programming, please join our new
+> [Shift Society mailing list](https://groups.google.com/forum/#!forum/shift-society). We'll
+> use it to share announcements about events like [Salon des Refusés](https://refuses.github.io/)
+> and provide space for discussions on the future of programming._
