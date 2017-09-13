@@ -79,7 +79,7 @@ Object-oriented programming certainly changed how we think about and construct p
 of Smalltalk, this was a part of [more ambitious Dynabook design vision](https://en.wikipedia.org/wiki/Dynabook), 
 yet, when you read the [Wikipedia page on Smalltalk](https://en.wikipedia.org/wiki/Smalltalk), it 
 spends half of the page on syntax and control structures and says very little about the design
-thinking behind it. Similarly, I find type providers interesting because they changes how we interact 
+thinking behind it. Similarly, I find type providers interesting because they change how we interact 
 with data and can perhaps [democratizing access to data](https://thegamma.net/), yet, 
 [my aforementioned paper](http://tomasp.net/academic/papers/fsharp-data/) was accepted because
 it had sufficiently convincing proofs.
