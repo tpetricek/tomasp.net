@@ -9,7 +9,7 @@
  - layout: paper
  - date: 12 April 2017
  - title: Data exploration through dot-driven development
- - subtitle: Tomas Petricek. To appear in proceedings of ECOOP 2017.
+ - subtitle: Tomas Petricek. In proceedings of ECOOP 2017.
  
 > Tomas Petricek
 >
