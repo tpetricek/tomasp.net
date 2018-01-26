@@ -292,7 +292,7 @@ about cells, which requires microscope, but does not proceed _ad infinitum_?
 
 Before you ask, let me reassure you that I believe in science. I hope this is obvious to most 
 readers, but for some reason, it seems important to say it nowadays. The amazing stories from the
-history of science do illustrate that science does not work. Instead, they show _how it works_.
+history of science do not illustrate that science does not work. Instead, they show _how it works_.
 
 As we make more precise observations and conduct better experiments, we sometimes need to revise
 the way we think about the world. Some paradigm shifts make older theories look hilarious. The new
