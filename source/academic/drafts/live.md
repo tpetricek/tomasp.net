@@ -35,7 +35,7 @@ solid and easy to reuse foundations for the emerging trend of live programming e
 
 ## Draft and more information
 
- - Download [the draft paper (PDF)](paper.pdf)
+ - Download [the draft paper (PDF)](live.pdf)
 
 ## Comments are welcome!
 
