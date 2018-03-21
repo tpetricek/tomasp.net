@@ -36,10 +36,10 @@ take our basic assumptions for granted. Through the discussion in this paper, we
 map the large and rich space of programming ideas and provide reference points for exploring,
 perhaps foreign, ideas that can challenge some of our assumptions.
 
-## Draft and more information
+## Paper and more information
 
  - See [the paper record](http://programming-journal.org/2017/1/14/) in The Art, Science, and Engineering of Programming
-   journal and [get the official open access version](https://arxiv.org/pdf/1703.10863v1).
+   journal.
  - Download [local copy of the final version of the paper (PDF)](failures-programming.pdf)
  - [Talk slides from <Programming> 2017](http://tpetricek.github.io/Talks/2017/living-with-errors/).
    There are also [longer slides](http://tpetricek.github.io/Talks/2016/living-with-errors/) from
