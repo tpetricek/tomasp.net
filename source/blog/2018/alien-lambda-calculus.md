@@ -181,7 +181,7 @@ via a metaphor as a collection of objects.
 
 When we say _"add onions and carrots to the soup"_, we are using the word _add_ for working 
 with object collection (things in a soup) and it happens to be the same word we use for addition.
-This is a metaphorical link! We sometimes say _"5 is bigger than 7"_ rather than _greater_
+This is a metaphorical link! We sometimes say _"7 is bigger than 5"_ rather than _greater_
 (even though they are the same size on your screen), because we think of those numbers as 
 collections of objects.
 
