@@ -64,7 +64,7 @@ mathematics and there is no way to directly access this world of ideal mathemati
 [Lakoff and Núñez (2001)](http://amzn.to/2FEu0eb) refer to this as _The Romance of Mathematics_ and point out some of the
 sad consequences. _The Romance of Mathematics makes a wonderful story, but it intimidates, it 
 helps to maintain an elite, it rewards incomprehensibility._ In other words, you either can
-or cannot _see_ the world of eternal mathematical truths. If no, than bad luck - you probably 
+or cannot _see_ the world of eternal mathematical truths. If no, then bad luck - you probably 
 won't be a mathematician (or a theoretical computer scientist) and our writing is only 
 incomprehensible to you, because you do not see the truths in it.
 
