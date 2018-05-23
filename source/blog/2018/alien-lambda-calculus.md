@@ -204,7 +204,7 @@ one of those eternal truths that a Platonist believes in.
 
 Philip Wadler made a remark [in one of his talks](https://www.youtube.com/watch?list=PLcGKfGEEONaCIl5eU53uPBnRJ9rbIH32R&v=IOiZatlZtGU)
 that lambda calculus and functional languages are discovered while other programming
-languages are discovered (which is why aliens would understand lambda calculus, but not C).
+languages are invented (which is why aliens would understand lambda calculus, but not C).
 How do we know that lambda calculus is discovered? The strongest argument is that the same structure
 appeared independently in logic, computation and category theory. This is known as the 
 [Curry-Howard-Lambek correspondence](https://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence)
