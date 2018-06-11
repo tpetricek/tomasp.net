@@ -1,9 +1,13 @@
-Would aliens understand lambda calculus? [DRAFT]
+Would aliens understand lambda calculus?
 ========================================
 
  - title: Would aliens understand lambda calculus?
- - date: 2018-01-22T17:42:38.3286628+01:00
- - description: TODO
+ - date: 2018-05-22T10:27:00.3286628+01:00
+ - description: The question whether aliens would understand lambda calculus
+    is intriguing because it vividly formulates a fundamental question about our formal mathematical
+    knowledge. Are mathematical theories and results about them invented, i.e. constructed by
+    humans, or discovered, i.e. are they eternal truths that exist regardless of whether there are
+    humans to know them? 
  - layout: post
  - image-large: http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg
  - tags: academic, research, programming languages, philosophy
@@ -279,47 +283,129 @@ surprising that they share notable structural similarities.
 
 ### Cognitive scientist's take: Embodied experience
 
-Same embodied experience
+Finally, the cognitive science explanation of the correspondence between the three is that
+they arise from the same embodied experience. Lambda calculus, category theory and
+logic are abstractions constructed via layering metaphors, based on our experience of
+living in the physical world. The fact that the three can be linked to each other (through
+another layering metaphor) follows from the fact that they are largely based on the same
+embodied experience. What physical experience do we need to construct the lambda calculus?
 
-Where lambda calculus comes from
---------------------------------
+## Where lambda calculus comes from
+[Lakoff and Núñez (2001)](http://amzn.to/2FEu0eb) uses the cognitive science framework to
+explain a number of mathematical ideas including set theory, logic, trigonometric functions
+and logarithms, but sadly, it does not include the lambda calculus. In this section, I will
+try to use some of the methods that Lakoff and Núñez introduce to think about lambda calculus,
+but this is only a sketch to give you an idea how this reasoning might look like.
 
 ### Container schema
+There are at least two fundamental physical experiences that are necessary for the development
+of the lambda calculus using cognitive metaphors. The first one is the container schema. This is
+a real-world analogy that lets us construct the set theory and the
+[Modus ponens rule](https://en.wikipedia.org/wiki/Modus_ponens).
+
+If you have a small black object, put it in a glass and then put the glass in a large jug, the
+small black object will also be in the jug. This is a real world experience analogous to the
+idea that if you have an object $x$ which is a member of a set $A$, then if $A$ is a subset of
+$B$, then $x$ is also a member of $B$.
+
+<img src="container.png" class="img-responsive" style="max-width:600px;margin:0px auto 20px auto"/>
+
+More formally, if $x\in A$ and $A \subseteq B$ then also $x\in B$. Now, if we think of types as
+sets (which is a frequently used linking metaphor that people use when thinking about types),
+we can see how the container schema relates to the typing rule for the function application.
+The structure is very similar. If $x:A$ and $f:A\rightarrow B$ then $f(a):B$. Having a type is
+like being a set member and subset relation is like function application.
+
+The key idea is that, even something very abstract as the $\beta$-reduction rule in lambda
+calculus is derived, through a series of linking metaphors, from our bodily experience.
+My explanation using container schema is one attempt - perhaps not perfect - but
+it follows the general method outlined by Lakoff and Núñez.
 
 ### Directionality
+The reason why explaining lambda calculus in terms of the container schema matters is that
+it places requirements on what the alien world needs to have in order for the aliens to
+be able to conceive it. I will get to this when discussing concrete aliens in the next section.
+Now, there is one more requirement that we can discover through cognitive science methods.
 
-Would aliens understand lambda calculus?
-----------------------------------------
- 
-### Arrival
+One way of finding metaphors we use is to look at the language we use for talking about
+mathematical concepts. For example, why is the $\beta$-reduction (application) rule called
+_reduction_? If you look at the [dictionary definition of 
+'reduce'](http://www.dictionary.com/browse/reduce), you'll find that reduce means:
 
-### Solaris
+ 1. _to bring down_ to a smaller extent, size, amount
+ 2. _to lower in degree_, intensity, etc.
+ 3. _to bring down_ to a lower rank, dignity, etc.
 
-### Dust cloud
+The interesting aspect shared by all these explanations is that they require a sense of
+directionality. Reduction is a transformation from something larger towards something smaller.
+Again, this is something that needs to exist in our physical world, otherwise we would likely
+not be able to construct the lambda calculus!
 
+## Would aliens understand lambda calculus?
+I used the question whether aliens would understand lambda calculus as a starting point for
+a discussion about several directions in philosophy of mathematics and the fundamental question
+of the nature of mathematical concepts. Now that I've done that, it's time to get back to
+aliens.
 
+Would aliens understand lambda calculus? The answer is that it depends on the aliens.
+Human-like aliens living in human-like world have a very good chance of coming up with similar
+ideas, although even they might lack the necessary cultural concepts such as _essence_ and
+_foundations_ that led human mathematicians to the lambda calculus. However, more interesting
+aliens might have problems. Let's wrap up with three concrete examples.
 
+#### Heptapods from Arrival
 
+<img src="solaris.jpg" class="rdecor" style="width:60%;max-width:300px" />
 
+First concrete aliens we can think about are heptapods from the <a href="https://en.wikipedia.org/wiki/Arrival_(film)">Arrival movie</a>
+(based on <a href="https://en.wikipedia.org/wiki/Story_of_Your_Life">Story of Your Life</a>, which is
+still on my reading list...). The aliens in the movie have a language that has a circular nature.
+The movie plot relies on the <a href="https://en.wikipedia.org/wiki/Linguistic_relativity">Sapir-Whorf hypothesis</a>
+that language shapes your thinking and your understanding of the world. I can avoid spoilers by
+saying that this means that heptapods would probably not have the notion of _directionality_ that
+is needed for the $\beta$-reduction rule. What does this mean? Perhaps heptapods would only
+be able to understand reversible computations, but not the lambda calculus!
 
+#### The planet from Lem's Solaris
+Even more extreme example of an alient that might not understand the lambda calculus appears in
+the <a href="https://en.wikipedia.org/wiki/Solaris_(novel)">Solaris novel</a> by Stanislaw Lem. To discuss
+this one, I will need to reveal a bit more, so skip this section if you want to read it!
+Solaris is a planet covered by an ocean that is a single sentient being.
 
+Would a single planet-scale alien understand lambda calculus? It is quite conceivable that
+it would lack much more from our mathematics than just the lambda calculus! Given that
+the ocean from Solaris is just a single being known to it, it might very well only have the
+number one!
 
+#### Aliens in a gaseous universe
+I don't have a literary reference for my last example (after the talk, a friend recommended
+<a href="https://en.wikipedia.org/wiki/Blindsight_(Watts_novel)">Blindsight</a> which is also on my reading list).
+But imagine alien civilization that lives in a gaseous planet as a swarm. Given the chaotic
+nature of the atmosphere, such aliens would be able to easily navigate through chaotic environment
+that is completely unpredictable for us.
 
+However, they might lack many things that are completely obvious to us, such as the container
+schema. In a chaotic environment on the gaseous planet, there are no discrete boundaries and
+there is no inside or outside. Similarly, the structure of the mathematics that the gaseous aliens
+can create would be very different from ours and would hardly include the lambda calculus.
 
+## Conclusions
+The main point of this blog post was not to argue which aliens would understand lambda calculus
+and which would not. Instead, my goal is to introduce some of the ideas from _philosophy of
+mathematics_ that we can use to argue about the nature of mathematical and computer science
+entities in a more informed manner.
 
+The naive argument that computer scientists often make is that lambda calculus is at the heart
+of the isomorphism between logic, computation and category theory and this suggests that it
+refers to some eternal truth. This is a Platonist view of mathematics which is just one of
+several positions. The main problem with it is that it cannot be tested and so it is more
+a religious belief than a scientific claim. However, it also ignores the social, cognitive and
+cultural aspects of mathematical knowledge.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-a
+I believe that a more useful way of thinking about mathematical and theoretical computer science
+entities is to see them as the product of our embodied mind, influenced by the social processes
+that surround mathematics and, partly, rooted in our cultural heritage.
+If we think about mathematics this way, we can then find a number of problems that aliens
+might have when trying to understand the lambda calculus. Especially if we think a bit more
+creatively about the world in which the aliens might live, or consider some concrete aliens from
+a good sci-fi book or a movie.
