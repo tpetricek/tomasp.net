@@ -9,7 +9,7 @@ Would aliens understand lambda calculus?
     humans, or discovered, i.e. are they eternal truths that exist regardless of whether there are
     humans to know them? 
  - layout: post
- - image-large: http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg
+ - image: http://tomasp.net/blog/2018/alien-lambda-calculus/human.jpg
  - tags: academic, research, programming languages, philosophy
 
 ----------------------------------------------------------------------------------------------------
