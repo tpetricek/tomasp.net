@@ -2,7 +2,7 @@ Programming as interaction: A new perspective for programming language research
 ===============================================================================
 
  - title: Programming as interaction: A new perspective for programming language research
- - date: 2018-09-22T10:27:00.3286628+01:00
+ - date: 2018-10-08T12:22:57.7521867+01:00
  - description: In programming research, we say a lot about programs and languages, but very little
     about the actual process of programming. One simple trick that will make programming language 
     research significantly more interesting is to think about programs not as expressions, but as
