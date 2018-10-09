@@ -282,7 +282,7 @@ language](http://www.subtext-lang.org/) by Jonathan Edwards. Among other things,
 has a first-class support for [copy and paste](http://www.subtext-lang.org/OOPSLA06.pdf).
 
 A curious reference that is well worth reading is the 1983 paper [First Steps Towards Inferential
-Programming](?) by William Scherlis and Dana Scott. As far as I can tell, nobody ever took the
+Programming](https://www.semanticscholar.org/paper/First-Steps-Towards-Inferential-Programming-Scherlis-Scott/c07a69e65cabfa015d19730a02d2140cc9709a56) by William Scherlis and Dana Scott. As far as I can tell, nobody ever took the
 next steps. The paper shares the motivation with this blog post. To quote 
 _"Our basic premise is that the ability to construct and modify programs will not improve without 
 a new and comprehensive look at the entire programming process."_ The authors note that existing
