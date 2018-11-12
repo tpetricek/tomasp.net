@@ -33,7 +33,7 @@ but also built a number of mature end-to-end ecosystems that you can rely on suc
 the F# to JavaScript compiler, and [SAFE Stack](https://safe-stack.github.io) for full-stack web development.
 
 For the upcoming December course in London, I added a number of demos and hands-on tasks built
-using Fable, partly because running F# in a browser is an easy way way to illustrate many concepts
+using Fable, partly because running F# in a browser is an easy way to illustrate many concepts
 and partly because Fable has some amazing functional-first libraries. 
 
 > _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>_
@@ -92,6 +92,12 @@ You can enter numbers such as `1` (in cell B1) or formulas such as `=B1+B2` in c
 support parentheses and four standard numerical operators. When you make an edit, the spreadsheet
 automatically updates. If you make a syntax error, reference empty cell or create a recursive 
 reference, the spreadsheet will show `#ERR`.
+
+> _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>_
+> Full source code is available in my [elmish-spreadsheet repository on GitHub](https://github.com/tpetricek/elmish-spreadsheet/)
+> (as a hands-on exercise in `master` branch and fully working in the `completed` branch), but you
+> can also play with it in the [Fable REPL](https://fable.io/repl/) (see Samples, Elmish, Spreadsheet),
+> which lets you edit and run F# in the browser.
 
 Defining the domain model
 -------------------------
@@ -583,6 +589,8 @@ If you want to have a look at the complete source code, you can find it [in my e
 repository on GitHub](https://github.com/tpetricek/elmish-spreadsheet/). The repository is designed
 as a hands-on exercise where you can start with a template, complete a number of tasks and end
 up with a spreadsheet, but there is also `completed` branch where you find the finished source code.
+You can also edit and run the code in your browser using the [Fable REPL](https://fable.io/repl/) 
+(you'll find it under Samples, Elmish, Spreadsheet),
 
 *)
 
