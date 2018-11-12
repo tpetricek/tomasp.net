@@ -39,12 +39,12 @@ and partly because Fable has some amazing functional-first libraries.
 > _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>_
 > If you are interested in learning F# and attending our course, the next [F# FastTrack](https://skillsmatter.com/courses/473-tomas-petricek-phil-trelford-fast-track-to-fsharp)
 > takes place on **6-7 December** in London at SkillsMatter. We also offer custom 
-> on-site trainints. Get in touch at [@tomaspetricek](http://twitter.com/tomaspetricek)
+> on-site trainings. Get in touch at [@tomaspetricek](http://twitter.com/tomaspetricek)
 > or email [tomas@tomasp.net](mailto:tomas@tomasp.net) for a 10% discount for the course. 
 
 One of the new samples I want to show, which I also [live coded at NDC 2018](https://vimeo.com/281241807), 
 is building a simple web-based Excel-like spreadsheet application. The spreadsheet demonstrates
-all the great F# features such as domain modelline with types, the power of compositionality 
+all the great F# features such as domain modeling with types, the power of compositionality 
 and also how functional-first approach can be amazingly powerful for building user interfaces. 
 
 ---------------------------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ What is a spreadsheet?
 
 The sample compiles to JavaScript, so the best way of explaining what we want to build is 
 to give you a live demo you can play with! Since this is a blog post about functional programming,
-I already implemented both Fibbonacci numbers (column B) and factorial (column D) in the spreadsheet for you!
+I already implemented both Fibonacci numbers (column B) and factorial (column D) in the spreadsheet for you!
 
 <script src="bundle.js"></script>
 <div style="width:100%;padding-right:20px;text-align:center;"><div class="excel" id="main"></div></div>
@@ -253,7 +253,7 @@ In the state, we keep a list of row and column keys (this typically starts from 
 we do not require that), currently selected cell (this can be `None` if no cell is selected)
 and, finally, the cells of the spreadsheet. There are two events that can happen.
 The `UpdateValue` event happens when you change the text in the current cell; the `StartEdit` 
-event happens when you click on some other cell to start editting it. 
+event happens when you click on some other cell to start editing it. 
 
 ### Updating the spreadsheet after event
 
@@ -300,7 +300,7 @@ lines 4-7 generate the header of the table. We create a `tr` element with no att
 using `yield` to generate the elements - first, we create the empty `th` element in the
 left top corner and then we iterate over all the columns and produce a header for each of
 the columns. The `col` variable is a character, so we first turn it into a string using 
-`string` before turingin it into HTML content using `str` function provided by Elmish.
+`string` before turning it into HTML content using `str` function provided by Elmish.
 
 The nice thing about writing your HTML rendering in this way is that it is composable.
 We do not have to put everything inside one massive function. Here, we call `renderCell`
@@ -396,7 +396,7 @@ let view state trigger =
   ]
 
 (**
-### Putting it all togehter
+### Putting it all together
 
 Now we have all the four components we need to run our user interface. We have the `State` and 
 `Event` type definitions and we have the `update` and `view` functions. To put everything together,
@@ -417,7 +417,7 @@ Program.mkProgram initial update view
 (**
 The initial state defines the ranges of available rows and columns and specifies that there
 are no values in any of the cells (the demo embedded above specifies the initial cells for
-computing factorial and Fibbonacci here). Then we use `mkProgram` to compose all the 
+computing factorial and Fibonacci here). Then we use `mkProgram` to compose all the 
 components together, we specify React as our execution engine and we start the Elmish application!
 
 Implementing spreadsheet logic
@@ -495,11 +495,11 @@ There are four key concepts in the library:
 
  * `<|>` is a binary operator that also takes two parsers, but they both have to recognise values of
    the same type. It tries to run the first parser and, if that fails, tries to run the second one.
-   It succeeds if either of the parsers succeed and returns whatever the succesfull parser returned.
+   It succeeds if either of the parsers succeed and returns whatever the successful parser returned.
 
  * Finally, `map` is a function that transforms the value that a parser produces. Given a parser of
    type `Parser<'T>` and a function `'T -> 'R`, it returns a parser that runs the original parser and,
-   if that is succesfull, applies the function to the result.
+   if that is successful, applies the function to the result.
 
 The following snippet shows how we use these three ideas to create simple parsers to recognise 
 operators, references and numbers:
@@ -561,7 +561,7 @@ formulas you enter and it also evaluates them, handling errors and recursive ref
 > or if you are interested in custom on-site training.
 
 I like this example, because it shows how a number of nice aspects of the F# language and also the
-F# community can come together to provie a fantastic overall experience. In case of our spreadsheet,
+F# community can come together to provide a fantastic overall experience. In case of our spreadsheet,
 this includes:  
 
 * [Fable](https://fable.io/) makes it possible to compile F# to JavaScript, but more importantly,
@@ -581,7 +581,7 @@ this includes:
 
 If you want to have a look at the complete source code, you can find it [in my elmish-spreadsheet
 repository on GitHub](https://github.com/tpetricek/elmish-spreadsheet/). The repository is designed
-as a hands-on expercise where you can start with a template, complete a number of tasks and end
+as a hands-on exercise where you can start with a template, complete a number of tasks and end
 up with a spreadsheet, but there is also `completed` branch where you find the finished source code.
 
 *)
