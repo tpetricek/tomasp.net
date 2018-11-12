@@ -224,7 +224,7 @@ two functions:
     type State = (*[omit:(Record capturing the state)]*){ State : string }(*[/omit]*)
     type Event = (*[omit:(Union listing possible events)]*)EventOne | EventTwo(*[/omit]*)
 
-    val update : State -> Event -> Event
+    val update : State -> Event -> State
     val view : State -> (Event -> unit) -> Html
 
 The two types and two functions define the user interface as follows:
