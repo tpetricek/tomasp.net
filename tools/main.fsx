@@ -79,7 +79,7 @@ let updateSite full changes =
     traceImportant "Generating RSS feed"
     Blog.generateRss (config.Output </> "rss.xml") config
       "Tomas Petricek - Languages and tools, open-source, philosophy of science and F# coding"
-      ( "Tomas is a computer scienctist, open-source developer and an occasional philosopher of " +
+      ( "Tomas is a computer scientist, open-source developer and an occasional philosopher of " +
         "science. I'm working on tools for data-driven storytelling, contribute to a number of F# " +
         "projects and I run trainings and offer consulting via fsharpWorks." )
       site.Posts 
