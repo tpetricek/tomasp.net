@@ -107,12 +107,14 @@ let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstract
     | Some(false, abs) -> abs, Heading(1, title, None)::(abs @ body)
     | None -> [], Heading(1, title, None)::body
   let date = tryFind "date" props |> Option.map DateTime.Parse
+  let references = tryFind "references" props = Some "true"
 
   { Title = formatSpans title
     Subtitle = defaultArg (tryFind "subtitle" props) ""
     Description = defaultArg (tryFind "description" props) ""
     Image = match tryFind "image" props, tryFind "image-large" props with Some i, _ | _, Some i -> i | _ -> ""
     LargeImage = (tryFind "image-large" props).IsSome
+    References = references
     Tags = 
       (defaultArg (tryFind "tags" props) "").Split([| ',' |], StringSplitOptions.RemoveEmptyEntries) 
       |> Seq.map (fun s -> s.Trim()) |> List.ofSeq
@@ -121,7 +123,17 @@ let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstract
     Url = cfg.Root + (Path.ChangeExtension(file.Substring(cfg.Source.Length), "").TrimEnd('.')).Replace('\\', '/')  + "/"
     Layout = tryFind "layout" props 
     Abstract = abs; Body = body }
-    
+
+let private generateReferences (refs:System.Collections.Generic.IDictionary<_, _>) =
+  [ Heading(2, [Literal("References", None)], None) 
+    ListBlock(MarkdownListKind.Ordered, 
+      [ for url, titleOpt in refs.Values do
+          match titleOpt with 
+          | None -> ()
+          | Some title -> 
+              let ref = sprintf "<a href='%s'>%s</a>" url title
+              yield [ InlineBlock(ref, None) ] ], None) ]
+
 let private transformMarkdownOrScript (cfg:SiteConfig) plain (inf:string) =
   let cached = Path.ChangeExtension(cfg.Cache </> inf.Substring(cfg.Source.Length+1), ".json")
   if not (sourceChanged inf cached) then 
@@ -133,7 +145,9 @@ let private transformMarkdownOrScript (cfg:SiteConfig) plain (inf:string) =
       else Literate.ParseScriptFile(inf)
 
     let article = parseMetadata cfg inf (readMetadata document.Paragraphs)
-    let body = document.With(List.map generateSubheadings article.Body)
+    let body = if article.References then article.Body @ generateReferences document.DefinedLinks else article.Body
+    let body = document.With(List.map generateSubheadings body)
+
     let abs = document.With(article.Abstract)
   
     use tmpAbs = DisposableFile.CreateTemp(".html")

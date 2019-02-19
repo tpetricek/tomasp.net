@@ -3,8 +3,7 @@
 open System
 
 type SiteConfig = 
-  { Root : string
-    
+  { Root : string    
     Source : string
     Layouts : string
     Calendar : string
@@ -26,13 +25,14 @@ type Article<'T> =
     Tags : seq<string>
     Date : DateTime
     HasDate : bool
+    References : bool
     Layout : string option
     Abstract : 'T
     Body : 'T 
     Url : string }
   member x.With(abs, body) = 
     { Subtitle = x.Subtitle; Title = x.Title; Description = x.Description; Image = x.Image
-      LargeImage = x.LargeImage; Tags = x.Tags; Date = x.Date; Url = x.Url
+      LargeImage = x.LargeImage; Tags = x.Tags; Date = x.Date; Url = x.Url; References = x.References
       HasDate = x.HasDate; Layout = x.Layout; Abstract = abs; Body = body }
 
 // Used in DotLiquid
