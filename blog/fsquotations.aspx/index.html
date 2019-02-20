@@ -181,14 +181,14 @@
 
 <p>This article describes very simple code that I wrote while learning
   how to work with the F# quotations library. Using the F# quotations you 
-  can get tree representation of the quoted expression. This allows you
+  can get a tree representation of a quoted expression. This allows you
   to write code that takes code written in F# as data and performs some
-  code analysis or compiles/translates that code to different language.
+  code analysis or compiles/translates that code to a different language.
   This is very similar to the new C# 3.0 expression trees where you can 
-  get expression tree from lambda expression and translate this tree 
+  get an expression tree from lambda expressions and translate this tree 
   for example to SQL (using DLINQ). However expression trees in C# 3.0 
   are very limited when compared with F# quotations, so that's one of 
-  the many reasons why F# is interesting language.</p>
+  the many reasons why F# is an interesting language.</p>
 
 <h2>Introduction to F# quotations</h2>
 <p>If you want to see how F# represents some expressions you can try
@@ -200,8 +200,8 @@ open Microsoft.FSharp.Quotations.Raw;;
 open Microsoft.FSharp.Quotations.Typed;;
 </pre>
 <p>Now you can see the internal representation of quotations by writing 
-  quoted expression (In VS.Net you can select code and hit Alt+Enter to 
-  sent selected code to F# interactive).</p>
+  a quoted expression (In VS.Net you can select code and hit Alt+Enter to 
+  send the selected code to F# interactive).</p>
 <pre>
 <span class="a">&lt;@@ 1 + 2 @@&gt;</span>
 
@@ -220,21 +220,21 @@ val it : int expr
         (Microsoft.FSharp.MLLib.Pervasives.op_Division (Int32 10) (Int32 5))
      @@&gt;
 </pre>
-<p>It is not difficult to understand that addition in the first example is represented 
-  as function call (function application in the terminology of functional languages) 
-  where the function is <code>op_Addition</code> operator and parameters are
-  two integers. This is actually little simplification, because in functional
+<p>It is not difficult to understand that the addition in the first example is represented 
+  as a function call (function application in the terminology of functional languages) 
+  where the function is the <code>op_Addition</code> operator and the parameters are
+  two integers. This is actually a little simplification, because in functional
   programming you should look at this code as two function applications.
-  The first application binds first parameter of <code>op_Addition</code> to
-  <code>1</code> and the result is again function. The second application uses
+  The first application binds the first parameter of <code>op_Addition</code> to
+  <code>1</code> and the result is again a function. The second application uses
   the function returned by the first application and passes <code>2</code> as
-  parameter. You can look at F# quotations using both approaches and in the 
+  a parameter. You can look at F# quotations using both approaches and in the 
   rest of the article I will use the first one.</p>
   
 <p>To demonstrate how to work with F# quotations I decided to write simple
-  transformation of limited mathematical expressions from F# quotations to my
-  data type. The discriminated union that I'm using as target of transformation
-  is similar to the union in F# source file VS.Net template (as you can see
+  transformations of limited mathematical expressions from F# quotations to my
+  data type. The discriminated union that I'm using as target of the transformation
+  is similar to the union in the F# source file VS.Net template (as you can see
   it supports only four most basic mathematical operations and all values
   are stored as integers):</p>
 <pre>
@@ -246,7 +246,7 @@ type simple_expr =
   | Div of simple_expr * simple_expr;;
 </pre>
 <p>Printing and evaluation of this structure is simple, so I won't describe these
-  here. If you want to look at these functions see attached source code.
+  here. If you want to look at these functions see the attached source code.
   (function for evaluation is part of VS.Net template too).</p> 
 
 <h2>Working with quotations</h2>
@@ -254,12 +254,12 @@ type simple_expr =
   quotations using <code>&lt;@@ ... @@&gt;</code>. When you want to perform 
   analysis of quotations, you need to get the underlying raw representation
   using the <code>&lt;@@@@ ... @@@@&gt;</code> operators. For decomposing the
-  quoted expression we can use <code>Query</code> functions on the expression 
+  quoted expression we can use the <code>Query</code> functions on the expression 
   families defined in the <code>Raw</code> module. This may sound a bit confusing,
-  but in the simple words - the <code>Raw</code> module contains several
+  but in simple words - the <code>Raw</code> module contains several
   values that define language constructs (like constants, variables, function
   application and others) and you can use these values for matching and decomposing
-  quoted expression. Following code should clear this a bit:</p> 
+  quoted expressions. Following code should clarify this a bit:</p> 
 <pre>
 let what_is x =
   match Raw.efInt32.Query x with  
@@ -277,13 +277,13 @@ print_string (what_is &lt;@@@@ 1 @@@@&gt;);
 print_string (what_is &lt;@@@@ 1 + 2 @@@@&gt;);
 </pre>
 
-<p>Now we can start writing function that converts mathematical expression
-  quotation to <code>simple_expr</code> structure. It will be recursive function 
-  with similar structure as previous. The first match for conversion of numbers  
+<p>Now we can start writing a function that converts a mathematical expression
+  quotation to a <code>simple_expr</code> structure. It will be a recursive function 
+  with similar structure as the previous one. The first match for the conversion of numbers  
   will be simple. In the second match we'll have to do two things. First we'll
   need to determine what function is applied (whether it is addition, subtraction,
-  etc..) and than we'll have to loop through parameters passed to this function
-  and call the function recursively each parameter.</p>
+  etc..) and then we'll have to loop through parameters passed to this function
+  and call the function recursively for each parameter.</p>
 <pre>
 let rec parse x =
   match Raw.efInt32.Query x with  
@@ -322,17 +322,17 @@ let rec parse x =
       failwith "Not supported construction in expression.";;
 </pre>
 <p>As I mentioned, the more interesting part of the code is when the quotation 
-  matches with <code>efApps</code> which in our case means that the expression is 
+  matches with <code>efApps</code> which in our case means that the expression is a  
   mathematical operation. From the functional point of view <code>efApps</code> means
-  series of function applications. The result of <code>Query</code>
-  function of <code>efApps</code> is tuple containing expression with 
-  information about applied function (operator in our case) and parameters of 
+  series of function applications. The result of the <code>Query</code>
+  function of <code>efApps</code> is a tuple containing expressions with 
+  information about the applied function (operator in our case) and parameters of 
   this application.</p>
-<p>For extracting operator name we match the first value with <code>efAnyTopDef</code>
-  which returns information about top-level definitions. Returned structure contains
-  assembly name as well as the function name that we need. In the second step
-  we recursively call <code>parse</code> function to all arguments of operator.
-  Once we know the function name and we have arguments translated to <code>simple_expr</code>,
+<p>For extracting the operator name we match the first value with <code>efAnyTopDef</code>
+  which returns information about top-level definitions. The returned structure contains
+  the assembly name as well as the function name that we need. In the second step
+  we recursively call the <code>parse</code> function to all arguments of the operator.
+  Once we know the function name and we have the arguments translated to <code>simple_expr</code>,
   we can return the according <code>simple_expr</code> value.</p>
 
         <div class="info">
@@ -378,6 +378,8 @@ let rec parse x =
     </div>
     <div class="col-sm-7">
     <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
       
       <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
       
