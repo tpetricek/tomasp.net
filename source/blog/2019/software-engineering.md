@@ -5,7 +5,7 @@ What should a Software Engineering course look like?
  - date: 2019-02-08T12:22:57.7521867+01:00
  - description: Is there any fundamental knowledge about software engineering that will remain
     relevant in the next 100 years? In this blog post, I discuss why teaching software engineering
-    in a university environment is difficult. I also suggest how we can design a more useful and
+    in a university environment is difficult. I also suggest how we can design a more useful
     software engineering course that will not go out of date with the next shift in technologies
     and methodologies. The key idea is that we need to focus on the motivation behind software
     engineering and the reasoning that leads to the adoption of particular software engineering
@@ -19,7 +19,7 @@ What should a Software Engineering course look like?
 
 When I joined the [School of Computing](https://www.cs.kent.ac.uk/) at the [University of
 Kent](https://www.kent.ac.uk/), I was asked what subjects I wanted to teach. One of the topics
-I choose was _Software Engineering_. I spent quite a lot of time reading about history of
+I chose was _Software Engineering_. I spent quite a lot of time reading about the history of
 software engineering when working on my paper [on programming
 errors](/academic/papers/failures/index.html) and I go to a fair number of [professional
 programming conferences](http://github.com/tpetricek/Talks), so I thought I can come up
@@ -27,9 +27,9 @@ with a good way of teaching it! Yet, I was not quite sure how to go about it or 
 _software engineering_ actually means.
 
 In this blog post, I share my thought process on deciding what to cover in my Software
-Engineering module and also a rough list of topics. The introduction explaining _why_ I choose
-the these and _how_ I structure them is perhaps more important than the list itself, but it
-is fairly long, so if you just want to see a list, you can
+Engineering module and also a rough list of topics. The introduction explaining _why_ I chose
+these and _how_ I structure them is perhaps more important than the list itself, but it
+is fairly long, so if you just want to see a list you can
 [skip ahead to Section 2](http://tomasp.net/blog/2019/software-engineering/#fund) (but please read the
 introduction if you want to comment on the list!) I also add a brief reflection on why I think
 this is a good approach, referencing a couple of ideas from philosophy of science in [Section 3](#phil).
@@ -46,10 +46,10 @@ this is a good approach, referencing a couple of ideas from philosophy of scienc
 ## 1. The problem with Software Engineering
 
 Many universities treat _software engineering_ as a course where they should give students some
-directly practically useful skills that future employers ask for. Although we believe that topics
-typically covered by computer science curriculum (such as algorithms, complexity analysis, logic,
+directly practical useful skills that future employers will ask for. Although we believe that topics
+typically covered by the computer science curriculum (such as algorithms, complexity analysis, logic,
 but also compilers or theories of human computer interaction) are important, we also recognize that
-most students will go work as software developers and companies hiring them will be very happy if
+most students will go on to work as software developers and companies hiring them will be very happy if
 students know some of the practices, tools and methodologies that they are using.
 
 
@@ -61,39 +61,39 @@ Consequently, _software engineering_ becomes just a course trying to cover _what
 tools the industry needs_. This is something that universities cannot, in principle, teach
 very well. The tools of choice and even popular methodologies keep changing quite quickly.
 The trend of the day is no longer object-oriented modelling, but event sourcing; three-tier
-architecture got replaced by microservices with tools like Kubernetes; heavyweight processes
-got replaced by Agile methods and even (some aspects of) those are frequently being questioned.
-Even if a university designs an up-to-date course, it will be obsolete in 5 years.
+architecture gets replaced by microservices with tools like Kubernetes; heavyweight processes
+get replaced by Agile methods, and even (some aspects of) these are frequently being questioned.
+Even if a university designs an up-to-date course it will be obsolete in 5 years.
 
-Should we try keeping up with the industry? Should we just give up and let students learn current
-methods and tools on the go? Or is there something else we can do with the dreaded software
+Should we try keeping up with industry? Should we just give up and let students learn current
+methods and tools on the job? Or is there something else we can do with the dreaded software
 engineering course?
 
 ### 1.1 Why teach Software Engineering at all
 
-If we see _software engineering_ just as _whatever methods and tools that the industry needs_,
+If we see _software engineering_ just as _whatever methods and tools the industry needs_,
 then we can just say that this is not something the university needs to be teaching at all.
-We teach algorithms, complexity theory and other computer science subjects, because they will
+We teach algorithms, complexity theory and other computer science subjects because they will
 largely remain valid in 100 years. They might not be directly applicable in many programming jobs,
-but at least, they capture a valid body of knowledge that we have collectively accumulated.
+but at least they capture a valid body of knowledge that we have collectively accumulated.
 Programmers need to learn new methods and tools all the time, so teaching them the first
 one they'll need after they finish university is not adding a huge amount of value anyway.
-(We might still do this, because some universities confuse themselves with vocational training
+(We might still do this because some universities confuse themselves with vocational training
 centres, but that's another topic.)
 
 The question is, is there something about software engineering that is capturing knowledge that
 will (likely) still be relevant in 100 years?
 
 There certainly should be _something_. Most computer science topics are rooted in more scientific
-applications of computers and, later ones, in problems arising within computer science itself.
+applications of computers, and later ones in problems arising within computer science itself.
 However, computers are only ubiquitous because they stopped being a tool used by scientists and
-the military and became tools for business data processing throughout 1950s and 1960s. This
+the military and became tools for business data processing throughout the 1950s and 1960s. This
 introduced completely new kinds of problems - around addressing business needs, team work,
 processes and reliability - that professional software developers still face today.
 
-The problem is that (academic) computer scientists found a nice fundamental concept of an
+The problem is that (academic) computer scientists found the nice fundamental concept of an
 _algorithm_ and focused their efforts around this concept. In contrast, the data processing
-industry never quite found good foundations for its use of computers. In a 1960 letter to editor,
+industry never quite found good foundations for its use of computers. In a 1960 letter to the editor,
 an ACM member complained (quoted in [Computer Boys Take Over][compboys]):
 
 > All of us, I am sure, have read non-ACM articles on business data processing and found them
@@ -115,33 +115,33 @@ mean...
 <img class="img-responsive" src="nato.jpg" style="border:solid 6px black" />
 </div>
 
-In 1960s, programming appeared as black art. Some programmers were good at it, but there was no
-clear way of recognising who has the necessary skills, training new people and scaling the
-production process to large system. The [NATO Conference on Software Engineering][nato] in 1968
-had a goal of _"turning black art of programming into a proper engineering discipline"_ and
+In the 1960s programming appeared to be a black art. Some programmers were good at it, but there was no
+clear way of recognising who had the necessary skills, training new people, or scaling the
+production process to a large system. The [NATO Conference on Software Engineering][nato] in 1968
+had a goal of _"turning the black art of programming into a proper engineering discipline"_ and
 it also introduced the term _Software Engineering_.
 
-The attendees of the conference was a diverse group including computer scientists, managers and
-military officials. Everybody agreed on what the problem is, but there was little agreement on
+The attendees at the conference were a diverse group including computer scientists, managers and
+military officials. Everybody agreed on what the problem was, but there was little agreement on
 how it should be addressed. The next [NATO Conference][nato] a year later is widely regarded as a
 complete failure for this reason. Computer scientists advocated use of mathematics and proofs,
-managers advocated factory model of organization, while military was more used to achieving
+managers advocated a factory model of organization, while the military was more used to achieving
 reliability via over-engineering. In the following years, the term _Software Engineering_ largely
 became the name for a managerial approach to the challenge and came to cover things such as
-requirements gathering, producing specification, cost and time estimation and detailed up-front
+requirements gathering, producing specifications, cost and time estimation, and detailed up-front
 modelling of software architecture.
 
-The challenge of turning black art of programming into a proper engineering discipline still
+The challenge of turning the black art of programming into a proper engineering discipline still
 remains (although we might phrase it a bit differently these days). We still have not solved the
 problem and new ideas and methods appear and disappear over time. Many of the ideas that are
-traditionally associated with _Software Engineering_ are product of 1970s and 1980s (or 1990s,
+traditionally associated with _Software Engineering_ are products of the 1970s and 1980s (or 1990s,
 if we're lucky). Some of those are, no doubt, interesting, but they are not very relevant in
 modern software development. More recent methods that address the problem (such as Agile) do
 not favour the "software engineering" term, but they certainly fall into the same general space.
 
 The problem is, if we just replace 1970s and 1980s content with 2000s content, we are not
 developing any more fundamental knowledge. We're just replacing one, already obsolete, idea
-with another, soon-to-be obsolete idea.
+with another, soon-to-be-obsolete idea.
 
 <a name="fund"></a>
 
@@ -149,7 +149,7 @@ with another, soon-to-be obsolete idea.
 
 Universities need to teach Software Engineering knowledge that is fundamental in the sense that
 it does not become obsolete in the next 5 years and in the sense that it captures some unchanging
-principles of Software Engineering. Heavyweight software engineering methods from 1970s and 1980s
+principles of Software Engineering. Heavyweight software engineering methods from the 1970s and 1980s
 are not this, but more modern methods like Scrum and Agile programming are not this kind of
 knowledge either.
 
@@ -157,14 +157,14 @@ What I believe _is_ unchanging is the motivation behind software engineering and
 led to those particular methods and tools in the face of particular problems that the industry
 was attempting to address. In other words, we should not teach Waterfall, UML, Scrum or TDD.
 We should teach how different circumstances, problems and goals motivate these, why the various
-methods are a reasonable response to the challenge (even for Waterfall!) and circumstances when
+methods are a reasonable response to the challenge (even for Waterfall!), and circumstances where
 they do _not_ work.
 
 This also gives us a good answer when we ask what practical value does a Software Engineering
 course like this have. We might not cover the favourite tools and methods of the day, but we
 can help students think about the motivations for and limitations of the tools and methods.
-When they work for a company that follows a particular methodology, they should be able to see
-recognize whether the methodology is actually suitable given the problems, motivation and other
+When they work for a company that follows a particular methodology, they should be able to
+recognize whether the methodology is actually suitable given the problems, motivation, and other
 circumstances.
 
 I believe such _historically situated analysis_ of Software Engineering is fundamental knowledge.
@@ -190,13 +190,13 @@ details and two thirds on the history and critical analysis.
 
 Today, outdated software engineering courses teach a variant of the _waterfall_ development
 methodology while more up-to-date courses teach _agile_ or _scrum_. Both of these are wrong.
-Even with agile, the way it is practices differs significantly across companies and so the
+Even with agile, the way it is practiced differs significantly across companies and so the
 particular practices an academic course might cover will not really be directly relevant.
 Instead, we should teach:
 
 
 * What are the motivations that led to ideas such as waterfall and agile? For waterfall, the
-  context was a more general managerial culture of 1970s, rising complexity and costs of software
+  context was a more general managerial culture of the 1970s, rising complexity and costs of software,
   and the fact that programmers were "hackers" who were hard to hire, train and replace.
   For agile, the context was faster innovation that led to changing requirements and the need
   for more rapid response. Looking at both actually teaches us something - given _any business
@@ -205,7 +205,7 @@ Instead, we should teach:
 
 * The history of development methodologies often provides an excellent background for understanding
   them. Memorizing the [Agile manifesto][agile] will teach you a particular response to a problem
-  without even teaching you what the problem was; reading [Outline of a Paradigm Change in Software
+  without teaching you what the problem was; reading [Outline of a Paradigm Change in Software
   Engineering][paradigm] by Christiane Floyd will give you the context (and, incidentally, also
   illustrate that she made a very similar point about 15 years earlier).
 
@@ -221,9 +221,9 @@ methods need to be discussed with an appropriate context that explains when they
 </div>
 
 * What was the context in which UML appeared and how does it compare to other methods such as
-  using algebraic data types (ADTs) in functional languages? Both are response to a particular context.
-  In case of UML, this was the rise of Java-like object-oriented programming and the metaphor of
-  an "architect" who designs a master plan for a system. In case of ADTs, the context is treating
+  using algebraic data types (ADTs) in functional languages? Both are responses to a particular context.
+  In the case of UML, this was the rise of Java-like object-oriented programming and the metaphor of
+  an "architect" who designs a master plan for a system. In the case of ADTs, the context is treating
   programs as mathematical entities. Both of these ideas have interesting motivations, techniques
   and limitations!
 
@@ -233,12 +233,12 @@ methods need to be discussed with an appropriate context that explains when they
   think it is a good opportunity to show how the same problem can be viewed from very different
   perspectives (both valid).
 
-* One cross-cutting concern that is all forms of modelling are dealing with is whether the model
-  can be kept in sync with the actual system and, also, how detailed and precise the model is.
+* One cross-cutting concern that all forms of modelling are dealing with is whether the model
+  can be kept in sync with the actual system, and also, how detailed and precise the model is.
   Considering this from a historical perspective, we can see that this is a problem we've been
-  worried about since early days of formal specifications in 1960s, through the 1980s idea of
-  [inferential programming][infer] all the way to UML and functional programming. UML is quite
-  interesting as it can be used as an informal whiteboard tools, but there were also many
+  worried about since the early days of formal specifications in the 1960s, through the 1980s idea of
+  [inferential programming][infer], all the way to UML and functional programming. UML is quite
+  interesting as it can be used as an informal whiteboard tool, but there were also many
   (largely failed) attempts to generate code from diagrams and vice versa.
 
 #### Software architectures in context
@@ -258,24 +258,24 @@ consider software architecture issues more broadly.
 * Talking about software architecture more generally, I think there are a few patterns that are
   sufficiently timeless to be worth mentioning - one example might be UNIX pipes, which also
   exists in the form of function composition in functional languages. This gives us the opportunity
-  to show that the same idea can look very differently.
+  to show that the same idea can look very different in different contexts.
 
-Finally, one reference that I have not yet read, but which could be other useful source of material for
+Finally, one reference that I have not yet read, but which could be an other useful source of material for
 discussing software architecture in context is [The Architecture of Open Source Applications][aosa] book.
 
 #### Current hot topics
 
 I think the core of a software engineering course should cover _fundamental principles_ that do not
-go out of date and I think the critical historical reflection on different methodologies and
+go out of date and I think that critical historical reflection on different methodologies and
 architectures achieves that. However, I recognise that we also need to cover some practically useful
 _hot topics_ and I like teaching some of those myself! Fortunately, the _historically situated_
 approach to software engineering allows that:
 
 * The practical topics I cover this year include git, GitHub and continuous integration. These
-  are useful practical skills, but in the software engineering module, we should avoid teaching them
-  as cargo cults. GitHub and git can teach us interesting things about the social side of software
+  are useful practical skills, but in the software engineering module we should avoid teaching them
+  as cargo cults. GitHub and git can teach us interesting things about the social side of software,
   and continuous integration is a response to [changes in the way software is built][ci]. Even if
-  we end up building software differently in a couple of years, this will still be relevant as a
+  we end up building software differently in a couple of years this will still be relevant as a
   case of response to a particular context.
 
 ### 2.2 Unchanging principles of Software Engineering
@@ -297,7 +297,7 @@ mathematical. There are not many similar principles, but there are some:
   something that, say, better programming languages can eliminate. I believe this is one key
   point about software engineering.
 
-* Another interesting problem is where does the complexity of software systems comes from.
+* Another interesting problem is where does the complexity of software systems come from.
   David Parnas' essay [Software Aspects of Strategic Defense Systems][sds] reflects on the
   development of anti-ballistic missile software systems, but also discusses why software systems
   are complex: unlike analog systems, digital systems don't implement continuous functions.
@@ -308,8 +308,8 @@ mathematical. There are not many similar principles, but there are some:
   Parnas in the context of missile defense) is that software systems develop through continual
   adaptation in a forgiving environment. This means that certain systems, such as an effective
   missile defense can be impossible to build, because they exist in a hostile environment that
-  can change at a more rapid pace (e.g. it will take you longer to build a defense system than the
-  Soviet Union needs to build a missile that will circumvent the defense)
+  can change at a more rapid pace (e.g. it will take you longer to build a defense system than
+  your opponent needs to build a missile that will circumvent the defense)
 
 ### 2.3 Where Software Engineering ideas come from
 
@@ -317,7 +317,7 @@ Finally, I think that another topic worth our attention in a Software Engineerin
 diversity of sources that are useful for understanding software engineering. Good software
 engineering relies on broad interdisciplinary understanding and I think it's not a surprise that
 interesting ideas about how software should be built borrow ideas not just from engineering, but
-also from urban planning, architecture or even gardening:
+also from urban planning, architecture, or even gardening:
 
 * I said earlier that the motivation for the birth of "Software Engineering" in 1968 was to
   turn programming into a proper engineering discipline. But what does that actually mean?
@@ -335,12 +335,12 @@ also from urban planning, architecture or even gardening:
 ## 3. Is this still Software Engineering?
 
 You might be wondering if what I'm advocating as _Software Engineering_ in this blog post is still
-computer science, or whether I'm saying that we should replace "normal" Software Engineering course
+computer science, or whether I'm saying that we should replace "normal" Software Engineering courses
 with something more akin to history and philosophy of software engineering.
 
 Historically, software engineering is following the tradition of the data processing industry which
-has never quite became the same thing as computer science. This is also apparent in the present-day
-debates whether programming job interviews should involve computer science questions (say, the $O$ notation).
+has never quite become the same thing as computer science. This is also apparent in the present-day
+debates about whether programming job interviews should involve computer science questions (say, the $O$ notation).
 If we are teaching Software Engineering, we need to expand our focus and also our methods,
 because a good Software Engineering course will need to be different.
 
@@ -353,7 +353,7 @@ engineering on the job, then I think universities should not bother teaching it.
 not, or at least should not be, training centres.) However, I believe
 that teaching what I called _historically situated_ software engineering does give students
 something very valuable that they will not get through work experience. It provides a framework for
-critical thinking about software engineering and past examples to guide this thinking.
+critical thinking about software engineering, and past examples to guide this thinking.
 
 The approach that I'm advocating is somewhat akin to Bruno Latour's position presented in the
 [We Have Never Been Modern][modern] book. To quote from the [summary on Wikipedia](https://en.wikipedia.org/wiki/We_Have_Never_Been_Modern):
@@ -366,7 +366,7 @@ The approach that I'm advocating is somewhat akin to Bruno Latour's position pre
 I think this is a perfect summary of what I think is a good way of thinking about and also
 teaching software engineering. The technological aspects of software engineering such as
 source control or design patterns need to be linked with the social phenomena surrounding them,
-including the business context that motivates them, but also with the critical reflection on
+including the business context that motivates them, but also with critical reflection on
 those entities and their contexts.
 
  [compboys]: https://amzn.to/2EhHq1V "Nathan Ensmenger (2010). The Computer Boys Take Over: Computers, Programmers, and the Politics of Technical Expertise"
@@ -379,7 +379,7 @@ those entities and their contexts.
  [ci]: https://tpetricek.github.io/Teaching/software-engineering/collaborative.html "Tools for collaborative development (CO886)"
  [silver]: https://dl.acm.org/citation.cfm?id=26441 "Fred Brooks (1987). No Silver Bullet Essence and Accidents of Software Engineering"
  [sds]: https://dl.acm.org/citation.cfm?id=214961 "David Parnas (1985). Software Aspects of Strategic Defense Systems"
- [argu]: https://amzn.to/2GRZMbe "Rebecca Slayton (2013). Arguments that Count: Physics, Computing, and Missile Defense, 1949-2012"
+ [argu]: https://amzn.to/2XhsGqY "Rebecca Slayton (2013). Arguments that Count: Physics, Computing, and Missile Defense, 1949-2012"
  [toyota]: https://amzn.to/2Ejc5LW "Jeffrey Liker (2011). The Toyota Way to Lean Leadership: Achieving and Sustaining Excellence through Leadership Development"
  [cities]: https://amzn.to/2V5oAAz "Jane Jacobs (1961). The Death and Life of Great American Cities"
  [modern]: https://amzn.to/2EiDzBv "Bruno Latour (1993). We Have Never Been Modern"
