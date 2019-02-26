@@ -245,9 +245,9 @@ methods need to be discussed with an appropriate context that explains when they
 
 Many software engineering courses also include the [Gang of Four Design Patterns][gof]. I suppose
 those are often presented as an answer to some problems arising in software architecture, but
-really, most of them are very technical and address limitations of Java-like languages. I think
-there is a useful lesson to be learned from GoF patterns if we add context, but we can also
-consider software architecture issues more broadly.
+really, most of them are very technical and address limitations of C++ and later Java-like
+languages. I think there is a useful lesson to be learned from GoF patterns if we add context,
+but we can also consider software architecture issues more broadly.
 
 * The Gang of Four design patterns are a response to particular problems of Java. This is not
   because Java is bad, but because every language has things that are hard to express!
@@ -368,6 +368,9 @@ teaching software engineering. The technological aspects of software engineering
 source control or design patterns need to be linked with the social phenomena surrounding them,
 including the business context that motivates them, but also with critical reflection on
 those entities and their contexts.
+
+**Acknowledgements.** Thanks to Richard Jones for feedback on earlier version of the post and
+to Roger Turner for catching and correcting some of my typos.
 
  [compboys]: https://amzn.to/2EhHq1V "Nathan Ensmenger (2010). The Computer Boys Take Over: Computers, Programmers, and the Politics of Technical Expertise"
  [nato]: http://homepages.cs.ncl.ac.uk/brian.randell/NATO/index.html "The NATO Software Engineering Conferences"
