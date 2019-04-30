@@ -49,6 +49,7 @@ get full details from the paper page on ACM (TBA).
       booktitle = {Proceedings of Haskell Symposium},
       series    = {Haskell 2014},
       location  = {Gothenburg, Sweden},
+      year      = {2014}
     }    
 
 If you have any comments, suggestions or related ideas, I'll be happy to

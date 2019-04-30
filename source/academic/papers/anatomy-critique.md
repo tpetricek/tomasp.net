@@ -3,7 +3,7 @@
  - description:  The idea of interaction is not just another programming abstraction, but different
     way of structuring our thinking about programming. This includes thinking about how users can
     interact with the software more generally, but also what are effective metaphorical ways of
-    thinking about software. 
+    thinking about software.
  - tags: academic, publication
  - layout: paper
  - date: 15 April 2018
@@ -40,7 +40,8 @@ If you want to cite the paper, you can use the following BibTeX information.
       title     = {Critique of 'An anatomy of interaction: co-occurrences and entanglements'},
       booktitle = {Proceedings of Salon des Refusés, 2018},
       series    = {Programming 2018},
-      location  = {Nice, France}
+      location  = {Nice, France},
+      year      = {2018}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

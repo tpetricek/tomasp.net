@@ -1,4 +1,4 @@
-# The Gamma: Programming tools for open data-driven storytelling
+﻿# The Gamma: Programming tools for open data-driven storytelling
 
  - description:  The rise of open data initiatives means that there is an increasing amount of raw
     data available. At the same time, the general public increasingly distrusts statistics and
@@ -52,7 +52,8 @@ If you want to cite the paper, you can use the following BibTeX information.
       title     = {The Gamma: Programming tools for open data-driven storytelling},
       booktitle = {Proceedings of European Data and Computational Journalism Conference},
       series    = {EDCJC 2017},
-      location  = {Dublin, Ireland}
+      location  = {Dublin, Ireland},
+      year      = {2017}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

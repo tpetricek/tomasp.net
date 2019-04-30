@@ -36,7 +36,8 @@ If you want to cite the paper, you can use the following BibTeX information.
       title     = {Stories of storytelling about UK’s EU funding},
       booktitle = {Proceedings of 2nd European Data and Computational Journalism Conference},
       series    = {EDCJC 2018},
-      location  = {Cardiff, Wales}
+      location  = {Cardiff, Wales},
+      year      = {2018}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

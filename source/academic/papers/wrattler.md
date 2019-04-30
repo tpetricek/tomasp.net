@@ -38,7 +38,8 @@ If you want to cite the paper, you can use the following BibTeX information.
       title     = {Wrattler: Reproducible, live and polyglot notebooks},
       booktitle = {Proceedings of 10th USENIX Workshop on The Theory and Practice of Provenance},
       series    = {TaPP 2018},
-      location  = {London, UK}
+      location  = {London, UK},
+      year      = {2018}
     } 
 
 If you have any comments, suggestions or related ideas, I'll be happy to 

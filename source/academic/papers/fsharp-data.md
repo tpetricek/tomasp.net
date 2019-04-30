@@ -9,7 +9,7 @@
  - subtitle: Tomas Petricek, Gustavo Guerra and Don Syme. In Proceedings of PLDI 2016
  - date: 1 May 2016
 
-> Tomas Petricek, Gustavo Guerra, Don Syme 
+> Tomas Petricek, Gustavo Guerra, Don Syme
 >
 > In proceedings of PLDI 2016
 
@@ -35,9 +35,9 @@ safety guarantees when contrasted with the widely used weakly typed techniques.
 
 ## Watch the talk
 
-As far as I'm aware, the PLDI 2016 talk has not been recorded, but I did a brief practical 
-demonstration of the F# Data library, similar to one that I did in a [number of industry 
-talks](http://fsharpworks.com/materials.html). One good talk to watch has been recorded by 
+As far as I'm aware, the PLDI 2016 talk has not been recorded, but I did a brief practical
+demonstration of the F# Data library, similar to one that I did in a [number of industry
+talks](http://fsharpworks.com/materials.html). One good talk to watch has been recorded by
 Microsoft's Channel 9 team:
 
 <div style="padding-left:20px">
@@ -56,7 +56,8 @@ get full details from the paper [paper page on ACM](http://dl.acm.org/citation.c
       booktitle = {Proceedings of Conference on Programming
                    Language Design and Implementation},
       series    = {PLDI 2016},
-      location  = {Santa Barbara, California, USA}
+      location  = {Santa Barbara, California, USA},
+      year      = {2016}
     }
 
 
