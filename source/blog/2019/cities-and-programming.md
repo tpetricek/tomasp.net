@@ -1,4 +1,4 @@
-Cities and programming
+Cities and programming [DRAFT]
 ====================================================
 
  - title: TBD
@@ -31,10 +31,10 @@ from four books that I've read recently. There are two general areas:
   that research on programming could adopt to gain new insights into systems, programming
   and its problems.
 
-- Second, there are a number of more concrete links that are worth exploring. For example, can
-  programmers learn how to deal with complexity of software by looking at how urban planners
-  deal with the complexity of cities? Or, can we learn about software maintenance by looking at
-  how buildings evolve in time?
+- Second, there are a number of more concrete ideas in architecture and urban planning that
+  might directly apply to software. For example, can programmers learn how to deal with complexity
+  of software by looking at how urban planners deal with the complexity of cities? Or, can we learn
+  about software maintenance by looking at how buildings evolve in time?
 
 The nature of problems that programmers face are often more similar to the problems that
 architects and urban planners have to deal with than, say, the problems that scientists, engineers
@@ -166,26 +166,108 @@ but I think we can go further. First, I suggest that computer scientists should 
 studying _how software learns_ (Section 2.2). Second, I think there are lessons about adaptability
 of software that we can learn from the adaptability of cities and buildings (Section 3.1).
 
-### 1.3 Theories that should work, but do not
+### 1.3 Elegant theories that do not work
 
+My last reason for looking at work in architecture and urban planning is that the two disciplines
+were heavily influenced by theories that are elegant, but do not actually work in practice.
+Stewart Brand's claim that _architects are incapable of producing pleasant spaces, except by
+accident_ from [How Buildings Learn][learn] is perhaps too extreme, but I imagine some people
+may feel very similarly about the software discipline. Just like some work on programming, theories
+of architecture and urban planning often leave human aspects out of the picture. Consequently,
+the theories are not just slightly imprecise, but completely wrong and actively harmful.
+Interestingly, a few urban planners and architects reflect critically on this and that's
+where programming researchers can learn.
 
+#### Form and context
+In [Notes on the Synthesis of Form][notes], Christopher Alexander points out that design always
+speaks of form and its context. A good design is not just a property of the form, but it is a
+matter of fit between the form and the context. The reason why we cannot evaluate an isolated
+form is not because we are unable to precisely describe the form itself, but because we are
+unable to precisely describe the context with which it will interact:
 
-Radiant Garden City Beautiful (life, p314) - works in theory, not in practice
--> what is the programming language equivalent? beautiful simple calculus? (Worse is Better)
+> [T]he opportunity to evaluate the form (...) depends on the fact that we can give a
+> precise mathematical description of the context. In general, unfortunately, we cannot
+> give an adequate description of the context we are dealing with. There is as yet no theory
+> (...) capable of expressing a unitary description of the varied phenomena we encounter
+> in the urban context (...).
 
-we can evaluate isolated form when given exact context description (form, p20)
- -> possible in physics (sometimes) but not urban context (and also not software)
+Exactly the same limitations exist in the world of programming. No matter how precisely we can
+talk about programs, we also need to exactly understand the environment with which they interact.
+This is the hard part. As David Parnas writes in his well known essay [No Silver Bullet][bullet]:
 
-architects are incapable of producing pleasant spaces except by accident (learn, p53)
--> dtto for working sw and computer scientists
+> Much of the complexity [software engineer] must master is arbitrary complexity, forced
+> without rhyme or reason by the many human institutions and systems to which his
+> interfaces must confirm.
 
-architects make drawings, someone else builds them (learn, p64)
--> anything else freaks people out; Alexander likes to make adaptations while building
-   because you can never fully imagine thing until it's being built
--> why upfront software architecture idea does not work (more agile)
+#### Radiant garden city beautiful
+The book [The Death and Life of Great American Cities][life] by Jane Jacobs, which I mentioned
+already, is a critique of urban planning theories that are appealing but completely wrong.
+This includes Le Corbusier's [Radiant City](https://en.wikipedia.org/wiki/Ville_Radieuse)
+(replacing streets with towers in a park), British [Garden City](https://en.wikipedia.org/wiki/Garden_city_movement)
+movement (separating functions in a city and building suburb-like residential areas)
+and [City Beautiful](https://en.wikipedia.org/wiki/City_Beautiful_movement) movement
+(introducing beautification and monumental grandeur in cities).
 
+All of the theories criticised by Jacobs are based on simple and convincing principles that
+are supported by reasonable arguments. A city with a centre surrounded by residential areas
+with open spaces and parks _should_ be a way of combining benefits of countryside and city
+environments. However, it turns out that this idea often does not work for various complex
+reasons. One point made by Jacobs is that public spaces only work if they combine different
+functions so that people have reasons for passing through the space throughout the day, but
+this requires diverse neighbourhoods that combine residential spaces with shops, restaurants,
+cultural venues and offices.
+
+In software engineering and programming research, we also often come up with simple and convincing
+principles supported by reasonable arguments. To poke at my own community: if we want to make
+sure that programming languages have well-defined behaviour, it seems reasonable to define a
+small formal model that captures the essential properties of the language and formally study
+its properties. Except that it turns out that the non-essential properties are often equally
+important and a lot of usability of programming languages comes from things that we do not normally
+even think about as parts of the language such as package management or tooling.
+
+Can the criticism of urban planning theories, like the one by Jane Jacobs, teach us something
+about our own programming theories and software engineering principles? I will discuss some
+concrete ideas in Section 2.1.
+
+#### The separation of design from making
+
+There is one area where the practice of building software already underwent a change that
+is similar to a change that has not quite happened in architecture yet and that some critics
+have been calling for. [Stewart Brand][learn] quotes Christopher Alexander who, unlike many
+other architects, makes on-site adjustments to his buildings:
+
+> There is real misunderstanding about whether buildings are something dynamic or something
+> static. (...) Anything different from the idea that you make a set of drawings and someone
+> else builds the thing is incredibly threatening. People get just absolutely freaked out.
+
+Alexander also notes that this is likely for contractual reasons. If you make on-site adjustments,
+then those will inevitably change the final price. To a person familiar with software engineering,
+these comments read as the motivation behind [Agile software development](https://en.wikipedia.org/wiki/Agile_software_development)
+methodologies. I think most people in our industry have, by now, realised that a typical
+software system is something dynamic and that we need to make "on-site" adjustments while building
+it. Of course, various concrete practices arising from Agile are now also being treated as
+simple overarching theories that will solve all our problems, just like the urban planning
+theories discussed in the previous section.
+
+In any case, it seems that similar problems exist in architecture and software development, which
+suggests that looking at architecture for inspiration about programming is worthwhile.
 
 ## 2. New methodologies for programming research
+
+As mentioned earlier, I think the software world can learn from architecture and urban planning
+in two ways. We can look at concrete ideas about buildings and cities or we can look at
+methodologies that critics of architecture and urban planning use in their work. In this
+section, I'll focus on the former.
+
+Perhaps the first thing that we should learn is to spend more time critically reflecting
+on how our methods work, when they do not work and why. In academic programming research,
+[Onward! Essays](https://www.sigplan.org/Conferences/Onward/) and [The Art, Science, and Engineering
+of Programming](https://programming-journal.org/) journal publish some reflections on how we
+work, but I don't know of any systematic, longer critique akin to Jane Jacob's
+[The Death and Life of Great American Cities][life]. Looking at the critiques of architecture
+and urban planning, I can think of three ways of reflecting on software and
+programming that would give us invaluable knowledge and, possibly, inspire new directions
+for future work.
 
 ### 2.1 What cities and buildings work in spite of theory
 
@@ -195,18 +277,20 @@ c.f. Antranig's MIDI example)
 
 ### 2.2 Learning about how software learns
 
+#### How buildings evolve
+
 almost no buildings are designed to adapt, but they adapt anyway (learn, p2)
 random: software architects make the same mistakes as actual architects - they ignore learning
 wisdom acquired looking back must be translated to forward-looking wisdom (life, p109)
 examine buildings as a whole, both in space and time (learn, p3)
 
-### 2.3 How cities evolve
+#### How cities evolve
 
 city structure consists of mixture of uses, generating diversity (life, p390)
 -> similar to the process of concretization in Simondon
 population change jobs and interests - diversified districts allow them to stay (life, p149)
 
-### 2.4 How we navigate and understand
+### 2.3 How we navigate and understand
 
 "consider city as perceived by its inhabitants" (image, p3)
 we are continually engaged in an attempt to organise our surroundings (city, p90)
@@ -273,7 +357,9 @@ subway is disconnected (like calling a method in OOP?) (city, p57)
 
 
 
- [arguments]: https://xxx "Rebecca Slayton (????). Arguments that count"
+ [arguments]: https://xxx "Rebecca Slayton (????). Arguments that Count"
  [learn]: https://xxx "Stewart Brand (????). How Buildings Learn: What happens after they're built"
  [life]: https://xxx "Jane Jacobs (1961). The Death and Life of Great American Cities"
  [sds]: http://?? "David Parnas (????). Software Aspects of Strategic Defence Systems"
+ [notes]: http://?? "Christopher Alexander (????). Notes on the Synthesis of Form"
+ [bullet]: http://?? "Fred Brooks (????). No Silver Bullet"
