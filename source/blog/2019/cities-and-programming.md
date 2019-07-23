@@ -271,9 +271,53 @@ for future work.
 
 ### 2.1 What cities and buildings work in spite of theory
 
-we need Jane Jacobs like book on programming systems - what systems should not work according
-to our beliefs (planners) but actually work in practice? (Like the Boston neighbourhood -
-c.f. Antranig's MIDI example)
+The methodology that Jane Jacobs uses to criticize urban planning theories could be equally
+applied to criticize programming theories. It is obvious that any theory makes simplifications
+and does not always precisely work in its purest form, but are there cases where theories are
+blatantly wrong? Jane Jacobs does a great job at documenting such cases in the urban planning
+context. She looks at concrete city districts that function well in spite of urban planning theories
+that present theoretical arguments for why those districts must be unpleasant places to live.
+
+Theories inspired by the Radiant City and Garden City ideas support separation of functions
+in a city and argue for large parks. Yet, two of Jacobs' examples of healthy districts,
+Greenwich Village in New York and North End of Boston (in 1950s) have none of that. They
+rely on active "sidewalk life" which is made possible thanks to the diverse use of buildings
+in the district. Those districts are safe, because the mixed use guarantees that local people
+are always passing the area, implicitly keeping an eye on what is going on. They "unslum", because
+they are still attractive places to live for those members of the community who get better jobs
+and start earning more money. In other words, there are many complex intricate social processes
+that are nothing like what the urban planning theories of 1950s consider a good model for a city.
+
+In the world of programming, we also have many systems that work well, in spite of being
+completely wrong according to our theories of what a good programming system should look like.
+Popular programming languages like PHP, JavaScript or R are the most obvious examples.
+There are [some attempts](!socioplt) to explain why, but we mostly just [disregard those](!ghica)
+saying that they got popular by accident. For a community that prides itself
+in being thorough and scientific, this is a very shallow argument. As Peter Naur wrote
+in [The Place of Strictly Defined Notation in Human Insight][naur]:
+
+> It is curious to observe how the authors in this field, who in the formal aspects of their
+> work require painstaking demonstration and proof, in the informal aspects are satisfied with
+> subjective claims that have not the slightest support, neither in argument nor in verifiable
+> evidence. Surely common sense will indicate that such a manner is scientifically unacceptable.
+
+Following Jane Jacobs, we should undertake detailed studies of existing programming systems
+that, in some sense, work well. I believe such approach would have to take human aspects more
+seriously into account, because those are often essential for understanding why a system works.
+We might need to learn from research on human-computer interaction which has experience with such
+research. For example, a fun 2016 paper [A Farmer, a Place and at least 20 Members: The Development
+of Artifact Ecologies in Volunteer-based Communities][farmer] looks how an eco-farming community
+uses an evolving range of computing systems and tools over a number of years. Could a perspective
+like this help us understand why JavaScript or the R ecosystem are successful programming
+systems? For JavaScript, there might even be two distinct answers. One for the 1990s era when you
+could view source and copy other people's rollover or mouse-follow effects and the 2000s era of
+node.js.
+
+One interesting example that documents something along those lines is the discussion about
+MIDI devices in a [Salon des Refusés](https://www.shift-society.org/salon/) paper
+[Tracing a Paradigm for Externalization: Avatars and the GPII Nexus][gpii] by Colin Clark and
+Antranig Basman.
+ 
 
 ### 2.2 Learning about how software learns
 
@@ -353,8 +397,14 @@ navigation: people with more knowledge used paths, people with less knowledge us
 continuity of names: Beacon hill, Beacon street (city, p52)
 subway is disconnected (like calling a method in OOP?) (city, p57)
 
+in programming, we cannot fully understand things (programming by poking)
+we cannot hope to do this - but we can build local understanding by poking
+enough in some region. we should be able to navigate around such understood
+regions. We also can have small fully isolated regions that we can then fully
+understand, e.g. by using fancy types and immutability. (Jeremie)
 
 
+TODO: Search for "(!" and add references!
 
 
  [arguments]: https://xxx "Rebecca Slayton (????). Arguments that Count"
@@ -363,3 +413,6 @@ subway is disconnected (like calling a method in OOP?) (city, p57)
  [sds]: http://?? "David Parnas (????). Software Aspects of Strategic Defence Systems"
  [notes]: http://?? "Christopher Alexander (????). Notes on the Synthesis of Form"
  [bullet]: http://?? "Fred Brooks (????). No Silver Bullet"
+ [naur]: http://?? "Peter Naur (????). The Place of Strictly Defined Notation in Human Insight"
+ [farmer]: http://??? "Susanne Bødker, Henrik Korsgaard, Joanna Saad-Sulonen (???). A Farmer, a Place and at least 20 Members: The Development of Artifact Ecologies in Volunteer-based Communities"
+ [gpii]: https://www.shift-society.org/salon/papers/2017/revised/externalization.pdf "Colin Clark, Antranig Basman (2017). Tracing a Paradigm for Externalization: Avatars and the GPII Nexus"
