@@ -56,12 +56,12 @@
     We represent programs as _lists of interactions_ such as triggering an auto-complete
     and choosing an option, declaring a value, introducing a variable or evaluating a piece
     of code. We explore a number of consequences of this way of thinking about programs.
-    First, if we introduce all functions via a refactoring, we can always get a sample value for
-    their inputs and use those for debugging. Second, if a programmer executes some code
-    interactively, we can use information about its results to give a more precise suggestions
-    in auto-complete. Third, we can display the same program as text, but also in a view inspired
-    by spreadsheets. Fourth, we can easily let programmers create programs by directly interacting
-    with live previews.
+    First, if we create functions by writing concrete code using a sample input and applying a refactoring,
+    we do not lose the sample input and can use it later for debugging. Second, if we treat executing
+    code interactively as an interaction and store the results, we can later use this information to give more precise suggestions
+    in auto-complete. Third, by moving away from a textual representation, we can display the same program as text, but also in a view inspired
+    by spreadsheets. Fourth, we can let programmers create programs by directly interacting
+    with live previews as those interactions can be recorded and as a part of program history.
 
     We discuss the key ideas through examples in a simple programming environment for data
     exploration. Our focus in this essay is more on principles than on providing fine tuned
@@ -97,6 +97,7 @@
         - 7.3 [Experts and keyboard-based interactions](#s7_3)
         - 7.4 [Histogram programs as Histogram values](#s7_4)
         - 7.5 [Lowering the cost of abstraction](#s7_5)
+        - 7.6 [Exploring the design space](#s7_6)
      8. [**Conclusions:** Glimpse of the future](#s8)
 
     Interactive demonstrations
@@ -139,7 +140,7 @@ results and refine their code accordingly.
 
 Much work has been done on making programming more live and interactive ([Tanimoto, 2013](#refs)).
 Early programming environments for dynamic languages like LISP and Smalltalk ([Sandweall, 1978](#refs),
-[Goldberg and Robson, 1983](#refs)) offered ways of modifying programs without restarting it; visual
+[Goldberg and Robson, 1983](#refs)) offered ways of modifying programs without restarting them; visual
 programming languages further developed the live programming paradigm ([Burnett et al., 1998](#refs)),
 Bret Victor illustrated the potential of live programming ([Victor, 2012a](#refs), [Victor, 2012b](#refs))
 and many authors explored those further in the context of user interfaces ([McDirmid, 2007](#refs)),
@@ -147,8 +148,8 @@ musical live coding performances ([Aaron and Blackwell, 2013](#refs)), app devel
 ([Schiller et al., 2014](#refs)) or data science ([DeLine et al., 2015](#refs)).
 
 In contrast to the above, this essay does not (yet) present a new and better live programming
-environment. We take one more step back and aim to give an equivalent to _given an expression $e$_
-which accepts the live and interactive equivalent of modern programming. We represent a program
+environment. We take one more step back and aim to replace the formulation _given an expression $e$_
+with a modern equivalent that reflects the interactive nature of programming. We represent a program
 as a _list of interactions_ through which it was constructed. We explore what kinds of tools this
 approach lets us build. To make our case more apparent, our example focuses on the kind of
 programming done by data analysts who use notebook environments to programmatically explore
@@ -169,7 +170,7 @@ literate programming and make it possible to combine text, equations and code wi
 running the code, such as tables or visualizations.
 
 Data analysts typically write small snippets of code, structured as _cells_ or code
-blocks in a notebook. They run such snippets interactively, modifying a live state of
+blocks in a notebook. They run such snippets interactively, modifying the live state of
 the notebook. They then inspect the results and refine their code accordingly. They might
 refactor some code into a reusable function, but the overall structure of code they write
 remains very simple.
@@ -215,7 +216,7 @@ and we are interested in major accidents that resulted in multiple deaths.
 2: Based on the displayed preview, we write code to get major incidents and remove duplicate records. We use names of columns as they appear in the preview.
 7: Now we know that the pre-processing code works well. We use copy &amp; paste to define a function that can load and filter data for any given year.
 14: We call the function for 2015 and 2014 and discover that we need to modify it to get accidents resulting in deaths, not just injuries.
-18: We modify the query, but evaluating code block that defines the function does not give us any indication whether we changed it correctly.
+18: We modify the query, but evaluating a code block that defines the function does not give us any indication whether we changed it correctly.
 21: We discover an error when running later code that calls the function. We go back and change the value in the query to the correct one!
 */</script>
 
@@ -227,7 +228,7 @@ There are a number of general points that are illustrated by the above demonstra
   When analysing data, we run code to understand our inputs and check that our data processing works
   as expected. When building software systems, running code is less evident, but similarly
   important -- developers regularly run code when using test-driven development or when evolving
-  scripts written using REPL to programs.
+  scripts written using the REPL to programs.
 
 2. Once we package code as a function, it becomes harder to debug and test. When writing code,
   we put loading in one cell so that Jupyter displays the result in a table. Once we
@@ -248,7 +249,7 @@ There are programming environments for which the above points do not hold. For e
 ([Ludäscher 2006](#refs)) is a non-textual scientific data analysis system, while type providers
 ([Petricek, 2016](#refs)) import external data into a programming language. However, the above
 demo and observations are typical for present day workflow of a data analyst who uses programming
-tools. As we will see,
+tools.
 
 **_3._ Histogram**: Programs as lists of interactions
 ------------------------------------------------
@@ -256,7 +257,7 @@ tools. As we will see,
 The key idea of this essay is that we should represent programs as lists of interactions.
 The essay includes a prototype implementation that lets us explore the consequences of using such
 representation for a programming task like the one presented in the above demo. We call our
-prototype environment _Histogram_ (a compound of _history_ and _programming_ which has nothing
+prototype environment _Histogram_ (a portmanteau of _history_ and _programming_ which has nothing
 to do with data visualization). We start with a short demo of Histogram and then discuss how
 exactly Histogram works behind the scenes.
 
@@ -429,7 +430,7 @@ specification_. The next section clarifies what counts as an _interaction_ in Hi
 The representation of programs that we use in our prototype is perhaps best explained through a
 small formal definition. Readers not familiar with programming language theory notation can see
 this as an [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) (or a
-discriminated union) as known from languages like Haskell or F#. Note that we do not use the definiton
+discriminated union) as known from languages like Haskell or F#. Note that we do not use the definition
 for proving any properties in this essay, but we suggest some properties later when discussing
 the type system.
 
@@ -442,7 +443,7 @@ the type system.
   &=& \textbf{named}~\textit{name}~~|~~\textbf{indexed}~i\\[0.25em]
 \textit{interaction}
   &=& \textbf{def}~\textit{value}\\
-  &|& \mathbf{name}~\textit{ref}~\textbf{as}~\textit{name}\\
+  &|& \mathbf{name}~\textit{ref}~\textbf{a}~\textit{name}\\
   &|& \textbf{dot}~\textit{name}~\textbf{on}~\textit{ref}\\
   &|& \textbf{apply}~\textbf{args}~\textit{ref}_1, \ldots, \textit{ref}_n~\textbf{to}~\textit{ref}\\
   &|& \mathbf{evaluate}~\textit{ref}\\
@@ -460,9 +461,12 @@ definition of _formulas_ and _values_, but briefly:
   are indexed and the user has the option to name them later;
 - a _value_ can be a primitive value (number, boolean or string), an object or an operation;
 - a _formula_ can be member access (or an object identified by a reference) or an invocation (of an operation
-identified by a reference with multiple arguments, each identified by a reference).
+  identified by a reference with multiple arguments, each identified by a reference).
 
-The interactions listed above and their effect on the state are:
+Our system consists of 6 kinds of interactions. The idea of representing programs as interactions
+also exists in work on structured editing by [Omar et al. (2017)], discussed in more detail later,
+but our interactions are less focused on editing code and more focused on higher-level programming
+tasks. The interactions and their effect on the state are:
 
 - $\textbf{def}$ -- defines a new primitive value and adds it to the state using a new
   indexed reference as the key. We used this above when defining a string with the file name
@@ -843,7 +847,7 @@ As discussed earlier, the Histogram program state is a mapping from references t
 and optional values for those references that have been evaluated. A formula can be a member
 access or an invocation. Importantly, all arguments of a formula are represented as references
 and so the representation of formulas in the state is not recursive. When displaying the state
-as code, we turn the flat _formulas_ into recursive _expressions_ as follows:
+as code, we turn the flat _formulas_ into nested _expressions_ as follows:
 
  - We construct an expression for all references that are either named (represented as a
    `let` binding) or references that are not referenced by any other formula in the state
@@ -851,7 +855,7 @@ as code, we turn the flat _formulas_ into recursive _expressions_ as follows:
 
  - When doing the above, we do not look inside functions, so a formula that is used as part
    of a function will also appear independently, outside of the expression that represents
-   the functoion.
+   the function.
 
  - To construct an expression from a formula, we follow the references inside a formula.
    We display named references as variables and we follow indexed references recursively
@@ -1118,9 +1122,13 @@ in France and Germany.
 </div>
 <div class="col-sm-12 col-md-9 col-lg-8 markdown">
 
-The spreadsheet view of a Histogram program is constructed from the same state, but in a
-different way. Rather than constructing recursive expressions, we keep the flat structure of
-formulas. We replace both indexed and named references with a location in the spreadsheet.
+As mentioned above, the spreadsheet view of a Histogram program displays the state in the
+form of formulas, rather than displaying the evalauted data. This would be more familiar, but
+it raises interesting problems, such as how to display a large data table in a single cell.
+We return to this topic in [section 7.2](#s7_2). When displaying Histogram program in a
+spreadsheet, we use the same state as when displaying it as code, but we proceed differently.
+Rather than constructing nested expressions, we keep the flat structure of formulas. We replace
+both indexed and named references with a location in the spreadsheet.
 The view is constructed as follows:
 
  - Formulas that represent a member access or an application are placed below a cell that
@@ -1133,16 +1141,18 @@ The view is constructed as follows:
    may now be referenced multiple times.
 
  - All primitive values, including numbers, strings and also functions, that are used as
-   arguments of other operations, are placed in the first column. When we access a member on
+   arguments of other operations, are placed in the first column. When we access a member of
    such primitive or invoke such operation directly, it will be moved to a new column.
 
 When displaying a formula in a cell, we display the value of primitive values and operations.
 For other types of formulas, we display the code that they represent. Generally, we do not
-build recursive expressions with one exception. In the above demo, we have `data` in B1,
-`B1.load` in B2 and `B1.load(A1)` in B3. The cell B2 accesses member on an object in B1 and
-the cell in B3 invokes the member with an argument. We could display this as `B2(A1)`, which
-is more correct as B2 represents an operation that we are invoking. We expect that treating of
-operations as first-class values might not be obvious and so our view hides this fact.
+build nested expressions with one exception. In the above demo, we have `data` in B1; we have
+a value representing the `load` operation in B2 and we invoke the operation in B2 with A1 as
+an argument in cell B3. This is displayed as `B1.load(A1)` in B3, but the internal representation
+in cell B3 is actually `B2(A1)`. To make the displayed code more readable, we check the contents
+of B2 and, if the cell contains a member access, we display the invocation in a way that looks
+like a method call. We expect that treating operations as first-class values might not be obvious
+and so our view hides this, even though that is what happens internally.
 
 </div></div>
 <div class="row align-items-end"><div class="col-sm-12 col-md-9 col-lg-8 markdown">
@@ -1158,10 +1168,10 @@ modify the data in the spreadsheet, without leaving a trace of how this has been
 
 In Histogram, we can support similarly easy ways of manipulating data for kinds of data that
 have a preview like data tables. However, we can keep the accountability and transparency that
-we get by representing those as program. The key idea is that a preview can be interactive and
+we get by representing those as programs. The key idea is that a preview can be interactive and
 using the user interface can trigger interactions that will then be added to the program.
 This is similar to the idea of the Sketch-n-sketch system ([Chugh et al., 2016](#refs)), which
-uses different program representation to achieve similar effect.
+uses a different program representation to achieve a similar effect.
 
 In our prototype, we implement a direct manipulation user interface for data tables. When a
 Histogram formula evaluates to a data table, you can not only see the data, but also filter
@@ -1287,7 +1297,7 @@ program will always be correct. Interestingly, this way of program construction 
 _inferential programming_ by [Scherlis and Scott (1983)](#refs), but never further developed.
 
 We do not formally describe the type system in this essay, but we sketch the important details.
-Histogram supports fairly standard set of types. There are three primitive types, a type for
+Histogram supports a fairly standard set of types. There are three primitive types, a type for
 operations and a type for objects with members. It is worth noting that our handling of objects is
 structural rather than nominal and we do not support union types:
 
@@ -1569,9 +1579,9 @@ might, for example, drop certain columns dynamically based on the values they co
 
 Before discussing the design choices and future work, it is worth adding a few notes on how has
 this interactive essay been implemented. This essay uses the capabilities provided by the web
-to allow the reader experience some aspects of the design of the Histogram system. We believe that
+to allow the reader to experience some aspects of the design of the Histogram system. We believe that
 this way of presenting the work lets us focus on the important aspects of our work -- rather than
-developing theoretical foundations of Histogram or conducting user study, we want to communicate
+developing theoretical foundations of Histogram or conducting user studies, we want to communicate
 the style of interaction and some of the consequences of our system design. This essay thus follows
 some of the ideas discussed in a recent position paper on evaluating programming systems design
 by [Edwards et al. (2019)](#refs).
@@ -1627,7 +1637,7 @@ the displayed program valid and so we also recursively remove all formulas that 
 one removed by the user. This can remove quite a lot of code, but this code is not lost. The
 environment knows about it, because it is a part of the history and it could then offer the user
 to restore the temporarily removed code once the errors caused by the initial deletion are
-resolved. The user experience of this approach remains to be investigated, but we belive this
+resolved. The user experience of this approach remains to be investigated, but we believe this
 might be a compelling (or a complementary) alternative to an approach based on holes.
 
 ### _7.2_ Simplifying the spreadsheet interface
@@ -1646,10 +1656,10 @@ our spreadsheet uses automatic layout and it would be interesting to find ways o
 ### _7.3_ Experts and keyboard-based interactions
 
 A complementary problem is how to better serve expert users. Our current prototype can display
-programs as code, but the interactions with those are through arguably cumbersome user interface.
+programs as code, but the interactions with those are through an arguably cumbersome user interface.
 An appealing alternative would be to offer a command prompt where programmers can enter
 interactions using a keyboard. This could be made efficient by using suitable shortcuts and
-auto-complete. Interestingly, this way of interacting with the system is somewhat similra to
+auto-complete. Interestingly, this way of interacting with the system is somewhat similar to
 the way in which thorem provers like Coq ([Barras et al., 1997](#refs)) work. To prove a theorem
 in Coq, one invokes a series of tactics that transform the proof obligations. A proof is
 a list of tactic invocations, which is similar to our case where a program is a list
@@ -1681,8 +1691,8 @@ but we are still left with conceptually challenging function values in our progr
 to make this experience more akin to using the "copy down" functionality in Excel that copies a
 formula to a table of inputs.
 
-One possible approach is to use something akin to managed copy-and-paste from the Subtext
-system ([Edwards, 2005](#refs), [Edwards, 2006](#refs)). This would make it possible to reuse the
+One possible approach is to use something akin to linked editing ([Toomim et al., 2014](#refs)) or
+managed copy-and-paste as known from Subtext ([Edwards, 2006](#refs)). This would make it possible to reuse the
 same code in multiple contexts, perhaps with modifications. It would also fit well with our
 approach as copy-and-paste could be just another kind of interaction. Another approach would be
 to represent functions as hypothetical interactions -- a function constructed from a concrete
@@ -1690,6 +1700,28 @@ computation would be a sequence of interactions that copy its arguments to the i
 followed by an evaluate interaction and an interaction that copies the result back to a reference
 specified by the caller. This is, in fact, how our current prototype implements functions, but
 we do not currently expose this to the user.
+
+### _7.6_ Exploring the design space
+
+This essay should be primarily seen as an exploration of design space in the sense discussed by
+[Edwards et al. (2019)](#refs). We choose simple data exploration as our problem domain and the idea
+of representing programs as lists of interactions as our starting point. We then followed a path
+towards a minimal demo-able prototype, making a number of design decisions along the way.
+
+Numerous related projects occupy a similar space, but makes different design decisions.
+In Subtext ([Edwards, J., 2005](#refs)), programmers interact with trees and treats copying
+as a central operation; work on direct programming ([Edwards, J., 2018](#refs)) moves towards
+unifying program and data in a way where both can be edited by direct manipulation.
+Hazel and Hazelnut ([Cyrus et al., 2019](#refs), [Cyrus et al., 2017](#refs)) is a structured
+programming environment with a calculus of interactions at its core, but with focus on editing
+incomplete programs represented as abstract syntax trees.
+
+Our work briefly explored the idea of editing code via direct manipulation with a preview. We
+did so via a mechanism where user interface can trigger interactions, which are then added to
+the program. The Sketch-n-Sketch project ([Hempel et al. 2019](#refs)) takes the idea of direct
+manipulation much further and explores ways of synthesizing program updates to synchronize the
+code and preview ([Chugh et al. 2016](#refs)). This can be captured using the notion of
+bidirectional evaluation ([Mayer et al., 2018](#refs)).
 
 **_8._ Conclusions:** Glimpse of the future
 -------------------------------------------
@@ -1720,7 +1752,7 @@ the past to understand the present". When it comes to programs, knowing their pa
 strictly necessary for understanding their present, but it certainly enables a range of interesting
 user experiences that is worth a further study or, perhaps, even a new programming paradigm.
 
-References
+<a name="refs">References</a>
 ----------
 
  1. Aaron, S., & Blackwell, A. F. (2013). _From sonic Pi to overtone: creative musical experiences with domain-specific and functional languages_. In Proceedings of the first ACM SIGPLAN workshop on Functional art, music, modeling & design (pp. 35-46). ACM.
@@ -1729,21 +1761,24 @@ References
  1. Burnett, M. M., Atwood, J. W., & Welch, Z. T. (1998). _Implementing level 4 liveness in declarative visual programming languages_. In Proceedings. 1998 IEEE Symposium on Visual Languages (Cat. No. 98TB100254) (pp. 126-133). IEEE.
  1. Christiansen, D. R. (2013). _Dependent type providers_. In Proceedings of the 9th ACM SIGPLAN workshop on Generic programming (pp. 25-34). ACM.
  1. Chugh, R., Hempel, B., Spradlin, M., & Albers, J. (2016). _Programmatic and direct manipulation, together at last_. In ACM SIGPLAN Notices (Vol. 51, No. 6, pp. 341-354). ACM.
- 1. Cyrus, O., Voysey, I., Chugh, R., & Hammer, M. A. (2019). _Live functional programming with typed holes_. Proceedings of the ACM on Programming Languages, 3(POPL), 14.
- 1. Cyrus, O., Voysey, I., Hilton, M., Aldrich, J., & Hammer, M. A. (2017). _Hazelnut: a bidirectionally typed structure editor calculus_. ACM SIGPLAN Notices, 52(1), 86-99.
  1. Czaplicki, E. and contributors (2019). _The Elm Architecture_. Available online at [https://guide.elm-lang.org/architecture/](https://guide.elm-lang.org/architecture/)
  1. DeLine, R., Fisher, D., Chandramouli, B., Goldstein, J., Barnett, M., Terwilliger, J. F., & Wernsing, J. (2015). _Tempe: Live scripting for live data_. In VL/HCC (pp. 137-141).
  1. Edwards, J. (2006). _First Class Copy & Paste_. Computer Science and Artificial Intelligence Laboratory Technical Report, MIT-CSAIL-TR-2006-037
  1. Edwards, J. (2005). _Subtext: uncovering the simplicity of programming_. In ACM SIGPLAN Notices (Vol. 40, No. 10, pp. 505-518). ACM.
+ 1. Edwards, J. (2018). _Direct programming_. In proceedings of the 29th Annual Workshop of the Psychology of Programming Interest Group, PPIG 2018. Available online at [https://vimeo.com/274771188](https://vimeo.com/274771188)
  1. Edwards, J., Kell, S., Petricek, T., Church, L. (2019). _Evaluating programming systems design_. To appear in proceedings of the 30th Annual Workshop of the Psychology of Programming Interest Group, PPIG 2019
  1. Goldberg, A., & Robson, D. (1983). _Smalltalk-80: the language and its implementation_. Addison-Wesley Longman Publishing Co., Inc..
+ 1. Hempel, B., Lubin, J., and Chugh, R. (2019). _Sketch-n-Sketch: Output-Directed Programming for SVG_. In Proceedings of the ACM Symposium on User Interface Software and Technology (UIST), New Orleans, LA, October 2019.
  1. Hundhausen, C. D., Farley, S. F., & Brown, J. L. (2009). _Can direct manipulation lower the barriers to computer programming and promote transfer of training?: An experimental study_. ACM Transactions on Computer-Human Interaction (TOCHI), 16(3), 13.
  1. Kluyver, T., Ragan-Kelley, B., Pérez, F., Granger, B.E., Bussonnier, M., Frederic, J., Kelley, K., Hamrick, J.B., Grout, J., Corlay, S. & Ivanov, P. (2016). _Jupyter Notebooks-a publishing format for reproducible computational workflows_. In ELPUB (pp. 87-90).
  1. Ludäscher, B., Altintas, I., Berkley, C., Higgins, D., Jaeger, E., Jones, M., ... & Zhao, Y. (2006). _Scientific workflow management and the Kepler system_. Concurrency and Computation: Practice and Experience, 18(10), 1039-1065.
  1. Maloney, J. H., & Smith, R. B. (1995). _Directness and liveness in the morphic user interface construction environment_. In ACM Symposium on User Interface Software and Technology (Vol. 95, pp. 21-28).
+ 1. Mayer, M., Kunčak, V., and Chugh, R. (2018). _Bidirectional Evaluation with Direct Manipulation_. In Proceedings of the ACM on Programming Languages (PACMPL), Issue OOPSLA, Boston, MA, November 2018.
  1. McDirmid, S. (2013). _Usable live programming_. In Proceedings of the 2013 ACM international symposium on New ideas, new paradigms, and reflections on programming & software (pp. 53-62). ACM.
  1. McDirmid, S. (2007). _Living it up with a live programming language_. In ACM SIGPLAN Notices (Vol. 42, No. 10, pp. 623-638). ACM.
  1. McKinney, W. (2011). _pandas: a foundational Python library for data analysis and statistics_. Python for High Performance and Scientific Computing, 14.
+ 1. Omar, C., Voysey, I., Chugh, R., & Hammer, M. A. (2019). _Live functional programming with typed holes_. Proceedings of the ACM on Programming Languages, 3(POPL), 14.
+ 1. Omar, C., Voysey, I., Hilton, M., Aldrich, J., & Hammer, M. A. (2017). _Hazelnut: a bidirectionally typed structure editor calculus_. ACM SIGPLAN Notices, 52(1), 86-99.
  1. Petricek, T. (2018). _Critique of 'An anatomy of interaction: co-occurrences and entanglements'_. In Conference Companion of the 2nd International Conference on Art, Science, and Engineering of Programming (pp. 197-201). ACM.
  1. Petricek, T., Guerra, G., & Syme, D. (2016). _Types from data: Making structured data first-class citizens in F#_. In ACM SIGPLAN Notices (Vol. 51, No. 6, pp. 477-490). ACM.
  1. Sandewall, E. (1978). _Programming in an interactive environment: the LISP experience_. ACM Computing Surveys, 10(1), 35-71.
@@ -1754,6 +1789,7 @@ References
  1. Shneiderman, B. (1981). _Direct manipulation: A step beyond programming languages_. In ACM SIGSOC Bulletin (Vol. 13, No. 2-3, p. 143). ACM.
  1. Syme, D., Battocchi, K., Takeda, K., Malayeri, D., & Petricek, T. (2013). _Themes in information-rich functional programming for internet-scale data sources_. In Proceedings of the 2013 workshop on Data driven functional programming (pp. 1-4). ACM.
  1. Tanimoto, S. L. (2013). _A perspective on the evolution of live programming_. In Proceedings of the 1st International Workshop on Live Programming (pp. 31-34). IEEE Press.
+ 1. Toomim, M., Begel, A., & Graham, S. L. (2004). Managing duplicated code with linked editing. In 2004 IEEE Symposium on Visual Languages-Human Centric Computing (pp. 173-180). IEEE.
  1. Victor, B. (2012). _Inventing on principle_. CUSEC 2012. Available online at: [https://vimeo.com/36579366](https://vimeo.com/36579366)
  1. Victor, B. (2012). _Learnable programming? Designing a programming system for understanding programs_. Available online at: [http://worrydream.com/LearnableProgramming/](http://worrydream.com/LearnableProgramming/)
 
