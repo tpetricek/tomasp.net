@@ -1,7 +1,7 @@
-Cities and programming [DRAFT]
-====================================================
+On architecture, urban planning and software construction
+=========================================================
 
- - title: TBD
+ - title: On architecture, urban planning and software construction
  - date: 2019-04-08T12:22:57.7521867+01:00
  - description: TBD
  - layout: post
@@ -127,7 +127,7 @@ tools that scale better and can handle more states. However, the number of state
 faster than the size of the system and so our tools still hit their limits very easily. Urban
 planners never attempted to understand every little detail about how cities work, yet, they have
 learned valuable knowledge about cities. I will sketch some ideas for how we can learn from urban
-planners in Section 3.2.
+planners in Section 3.3.
 
 ### 1.2 Structures obtained by gradual development
 
@@ -178,7 +178,7 @@ the theories are not just slightly imprecise, but completely wrong and actively 
 Interestingly, a few urban planners and architects reflect critically on this and that's
 where programming researchers can learn.
 
-#### Form and context
+#### Form and context in software and architecture
 In [Notes on the Synthesis of Form][notes], Christopher Alexander points out that design always
 speaks of form and its context. A good design is not just a property of the form, but it is a
 matter of fit between the form and the context. The reason why we cannot evaluate an isolated
@@ -252,12 +252,12 @@ theories discussed in the previous section.
 In any case, it seems that similar problems exist in architecture and software development, which
 suggests that looking at architecture for inspiration about programming is worthwhile.
 
-## 2. New methodologies for programming research
+## 2. Learning from urban planning and architecture methodologies
 
 As mentioned earlier, I think the software world can learn from architecture and urban planning
 in two ways. We can look at concrete ideas about buildings and cities or we can look at
 methodologies that critics of architecture and urban planning use in their work. In this
-section, I'll focus on the former.
+section, I'll focus on the latter.
 
 Perhaps the first thing that we should learn is to spend more time critically reflecting
 on how our methods work, when they do not work and why. In academic programming research,
@@ -291,7 +291,7 @@ that are nothing like what the urban planning theories of 1950s consider a good 
 In the world of programming, we also have many systems that work well, in spite of being
 completely wrong according to our theories of what a good programming system should look like.
 Popular programming languages like PHP, JavaScript or R are the most obvious examples.
-There are [some attempts](!socioplt) to explain why, but we mostly just [disregard those](!ghica)
+There are [some attempts][socioplt] to explain why, but we mostly just [disregard those](http://danghica.blogspot.com/2016/09/what-else-are-we-getting-wrong.html)
 saying that they got popular by accident. For a community that prides itself
 in being thorough and scientific, this is a very shallow argument. As Peter Naur wrote
 in [The Place of Strictly Defined Notation in Human Insight][naur]:
@@ -316,95 +316,347 @@ node.js.
 One interesting example that documents something along those lines is the discussion about
 MIDI devices in a [Salon des Refusés](https://www.shift-society.org/salon/) paper
 [Tracing a Paradigm for Externalization: Avatars and the GPII Nexus][gpii] by Colin Clark and
-Antranig Basman.
- 
+Antranig Basman, which discusses a system which succeeded precisely because it did not follow
+the principle of _information hiding_.
 
-### 2.2 Learning about how software learns
+### 2.2 Learning about how software evolves
+
+Another important aspect of the methodology used both by Jane Jacobs and Stewart Brand is that
+they look at cities and buildings over a long period of time. Buildings and cities will be around
+for decades and centuries and we need to consider them with respect to the time dimension.
+The same is the case for software systems. Many software systems will be around for decades and
+will need to adapt to new circumstances.
+Computer scientists are aware of the time dimension and the [open/closed principle](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle),
+introduced by Bertrand Meyer in [Object-Oriented Software Construction][open], is one theoretical
+answer to those challenges. However, looking at how buildings and cities evolve would give us new
+methods and ideas for understanding how software evolves.
 
 #### How buildings evolve
 
-almost no buildings are designed to adapt, but they adapt anyway (learn, p2)
-random: software architects make the same mistakes as actual architects - they ignore learning
-wisdom acquired looking back must be translated to forward-looking wisdom (life, p109)
-examine buildings as a whole, both in space and time (learn, p3)
+[Christopher Alexander][notes] distinguishes between _unselfconscious_ culture
+that achieve a good fit between context and form through practice and gradual adaptation and
+_self-conscious_ culture that aims to achieve theoretical understanding of the complexity
+of the system and design a solution. The invention of self-conscious "architecture" destroyed
+the old process of building. The evolution over time is one of the aspects of designing that
+self-conscious architecture often gets wrong. Stewart Brand opens his book [How Buildings Learn][learn]
+with a damning summary:
+
+> Almost no buildings adapt well. They're _designed_ not to adapt; also budgeted and financed
+> not to, constructed not to, administered not to, maintained not to, regulated and taxed
+> not to, even remodelled not to. But all buildings (...) adapt anyway, however poorly,
+> because the usages in and around them are changing constantly.
+
+There might be useful ideas that computing can learn from unselfconscious cultures and I will
+return to this topic in Section 3.1. For self-conscious cultures, designing in a way that allows
+forms to adapt when the context changes seems to be a major challenge, both for architects and
+for programmers.
+
+Brand's book does not give a simple answer to the question of how to design an adaptable building,
+but it suggests a possible methodology and takes the first step. He documents how numerous existing
+buildings evolved over time and looks for common patterns. _Low Road_ buildings are flexible,
+cheap to modify and can easily adapt to a very different purpose (such as from a warehouse to a
+co-working space). _High Road_ buildings adapt slowly with more respect to their history, are more
+expensive to maintain, but they develop a unique character.
+
+Concepts such as the distinction between High Road and Low Road might directly apply to
+software systems. On one hand, some software systems provide robust core structure, but can be
+easily adapted and make it easy to throw away parts that are no longer needed. On the other hand,
+there are software systems that evolved more slowly, have longer history that they respect  and
+are more expensive to maintain, but can reliably provide services that are complex and cannot
+be easily replaced.
+
+That said, whether categories such as High and Low Road apply to software is perhaps the less
+interesting lesson here. The more interesting is the methodology that Stewart Brand proposes and
+follows. Just like he documents the way buildings evolve over time, we should be documenting how
+different kinds of software systems evolve. Only then we can meaningfully start looking for
+various patterns in such evolutions and use this to design more adaptable buildings.
+
+Brand suggests that _"the wisdom acquired looking backward must be translated into wisdom
+looking forward"_ and asks _"how to design new buildings that will endear themselves to
+preservationists sixty years from now"?_ Similarly, we should examine existing software systems
+with respect to time, look for those that evolved in appealing ways (and endeared themselves
+to preservationists) and use the knowledge we can gain by reflecting on those to design better
+software systems for the future.
 
 #### How cities evolve
 
-city structure consists of mixture of uses, generating diversity (life, p390)
--> similar to the process of concretization in Simondon
-population change jobs and interests - diversified districts allow them to stay (life, p149)
+As I argued earlier, the complexity of some software systems is more akin to the complexity of
+an entire city than akin to the complexity of a single building. The way city districts evolve and
+adapt is one of the important topics in [The Death and Life of Great American Cities][life] by Jane
+Jacobs. City districts are built by planners, city architects, businesses and the thousands of their
+inhabitants. A similar range of people have influence on software including the programmers, owners
+of interfaces that the software interacts with and the thousands of users. Just like cities adapt
+to serve their inhabitants, software adapts to serve its users and to fit with the environment.
 
-### 2.3 How we navigate and understand
+Jane Jacobs argues that city districts that work well for their inhabitants are those with a
+structure that supports and generates diversity of both uses and inhabitants. Diversity in the
+structure of a city allows people to stay in the same district as their jobs, interests and family
+situation changes. A good city district is not one where different functions are clearly separated
+into, say, office district, a shopping mall and suburb for living, but one that integrates many
+different functions.
 
-"consider city as perceived by its inhabitants" (image, p3)
-we are continually engaged in an attempt to organise our surroundings (city, p90)
-image organisation at this scale is wholly new problem (city, p119)
-"a highly imageable city lets observer absorb sensor inputs easily without disruption of basic image" (city, p10)
-"good framework gives possibility of choice and a start for growth" (city, p4)
+Does this teach us anything about software systems? One of the widely accepted good design practices
+when building software is [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns),
+introduced by Dijkstra in his 1974 paper [On the role of scientific thought][separation] and so
+it seems that diversity achieved through integration of different functions is exactly against good
+software engineering principles. However, separation of concerns is something that we often start
+with and which gradually erodes during the adaptation process that software goes through.
 
-## 3. Directions for new kind of research
+Arnaud Bailly reflects on this reality of software in his talk [On the Mode of Existence of
+Software](http://videos.ncrafts.io/video/221100040), which borrows ideas on _technical objects_
+introduced by Gilbert Simondon in his 1958 book [On the Mode of Existence of Technical Objects][mode].
+One of the crucial properties of technical objects, such as a car engine, is that they undergo a
+process of _concretization_ through which components that were initially designed for separate
+functions start serving multiple purposes. This is very similar to the process through which
+software evolves and through which it becomes more like the city district discussed by Jane Jacobs.
+
+Urban planners of the 1950s thought that separation of concerns is a good principle for city
+design. Jane Jacobs pointed out that this is not the reality of welcoming city districts and
+pioneered a new perspective on urban planning that acknowledges, studies and celebrates this
+diversity. There might be a similar opportunity for understanding software systems. If we look
+at software systems that evolved over time, we might learn what factors make the process of
+concretization work favourably and, fundamentally, learn how to create software that will grow well.
+
+### 2.3 Navigating and understanding software and cities
+
+So far, I discussed two interesting methodologies that some authors followed in urban planning
+and architecture. I talked about examining real systems that work in spite of theory and I talked
+about the need for looking at how systems evolve over time. The third methodology I will consider
+is to look at how people understand and conceptualize cities and software. This section is mostly
+inspired by the 1960 book [The Image of the City][image] by Kevin Lynch.
+
+In his book, Kevin Lynch studies the legibility of a city. A legible city is _"one whose districts
+or landmarks or pathways are easily identifiable and are easily grouped into an overall pattern."_
+A legible city is more pleasant and easy to live in for its inhabitants. Similarly, I believe that
+programming needs to strive to produce legible software, both for its users and for its
+developers and future contributors. I will focus on the latter. The former is obviously also
+important, but it is a topic for a blog post on user experience design. The methodology for
+studying legibility of a city (and software) needs to be not only technical, but also
+psychological. To quote Lynch _"we must consider not just the city as a thing in itself, but the
+city being perceived by its inhabitants."_
+
+Lynch identifies a number of aspects of a city that are important for its legibility such as
+_paths_, _districts_ and _landmarks_. He looks at three cities as examples and discusses how
+different people navigate in the city and what characteristics of districts, paths and other
+aspects make a city legible. Some interesting points are that more knowledgeable people typically
+follow paths, while visitors rely on districts; districts are a useful guide for navigation if
+they each have a different character (such as red brick houses in one and stone buildings in
+another). The navigation also depends on the mode of transport. Subway (and railroads) gives
+a disconnected image of the city that is quite different than the one obtained by walking or
+cycling around.
+
+Thinking about code base of a large software system, we can easily imagine very similar ideas.
+There are paths that one might follow when reading code, such as the execution order; some paths
+may be disconnected such as when you search for uses of a certain function or class; there might
+even be districts in which the code has different character, perhaps because some parts are much
+older or use a different style (ironically, using inconsistent coding styles might actually help
+the developer understand that they are in a, say, poorly tested "code district" where making
+changes is more dangerous).
+
+As before, there might be some concrete similarities between aspects that make a city legible
+and aspects that make a large code base legible, but the general idea is perhaps more interesting.
+Legibility is an important property of any non-trivial software. Following Lynch, we should look
+at a number of good and bad examples, see what aspects of a code structure contribute to
+legibility and use such lessons for building software and perhaps also developer tools and
+languages that promote good practices.
+
+## 3. Borrowing concrete urban planning and architecture ideas
+
+The previous section mostly focused on methodological concerns. The three books about architecture
+and urban planning by [Jane Jacobs][life], [Stewart Brand][learn] and [Kevin Lync][image] that
+I used as my main inspiration all follow a method of inquiry that can be adapted to study software
+systems and that would give us valuable insights about them. However, I suggested earlier that
+there is a more profound similarity between urban planning or architecture and programming.
+More specifically, the kind of complexity that programmers need to control is not unlike the
+complexity that urban planners need to deal with. Because of this similarity, I believe that there
+is a number of concrete ideas from urban planning and architecture that would translate well to
+the world of programming. In this section, I look at three such cases.
 
 ### 3.1 Designing adaptable software
 
-different kinds of buildings change differently - dtto for software? (learn, p7)
-adaptive buildings has to allow layers to evolved independently (learn, p20)
-material that "looks bad before it acts bad" is important in building (and software!) (learn, p118)
-problems with traditional materials are well-documented (learn, p118)
--> you can use software with known bugs provided there are known workarounds
-how to teach maintenance habits? make parts ephemeral and require replacement in a year (learn, p130)
-how buildings/software learn? temporary buildings become permanent thanks to their adaptability (learn, p165)
--> should we design software to be more temporary and adaptable?
-scenario planning - all predictions are wrong, so we instead need to find strategy that is
-  adaptable enough to handle many different possible future scenarios (learn, p178)
+There is a wealth of good ideas about designing buildings that adapt well over time in
+Stewart Brand's [How Buildings Learn][learn]. Those that I find the most relevant for software
+are ideas around _maintenance_ and, more specifically, around _materials_.
+When discussing maintenance, Brand mentions the cautionary tale of [vinyl siding](https://en.wikipedia.org/wiki/Vinyl_siding),
+which is used to avoid problems with peeling paint. Rather than repainting a wooden wall, you
+cover it with a layer of vinyl siding, which is durable and weather resistant. The problem is that
+vinyl siding blocks moisture and the humidity behind it can cause structural damage to the building.
+Many traditional materials have the attractive property that they _look bad before they act bad_
+and, furthermore, _the problems with traditional materials are well understood_.
 
-#### Vernacular design method
+I suppose that the material from which software is built would include things like programming
+languages and libraries. The lesson about using traditional materials has a relatively easy
+parallel. If you build software using tools whose problems you understand, you will be able to
+expect and resolve those problems. If you are using a new material, you will not anticipate where
+problems might occur. The lesson about materials that look bad before they act bad suggests a
+more interesting challenge. How do we build software so that it gradually and gracefully degrades
+rather than abruptly stops working?
 
-vernacular & detail of plan is a measure of cultural disharmony (life, p132)
-vernacular allows skillfull solutions to problems rather than reinventing forms (life, p135)
-what does vernacular evaluation select for? (life, p150)
-form froze function - immobilizing high change layer by making it too rigid (life, p157)
+Another point made by Brand is about maintenance more generally. Just like software systems, any
+building built using any kind of materials requires some maintenance over time. And just like with
+software systems, building owners are often bad at performing the necessary maintenance.
 
-simple cultures never face the problem of complexity that we face (form, p32)
- -> simple cultures achieve good fit through practice, without understanding
-    (we might not need to understand complex systems if they allow inspection & use through practice)
- -> for this, we also need good materials that reveal what's going on (look bad before behave bad)
-system needs time to reach equillibrium each time it is disrupted (form, p51)
-immediate feedback makes this possible - prevents build-up of errors (form, p51)
-un-selfconscious culture achieves good fit by being self-adjusting (form, p55)
- -> this is why we need to improve programming via feedback
-little is required from the individual (respond to misfits by small changes) (form, p58)
- -> maybe related to how craftsman people work
-once we start questioning, we have to say "why" - and concepts like "safety" or "economics"
-  do not help because they do not correspond to sub-systems (form, p65)
+> Too often a new building is a teacher of bad maintenance habits. After the initial shakedown
+> period, everything pretty much works, and the owner and inhabitants gratefully stop paying
+> attention to the place. Once attention is deferred, deferring of maintenance comes naturally.
 
-### 3.2 Dealing with organized complexity
+A clever answer is to design buildings so that they teach good maintenance habits and design
+some parts of the original work as intentionally ephemeral. If there are parts that will require
+maintenance within a year, we will get into a good habit that is necessary anyway once the building
+is older. The same seems to be a very good suggestion for building software systems. If we
+build our systems in a way that intentionally makes some parts degrade more quickly, we will
+establish the right methods and processes for maintenance that will be valuable in the long run.
+The idea of [chaos engineering](https://en.wikipedia.org/wiki/Chaos_engineering) is
+perhaps a first step in this direction.
 
-planners of 1930s treat cities as problem of unorganized complexity - stats apply (life, p450)
--> PL theoreticians of 2000s treat programs as what? (calculi removes a lot)
-this book is one way of treating organized complexity (life, 454-455)
--> 1) think about processes, 2) work inductively 3) seek 'unaverage'
--> city processes are too complex to be abstracted
-one unaverage value (bookshop opening time) tells us more than statistic (life, p455)
--> PLs need to be considered in their complexity (unabstracted) looking at the unaverage
-   (this is exactly what all formal calculi attempt to eliminate!)
+More generally, Brand also points out that _all buildings are predictions_ and _all predictions
+are wrong_. When designing a building, doing so for one specific use will soon make it wrong,
+because it turns out that our understanding of the use case was not correct. In software, we know
+only too well that requirements change. Rather than developing a concrete plan based on our best
+understanding, we should develop a strategy that is _designed to encompass unforeseeably changing
+conditions_. Brand suggests that architects should use strategic planning methods such as
+[scenario planning](https://en.wikipedia.org/wiki/Scenario_planning). Again, there might be
+interesting lessons here for software development methodologies.
 
-### 3.3 Designing for easy navigation
+### 3.2 Vernacular design method
 
-goal is quality of the image in mind (city, p117)
-elements: paths, edges, districts, nodes, landmarks
-districts: distinct qualities, landmarks: easily identifiable
-navigation: people with more knowledge used paths, people with less knowledge used districts
-continuity of names: Beacon hill, Beacon street (city, p52)
-subway is disconnected (like calling a method in OOP?) (city, p57)
+When discussing how buildings evolve, I mentioned the contrast between unselfconscious cultures
+and our modern self-conscious architecture that [Christopher Alexander][notes] identifies.
+Self-conscious approach to buildings requires us to analyse all aspects of the context and design
+a solution to problems we identify. The unselfconscious approach achieves a good fit through
+practice without understanding. For example, [Musgum mud huts](https://en.wikipedia.org/wiki/Musgum_mud_huts)
+evolved to use the mathematically ideal catenary arch and are extremely good at keeping houses cool
+inside on hot summer days. [Stewart Brand][learn] also discusses how buildings are adapted by
+non-architects and uses the term _vernacular_ architecture. The common lesson is that there are
+ways of achieving a good design without explicitly designing. Some practices of such vernacular or
+unselfconscious approaches might work equally well when building software systems.
 
-in programming, we cannot fully understand things (programming by poking)
-we cannot hope to do this - but we can build local understanding by poking
-enough in some region. we should be able to navigate around such understood
-regions. We also can have small fully isolated regions that we can then fully
-understand, e.g. by using fancy types and immutability. (Jeremie)
+Vernacular design restricts the scope of the problem by limiting architectural ideas to what is
+typically used in the local context. This reduces the design task and allows the builder to focus
+on skilful solutions to specific problems rather than at reinventing forms. Such folk architecture
+might appear homogeneous and unified at first, but is rich and diversified in details. As Alexander
+acknowledges, unselfconscious cultures never face the problem of complexity that we face, but they
+are still worth studying because they have a very efficient way of solving problems in a more
+narrow context.
 
+In software construction, we often start by _reinventing the form_ and, consequently, we have to
+face a very wide range of design problems. Are there cases of software construction that are more
+akin to the vernacular or unselfconscious design? One possible area of interest might be how
+people solve problems in spreadsheet systems like Excel. Spreadsheets define a relatively fixed
+form and allow the user to focus on skilful solutions to specific problems. Thanks to the fixed
+form, such specific problem solutions often transfer well between different applications. Perhaps
+there are other problem domains where having a fixed form would allow us be more efficient and
+allow us to focus on specific problems rather than on reinventing the form, which introduces a
+very wide range of challenging design problems.
 
-TODO: Search for "(!" and add references!
+Christopher Alexander makes a number of useful observations about the process used by
+unselfconscious cultures. To paraphrase the main point, the design process is self-adjusting
+and produces well-fitting forms by actively maintaining an equilibrium with context. If the
+good fit is disrupted in any way, the unselfconscious culture will seek ways of adapting their
+practice to resolve the mismatch. For this, two conditions are necessary. First, there must be
+enough time for finding the adaptation.
+
+> The adjustment of forms must proceed more quickly than the drift of the culture context
+? Unless this condition is fulfilled the system can never produce well-fitting forms, for the
+> equilibrium of the adaptation will not be sustained.
+
+The second condition is that the process needs to provide feedback to allow direct
+response.
+
+> If the process is to maintain the good fit of dwelling forms while the culture drifts,
+> it needs a feedback sensitive enough to take action the moment that one of the potential
+> failures actually occurs.
+
+The immediate feedback mechanism allows quick response to design challenges and it prevents
+the build-up of multiple failures. Such multiple failures would require simultaneous correction,
+which is where a more self-conscious approach to dealing with complexity becomes necessary.
+
+The above analysis might provide us with useful hints on how to design programming tools that
+allow users (or programmers) to build software systems in a way that does not require us to
+solve complex design problems. We have to start with a standard (or traditional) form that
+is sufficiently constrained so that there is no room for complete reinvention of the form.
+We then need good feedback mechanisms that reveal misfits between the form and what we try to
+achieve. Finally, the process also needs to be slow enough to give sufficient time for making
+individual adaptations and prevent build-up of mismatches. This approach would perhaps get us
+closer to the dream of end-user development, which seems like the closest software analogy to
+vernacular or unselfconscious cultures.
+
+### 3.3 Dealing with organized complexity
+
+In Section 1.1, I argued that there is a similarity between the kind of complexity that urban
+planners have to deal with and the kind of complexity that software engineers have to handle.
+As pointed out by [David Parnas][sds], software systems are _non-repetitive digital systems_,
+meaning that they have an intractable number of state and there is no obvious way of reducing
+this number. Similarly, urban planning is a problem of _organized complexity_ and there is no
+obvious way of reducing this complexity, say, through statistics.
+
+Urban planners that [Jane Jacobs][life] criticises viewed cities as problems of _unorganized
+complexity_ which makes it possible to reduce the complexity using statistical analyses:
+
+> In the form of statistics, [citizens] were no longer components of any unit except the family,
+> and could be dealt with intellectually like grains of sand, or electrons, or billiard balls.
+> (...) It became possible to map out master plans for the statistical city, and people take these
+> more seriously, for we are all accustomed to believe that maps and reality are necessarily related,
+> or if they are not, we can make them so by altering reality.
+
+Software engineers and programming theoreticians nowadays seem to me to be a bit like urban
+planners of the 1930s. We treat software systems as systems of complexity that can be
+reduced, typically via logic rather than using statistics, to allow us to fully understand
+the systems we are building. I believe we need to accept that this is infeasible and
+[Life and Death of Great American Cities][life] by Jane Jacobs is a good source of ideas about
+how to deal with non-reducible complexity. She summarizes her observations by saying:
+
+> In the case of understanding cities, I think the most important habits of thought are these:
+> (1) to think about processes; (2) to work inductively; (3) to seek for 'unaverage' clues
+> involving very small quantities, which reveal the way larger and more 'average' quantities are
+> operating.
+
+An example of unaverage value discussed by Jacobs is the case of a chain of five bookshops with
+four locations in New York. Four of those stay open until 10pm or midnight, but one in Brooklyn
+downtown closes at 8pm. _"Here is a management which keeps its stores open late, if there is
+business to be had."_ The fifth store tells us that Brooklyn's downtown is dead by 8pm, which
+is a valuable insight for an urban planner.
+
+I believe programming language researchers have much to learn from Jane Jacobs. When studying
+programming languages, we often try to find their _essence_ or _foundations_ and we end up
+looking at a reduced version of the problem that hides interesting unaverage properties.
+Rather than looking at reduced essence, we should perhaps be taking non-reductionist view
+and look at interesting unexpected cases, examples and applications.
+
+## 4. Conclusions
+
+This blog post is by no means trying to present any concrete results or even give any concrete
+advice that software engineers or programming researchers could follow. It is perhaps best seen
+as my reading notes on four books on architecture and urban planning. Specifically, I talked
+about [The Death and Life of Great American Cities][life] by Jane Jacobs, [How Buildings Learn][learn]
+by Stewart Brand, [Notes on the Synthesis of Form][notes] by Christopher Alexander and
+[The Image of the City][image] by Kevin Lynch.
+
+My motivation for reading those books in the first place is that I find the typical sources of
+ideas for programming and programming research of only limited use. Programming imported a number
+of useful ideas from sciences, mathematics and engineering, but I believe we need to be looking
+further if we want to come up with new and better ways of constructing software. Architecture and
+urban planning might be valuable and inspiring sources of ideas and I started this article by
+discussing why. There is a number of similarities between those and programming, most importantly
+the fact that they deal with a similar kind of complexity.
+
+I then looked at two ways in which programming research could learn from architecture and
+urban planning. More generally, the aforementioned books follow interesting methodologies
+that would be worth imitating in the context of software. We should look for software that works
+well in spite of theory; we should study how software evolves and we should study what image of
+code base do programmers keep in their mind.
+
+More specifically, there are also a number of concrete
+ideas from urban planning and architecture that could, more or less directly, be applied to
+programming. Those are ideas around designing adaptable buildings (and adaptable software),
+understanding how vernacular (unselfconscious) design method finds fit between a form and a context
+and ways of studying unorganized complexity by focusing on unaverage values in their full richness.
+
+So far, the software industry borrowed the idea of _design patterns_ from architecture, although
+many would say that our version of the idea is a mere caricature of what architects envisioned.
+I would not be surprised if the next great idea in programming was also inspired by architecture or
+urban planning. I'm just curious to see whether it will be one of those discussed in this blog post
+or not.
 
 
  [arguments]: https://xxx "Rebecca Slayton (????). Arguments that Count"
@@ -416,3 +668,8 @@ TODO: Search for "(!" and add references!
  [naur]: http://?? "Peter Naur (????). The Place of Strictly Defined Notation in Human Insight"
  [farmer]: http://??? "Susanne Bødker, Henrik Korsgaard, Joanna Saad-Sulonen (???). A Farmer, a Place and at least 20 Members: The Development of Artifact Ecologies in Volunteer-based Communities"
  [gpii]: https://www.shift-society.org/salon/papers/2017/revised/externalization.pdf "Colin Clark, Antranig Basman (2017). Tracing a Paradigm for Externalization: Avatars and the GPII Nexus"
+ [open]: https://amzn.to/2z5EYI5 "Bertrand Meyer (1988). Object-Oriented Software Construction. Prentice Hall."
+ [separation]: https://www.cs.utexas.edu/users/EWD/transcriptions/EWD04xx/EWD447.html "Edsger Dijkstra (1974). On the role of scientific thought."
+ [mode]: https://www.upress.umn.edu/book-division/books/on-the-mode-of-existence-of-technical-objects "Gilbert Simondon (1958). On the Mode of Existence of Technical Objects"
+ [image]: https://?? "Kevin Lynch (1960). The Image of the City"
+ [socioplt]: https://lmeyerov.github.io/projects/socioplt/paper0413.pdf "Leo Meyerovich and Ariel Rabkin (2012). Socio-PLT: Principles for programming language adoption"
