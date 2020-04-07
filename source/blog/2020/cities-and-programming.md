@@ -1,12 +1,16 @@
-On architecture, urban planning and software construction [DRAFT]
+On architecture, urban planning and software construction
 =========================================================
 
  - title: On architecture, urban planning and software construction
- - date: 2019-04-08T12:22:57.7521867+01:00
- - description: TBD
+ - date: 2020-04-07T23:13:16.3109375+01:00
+ - description: Like software construction, architecture and urban planning often deal with
+    complex systems that evolve over a long period of time. Some of the successful systems are
+    also quite messy despite theories telling us that such systems should not work. These are just
+    a few of the reasons why software engineers can learn interesting things from reading about
+    architecture and urban planning.
  - layout: post
  - references: true
- - image-large: http://tomasp.net/blog/2019/software-engineering/sdi.jpg
+ - image-large: http://tomasp.net/blog/2020/cities-and-programming/siding.jpg
  - tags: academic, programming languages, philosophy
 
 ----------------------------------------------------------------------------------------------------
@@ -21,6 +25,8 @@ In this article, I will look at ideas from architecture and urban planning. Arch
 has already been an inspiration for _design patterns_, although some would say that we did
 quite poor job and imported a trivialized (and not very useful) version of the idea. However,
 there are many other interesting ideas in architecture and urban planning worth exploring.
+
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/patterns.jpg" /></div>
 
 To explain why learning from architecture and urban planning is a good idea, I will first
 discuss similarities between problems solved by architects or urban planners and programmers.
@@ -51,15 +57,18 @@ Many people have linked programming with writing, gardening or even planning a d
 Whether we can learn something useful from making those analogies crucially depends on whether
 those activities actually have any structural similarities with programming.
 Before talking about what we can learn from buildings and cities, I will discuss some of the
-structural similarities to convince you that they are, in fact, a good analogies!
+structural similarities to convince you that they are, in fact, good analogies!
 
 ### 1.1 Problems of organized complexity
+
 
 My first resource for this article is a 1961 book [The Death and Life of Great American Cities][life]
 by Jane Jacobs. The book focuses on problems in urban planning and points out numerous flaws in the
 1950s urban planning ideas that were behind (mostly failed) housing projects and poorly planned
 parks that contributed to the rise of criminality in cities like New York. Jacobs talks about
 how neighbourhoods work and why some of them work better than others.
+
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/death.jpg"/></div>
 
 However, the point that I want to discuss first is from the last chapter, which discusses "what
 kind of a problem city is". Jacobs refers to an essay on science and complexity by Warren Weaver,
@@ -97,6 +106,8 @@ actually important.
 A nice argument for the irreducible complexity of software systems was written by David Parnas
 in [Software Aspects of Strategic Defence Systems][sds]. Parnas describes three kinds of systems
 with increasing levels of complexity:
+
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/cities-and-programming/sdi.jpg" style="border:solid 5px black;"/></div>
 
 1. **Analog systems.** Analog systems are modelled as continuous functions. Those can be analysed
    using well-understood mathematical tools. To show that a system is reliable, you just need to show
@@ -148,6 +159,8 @@ the same university department), the needs of its users will change and the buil
 adapt. This should be done, for example, by making sure that changing the space layout in the
 building is possible without changing the structure.
 
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/arguments.jpg" style="border:5px solid black;"/></div>
+
 A similar line of thought can be found in the debate about building an anti-ballistic missile
 software that would automatically track and destroy Soviet missiles. In the debate, a number of
 computer scientists pointed out that such system cannot be reliably built for fundamental software
@@ -179,11 +192,14 @@ Interestingly, a few urban planners and architects reflect critically on this an
 where programming researchers can learn.
 
 #### Form and context in software and architecture
+
 In [Notes on the Synthesis of Form][notes], Christopher Alexander points out that design always
 speaks of form and its context. A good design is not just a property of the form, but it is a
 matter of fit between the form and the context. The reason why we cannot evaluate an isolated
 form is not because we are unable to precisely describe the form itself, but because we are
 unable to precisely describe the context with which it will interact:
+
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/notes.jpg"/></div>
 
 > [T]he opportunity to evaluate the form (...) depends on the fact that we can give a
 > precise mathematical description of the context. In general, unfortunately, we cannot
@@ -216,6 +232,8 @@ reasons. One point made by Jacobs is that public spaces only work if they combin
 functions so that people have reasons for passing through the space throughout the day, but
 this requires diverse neighbourhoods that combine residential spaces with shops, restaurants,
 cultural venues and offices.
+
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/cities-and-programming/radiant.jpg" style="border:solid 5px black;"/></div>
 
 In software engineering and programming research, we also often come up with simple and convincing
 principles supported by reasonable arguments. To poke at my own community: if we want to make
@@ -277,6 +295,8 @@ and does not always precisely work in its purest form, but are there cases where
 blatantly wrong? Jane Jacobs does a great job at documenting such cases in the urban planning
 context. She looks at concrete city districts that function well in spite of urban planning theories
 that present theoretical arguments for why those districts must be unpleasant places to live.
+
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/cities-and-programming/north-end.jpg" style="border:solid 5px black;"/></div>
 
 Theories inspired by the Radiant City and Garden City ideas support separation of functions
 in a city and argue for large parks. Yet, two of Jacobs' examples of healthy districts,
@@ -351,6 +371,8 @@ return to this topic in Section 3.1. For self-conscious cultures, designing in a
 forms to adapt when the context changes seems to be a major challenge, both for architects and
 for programmers.
 
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/learn.jpg" style="border:5px solid black;"/></div>
+
 Brand's book does not give a simple answer to the question of how to design an adaptable building,
 but it suggests a possible methodology and takes the first step. He documents how numerous existing
 buildings evolved over time and looks for common patterns. _Low Road_ buildings are flexible,
@@ -395,6 +417,8 @@ situation changes. A good city district is not one where different functions are
 into, say, office district, a shopping mall and suburb for living, but one that integrates many
 different functions.
 
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/existence.jpg" style="border:5px solid black;"/></div>
+
 Does this teach us anything about software systems? One of the widely accepted good design practices
 when building software is [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns),
 introduced by Dijkstra in his 1974 paper [On the role of scientific thought][separation] and so
@@ -434,6 +458,8 @@ important, but it is a topic for a blog post on user experience design. The meth
 studying legibility of a city (and software) needs to be not only technical, but also
 psychological. To quote Lynch _"we must consider not just the city as a thing in itself, but the
 city being perceived by its inhabitants."_
+
+<div class="rdecor-sm"><img src="http://tomasp.net/blog/2020/cities-and-programming/image.jpg" style="border:5px solid black;"/></div>
 
 Lynch identifies a number of aspects of a city that are important for its legibility such as
 _paths_, _districts_ and _landmarks_. He looks at three cities as examples and discusses how
@@ -483,6 +509,8 @@ cover it with a layer of vinyl siding, which is durable and weather resistant. T
 vinyl siding blocks moisture and the humidity behind it can cause structural damage to the building.
 Many traditional materials have the attractive property that they _look bad before they act bad_
 and, furthermore, _the problems with traditional materials are well understood_.
+
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/cities-and-programming/siding.jpg" style="border:solid 5px black;"/></div>
 
 I suppose that the material from which software is built would include things like programming
 languages and libraries. The lesson about using traditional materials has a relatively easy
@@ -556,6 +584,8 @@ good fit is disrupted in any way, the unselfconscious culture will seek ways of 
 practice to resolve the mismatch. For this, two conditions are necessary. First, there must be
 enough time for finding the adaptation.
 
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/cities-and-programming/huts.jpg" style="border:solid 5px black;"/></div>
+
 > The adjustment of forms must proceed more quickly than the drift of the culture context
 ? Unless this condition is fulfilled the system can never produce well-fitting forms, for the
 > equilibrium of the adaptation will not be sustained.
@@ -623,6 +653,15 @@ looking at a reduced version of the problem that hides interesting unaverage pro
 Rather than looking at reduced essence, we should perhaps be taking non-reductionist view
 and look at interesting unexpected cases, examples and applications.
 
+<div class="wdecor">
+
+[<img src="http://tomasp.net/blog/2020/cities-and-programming/death.jpg" style="max-height:250px;margin:0px 10px 0px 10px;"/>][life]
+[<img src="http://tomasp.net/blog/2020/cities-and-programming/learn.jpg" style="max-height:250px;margin:0px 10px 0px 10px;border:5px solid black;"/>][learn]
+[<img src="http://tomasp.net/blog/2020/cities-and-programming/notes.jpg" style="max-height:250px;margin:0px 10px 0px 10px;"/>][notes]
+[<img src="http://tomasp.net/blog/2020/cities-and-programming/image.jpg" style="max-height:250px;margin:0px 10px 0px 10px;border:5px solid black;"/>][image]
+
+</div>
+
 ## 4. Conclusions
 
 This blog post is by no means trying to present any concrete results or even give any concrete
@@ -659,17 +698,17 @@ urban planning. I'm just curious to see whether it will be one of those discusse
 or not.
 
 
- [arguments]: https://xxx "Rebecca Slayton (????). Arguments that Count"
- [learn]: https://xxx "Stewart Brand (????). How Buildings Learn: What happens after they're built"
- [life]: https://xxx "Jane Jacobs (1961). The Death and Life of Great American Cities"
- [sds]: http://?? "David Parnas (????). Software Aspects of Strategic Defence Systems"
- [notes]: http://?? "Christopher Alexander (????). Notes on the Synthesis of Form"
- [bullet]: http://?? "Fred Brooks (????). No Silver Bullet"
- [naur]: http://?? "Peter Naur (????). The Place of Strictly Defined Notation in Human Insight"
- [farmer]: http://??? "Susanne Bødker, Henrik Korsgaard, Joanna Saad-Sulonen (???). A Farmer, a Place and at least 20 Members: The Development of Artifact Ecologies in Volunteer-based Communities"
+ [arguments]: https://amzn.to/2RjWrpI "Rebecca Slayton (2013). Arguments that Count"
+ [learn]: https://amzn.to/2V49eO8 "Stewart Brand (1995). How Buildings Learn: What happens after they're built"
+ [life]: https://amzn.to/2wo5kHR "Jane Jacobs (1961). The Death and Life of Great American Cities"
+ [sds]: https://dl.acm.org/doi/10.1145/214956.214961 "David Parnas (1985). Software Aspects of Strategic Defence Systems"
+ [notes]: https://amzn.to/3b3OgGh "Christopher Alexander (1964). Notes on the Synthesis of Form"
+ [bullet]: http://worrydream.com/refs/Brooks-NoSilverBullet.pdf "Fred Brooks (1986). No Silver Bullet"
+ [naur]: https://link.springer.com/chapter/10.1007%2F978-94-011-1793-7_12 "Peter Naur (1993). The Place of Strictly Defined Notation in Human Insight"
+ [farmer]: https://dl.acm.org/doi/10.1145/2818048.2820029 "Susanne Bødker, Henrik Korsgaard, Joanna Saad-Sulonen (2016). A Farmer, a Place and at least 20 Members: The Development of Artifact Ecologies in Volunteer-based Communities"
  [gpii]: https://www.shift-society.org/salon/papers/2017/revised/externalization.pdf "Colin Clark, Antranig Basman (2017). Tracing a Paradigm for Externalization: Avatars and the GPII Nexus"
  [open]: https://amzn.to/2z5EYI5 "Bertrand Meyer (1988). Object-Oriented Software Construction. Prentice Hall."
  [separation]: https://www.cs.utexas.edu/users/EWD/transcriptions/EWD04xx/EWD447.html "Edsger Dijkstra (1974). On the role of scientific thought."
- [mode]: https://www.upress.umn.edu/book-division/books/on-the-mode-of-existence-of-technical-objects "Gilbert Simondon (1958). On the Mode of Existence of Technical Objects"
- [image]: https://?? "Kevin Lynch (1960). The Image of the City"
+ [mode]: https://amzn.to/3c4Ep2Z "Gilbert Simondon (1958). On the Mode of Existence of Technical Objects"
+ [image]: https://amzn.to/2yJUtc3 "Kevin Lynch (1960). The Image of the City"
  [socioplt]: https://lmeyerov.github.io/projects/socioplt/paper0413.pdf "Leo Meyerovich and Ariel Rabkin (2012). Socio-PLT: Principles for programming language adoption"
