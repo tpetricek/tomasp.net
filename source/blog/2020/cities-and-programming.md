@@ -209,7 +209,7 @@ unable to precisely describe the context with which it will interact:
 
 Exactly the same limitations exist in the world of programming. No matter how precisely we can
 talk about programs, we also need to exactly understand the environment with which they interact.
-This is the hard part. As David Parnas writes in his well known essay [No Silver Bullet][bullet]:
+This is the hard part. As Frederick P. Brooks writes in his well known essay [No Silver Bullet][bullet]:
 
 > Much of the complexity [software engineer] must master is arbitrary complexity, forced
 > without rhyme or reason by the many human institutions and systems to which his
