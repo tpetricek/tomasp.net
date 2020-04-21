@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Data exploration calculus: Capturing the essence of exploratory data scripting - Tomas Petricek</title>
+
+  <meta name="description" content=" What would a small formal language for data scripting look like?
+The lambda calculus captures the essence of functional programming. In this article, I
+present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas." />
+  <meta name="keywords" content="academic, research, programming languages, thegamma, data science, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Data exploration calculus: Capturing the essence of exploratory data scripting" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2020/data-exploration-calculus/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png" />
+  <meta property="og:description" content=" What would a small formal language for data scripting look like?
+The lambda calculus captures the essence of functional programming. In this article, I
+present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas." />
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Data exploration calculus: Capturing the essence of exploratory data scripting" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png" />
+  <meta name="twitter:description" content=" What would a small formal language for data scripting look like?
+The lambda calculus captures the essence of functional programming. In this article, I
+present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Data exploration calculus: Capturing the essence of exploratory data scripting",
+    "headline": "Data exploration calculus: Capturing the essence of exploratory data scripting",
+  	"description": " What would a small formal language for data scripting look like?
+The lambda calculus captures the essence of functional programming. In this article, I
+present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas.",
+  	"url": "http://tomasp.net/blog/2020/data-exploration-calculus/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2020-04-21T14:42:16.3109375+01:00",
+  	"datePublished": "2020-04-21T14:42:16.3109375+01:00",
+    "dateModified": "2020-04-21T14:42:16.3109375+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2020/data-exploration-calculus/",
+  	"image": "http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png",
+  	"keywords": ["academic", "research", "programming languages", "thegamma", "data science",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-source libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming languages, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper hidden-xs-home">
+  <nav>
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com"><span class="hidden-sm">F#</span> Trainings</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Talks<span class="hidden-sm"> and books</span></a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/" class="last-left">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article class="post">
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1><span class="hm">Data exploration calculus</span><span class="hs"> Capturing the essence of exploratory data scripting</span></h1>
+<p>Most real-world programming languages are too complex to be studied using formal methods.
+For this reason, academics often work with simple theoretical languages instead. The <a href="https://en.wikipedia.org/wiki/Lambda_calculus">λ-calculus</a>
+is a simple formal language that is often used for talking about functional languages, the <a href="https://en.wikipedia.org/wiki/%CE%A0-calculus">π-calculus</a>
+is a model of concurrent programming and there is an entire book, <a href="https://link.springer.com/book/10.1007/978-1-4419-8598-9">A Theory of Objects</a>
+modelling various object-oriented systems.</p>
+<div class="rdecor"><img src="http://tomasp.net/blog/2020/data-exploration-calculus/ft.gif" style="width:360px"/><br/><p style="width:360px;line-height:20px;margin-top:10px;text-align:center;"><small>Animation from Financial Times article "Why the world's recycling system stopped working".</small></p></div>
+<p>Those calculi try to capture the most interesting aspect of the programming language. This is
+function application in functional programming, sending of messages in concurrent programming
+and object construction with inheritance in object-oriented programming.</p>
+<p>Recently, I have been working on programming tools for data exploration.
+In particular, I'm interested in the kind of programming that journalists need to do when
+they work with data. A good example is the coding done for the
+<a href="https://www.ft.com/content/360e2524-d71a-11e8-a854-33d6f82e62f8">Why the world's recycling system stopped working</a>
+article by Financial Times, which is <a href="https://github.com/ft-interactive/recycling-is-broken-notebooks">available on GitHub</a>.</p>
+<p>Although data journalists and other data scientists use regular programming languages like
+Python, the kind of code they write is very different from the kind of code you need to write
+when building a library or a web application in Python.</p>
+<p>In a paper <a href="https://programming-journal.org/2020/4/8/">Foundations of a live data exploration environment</a>
+that was published in February 2020 in the open access <a href="https://programming-journal.org/">Programming Journal</a>,
+I wanted to talk about some interesting work that I've been doing on live previews in
+<a href="http://thegamma.net">The Gamma</a>. For this, I needed a small model of my programming language.</p>
+<p>In the end the most interesting aspect of the paper is the definition of the
+<em>data exploration calculus</em>, a small programming language that captures the kind of code
+that data scientists write to explore data. This looks quite different from,
+say, a λ-calculus and π-calculus. It should be interesting not only if you're planning to do
+theoretical programming language research about data scripting, but also because
+it captures some of the atypical properties of the programs that data scientists write...</p>
+<h2>The Gamma: A language for simple data exploration</h2>
+<p>Before talking about the <em>data exploration calculus</em> and its interesting properties,
+I want to show you a few examples of the kind of data exploration scripts that I'm writing about.
+I will use <a href="https://thegamma.net/">The Gamma</a>, a simple programming language for data exploration
+that I created, which uses type providers for accessing external data. The Gamma is simple,
+but you can create some non-trivial data visualizations like <a href="http://gallery.thegamma.net/87/who-does-the-doctor-fight-most-frequently">find who is the most frequent enemy
+of The Doctor</a> using the
+Neo4j graph database as a back-end, or find out <a href="http://gallery.thegamma.net/86/if-phelps-was-a-country-nicer-colors">Michael Phelps compares to countries in the
+Olympics</a>.</p>
+<p>The following interactive playground shows a few of the examples from <a href="http://gallery.thegamma.net/">The Gamma gallery page</a>.
+You can choose from a couple of pre-defined examples using the drop down. If you edit the code,
+click "Update page" to see the results.</p>
+<script id="worldbank" type="text/thegamma">let china =
+  worldbank.byCountry.China
+    .'Climate Change'.'CO2 emissions (kt)'
+      .setProperties(seriesName="China")
+$
+let usa =
+  worldbank.byCountry.'United States'
+    .'Climate Change'.'CO2 emissions (kt)'
+      .setProperties(seriesName="USA")
+$
+compost.charts.lines([china,usa])
+  .setColors(["red","blue"]).setAxisX(1960)
+  .setTitle("Total CO2 emissions")
+  .setLegend("bottom")
+</script>
+<script type="text/thegamma" id="demo">let phelps =
+  olympics.'filter data'.'Athlete is'.'Michael Phelps'.then
+    .'group data'.'by Athlete'.'sum Gold'.then
+    .'get series'.'with key Athlete'.'and value Gold'
+$    
+let data =
+  olympics
+    .'group data'.'by Team'.'sum Gold'.then
+    .'sort data'.'by Gold descending'.then
+    .paging.skip(42).take(6)
+    .'get series'.'with key Team'.'and value Gold'
+$
+compost.charts.bar(data.append(phelps).sortValues(true))
+  .setColors(["#aec7e8","#aec7e8","#aec7e8","#1f77b4"])
+  .setAxisY(label="", labelOffset=150)
+</script>
+<script type="text/thegamma" id="drwho">let topEnemies =
+  drwho.Character.Doctor
+    .'ENEMY_OF'.'[any]'.'APPEARED_IN'.'[any]'
+  .'explore_properties'.explore
+    .'group data'.'by 1-name'.'count distinct 2-name'.then
+    .'sort data'.'by 2-name descending'.then
+    .paging.take(6)
+    .'get series'.'with key 1-name'.'and value 2-name'
+$
+compost.charts.bar(topEnemies.reverse())
+  .setAxisX(maxValue=40)</script>
+<script id="rio2016" type="text/thegamma">let data =
+  olympics
+    .'filter data'.'Games is'.'Rio (2016)'.then
+    .'group data'.'by Athlete'.'sum Gold'.then
+    .'sort data'.'by Gold descending'.then
+    .paging.take(8)
+    .'get series'.'with key Athlete'.'and value Gold'
+    .reverse()
+$
+compost.charts.bar(data)
+  .setAxisY(labelOffset=100, label="")
+  .setTitle("Top medallists from Rio 2016")
+</script>  
+<div class="wdecor left row">
+  <div class="col-md-6"><div class="thegamma">
+    <div id="ed1"></div>
+    <div id="ed1-errors" class="errors" style="bottom:0px"></div></div>
+    <div class="form-inline">
+      <button class="btn" id="okbtn" style="margin-top:8px">Update page</button>
+      <select id="samples" class="form-control" style="padding:3px 10px 3px 10px;margin-top:10px;min-width:300px">
+        <option selected>Open sample visualization...</option>
+        <option value="demo">Olympics: If Michael Phelps was a country</option>
+        <option value="rio2016">Olympics: Top medalists from Rio 2016</option>
+        <option value="worldbank">WorldBank: CO2 emissions of China and USA</option>
+        <option value="drwho">DrWho: Most common enemies of The Doctor</option>
+      </select>
+    </div>
+  </div>
+  <div class="col-md-6 thegamma">
+    <div id="out1" class="output">
+      <div class="placeholder">
+        Loading the visualization...
+      </div>
+    </div>
+  </div>
+</div>
+<p>The examples working with the Olympic medals is using a merged data set of Olympic games medals,
+which you can <a href="https://github.com/the-gamma/workyard/blob/master/guardian/medals-merged-all.csv">find on GitHub as a CSV file</a>.
+It uses the <em>pivot type provider</em> which I described in a paper
+<a href="http://tomasp.net/academic/papers/pivot/">Data exploration through dot-driven development</a>.
+As the name dot-driven suggests, The Gamma takes the idea of <a href="http://tomasp.net/academic/papers/inforich/">F# type providers</a>
+to the extreme. The main way of using the environment is to start with an externally-defined
+value representing a data source such as <code>olympics</code> and type "." to see what members are available.</p>
+<p>The pivot type provider uses the mechanism to let data analysts write simple SQL-like queries with
+grouping, filtering and sorting (but without joins). The other examples look at the World Bank data,
+which is a three dimensional data cube (with countries, years and indicators) and Dr Who graph
+database.</p>
+<h2>What kind of code data analysts write?</h2>
+<p>To understand what kind of code data analysts need to write when exploring data, have a look at
+the Jupyter notebooks in the <a href="https://github.com/ft-interactive/recycling-is-broken-notebooks">GitHub repository for the Recycling is broken</a>
+article. For example, the code from the <a href="https://github.com/ft-interactive/recycling-is-broken-notebooks/blob/master/05-wrangle-un-comtrade.ipynb">notebook that wrangles the UN Comtrade data</a>
+contains the following code. I removed some parts of the code (and used <code>//</code> for comments to make
+my syntax highlighter happy), but it is fairly representative:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="php"><span class="k">import</span> pandas <span class="k">as</span> pd
+
+material = <span class="s">'plastics'</span> <span class="c">// 'plastics', 'paper'</span>
+df = pd.read_csv(
+        f<span class="s">'data/raw/un-comtrade/{material}-exports-2017.csv'</span>,
+        usecols=[<span class="n">3</span>, <span class="n">8</span>, <span class="n">9</span>, <span class="n">29</span>], parse_dates=[<span class="s">'Period Desc.'</span>]
+    ) \
+    .fillna(<span class="n">0</span>) \
+    .sort_values([<span class="s">'country_name'</span>, <span class="s">'period'</span>]) \
+    .reset_index(drop=True)
+</code></pre></td></tr></table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="php">df_iso = pd.read_excel(
+        <span class="s">'data/raw/Comtrade Country Code and ISO list.xlsx'</span>,
+        usecols=[<span class="n">0</span>, <span class="n">1</span>, <span class="n">4</span>, <span class="n">7</span>], na_values=<span class="s">'N/A'</span>,
+        keep_default_na=False <span class="c">// Necessary: The ISO2 code for Namibia is ‘NA’</span>
+    ) \
+    .query(<span class="s">'end_valid_year == "Now"'</span>) \
+    .drop(<span class="s">'end_valid_year'</span>, axis=<span class="n">1</span>).dropna() \
+    .reset_index(drop=True)
+</code></pre></td></tr></table>
+<p>The code has a number of interesting properties:</p>
+<ul>
+<li>
+<p><strong>There is no abstraction.</strong> The data analysis uses lambda functions as arguments to library
+calls, but it does not define any custom functions. Code is parameterized by having a global
+variable <code>material</code> that is initially set to <code>"plastics"</code>. Other possible values are stored
+in a comment. This works because there are only a few possible values. It also means that
+you can run individual code blocks in a Jupyter notebook and see the inline results, which would
+not work with a function.</p>
+</li>
+<li>
+<p><strong>The code relies on external libraries.</strong> This analysis uses the <a href="https://pandas.pydata.org/">Pandas library</a>,
+which provides operations for data wrangling such as <code>merge</code> to join datasets or <code>drop_duplicates</code>
+to delete rows with duplicate column values. Such standard libraries are external to the
+data analysis and are often (in part) implemented in another language like C++.</p>
+</li>
+<li>
+<p><strong>The code is structured as a sequence of commands.</strong> Some commands define a variable, either by
+loading data, or by transforming data loaded previously. Even in Python, data is often treated
+as immutable. Other commands produce an output that is displayed in the notebook.</p>
+</li>
+<li>
+<p><strong>There are many corner cases.</strong> For example, the code sets the <code>keep_default_na</code> to <code>False</code>
+in order to handle Namibia correctly. Corner cases like this are typically discovered
+interactively by running the code and examining the output.</p>
+</li>
+</ul>
+<h2>Introducing the data exploration calculus</h2>
+<p>The data exploration calculus aims to capture the first three observations. All interesting
+functionality is defined by external libraries and so the calculus itself is not <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing
+complete</a>. The calculus combines functional
+features like lambda functions with object-oriented features like method calls. This is inspired
+by the earlier example of the Pandas data frame library.</p>
+<h3>Syntax of the data exploration calculus</h3>
+<p>The first thing we need to define is the syntax of the calculus. Objects <span class="math">\(o\)</span> are defined by external
+libraries and have members <span class="math">\(m\)</span>, which can be invoked via dot. The syntax captures two of the above
+observations. First, a program <span class="math">\(p\)</span> is formed by a sequence of commands <span class="math">\(c\)</span>. Second, lambda function
+can only be used directly as an argument to a method, but not assigned to a variable using <span class="math">\(\textbf{let}\)</span>
+binding:</p>
+<p><span class="math">\[\begin{array}{rlcl}
+\textit{(programs)}\quad&amp; p &amp;::=&amp; c_1; \ldots; c_n\\
+\textit{(commands)}\quad&amp; c &amp;::=&amp; \textbf{let}~x = t ~|~ t\\
+\textit{(expressions)}\quad&amp; e &amp;::=&amp; t ~|~ \lambda x\rightarrow e\\
+\textit{(terms)}\quad&amp; t &amp;::=&amp; o ~|~ x ~|~ t.m(e, \ldots, e)\\
+\textit{(values)}\quad&amp; v &amp;::=&amp; o ~|~ \lambda x\rightarrow e\\
+\end{array}\]</span></p>
+<p>Programs and commands are quite straightforward. A program is a list of commands separated by
+semicolons; a command is either <span class="math">\(\textbf{let}\)</span> binding that assigns a term <span class="math">\(t\)</span> to a variable <span class="math">\(x\)</span>
+or a term <span class="math">\(t\)</span> to be evaluated. The calculus distinguishes between <em>terms</em> and <em>expressions</em>. This
+is used to restrict how lambda functions can be used. An expression <span class="math">\(e\)</span> can be a term or a
+lambda function whereas a term <span class="math">\(t\)</span> can only be an object value, variable or a method call.
+Expressions (including lambda functions) can be used as arguments of a method call, but you can
+only assign terms (i.e. no lambda functions) to variables in <span class="math">\(\textbf{let}\)</span> bindings.</p>
+<h3>How data exploration scripts evaluate</h3>
+<p>Now that we have the syntax of the data exploration calculus, we need to specify how programs
+in this language evaluate. <a href="https://programming-journal.org/2020/4/8/">The paper</a> contains a
+formal definition of the reduction rules that define evaluation.
+The key thing is that the evaluation is defined using two relations:</p>
+<p><span class="math">\[\begin{array}{l}
+\rightsquigarrow &amp; \quad \textit{(program evaluation)} \\
+\rightsquigarrow_\epsilon &amp; \quad \textit{(external library evaluation)}
+\end{array}\]</span></p>
+<p>I'll illustrate what these mean using an example.
+Let's say that we have an external library for working with lists and for simple mathematical
+operations. The library defines two objects, <span class="math">\(\text{list}\)</span> and <span class="math">\(\text{math}\)</span> with some methods.
+You can think of those as global variables. It also defines list objects, which can be written
+as <span class="math">\([1,2,3]\)</span>. A list object also has some methods, including <span class="math">\(\text{map}\)</span> and <span class="math">\(\text{sum}\)</span>.
+Here is a simple data exploration calculus program that uses these:</p>
+<p><span class="math">\[\begin{array}{l}
+\textbf{let}~l = \text{list}.\!\text{range}(0, 3)\\
+l.\!\text{map}(\lambda x \rightarrow \text{math}.\!\text{mul}(x, 2)).\!\text{sum}()
+\end{array}\]</span></p>
+<p>Programs evaluate from top to bottom, so start with <span class="math">\(\text{list}.\!\text{range}(0, 3)\)</span>. This
+is a method invocation and the way it evaluates is defined by the external library. In the
+formalism, this is defined by a relation <span class="math">\(\rightsquigarrow_\epsilon\)</span>. The relation is a part
+of the external library definition and the calculus uses it to evaluate method calls. In this case,
+the relation defines that <span class="math">\(\text{list}.\!\text{range}(0, 3) \rightsquigarrow_\epsilon [0, 1, 2, 3]\)</span>.
+After one step of the evaluation, we get:</p>
+<p><span class="math">\[\begin{array}{l}
+\textbf{let}~l = [ 0, 1, 2, 3 ]\\
+l.\!\text{map}(\lambda x \rightarrow \text{math}.\!\text{mul}(x, 2)).\!\text{sum}()
+\end{array}\]</span></p>
+<p>The next rule in the data exploration calculus specifies that, once a variable is reduced to
+a value <span class="math">\(v\)</span>, the value is substituted for the references to the variable. The object
+<span class="math">\([ 0, 1, 2, 3 ]\)</span> is a value and so we get:</p>
+<p><span class="math">\[\begin{array}{l}
+[ 0, 1, 2, 3 ].\!\text{map}(\lambda x \rightarrow \text{math}.\!\text{mul}(x, 2)).\!\text{sum}()
+\end{array}\]</span></p>
+<p>Now we have a chain of method calls and so we proceed from the left to the right. We start with the
+<span class="math">\(\text{map}\)</span> operation. The argument of the operation is a lambda function. The relation
+<span class="math">\(\rightsquigarrow_\epsilon\)</span>, which defines the evaluation of external libraries, can be defined
+in terms of the main evaluation relation <span class="math">\(\rightsquigarrow\)</span>. In this case, it evaluates the
+function body for all the values in the list. The evaluation of those, in turn, again uses
+<span class="math">\(\rightsquigarrow_\epsilon\)</span> to evaluate the <span class="math">\(\text{mul}\)</span> operation:</p>
+<p><span class="math">\[\begin{array}{c}
+\text{math}.\!\text{mul}(0, 2) \rightsquigarrow 0,~~
+  \text{math}.\!\text{mul}(1, 2) \rightsquigarrow 2, ~\ldots~,
+    \text{math}.\!\text{mul}(3, 2) \rightsquigarrow 6
+\end{array}  \]</span></p>
+<p>The definition of <span class="math">\(\text{map}\)</span> collects the resulting numbers and evaluates to a list
+<span class="math">\([ 0, 2, 4, 6 ]\)</span>. Now we just need one last step. Using the external library evaluation to
+evaluate the <span class="math">\(\text{sum}\)</span> method, we get the result:</p>
+<p><span class="math">\[\begin{array}{l}
+[ 0, 2, 4, 6 ].\!\text{sum}() \rightsquigarrow 12
+\end{array}\]</span></p>
+<p>As you can see, the data exploration calculus has some familiar features like top-to-bottom
+evaluation and the use of substitution. However, there are a few aspects that are motivated by
+the nature of data scripting. Most actual computation is done by external libraries, which define
+the <span class="math">\(\rightsquigarrow_\epsilon\)</span> evaluation relation. The calculus also does not specify how
+lambda functions evaluate - it is up to the external library to do this. Although, the
+definition in the paper specifies a few constraints to make sure that the library is reasonably
+behaved.</p>
+<h2>Using the data exploration calculus</h2>
+<p>One of the roles that formalisms like the π-calculus have is that they capture our understanding
+of certain types of programs in a way that programming language theoreticians (and a few other
+people who learn how to read the notation!) can understand. This alone is a valuable aspect.
+They make explicit the assumptions about what matters (at least to a theoretician) in a
+certain programming style.</p>
+<p>However, the formalisms are also typically used for talking about other ideas. For example,
+you can use the λ-calculus to talk about various issues in type systems that may make it unsafe.
+You can also talk about various interesting extensions - how would, say, <a href="http://tomasp.net/academic/papers/coeffects/">resource tracking
+interact with lambda abstraction</a>?</p>
+<p>In <a href="https://programming-journal.org/2020/4/8/">Foundations of a live data exploration environment</a>,
+I'm using the data exploration calculus to talk about an efficient way of evaluating live previews
+during code editing. This formalizes a mechanism that is actually implemented in The Gamma
+and you can <a href="http://turing.thegamma.net/playground/">play with it in the playground</a>. Here is
+a little example where I use the <a href="http://tomasp.net/academic/papers/pivot/">pivot type provider</a>
+to query a table with Olympic medals, add title to a chart and then modify the number of
+selected top results:</p>
+<div class="wdecor">
+<img src="preview2.gif" style="display:none" id="img1a" />
+<img src="preview1.gif" style="max-width:950px;cursor:pointer;" id="img1b" /><br />
+<script type="text/javascript">
+ var p1 = false;
+ document.getElementById("img1b").onclick = function() {
+   document.getElementById("img1b").src = p1 ? "preview1.gif" : document.getElementById("img1a").src;
+   p1 = !p1;
+ }
+</script>
+</div>
+<p>The important thing here is that the code to query the data source does not need to be re-evaluated
+each time an edit to the chart title is made. Furthermore, when I change the number of top results
+from 4 to 6, we still do not need to recompute the grouping and sorting of data.
+Using the data exploration calculus as my formalism, I can explain in a few pages how the
+mechanism works and prove certain properties about it - most importantly, the fact that the results
+it gives are the same as the results you'd get if you just evaluated the program from scratch
+each time an edit is made.</p>
+<h2>Conclusions</h2>
+<p>One aim of this blog post is to get more people who work on programming languages think about
+the kind of programming that is done when non-programmers like journalists explore data using,
+for example, a simple subset of Python with libraries like pandas. I think this is an interesting
+and important kind of programming that we should think more about!</p>
+<p>One reason why I find data scripting interesting is that it lets us question many traditional
+assumptions about programming and programming languages. Consequently, we may get a fresh look
+at some standard issues. The data exploration calculus that I introduced in
+the <a href="https://programming-journal.org/2020/4/8/">Foundations of a live data exploration environment</a>
+paper is one example. It blatantly breaks some typical rules: it is not Turing-complete and it does
+not have a mechanism for abstraction! Yet, it is enough to do some interesting data processing.</p>
+<p>In the aforementioned paper, I use the calculus to talk about live previews. However, I imagine
+that there are many other interesting uses of the formalism and also many interesting extensions.
+Hopefully, this blog post will inspire you to explore some of them!</p>
+<link href="https://thegamma.net/lib/thegamma-0.1/thegamma.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,500,700,900" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser-polyfill.min.js"></script>
+<script src="http://turing.thegamma.net/node_modules/babel-standalone/babel.js"></script>
+<script src="http://turing.thegamma.net/node_modules/requirejs/require.js"></script>
+<script>
+  require.config({
+    paths:{'vs':'http://turing.thegamma.net/node_modules/monaco-editor/min/vs'},
+    map:{ "*":{"monaco":"vs/editor/editor.main"}}
+  });// x*
+  require(["vs/editor/editor.main", "thegamma/thegamma.min.js"], function (_, g) { //_
+    var services = "https://thegamma-services.azurewebsites.net/";
+    var providers =
+      g.providers.createProviders({
+        "worldbank": g.providers.rest(services + "worldbank"),
+        "libraries": g.providers.library("thegamma/libraries.json"),
+        "olympics": g.providers.pivot(services + "pdata/olympics"),
+        "shared": g.providers.rest("https://gallery-csv-service.azurewebsites.net/providers/listing"),
+        "expenditure": g.providers.rest("https://govuk-expenditure.azurewebsites.net/expenditure"),
+        "videos": g.providers.pivot("https://gallery-csv-service.azurewebsites.net/providers/csv/2017-05-12/file_8.csv"),
+        "views": g.providers.pivot("https://gallery-csv-service.azurewebsites.net/providers/csv/2017-05-29/file_3.csv"),
+        "web": g.providers.rest("https://gallery-csv-service.azurewebsites.net/providers/data"),
+        "drwho": g.providers.rest("https://thegamma-graph-service.azurewebsites.net/drWho")
+      });
+    var ctx = g.gamma.createContext(providers);
+    ctx.errorsReported(function (errs) {
+      var lis = errs.slice(0, 5).map(function (e) {
+        return "<li><span class='err'>error " + e.number + "</span>" +
+          "<span class='loc'>at line " + e.startLine + " col " + e.startColumn + "</span>: " +
+          e.message;
+      });
+      var ul = "<ul>" + lis + "</ul>";
+      document.getElementById("ed1-errors").innerHTML = ul;
+    });
+    var code = document.getElementById("demo").innerHTML.split('$').join('');
+    ctx.evaluate(code, "out1");
+    var opts =
+      { autoHeight: true,
+        enablePreview: false,
+        monacoOptions: function(m) {
+          m.fontFamily = "Inconsolata";
+          m.fontSize = 15;
+          m.lineHeight = 20;
+          m.lineNumbers = false;
+        } };
+    var editor = ctx.createEditor("ed1", code, opts);
+    okbtn.onclick = function() {
+      code = editor.getValue();
+      ctx.evaluate(code, "out1");
+    };
+    document.getElementById("samples").onchange = function() {
+      var id = document.getElementById("samples").value;
+      if (id != null && id != "") {
+        var code = document.getElementById(id).innerHTML.split('$').join('');
+        editor.setValue(code);
+        ctx.evaluate(code, "out1");
+      }
+    };
+  });
+</script>
+
+
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fdata-exploration-calculus%2f&amp;text=Data+exploration+calculus%3a+Capturing+the+essence+of+exploratory+data+scriptingvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fdata-exploration-calculus%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fdata-exploration-calculus%2f&title=Data+exploration+calculus%3a+Capturing+the+essence+of+exploratory+data+scripting">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Data%20exploration%20calculus%3a%20Capturing%20the%20essence%20of%20exploratory%20data%20scripting&body=%20What%20would%20a%20small%20formal%20language%20for%20data%20scripting%20look%20like%3f%0d%0aThe%20lambda%20calculus%20captures%20the%20essence%20of%20functional%20programming.%20In%20this%20article%2c%20I%0d%0apresent%20a%20small%20formal%20calculus%20that%20captures%20the%20essence%20of%20data%20scripting%20as%20done%2c%20for%20example%2c%20by%20journalists%20exploring%20data%20using%20Python%20and%20pandas.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2020%2fdata-exploration-calculus%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Tuesday, 21 April 2020, 2:42 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a>, <a
+          href="/blog/tag/thegamma/">thegamma</a>, <a
+          href="/blog/tag/data-science/">data science</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2019/">December 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2018/">October 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2018/">May 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2017/">September 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>  
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    var small = (window.innerWidth * window.innerHeight) < 500000;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
+  </script>
+</body>
+</html>
