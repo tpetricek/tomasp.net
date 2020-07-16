@@ -258,45 +258,43 @@ home
     <div class="col-sm-12 col-md-10 col-lg-8" itemscope itemtype="http://schema.org/Article">
       <h1><a href="/blog/" class="nocolor">What I'm doing &mdash; latest blogs &amp; publications</a></h1>
       
-        <h2 itemprop="name"><a itemprop="sameAs" href="http://tomasp.net/blog/2020/data-exploration-calculus/">Data exploration calculus: Capturing the essence of exploratory data scripting</a></h2>
+        <h2 itemprop="name"><a itemprop="sameAs" href="http://tomasp.net/blog/2020/youdraw-compost-visualization/">Creating interactive "You Draw" bar chart with Compost</a></h2>
         <meta itemprop="publisher author" content="Tomas Petricek" />
-        <meta itemprop="headline" content="Data exploration calculus: Capturing the essence of exploratory data scripting" />
-        <meta itemprop="image" content="http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png" />
-        <p class="h1-datepub" itemprop="datePublished">Tuesday, 21 April 2020, 2:42 PM</p>
+        <meta itemprop="headline" content="Creating interactive "You Draw" bar chart with Compost" />
+        <meta itemprop="image" content="http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png" />
+        <p class="h1-datepub" itemprop="datePublished">Thursday, 16 July 2020, 10:20 PM</p>
         <div itemprop="description">
-          <p>Most real-world programming languages are too complex to be studied using formal methods.
-For this reason, academics often work with simple theoretical languages instead. The <a href="https://en.wikipedia.org/wiki/Lambda_calculus">λ-calculus</a>
-is a simple formal language that is often used for talking about functional languages, the <a href="https://en.wikipedia.org/wiki/%CE%A0-calculus">π-calculus</a>
-is a model of concurrent programming and there is an entire book, <a href="https://link.springer.com/book/10.1007/978-1-4419-8598-9">A Theory of Objects</a>
-modelling various object-oriented systems.</p>
-<div class="rdecor"><img src="http://tomasp.net/blog/2020/data-exploration-calculus/ft.gif" style="width:360px"/><br/><p style="width:360px;line-height:20px;margin-top:10px;text-align:center;"><small>Animation from Financial Times article "Why the world's recycling system stopped working".</small></p></div>
-<p>Those calculi try to capture the most interesting aspect of the programming language. This is
-function application in functional programming, sending of messages in concurrent programming
-and object construction with inheritance in object-oriented programming.</p>
-<p>Recently, I have been working on programming tools for data exploration.
-In particular, I'm interested in the kind of programming that journalists need to do when
-they work with data. A good example is the coding done for the
-<a href="https://www.ft.com/content/360e2524-d71a-11e8-a854-33d6f82e62f8">Why the world's recycling system stopped working</a>
-article by Financial Times, which is <a href="https://github.com/ft-interactive/recycling-is-broken-notebooks">available on GitHub</a>.</p>
-<p>Although data journalists and other data scientists use regular programming languages like
-Python, the kind of code they write is very different from the kind of code you need to write
-when building a library or a web application in Python.</p>
-<p>In a paper <a href="https://programming-journal.org/2020/4/8/">Foundations of a live data exploration environment</a>
-that was published in February 2020 in the open access <a href="https://programming-journal.org/">Programming Journal</a>,
-I wanted to talk about some interesting work that I've been doing on live previews in
-<a href="http://thegamma.net">The Gamma</a>. For this, I needed a small model of my programming language.</p>
-<p>In the end the most interesting aspect of the paper is the definition of the
-<em>data exploration calculus</em>, a small programming language that captures the kind of code
-that data scientists write to explore data. This looks quite different from,
-say, a λ-calculus and π-calculus. It should be interesting not only if you're planning to do
-theoretical programming language research about data scripting, but also because
-it captures some of the atypical properties of the programs that data scientists write...</p>
+          <p>For a long time, I've been thinking about how to design a data visualization library that would
+make it easier to compose charts from simple components. On the one hand, there are charting libraries
+like <a href="https://developers.google.com/chart">Google Charts</a>, which offer a long list of pre-defined
+charts. On the other hand, there are libraries like <a href="https://d3js.org/">D3.js</a>, which let you
+construct any data visualization, but in a very low-level way. There is also <a href="https://vega.github.io/vega/">Vega</a>,
+based the idea of <em>grammar of graphics</em>, which is somewhere in between, but requires you to
+specify charts in a fairly complex language including <a href="https://vega.github.io/vega/docs/transforms/">a huge number of transformations</a>
+that you need to write in JSON.</p>
+<p>In the spirit of functional domain specific languages, I wanted to have a small number of
+simple but powerful primitives that can be composed by writing code in a normal programming language
+like F# or JavaScript, rather than using JSON.</p>
+<p>My final motivation for working on this was the <a href="https://www.nytimes.com/interactive/2017/01/15/us/politics/you-draw-obama-legacy.html">You Draw It article series</a>
+by New York Times, which uses interactive charts where the reader first has to make their own guess
+before seeing the actual data. I wanted to recreate this, but for bar charts, when working on
+<a href="http://turing.thegamma.net/expenditure/">visualizing government spending using The Gamma</a>.</p>
+<p>The code for this was somewhat hidden inside The Gamma, but last month, I finally extracted all
+the functionality into a new stand-alone library <a href="https://compostjs.github.io/compost/">Compost.js</a>
+with simple and clean <a href="https://github.com/compostjs/compost">source code on GitHub</a> and
+an accompanying <a href="https://compostjs.github.io/compost/paper.pdf">paper draft that describes it (PDF)</a>.</p>
+<p>In this article, I will show how to use Compost.js to implement a "You Draw" bar chart inspired
+by the NYT article. When loaded, all bars show the average value. You have to drag
+the bars to positions that you believe represent the actual values. Once you do this, you can
+click "Show me how I did" and the chart will animate to show the actual data, revealing how good
+your guess was. Before looking at the code, you can have a look at the resulting interactive chart,
+showing the top 5 areas from the 2015 UK budget (in % of GDP):</p>
 
 
 
         </div>
         <p>
-          <a itemprop="url" href="http://tomasp.net/blog/2020/data-exploration-calculus/">Read the complete article...</a>
+          <a itemprop="url" href="http://tomasp.net/blog/2020/youdraw-compost-visualization/">Read the complete article...</a>
         </p>
       
     </div>
@@ -311,6 +309,19 @@ it captures some of the atypical properties of the programs that data scientists
         early versions of my ideas &mdash; some of them become papers, some of them have been
         cited in other papers, some will be soon forgotten.</p>
 
+      
+        <div itemscope itemtype="http://schema.org/Article">
+          <meta itemprop="author publisher" content="Tomas Petricek" />
+          <meta itemprop="headline" content="Data exploration calculus: Capturing the essence of exploratory data scripting" />
+          <meta itemprop="image" content="http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png" />
+          <h3 itemprop="name"><a itemprop="sameAs" href="http://tomasp.net/blog/2020/data-exploration-calculus/">Data exploration calculus: Capturing the essence of exploratory data scripting</a></h3>
+          <p class="h3-datepub" itemprop="datePublished">Tuesday, 21 April 2020, 2:42 PM</p>
+          <div itemprop="description">
+            <p> What would a small formal language for data scripting look like?
+The lambda calculus captures the essence of functional programming. In this article, I
+present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas.</p>
+          </div>
+        </div>
       
         <div itemscope itemtype="http://schema.org/Article">
           <meta itemprop="author publisher" content="Tomas Petricek" />
@@ -371,22 +382,6 @@ F# for 7 years now and while the libraries and examples change, the core ideas r
 In this blog post, I'll cover my latest favorite example. You will see how the pragmatic F# design
 makes it easy to integrate with the external world (such as the JavaScript ecosystem and the React
 library) and how the core functional features make your code elegant and composable.</p>
-          </div>
-        </div>
-      
-        <div itemscope itemtype="http://schema.org/Article">
-          <meta itemprop="author publisher" content="Tomas Petricek" />
-          <meta itemprop="headline" content="Programming as interaction: A new perspective for programming language research" />
-          <meta itemprop="image" content="http://tomasp.net/blog/2018/programming-interaction/kent-sq.png" />
-          <h3 itemprop="name"><a itemprop="sameAs" href="http://tomasp.net/blog/2018/programming-interaction/">Programming as interaction: A new perspective for programming language research</a></h3>
-          <p class="h3-datepub" itemprop="datePublished">Monday, 8 October 2018, 12:22 PM</p>
-          <div itemprop="description">
-            <p> In programming research, we say a lot about programs and languages, but very little
-about the actual process of programming. One simple trick that will make programming language
-research significantly more interesting is to think about programs not as expressions, but as
-a result of a sequence of interactions that create it. This includes usual things such as
-writing code and refactoring, but if we also include, say, running a part of the program,
-we become capable of saying many more interesting things and building new powerful programming tools.</p>
           </div>
         </div>
       
@@ -493,6 +488,8 @@ serve as publication formats, more suitable for evaluating programming systems d
     </div>
     <div class="col-sm-7">
     <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2020/">July 2020 (1)</a>,&nbsp;
       
       <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
       

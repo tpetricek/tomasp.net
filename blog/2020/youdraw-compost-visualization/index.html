@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">  
+    
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#00202D">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#00202D">  
+  
+  
+  <title>Creating interactive "You Draw" bar chart with Compost - Tomas Petricek</title>
+
+  <meta name="description" content=" Compost makes it easy to create custom interactive data visualizations!
+In this blog post, I explained how to use Compost to create an interactive "You Draw"
+bar chart inspired by the awesome interactive line charts from New York Times.
+The example shows the power of Compost including the use of domain-specific values,
+compositionality and the use of Model View Update architecture of interactivity." />
+  <meta name="keywords" content="functional, functional programming, data science, thegamma, data journalism, visualization, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Creating interactive "You Draw" bar chart with Compost" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2020/youdraw-compost-visualization/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png" />
+  <meta property="og:description" content=" Compost makes it easy to create custom interactive data visualizations!
+In this blog post, I explained how to use Compost to create an interactive "You Draw"
+bar chart inspired by the awesome interactive line charts from New York Times.
+The example shows the power of Compost including the use of domain-specific values,
+compositionality and the use of Model View Update architecture of interactivity." />
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Creating interactive "You Draw" bar chart with Compost" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png" />
+  <meta name="twitter:description" content=" Compost makes it easy to create custom interactive data visualizations!
+In this blog post, I explained how to use Compost to create an interactive "You Draw"
+bar chart inspired by the awesome interactive line charts from New York Times.
+The example shows the power of Compost including the use of domain-specific values,
+compositionality and the use of Model View Update architecture of interactivity." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Creating interactive "You Draw" bar chart with Compost",
+    "headline": "Creating interactive "You Draw" bar chart with Compost",
+  	"description": " Compost makes it easy to create custom interactive data visualizations!
+In this blog post, I explained how to use Compost to create an interactive "You Draw"
+bar chart inspired by the awesome interactive line charts from New York Times.
+The example shows the power of Compost including the use of domain-specific values,
+compositionality and the use of Model View Update architecture of interactivity.",
+  	"url": "http://tomasp.net/blog/2020/youdraw-compost-visualization/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2020-07-16T22:20:16.3109375+01:00",
+  	"datePublished": "2020-07-16T22:20:16.3109375+01:00",
+    "dateModified": "2020-07-16T22:20:16.3109375+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2020/youdraw-compost-visualization/",
+  	"image": "http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png",
+  	"keywords": ["functional", "functional programming", "data science", "thegamma", "data journalism", "visualization",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+  <div class="not-footer">
+  <div class="top-panel-wrapper">
+  <div class="top-panel">
+  <div id="tomas" class="visible-" itemscope itemtype="http://schema.org/Person"><header>
+    <div class="container">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-xs-12 col-sm-8 col-md-12" style="padding:0px">
+            <h2 itemprop="name">Tomas Petricek</h1>
+            <h3 itemprop="description">Searching for new ways of thinking in programming &amp; working with data</h2>
+            <div> 
+              <img src="/img/tomas-sl-sq.jpg" class="hidden-lg hidden-md hidden-sm tomas-float" />
+                <p>I believe that the most interesting work is not the one solving hard problems, but the one changing how
+                  we think about the world. I follow this belief in my work on data science tools,
+                  functional programming and F# teaching, in my programming languages research
+                  and I try to understand it through philosophy of science.
+                </p>
+            </div>
+          </div>
+          <div class="hidden-lg hidden-md col-sm-4 hidden-xs">
+            <img src="/img/tomas-sl-sq.jpg" class="tomas-square" />
+            <p class="social">
+              <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+              <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+              <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+              <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+              <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+              <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+            </p>
+          </div>
+        </div>
+          
+        <div class="row themes">
+          <div class="col-sm-4">
+            <h4><a href="http://thegamma.net"><i class="fa fa-area-chart"></i> The Gamma</a></h3>
+            <p>I'm working on making data-driven storytelling easier, more open and reproducible
+              at the <a href="https://turing.ac.uk/">Alan Turing Institute</a>.</p>              
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="http://fsharpworks.com"><i class="fa fa-industry"></i> Consulting</a></h3>
+            <p>I'm author of definitive F# books and open-source libraries.
+              I offer my F# training and consulting services as part of 
+              <a href="http://fsharpworks.com">fsharpWorks</a>.</p>
+          </div>
+          <div class="col-sm-4">
+            <h4><a href="/academic"><i class="fa fa-university"></i> Academic</a></h3>
+            <p>I published papers about theory of context-aware programming languages, 
+              type providers, but also philosophy of science.</p>
+          </div>
+        </div>
+          
+      </div>
+      
+      <div class="col-sm-4">
+        <img itemprop="image" src="/img/tomas-sl-wide.jpg" class="hidden-sm hidden-xs tomas-wide" />
+        <p class="social hidden-sm">
+          <a title="Follow my occasional rants" itemprop="sameAs" href="http://twitter.com/tomaspetricek"><i class="fa fa-twitter"></i></a>
+          <a title="Send me a message" itemprop="sameAs" href="mailto:tomas@tomasp.net"><i class="fa fa-envelope"></i></a>
+          <a title="Most of my open-source projects" itemprop="sameAs" href="http://github.com/tpetricek"><i class="fa fa-github-alt"></i></a>
+          <a title="My F# answers on StackOverflow" itemprop="sameAs" href="http://stackoverflow.com/users/33518/tomas-petricek"><i class="fa fa-stack-overflow"></i></a>
+          <a title="Read my papers!" itemprop="sameAs" href="http://dblp.uni-trier.de/pers/hd/p/Petricek:Tomas"><i class="fa fa-university"></i></a>
+          <a title="Send me recruiter spam?" itemprop="sameAs" href="https://www.linkedin.com/in/tomaspetricek"><i class="fa fa-linkedin-square"></i></a>
+        </p>
+      </div>
+    </div>
+  </header></div>
+  
+  <div class="nav-wrapper hidden-xs-home">
+  <nav>
+    <div class="container"><div class="col-sm-12">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand visible-xs hidden-home toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right hidden-xs hidden-home">
+          <li><a class="toggle-tomas" href="/">Tomas Petricek <i class="tomas-fa fa fa-caret-up"></i></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="/">Home</a></li>
+          <li><a href="http://fsharpworks.com"><span class="hidden-sm">F#</span> Trainings</a></li>
+          <li><a href="http://fsharpworks.com/materials.html">Talks<span class="hidden-sm"> and books</span></a></li>
+          <li><a href="http://thegamma.net/">The Gamma</a></li>
+          <li><a href="/academic/" class="last-left">Academic</a></li>
+        </ul>
+      </div>
+    </div></div>
+  </nav></div>
+  </div></div>
+  
+  
+  <article class="post">
+    <div class="container"><div class="row">
+      <div class="col-lg-2 col-md-1"></div>
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
+        <h1>Creating interactive "You Draw" bar chart with Compost</h1>
+<p>For a long time, I've been thinking about how to design a data visualization library that would
+make it easier to compose charts from simple components. On the one hand, there are charting libraries
+like <a href="https://developers.google.com/chart">Google Charts</a>, which offer a long list of pre-defined
+charts. On the other hand, there are libraries like <a href="https://d3js.org/">D3.js</a>, which let you
+construct any data visualization, but in a very low-level way. There is also <a href="https://vega.github.io/vega/">Vega</a>,
+based the idea of <em>grammar of graphics</em>, which is somewhere in between, but requires you to
+specify charts in a fairly complex language including <a href="https://vega.github.io/vega/docs/transforms/">a huge number of transformations</a>
+that you need to write in JSON.</p>
+<p>In the spirit of functional domain specific languages, I wanted to have a small number of
+simple but powerful primitives that can be composed by writing code in a normal programming language
+like F# or JavaScript, rather than using JSON.</p>
+<p>My final motivation for working on this was the <a href="https://www.nytimes.com/interactive/2017/01/15/us/politics/you-draw-obama-legacy.html">You Draw It article series</a>
+by New York Times, which uses interactive charts where the reader first has to make their own guess
+before seeing the actual data. I wanted to recreate this, but for bar charts, when working on
+<a href="http://turing.thegamma.net/expenditure/">visualizing government spending using The Gamma</a>.</p>
+<p>The code for this was somewhat hidden inside The Gamma, but last month, I finally extracted all
+the functionality into a new stand-alone library <a href="https://compostjs.github.io/compost/">Compost.js</a>
+with simple and clean <a href="https://github.com/compostjs/compost">source code on GitHub</a> and
+an accompanying <a href="https://compostjs.github.io/compost/paper.pdf">paper draft that describes it (PDF)</a>.</p>
+<p>In this article, I will show how to use Compost.js to implement a "You Draw" bar chart inspired
+by the NYT article. When loaded, all bars show the average value. You have to drag
+the bars to positions that you believe represent the actual values. Once you do this, you can
+click "Show me how I did" and the chart will animate to show the actual data, revealing how good
+your guess was. Before looking at the code, you can have a look at the resulting interactive chart,
+showing the top 5 areas from the 2015 UK budget (in % of GDP):</p>
+<style>
+.youguess button { margin-top:10px; border-style:solid; border-color:#606060; background:#404040;
+  color:#e0e0e0; padding:10px 30px 10px 30px; border-radius:6px; cursor:pointer; font-size:12pt; }
+.youguess button:hover, .youguess button:focus, .youguess button:active {
+  border-color:#606060;color:#e0e0e0;background:#606060; }
+.youguess button:disabled { border-color:#606060; color:#e0e0e0; background:#606060; opacity:0.5; }
+</style>
+<div id="out1" style="margin:20px auto 40px auto;max-width:600px">
+</div>
+<h2>Creating a simple bar chart</h2>
+<p>One of the main principles behind Compost is that you can gradually compose data visualizations.
+You can start with a relatively simple version and keep adding features until you have a rich,
+customized, interactive visualization. To show this, we'll start by building a simple bar chart.
+For this, we'll need our data and a color theme. Compost is a minimalistic library, so you
+need to define things like colors yourself. Here, I'm using the <code>category10</code> colors from
+<a href="https://vega.github.io/vega/docs/schemes/">Vega</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">var</span> data <span class="o">=</span>
+ [ [<span class="s">"Social protection"</span>, <span class="n">14.10</span>],
+   [<span class="s">"Health"</span>, <span class="n">7.40</span>], [<span class="s">"Education"</span>, <span class="n">4.50</span>],
+   [<span class="s">"General public services"</span>, <span class="n">3.10</span>],
+   [<span class="s">"Economic affairs"</span>, <span class="n">2.40</span>] ]
+
+<span class="k">var</span> colors <span class="o">=</span>
+  [ <span class="s">"#1f77b4"</span>, <span class="s">"#ff7f0e"</span>, <span class="s">"#2ca02c"</span>, <span class="s">"#d62728"</span>,
+    <span class="s">"#9467bd"</span>, <span class="s">"#8c564b"</span>, <span class="s">"#e377c2"</span>, <span class="s">"#7f7f7f"</span>,
+    <span class="s">"#bcbd22"</span>, <span class="s">"#17becf"</span> ]
+</code></pre></td></tr></table>
+<p>When you reference Compost using a stand-alone JavaScript file, it defines a global variable
+<code>c</code> for accessing its API. If you want more control you can <a href="https://compostjs.github.io/compost/usage.html">reference Compost using
+npm</a>.</p>
+<p>To create a bar chart, we need to create an array of "bar" shapes and combine those using
+<code>c.overlay</code>, which automatically aligns shapes. The result of <code>c.overlay</code> is a new shape.
+To get an axis with labels, we pass the shape to <code>c.axes</code>, which adds axes and, again, returns
+a new shape:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">var</span> chart <span class="o">=</span>
+  c.axes(<span class="s">"left bottom"</span>,
+    c.overlay(data.map((v, i) <span class="o">=</span><span class="o">&gt;</span>
+      c.fillColor(colors[i], c.bar(v[<span class="n">1</span>], v[<span class="n">0</span>]))
+  )))
+
+c.render(<span class="s">"out2"</span>, chart)
+</code></pre></td></tr></table>
+<div id="out2" style="text-align:center;max-width:600px;height:260px;margin-left:100px">
+</div>
+<p>The first interesting thing to note is that the arguments of <code>c.bar</code> are not coordinates in
+pixels. We just use a JavaScript number as the X value (first argument) and a string as the
+Y value (second argument). Compost treats numbers as numerical values and strings as categorical
+values. There is a bit more about categorical values, but we will get back to this later.</p>
+<p>The second interesting thing is the <code>c.overlay</code> operation. This takes an array of shapes that
+have coordinates specified in terms of some categorical and continuous values. The operation is
+clever enough to align those values and infer a common <em>x</em> and <em>y</em> scale (meaning, a range of
+values to be mapped onto an axis). In the above example, the <em>x</em> axis becomes just a range from
+<em>0</em> to <em>14</em> whereas the <em>y</em> axis is a categorical axis containing all the 5 different categories.</p>
+<h2>Interactive chart state</h2>
+<p>To create interactive charts, Compost uses the <a href="https://guide.elm-lang.org/architecture/">Model View Update
+architecture</a>. We will get to how this works shortly.
+For now, we want to construct a nicer version of the bar chart that is less like the simple
+bar chart above and more like the one in the full demo.
+For this, we will need one aspect from the final chart, which is to create a data structure that
+stores all information about the state of the interactive chart.</p>
+<p>The following calculates some basic statistics about the data including the average value and
+maximum. It then creates an array of objects representing individual bars with their color,
+category name, the actual value and the current value as drawn by the user (initialized to be
+the average), together with a flag specifying whether the bar has been moved by
+the user (once you move a bar, it becomes darker). We also include a randomly generated value,
+which is used to show the bars in random order:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">var</span> nums <span class="o">=</span> data.map(v <span class="o">=</span><span class="o">&gt;</span> v[<span class="n">1</span>])
+<span class="k">var</span> sum <span class="o">=</span> nums.reduce((a,b) <span class="o">=</span><span class="o">&gt;</span> a <span class="o">+</span> b)
+<span class="k">var</span> max <span class="o">=</span> Math.max.apply(<span class="k">null</span>, nums)
+<span class="k">var</span> avg <span class="o">=</span> sum <span class="o">/</span> data.length;
+
+<span class="k">var</span> values <span class="o">=</span>
+  data.map((v, i) <span class="o">=</span><span class="o">&gt;</span> ({
+    color: colors[i], category: v[<span class="n">0</span>], value: avg,
+    moved: <span class="k">false</span>, correct: v[<span class="n">1</span>], rnd: Math.random()
+  })).sort((a, b) <span class="o">=</span><span class="o">&gt;</span> a.rnd <span class="o">-</span> b.rnd);
+
+<span class="k">var</span> init <span class="o">=</span>
+  { animation:<span class="n">0</span>, guessed:<span class="k">false</span>,
+    values:values, max:Math.floor(max <span class="o">*</span> <span class="n">1.2</span>) }
+</code></pre></td></tr></table>
+<p>Once we have the array <code>values</code>, we use it as part of a value <code>init</code> that represents the initial
+state of the chart. This contains the individual values and a <code>max</code> value that is used as the maximal
+possible length of a bar that the user can draw. In addition, there is <code>animation</code> which goes from
+0 to 1 when the "Show me how I did" button is pressed and <code>guessed</code> which becomes <code>true</code> when
+the user assigns a value to all bars.</p>
+<h2>Creating a nicer bar chart</h2>
+<p>Even without the interactivity, the "You Draw" bar chart that we saw at the start of this article
+has a number of fatures that we do not have in the ordinary bar chart above. We will recreate
+those before adding the interactivity. The features are:</p>
+<ul>
+<li>
+There is a grey background behind every bar (indicating that it can be moved within
+the available space)
+</li>
+<li>
+There is a vertical line that is moved with the bar while the user is guessing, but then
+stays there when the chart shows the actual value (so that the user can see how right or
+wrong they were)
+</li>
+<li>Rather than having an axis with labels on the left, we draw the labels directly in the chart.</li>
+</ul>
+<p>To create those, we just need to overlay a few more shape than just a single <code>c.bar</code>.
+The following snippet sets <code>state</code> to the <code>initial</code> state (later, the state will become a
+function parameter). It the defines <code>drawBar</code> which composes all the shapes needed to draw
+a single bar. Finally, we call <code>drawBar</code> for each of the values in <code>state.values</code>, overlay
+the results, add a bottom axis and draw the resulting shape:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">var</span> state <span class="o">=</span> init
+
+<span class="k">function</span> drawBar(v, value, fillclr) {
+  <span class="k">return</span> c.padding(<span class="n">10</span>,<span class="n">0</span>,<span class="n">10</span>,<span class="n">0</span>,c.overlay([
+    c.fillColor(<span class="s">"#a0a0a030"</span>, c.bar(state.max, v.category)),
+    c.fillColor(fillclr, c.bar(value, v.category)),
+    c.font(<span class="s">"13pt sans-serif"</span>, v.color, c.text
+      (state.max*<span class="n">0.98</span>, [v.category, <span class="n">0.5</span>], v.category, <span class="s">"end"</span>)),
+    c.strokeColor(v.color, c.line([
+      [v.value, [v.category, <span class="n">0</span>]],
+      [v.value, [v.category, <span class="n">1</span>]] ]))
+  ]));
+}
+
+<span class="k">var</span> chart <span class="o">=</span> c.axes(<span class="s">"bottom"</span>,
+  c.overlay(state.values.map(v <span class="o">=</span><span class="o">&gt;</span>
+    drawBar(v, v.correct, v.color+<span class="s">"90"</span>) )))
+c.render(<span class="s">"out3"</span>, chart)
+</code></pre></td></tr></table>
+<div id="out3" style="text-align:center;width:600px;height:300px;margin:0px auto 0px auto">
+</div>
+<p>The <code>drawBar</code> function creates a list of shapes, overlays them using <code>c.overlay</code>
+and then adds 10px padding from the top and the bottom. It composes 4 shapes:</p>
+<ol>
+<li>a grey bar (the background) with <code>state.max</code> as the X value</li>
+<li>
+a bar filled using a provided category color with <code>value</code> as the X value
+(in this snippet, we use the actual <code>v.correct</code> value; later, this will be the
+guessed value initially and then the correct value after the animation completes)
+</li>
+<li>
+A text label. This is created using <code>c.text</code> which takes X and Y coordinates for
+the label as the first two arguments, the text as the third one and alignment as the fourth
+argument.
+</li>
+<li>
+A vertical line at the X coordinate specified by <code>v.value</code> (the initial, average value).
+The line is defined by two points with one Y value being the top of the space allocated
+for the categorical value and the other being the bottom.
+</li>
+</ol>
+<p>The example shows one more important feature in Compost. When specifying a coordinate on a
+numerical axis (X axis), we need just a number as this defines a unique point. However, when
+specifying a coordinate on a categorical axis (Y axis), a value such as <code>"Health"</code> would
+correspond to a whole region allocated for the category. To specify a unique point (as needed
+for example for the two ends of the line or for the location of the label), we specify a
+pair of values such as <code>["Health", 0.5]</code>. The first element identifies the category and the
+second a position within the available range. For this reason, the top and the bottom points
+of the line are specified by <code>[v.value, [v.category, 0]]</code> and <code>[v.value, [v.category, 1]]</code>.
+Here, <code>v.value</code> is the (numerical) X coordinate and <code>[v.category, 0]</code> with <code>[v.category, 1]</code>
+identify the bottom and the top of the bar.</p>
+<h2>Model View Update architecture in Compost</h2>
+<p>Let's now look at what it takes to make the chart interactive! As mentioned earlier,
+Compost does this using the <a href="https://guide.elm-lang.org/architecture/">Model View Update architecture</a>.
+The idea is that you have a type representing <code>Event</code> (different things that can happen
+in your application) and a type representing <code>State</code> (which stores the current state of the
+application). Then you define functions <code>update</code> and <code>view</code> that look as follows (using a
+TypeScript notation for types):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">function</span> update(state: State, evt: Event) : State
+<span class="k">function</span> view(trigger:(evt:Event) <span class="o">=</span><span class="o">&gt;</span> <span class="k">void</span>, state: State) : Html
+</code></pre></td></tr></table>
+<p>The <code>update</code> function takes the current state and an event and produces a new state.
+The <code>view</code> function takes the current state (the second parameter) and produces an object
+that represents the HTML of the page (or the shape of a data visualization).
+The first argument of <code>view</code> is a function that can be used in event handlers to trigger
+events. For example, when the user drags a bar, we will trigger an event to update the
+current position of the bar.</p>
+<h2>Handling You Draw chart events</h2>
+<p>In our You Draw bar chart, there are two kinds of events. The first occurs when the
+user drags a bar to a new position. The event is represented as an object with the
+<code>category</code> to be updated and a new <code>value</code>. The second event occurs during the animation
+and it simply indicates one "tick" (so it does not carry any other data). Sample
+event values are:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">var</span> one <span class="o">=</span> { kind:<span class="s">"set"</span>, category:<span class="s">"Health"</span>, value:<span class="n">13</span> }
+<span class="k">var</span> two <span class="o">=</span> { kind:<span class="s">"animate"</span> }
+</code></pre></td></tr></table>
+<p>In the <code>update</code> function, we get the current state (an object that has the same structure
+as the <code>state</code> value defined earlier) and one of the two kinds of events. We then calculate
+a new state and return it as the result. To return a cloned object with some values changed,
+we can use the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax">JavaScript <code>...</code> spread operator</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">function</span> update(state, evt) {
+  <span class="k">switch</span>(evt.kind) {
+    <span class="k">case</span> <span class="s">"animate"</span>:
+      <span class="k">return</span> {...state, animation:state.animation <span class="o">+</span> <span class="n">0.02</span>}
+    <span class="k">case</span> <span class="s">"set"</span>:
+      <span class="k">var</span> newValues <span class="o">=</span> state.values.map(v <span class="o">=</span><span class="o">&gt;</span> {
+        <span class="k">var</span> match <span class="o">=</span> v.category <span class="o">=</span><span class="o">=</span> evt.category;
+        <span class="k">var</span> val <span class="o">=</span> match ? evt.value : v.value;
+        <span class="k">return</span> { ...v, moved: match <span class="o">|</span><span class="o">|</span> v.moved, value: val } });
+      <span class="k">var</span> newGuessed <span class="o">=</span> newValues.every(v <span class="o">=</span><span class="o">&gt;</span> v.moved);
+      <span class="k">return</span> {...state, values:newValues, guessed:newGuessed }
+  }
+}
+</code></pre></td></tr></table>
+<p>When we get the <code>animate</code> event, we simply increment the <code>animation</code> field of the <code>state</code> by some
+small constant. In the <code>render</code> function, we will make sure that this is triggered repeatedly using
+a timer until the value reaches 1.</p>
+<p>When we get the <code>set</code> event, we first need to update the value of the corresponding item in the
+<code>state.values</code> array. This is done using <code>map</code>. When we iterate over the value that has the same
+category as the one which we want to update, we set the <code>value</code> to a new value and we also update
+the <code>moved</code> flag to indicate that the bar has been updated by the user. We then set the <code>values</code>
+field to the new array and also update <code>guessed</code> which is only <code>true</code> if all bars have been <code>moved</code>
+(meaning that the user made all guesses and can click the "Show me how I did" button).</p>
+<h2>Implementing You Draw chart view function</h2>
+<p>The most interesting part of our You Draw bar chart is the <code>view</code> function. We already have the
+core logic implemented in the <code>drawBar</code> helper, but there are still a few things left. First,
+we need to add code to handle mouse events and trigger the <code>update</code> function. Second, we need
+to add the "Show me how I did" button.</p>
+<p>To keep the code more readable, I split it into two parts. In <code>viewChart</code>, we render just the
+chart itself (without the button). This includes the <code>drawBar</code> helper as a nested function.
+The most interesting parts are the <code>handler</code> helper and the use of <code>c.on</code> for registering it
+as an event handler for <code>mousemove</code> and <code>mousedown</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">function</span> viewChart(trigger, state) {
+  <span class="c">// Draw a bar with background and text label</span>
+  <span class="k">function</span> drawBar(v, value, fillclr) {
+    <span class="c">// (Implementation same as above)</span>
+  }
+  <span class="c">// Trigger 'set' event when mouse moves</span>
+  <span class="k">function</span> handler(x, y, e) {
+    <span class="k">if</span> (state.animation <span class="o">=</span><span class="o">=</span> <span class="n">0</span> <span class="o">&amp;</span><span class="o">&amp;</span> e.buttons <span class="o">&gt;</span> <span class="n">0</span>)
+    trigger({kind:<span class="s">"set"</span>, value:x, category:y[<span class="n">0</span>] })
+  }
+  <span class="c">// Create a chart with event handlers</span>
+  <span class="k">return</span> c.axes(<span class="s">"bottom"</span>,
+    c.on({ mousemove: handler, mousedown: handler },
+      c.overlay(state.values.map(v <span class="o">=</span><span class="o">&gt;</span> {
+        <span class="k">var</span> val <span class="o">=</span> v.correct <span class="o">*</span> state.animation
+          <span class="o">+</span> v.value <span class="o">*</span> (<span class="n">1</span> <span class="o">-</span> state.animation)
+        <span class="k">var</span> clr <span class="o">=</span> v.color <span class="o">+</span> (v.moved?<span class="s">"90"</span>:<span class="s">"30"</span>);
+        <span class="k">return</span> drawBar(v, val, clr)
+      })
+    )));
+}
+</code></pre></td></tr></table>
+<p>The <code>c.on</code> primitive lets us register handlers for events that happen inside the chart.
+When a mouse button is pressed or the mouse moves, Compost invokes our <code>handler</code>. One
+important feature is that the <code>x</code> and <code>y</code> coordinates passed to <code>handler</code> are <em>not</em> in
+pixels, but instead in domain terms. If you click in the middle of the bar for <code>"Health"</code>
+somewhere near 10% GDP value, the <code>x</code> and <code>y</code> values will be e.g. <code>10.1</code> and <code>["Health", 0.49]</code>.
+This makes it very easy for us to extract the data we want and use <code>trigger</code> to invoke the
+<code>"set"</code> event.</p>
+<p>The other interesting thing in the above snippet is the calculation of the <code>val</code> value on
+line 15. This implements the animation where the value changes from <code>v.value</code> (when <code>state.animation == 0</code>)
+to <code>v.correct</code> (when <code>state.animation == 1</code>).</p>
+<p>Now we just need to call <code>viewChart</code> from the main <code>view</code> function and add a button:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="javascript"><span class="k">function</span> view(trigger, state) {
+  <span class="c">// While animating, keep triggering 'animate' events</span>
+  <span class="k">if</span> (state.animation <span class="o">&gt;</span> <span class="n">0</span> <span class="o">&amp;</span><span class="o">&amp;</span> state.animation <span class="o">&lt;</span> <span class="n">1</span>)
+    window.setTimeout(() <span class="o">=</span><span class="o">&gt;</span> trigger({kind:<span class="s">"animate"</span>}), <span class="n">10</span>)
+
+  <span class="c">// Create a chart with event handlers</span>
+  <span class="k">var</span> chart <span class="o">=</span> viewChart(trigger, state);
+
+  <span class="c">// Create surrounding HTML elements with a button</span>
+  <span class="k">var</span> dis <span class="o">=</span> state.guessed ? {} : {disabled:<span class="s">""</span>}
+  <span class="k">return</span> c.html(<span class="s">"div"</span>, { <span class="k">class</span>:<span class="s">"youguess"</span> }, [
+    c.svg(<span class="n">600</span>, <span class="n">300</span>, chart),
+    c.html(<span class="s">"div"</span>, {style:<span class="s">"text-align:center"</span>}, [
+      c.html(<span class="s">"button"</span>, {...dis,
+        click:() <span class="o">=</span><span class="o">&gt;</span> trigger({kind:<span class="s">"animate"</span>}) },
+          [ <span class="s">"Show me how I did"</span> ]) ]) ]);
+}
+
+c.interactive(<span class="s">"out4"</span>, init, update, view)
+</code></pre></td></tr></table>
+<div id="out4" style="margin:0px auto 40px auto;max-width:600px">
+</div>
+<p>The code first checks if the animation is running. If so, it creates a timer to trigger the
+<code>"animate"</code> event after 10ms. Then it calls the main <code>viewChart</code> function to get a
+representation of the whole <code>chart</code>.</p>
+<p>Now we need to add the button. To do this, we need to turn the chart into a HTML <code>&lt;svg&gt;</code>
+element and then add some custom HTML elements including <code>&lt;button&gt;</code> around it. This means
+stepping "outside" of the world of basic charts into the world of HTML. Compost allows us
+to do this (exactly for cases like this) using <code>c.svg</code> (which renders a shape as SVG).
+Once we have that, we can use <code>c.html</code> to create custom HTML elements. The <code>c.html</code> operation
+is similar to the <code>h</code> function from <a href="https://github.com/hyperhype/hyperscript">HyperScript</a>.
+Here, we create a button with <code>click</code> event handler that, when invoked, triggers the first
+<code>"animate"</code> event to start the animation.</p>
+<h2>Conclusions</h2>
+<p>In this blog post, I explained how to use the new <a href="https://compostjs.github.io/compost/">Compost.js</a>
+data visualization library to create an interactive "You Draw" bar chart inspired by the
+awesome interactive line charts <a href="https://www.nytimes.com/interactive/2017/01/15/us/politics/you-draw-obama-legacy.html">from New York Times</a>.</p>
+<p>This example is, in fact, what prompted me to think about how to design Compost.
+Adam Pearce who created the New York Times chart <a href="https://bl.ocks.org/1wheel/07d9040c3422dac16bd5be741433ff1e">shared a D3 implementation</a>
+of the visualization and, when I was trying to understand how it works, I could not stop
+thinking that there should be an easier way for creating visualizations like this.</p>
+<p>The Compost library makes this easy through three main things:</p>
+<ol>
+<li>
+<p>You can specify all coordinates in "domain values", which can be numerical (% of GDP)
+or categorical (like our "Health" category). When you compose a chart from individual
+components (such as bars), the range of values for axes is inferred and
+the components are automatically aligned.</p>
+</li>
+<li>
+<p>There is no special language for composing components. It's just plain JavaScript with
+functions that take shapes (or arrays of shapes) and produce new shapes. While this means
+that you sometimes need to write a bit more code (lots of <code>map</code> calls), it also
+means that all this code is perfectly clear. If you want, you can make it more readable
+by extracting functionality into a helper function like our <code>drawBar</code>.</p>
+</li>
+<li>
+<p>The interactivity is implemented using the Model View Update architecture. This may be
+a personal preference (I like its functional programming style!) but I think this is a perfect fit
+for problems like interactive charts. In our case, the state of the chart is quite simple
+and there are only two events, which means that the whole logic can easily fit in a single brain.</p>
+</li>
+</ol>
+<p>If you found this interesting, you can learn more about Compost on the <a href="https://compostjs.github.io/compost/">Compost.js project
+page</a>, which includes <a href="https://compostjs.github.io/compost/">plenty of demos</a>,
+<a href="https://compostjs.github.io/compost/api.html">API reference</a> and also an
+<a href="https://compostjs.github.io/compost/paper.pdf">overview paper draft about its design</a>.
+The core logic of Compost is implemented in <a href="https://github.com/compostjs/compost/blob/master/src/compost/core.fs">some 800 lines of F#</a>
+and is actually not that complex. Finally, the best way to run the interactive You Draw chart
+that I described in this blog post is to clone and run the <a href="https://github.com/compostjs/compost-node-demos/">compost-node-demos</a>
+repository, which includes a full source code (just 70 lines) of the demo.</p>
+<script src="https://compostjs.github.io/compost/releases/compost-0.0.5.js"></script>
+<script src="demos.js"></script>
+
+
+
+
+        <div class="info">
+        <p class="share">
+            <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fyoudraw-compost-visualization%2f&amp;text=Creating+interactive+%22You+Draw%22+bar+chart+with+Compostvia+%40tomaspetricek">
+              <i class="fa fa-twitter-square"></i></a>
+            <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fyoudraw-compost-visualization%2f">
+              <i class="fa fa-facebook-official"></i></a>
+            <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2020%2fyoudraw-compost-visualization%2f&title=Creating+interactive+%22You+Draw%22+bar+chart+with+Compost">
+              <i class="fa fa-reddit-square"></i></a>
+            <a href="mailto:?subject=Creating%20interactive%20%22You%20Draw%22%20bar%20chart%20with%20Compost&body=%20Compost%20makes%20it%20easy%20to%20create%20custom%20interactive%20data%20visualizations!%0d%0aIn%20this%20blog%20post%2c%20I%20explained%20how%20to%20use%20Compost%20to%20create%20an%20interactive%20%22You%20Draw%22%0d%0abar%20chart%20inspired%20by%20the%20awesome%20interactive%20line%20charts%20from%20New%20York%20Times.%0d%0aThe%20example%20shows%20the%20power%20of%20Compost%20including%20the%20use%20of%20domain-specific%20values%2c%0d%0acompositionality%20and%20the%20use%20of%20Model%20View%20Update%20architecture%20of%20interactivity.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2020%2fyoudraw-compost-visualization%2f">
+              <i class="fa fa-envelope"></i></a>
+        </p>
+        <p class="details">
+          <strong>Published:</strong> Thursday, 16 July 2020, 10:20 PM<br />
+          <strong>Author:</strong> Tomas Petricek<br />
+          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+          <strong>Tags:</strong> <a
+          href="/blog/tag/functional/">functional</a>, <a
+          href="/blog/tag/functional-programming/">functional programming</a>, <a
+          href="/blog/tag/data-science/">data science</a>, <a
+          href="/blog/tag/thegamma/">thegamma</a>, <a
+          href="/blog/tag/data-journalism/">data journalism</a>, <a
+          href="/blog/tag/visualization/">visualization</a></span><br />
+        </p>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  
+  </div>
+  <footer>
+  <div class="container"><div class="row">
+    <div class="col-sm-3">
+      <h4>Contact &amp; about</h4>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fa fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fa fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email me: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-7">
+    <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      
+      <a href="/blog/archive/july_2020/">July 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2019/">December 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2018/">October 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2018/">May 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2017/">September 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+    </div>
+    <div class="col-sm-2">
+      <h4>License</h4>
+      <p>Unless explicitly mentioned, all articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div>
+  </div></div>
+  </footer>
+
+  <!-- Third-party standard references -->
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>  
+  <script type="text/javascript" src="/custom/tooltips.js"></script>
+    
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <script type="text/javascript">
+    var small = (window.innerWidth * window.innerHeight) < 500000;
+    if (!small) {
+      if ($("body").attr("class").trim() == "home") $('nav').affix({ offset: { top: $('header').outerHeight() }}); 
+      else $('.top-panel').addClass("fixed");
+    }
+    var opened = false;
+    function hideOrShow() {
+      opened = !opened;
+      $("#tomas").show(); 
+      $(".tomas-fa").toggleClass("fa-caret-up");
+      $(".tomas-fa").toggleClass("fa-caret-down");
+      $("#tomas").css("max-height", $("#tomas").css("max-height")!="800px"?"800px":"0px");
+      return false; 
+    }
+    $('.toggle-tomas').on("click", hideOrShow);
+    window.onscroll = function() { if (opened) {
+      if (!small) hideOrShow(); 
+    } };
+  </script>
+</body>
+</html>
