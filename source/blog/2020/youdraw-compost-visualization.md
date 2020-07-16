@@ -1,8 +1,8 @@
-Creating interactive "You Draw" bar chart with Compost
+Creating interactive You Draw bar chart with Compost
 ======================================================
 
- - title: Creating interactive "You Draw" bar chart with Compost
- - date: 2020-07-21T15:42:16.3109375+02:00
+ - title: Creating interactive You Draw bar chart with Compost
+ - date: 2020-07-16T22:20:16.3109375+01:00
  - description: Compost makes it easy to create custom interactive data visualizations!
     In this blog post, I explained how to use Compost to create an interactive "You Draw"
     bar chart inspired by the awesome interactive line charts from New York Times.
