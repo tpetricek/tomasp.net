@@ -1,0 +1,1075 @@
+﻿<!doctype html>
+<html>
+<head>
+  <title>The Lost Ways of Programming: Commodore 64 BASIC</title>
+
+  <meta name="description" content="How we interact with programming environment matters more than the language, but such interaction has never been widely studied. Inspired by the idea of 'complementary science', this essay recovers interesting ideas from how programming used to be done using Commodore 64 BASIC. Reading about interactions is not enough and so this interactive essay lets you build a small Breakout game using a simple Commodore 64 BASIC simulator." />
+  <meta name="keywords" content="Commodore 64 BASIC, interactive programming, REPL, complementary science, history of computing" />
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+
+  <meta property="og:title" content="The Lost Ways of Programming: Commodore 64 BASIC" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/commodore" />
+  <meta property="og:image" content="http://tomasp.net/commodore/c64.png" />
+  <meta property="og:description" content="How we interact with programming environment matters more than the language, but such interaction has never been widely studied. Inspired by the idea of 'complementary science', this essay recovers interesting ideas from how programming used to be done using Commodore 64 BASIC. Reading about interactions is not enough and so this interactive essay lets you build a small Breakout game using a simple Commodore 64 BASIC simulator." />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">
+
+
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@500&family=Kreon:wght@300;400&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family:'PT Sans',sans-serif;
+      color:#f0f0f0;
+      background:#00009b;
+    }
+    code {
+      font-family:Inconsolata,monospace;
+    }
+    a {
+      color:#44aaFF;
+      text-decoration:none;
+    }
+    a:hover, a:active {
+      text-decoration:underline;
+    }
+    .subtitle {
+      text-align:center;
+      font-size:15pt;
+      margin:0px 0px 80px 0px;
+    }
+    .container {
+      max-width:1200px;
+      margin:0px auto 0px auto;
+    }
+    h1, h2, h3 {
+      font-family:Kreon, serif;
+      font-weight:300;
+    }
+    p, li {
+      font-size:13pt;
+      line-height:19.5pt;
+    }
+    ol { 
+      margin:1em 0px 1em 0px;
+      padding-left:2em;
+      counter-reset: item;
+      list-style-type: none;
+    }
+    li {
+      margin:1em 0px 1em 0px;
+      padding:0px 0px 0px 0px;
+    }
+    ol li:before { 
+      content: counter(item) ")"; 
+      counter-increment: item;
+      width:1.5em;
+      display:inline-block;
+      margin-left:-1.5em;
+    }
+    #notes a {
+      text-decoration:underline;
+    }
+    #notes p, #notes li {
+      font-size:11pt;
+      line-height:15pt;
+    }
+    .refs p {
+      margin:6px 0px 6px 0px;
+    }
+    .refs {
+      margin:10px 0px 10px 0px;
+    }
+    article pre {
+      font-family:Inconsolata, consolas, monaco, monospace;
+      font-size:13pt;
+      margin:30px;
+      line-height:17pt;
+    }
+    h1 {
+      font-size:25pt;
+      margin:50px 10px 40px 10px;
+      padding-top:20px;
+      text-align:center;
+    }
+    h2 {
+      margin-top:80px;
+      font-size:23pt;
+      text-transform:uppercase;
+    }
+    h3 {
+      margin:40px 0px 0px 0px;
+      font-size:16pt;
+      text-transform:uppercase;
+    }
+    article {
+      margin:20px 620px 300px 20px;
+    }
+    button {
+      color: inherit;
+      background: transparent;
+      font-size: 13pt;
+      padding: 10px 20px 10px 20px;
+      cursor: pointer;
+      border: solid 3px #d0d0e0;
+      border-radius: 4px;
+      margin:30px 0px 0px 0px;
+    }
+    button:active, button:hover {
+      background: #ffffff30;
+      outline:0;
+    }
+    .prebtn {
+      margin:-20px 0px 20px 30px;
+    }
+    .prebtn2 {
+      margin:-20px 0px 20px 10px;
+    }
+    .pbtn {
+      margin:0px 0px 20px 30px;
+    }
+    .pbtn2 {
+      margin:0px 0px 20px 10px;
+    }
+    @font-face {
+      font-family: PETSCII;
+      src: url(C64_Pro_Mono-STYLE.woff2);
+    }
+
+
+    #right {
+      max-width: 1200px;
+      width: 100%;
+      top:50px;
+      position: fixed;
+    }
+    #screen {
+      padding:10px;
+      background: #000080;
+      position: absolute;
+      top:20px;
+      right:20px;
+      line-height:14px;
+    }
+    #notes { 
+      position:absolute;
+      right:20px;
+      top:420px;
+      width:480px;
+      color:#44aaFF;      
+    }
+    #out {
+      width: 40em;
+      background: #000080;
+      color: #0088FF;
+      overflow: hidden;
+      font-size: 14px;
+      font-family: PETSCII;
+      margin:0px;
+    }
+    #cursor {
+      font-size: 14px;
+      font-family: PETSCII;
+      position: absolute;
+      left: 0em;
+      top: 0em;
+      color: #0088FF;
+      line-height:14px;
+    }
+    .note {
+      display:none;
+    }
+    .note h2, .note h3 {
+      display:none;
+    }
+    #smallwarn, #btncc-box { display:none; }
+    
+    @media only screen and (max-width: 1100px)  {      
+      #out, #cursor { font-size:12px; line-height:12px; }
+      #notes { top:360px; }
+      article { margin-right:540px; }
+    }
+    @media only screen and (max-width: 1000px)  {      
+      #out, #cursor { font-size:11px; line-height:11px; }
+      #notes { top:340px; width:440px; }
+      article { margin-right:500px; }
+    }
+    @media only screen and (max-width: 900px)  {      
+      article { margin-right:20px; margin-bottom:0px; }
+      #right, #screen, #notes { position:static; }
+      .note { display:block; }
+      #notes { margin:60px 20px 300px 20px; width:auto; }
+      .note h2, .note h3 { display:block; }
+      .note h2 { margin-top:20px; font-size:20pt; }
+      .note h3 { margin:20px 0px 0px 0px; font-size:14pt; }
+      .note p { margin-block-end:5px; margin-block-start:5px; }
+      #screen { position:fixed; top:0px; left:0px; width:100vw; height:100vh; display:none; overflow-y:auto; }
+      #screen-inner { overflow:auto; }
+      #out, #cursor { font-size:14px; line-height:14px; }
+      article pre { overflow:auto; }
+      #btncc-box { display:block; text-align:center; padding-right:20px;padding-bottom:30px; }
+      #smallwarn { display:block; }
+      #screen { margin-left:auto; margin-right:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <article>
+
+      <h1 id="h1">The Lost Ways of Programming: Commodore 64 BASIC</h1>
+      
+      <p class="subtitle">by Tomas Petricek, 10 October 2020<br />
+        <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a> |
+        <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a>
+      </p>
+
+      <p>
+        In this interactive article, we will build a breakout game using Commodore 64 BASIC in the
+        browser. This is a fun programming hack, but it has quite profound theoretical background. Let me explain.</p>
+      
+      <ol>
+      <li>I believe that <em>how we interact</em> with a programming environment when programming
+        is more important than the specific programming language that we are using.
+      </li>
+      <li>This has never been widely studied and we have interesting things to learn from past
+        systems, including Commodore 64 BASIC.
+      </li>
+      <li>We should look at the history and recreate past programming experiences
+        in order to learn from them, following a method that a historian of science,
+        Hasok Chang, calls <em>complemetary science</em>.
+      </li>
+      <li>Reading about interactions is not enough. To get a sense of how the interaction worked,
+        you need to experience it yourself, at least in a limited form. This is best done
+        with an interactive article.</li>
+      </ol>
+  
+      <p>This is an interactive article that documents some of the interesting aspects of programming
+        Commodore 64 BASIC. I'm not trying to create an accurate Commodore 64 simulator though. The 
+        point is to show a few things that we can learn from for future programming systems.
+      </p>
+      <p>We will start with a Hello World example to see how things work and then we'll build 
+        a small Breakout game. This illustrates how easy it is to get started, how the 
+        environment supports learning and how the Commmodore 64 BASIC mode of interaction lets us
+        gradually build a program in a way that is quite different from modern programming environments.
+      </p>
+
+      <p id="smallwarn">
+        <strong>Reading this on a phone?</strong> &#160; Keyboard and a large screen is better for reading this essay,
+        but it works on phone too. The simulator opens whenever you click a button. Commodore 64 screen width is fixed,
+        so it may read better in a landscape mode. 
+      </p>
+
+      <script type="text/c64" id="onload-code">
+        hidden: PRINT ""
+        hidden: PRINT "    **** COMMODORE 64 BASIC V2 ****"
+        hidden: PRINT ""
+        hidden: PRINT " 64 RAM SYSTEM  38911 BASIC BYTES FREE"
+      </script>
+      <button id="btn1" class="active">Click to begin</button>
+      <script type="text/c64" id="btn1-code">        
+        show: main
+        hidden: PRINT ""
+        hidden: PRINT "READY."
+        show: cursor
+      </script>
+
+      <div id="main" style="visibility:hidden;">
+
+      <h2 id="start">100 Hello World</h2>
+      <p>When Commodore 64 starts, a welcome screen from BASIC awaits you. Even if you want to use
+        it to just play games, you start with a programming environment. This tells you that you
+        too can become a programmer and you certainly do not need to download gigabytes of tools
+        and wait hours for your XCode or Visual Studio to install.
+      </p>
+
+      <p>
+        Let's follow the tradition and tell BASIC to say hello world for us. To do this, type the 
+        following command, or if you are lazy, just click the button. 
+      </p>
+      <pre>PRINT "HELLO WORLD"</pre>
+      <button id="btn2" class="active prebtn">Show me</button>
+      <script type="text/c64" id="btn2-code">
+        eval: PRINT "HELLO WORLD"
+      </script>
+
+      <p>To a modern programmer, it is amazing how little it takes to get from booting the 
+        machine to printing hello world. Not only you start in the programming environment
+        but you also do not need to write any classes, static methods and compile the program.
+      </p>
+      <p>The obvious next thing is to print hello world in an infinite loop. Previously,
+        we entered a single command and BASIC executed it, but now we need to create a 
+        program. To do this, we prefix code with line numbers:
+      </p>
+      <pre>10 PRINT "HELLO WORLD"
+20 GOTO 10</pre>
+      <p>This is again ingenious. BASIC keeps a list of lines of your program and when you
+        type a line starting with number, it inserts it into the right location. You can use
+        the same prompt for running commands and editing your program. To run the program 
+        now, just type RUN:
+      </p>
+      <pre>RUN</pre>
+      <button id="btn3" class="active prebtn">Show me</button>
+      <script type="text/c64" id="btn3-code">
+        eval: 10 PRINT "HELLO WORLD"
+        eval: 20 GOTO 10
+        start: RUN
+      </script>
+      <p>If you run a program with an infinite loop like this one, you can stop it using 
+        Ctrl+C or Command+C. If you want to see the program that you entered, you can 
+        type the LIST command.</p>
+      <button id="btn4" class="active pbtn">Stop running</button>
+      <script type="text/c64" id="btn4-code">
+        stop
+      </script>
+      <button id="btn5" class="active pbtn2">List program</button>
+      <script type="text/c64" id="btn5-code">
+        start: LIST
+      </script>
+        
+      <h2 id="maze">110 Drawing a maze</h2>
+      <p>There is a lot of clever hacks that you can do in BASIC with a few lines of
+        code. This ease of getting started contributes to what makes it a fun programming 
+        environment. If you found an interesting hack in a computer magazine, you could
+        type it into the console and run it straight away.
+      </p>
+      <p>The fact that you had to copy code from a paper magazine sounds like a hassle,
+        but it has an educational quality. It keeps the samples that can be distributed 
+        in this way reasonably small and it makes you think about the code as you are
+        typing it. 
+      </p>
+
+      <p>To experience this yourself, you should try typing the following three-line 
+        program to the console! It generates a famous maze. This relies on special
+        Commodore character codes: 147 clears the screen, 205 and 206 are backslash and
+        slash crossing the full character size.
+      </p>
+      <pre>10 PRINT CHR$(147);
+20 PRINT CHR$(205.5 + RND(1));
+30 GOTO 20
+RUN
+</pre>
+      <button id="btn6" class="active prebtn">Show me</button>
+      <script type="text/c64" id="btn6-code">
+        eval: 10 PRINT CHR$(147);
+        eval: 20 PRINT CHR$(205.5 + RND(1));
+        eval: 30 GOTO 20
+        start: RUN
+      </script>
+      <button id="btn7" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn7-code">
+        stop
+      </script>
+      
+      <h2 id="moving">200 Creating a moving ball</h2>
+      <p>To build our Breakout game, we can proceed gradually. This is
+        yet another nice feature of the programming environment. We want to 
+        create a ball that bounces off the wall, but let's start with a ball
+        that just moves to the right.</p>
+      <p>We will do only a tiny bit of planning. Code that initializes 
+        variables with the game state starts at line 1000 and code that
+        handles ball movement will start at 2000. We will also first clear the
+        screen and use DELETE to remove all the previous maze and Hello World code.
+      </p>
+      <pre>PRINT CHR$(147);
+DELETE 
+1000 REM STATE INITIALIZATION 
+1010 X=0
+2000 REM BALL MOVEMENT
+2010 POKE X CHR$(32)
+2020 X=X+1
+2030 POKE X CHR$(209)
+2040 GOTO 2000
+RUN</pre>
+      <p>To draw a ball at a specific location, we use POKE which writes a value to 
+        a memory location. Here, the part of memory representing a screen starts at 
+        offset 0. We first erase the previous ball using a space (character code 32) and then 
+        draw a ball (character code 209).
+      </p>
+      <button class="active pbtn" id="btn9">Show me</button>
+      <script type="text/c64" id="btn9-code">
+        eval: PRINT CHR$(147);
+        eval: DELETE 
+        eval: 1000 REM STATE INITIALIZATION 
+        eval: 1010 X=0
+        eval: 2000 REM BALL MOVEMENT
+        eval: 2010 POKE X CHR$(32)
+        eval: 2020 X=X+1
+        eval: 2030 POKE X CHR$(209)
+        eval: 2040 GOTO 2000
+        start: RUN
+      </script>
+      <button id="btn10" class="active pbtn2">Stop running</button>
+      <script type="text/c64" id="btn10-code">
+        stop
+      </script>
+
+      <h2>210 Making the ball bounce</h2>
+
+      <p>To make the ball bounce off the walls, we need to 
+        check when it gets to the side of the screen and reverse
+        the direction in which it moves. To do this, we need to 
+        keep more state. We were using the varibale X to keep the 
+        X coordinate. Now we add Y for the Y coordinate and also 
+        DX, DY for the direction (+1 or -1).
+        To see our code clearly, let's first clear the screen and
+        LIST our current code.
+      </p>
+      <pre>PRINT CHR$(147);
+LIST
+1020 Y=0
+1030 DX=1
+1040 DY=0</pre>
+      <p>We immediately follow the edits in initialization code with edits in 
+        the ball movement code, starting at line 2000, to check for collisions
+        with the left side and the right side of the screen: 
+      </p>
+<pre>2010 POKE ((Y*40)+X) CHR$(32)
+2020 X=X+DX
+2030 Y=Y+DY
+2040 IF X=40 THEN DX=-1
+2050 IF X=40 THEN X=38
+2060 IF X&lt;0 THEN DX=1
+2070 IF X&lt;0 THEN X=1
+2200 POKE ((Y*40)+X) CHR$(209)
+2210 GOTO 2000
+RUN</pre>
+      <button class="active prebtn" id="btn11">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn11-code">
+        eval: PRINT CHR$(147);
+        eval: LIST
+        eval: 1020 Y=0
+        eval: 1030 DX=1
+        eval: 1040 DY=0
+        eval: 2010 POKE ((Y*40)+X) CHR$(32)
+        eval: 2020 X=X+DX
+        eval: 2030 Y=Y+DY
+        eval: 2040 IF X=40 THEN DX=-1
+        eval: 2050 IF X=40 THEN X=38
+        eval: 2060 IF X<0 THEN DX=1
+        eval: 2070 IF X<0 THEN X=1
+        eval: 2200 POKE ((Y*40)+X) CHR$(209)
+        eval: 2210 GOTO 2000
+        start: RUN
+      </script>
+      <button id="btn11s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn11s-code">
+        stop
+      </script>
+
+      <p>We knew that we will need to add checks for the top and the bottom side,
+        so we left some empty lines. The checking code ends at 2070 and ball 
+        drawing is on line 2200. We just need to inser the remaining checks:
+      </p>
+      <pre>2080 IF Y=25 THEN DY=-1
+2090 IF Y=25 THEN Y=23
+2100 IF Y&lt;0 THEN DY=1
+2110 IF Y&lt;0 THEN Y=2
+RUN</pre>
+      <button class="active prebtn" id="btn12">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn12-code">
+        eval: 2080 IF Y=25 THEN DY=-1
+        eval: 2090 IF Y=25 THEN Y=23
+        eval: 2100 IF Y<0 THEN DY=1
+        eval: 2110 IF Y<0 THEN Y=2
+        start: RUN
+      </script>
+      <button id="btn12s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn12s-code">
+        stop
+      </script>
+
+      <p>Why is the ball still moving just from left to right and back? We 
+        added the checking code, but forgot to change DY. This is easy to 
+        fix:</p>
+      <pre>1040 DY=1
+RUN</pre>
+      <button class="active prebtn" id="btn13">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn13-code">
+        eval: 1040 DY=1
+        start: RUN
+      </script>
+      <button id="btn13s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn13s-code">
+        stop
+      </script>
+
+      <p>This is what we wanted, a ball that bounces off the walls! 
+        But let me reflect on how we created the program. We started with 
+        a moving ball and then added bouncing in two steps. The programming
+        model of Commodore 64 BASIC makes this very easy. </p>
+      <p>This relies on two things. First, as the code is a simple imperative
+        list of commands, the addressing (using line numbers) makes editing
+        the program much easier than if it consisted of complex composed expressions.
+        We had to be clever about line numbers to have space for inserting code, but
+        this is a small price to pay. Second, the dual use of the console, as both
+        an editor and a REPL, means that the interaction is kept quite simple.</p>
+      <p>There is even more to the console. You can use it to run one off tests, 
+        like <code>PRINT (Y*40)+X</code> to test your calculation. You can also 
+        modify the state directly and then jump into the middle of a program. 
+        For example, we can move the ball to the right bottom corner and let the 
+        program run from there by jumping over the initialization code:
+      </p>
+      <pre>X=39
+Y=24
+GOTO 2000</pre>
+      <button class="active prebtn" id="btn13">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn13-code">
+        eval: X=39
+        eval: Y=24
+        eval: GOTO 2000
+      </script>
+      <button id="btn13s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn13s-code">
+        stop
+      </script>
+
+      <h2 id="input">300 Handling keyboard input</h2>
+      <p>Before we can turn the program into an actual game, we need to figure out
+        how to handle input from keyboard. If you have a string variable <code>K$</code>,
+        you can use <code>GET$ K$</code> to read a key from a buffer. This will return 
+        an empty string if there is no key in the buffer, so we need to write a
+        loop waiting for a key. We can do this on lines 10-50, before the start of
+        our actual program:
+      </p>
+      <pre>PRINT CHR$(147);
+10 K$=""
+20 GET$ K$
+30 IF K$="" THEN GOTO 20
+40 PRINT ASC(K$)
+50 STOP</pre>
+      <button class="active prebtn" id="btn14">Show me</button>
+      <script type="text/c64" id="btn14-code">
+        eval: PRINT CHR$(147);
+        eval: 10 K$=""
+        eval: 20 GET$ K$
+        eval: 30 IF K$="" THEN GOTO 20
+        eval: 40 PRINT ASC(K$)
+        eval: 50 STOP
+      </script>
+      <p>After printing the PETSCII code of the character, we explicitly stop the 
+        program, so that it does not continue into our ball bouncing code. Try running
+        the program now using the <code>RUN</code> command repeatedly to get key codes
+        for up and down arrows! The interpreter does not support all keys, but it handles
+        arrows, space and alphanumeric characters.</p>
+      <p>We will need the key code for the up key (145) and the down key (17). Now that
+        we know this, we can delete our test code:
+      </p>
+      <pre>DELETE 10-50</pre>
+      <button class="active prebtn" id="btn15">Show me</button>
+      <script type="text/c64" id="btn15-code">
+        eval: DELETE 10-50
+      </script>      
+
+      <h2 id="paddle">310 Moving a paddle</h2>      
+      <p>
+        Now that we figured out how to handle input, we can add a paddle to our game.
+        It will be on the left side of the screen and will move using up and down keys.
+        We can write the code independently of all that we have written so far, adding
+        a line 1050 to the initialization code and starting the paddle moving code at 2500.
+      </p>
+      <p>The logic is quite simple. We read a key and get its code. If the key is up or down,
+        we increment or decrement the position of the paddle. We then draw the paddle using
+        <code>POKE</code>, also drawing a space before and after to erase a previous state.
+        The emulator does not support <code>FOR</code> loops, so we just draw 5 vertical 
+        bar characters one after the other.
+      </p>
+
+      <pre>1050 P=10
+2500 REM MOVING A PADDLE 
+2510 K$=""
+2520 K=0
+2530 GET$ K$
+2540 IF K$<>"" THEN K=ASC(K$)
+2550 IF K=145 THEN P=P-1
+2560 IF K=17 THEN P=P+1
+2570 POKE ((P-1)*40) CHR$(32)
+2571 POKE ((P+0)*40) CHR$(182)
+2572 POKE ((P+1)*40) CHR$(182)
+2573 POKE ((P+2)*40) CHR$(182)
+2574 POKE ((P+3)*40) CHR$(182)
+2575 POKE ((P+4)*40) CHR$(182)
+2576 POKE ((P+5)*40) CHR$(32)
+2580 GOTO 2500</pre>
+      <p>You can run this regardless of whether you followed the previous sections.
+        If you did, typing <code>RUN</code> would start the bouncing ball, so 
+        instead, we initialize P manually and jump directly to the 
+        paddle handling code.
+      </p>
+<pre>P=10
+GOTO 2500</pre>
+      <button class="active prebtn" id="btn16">Show me</button>
+      <script type="text/c64" id="btn16-code">
+        eval: 1050 P=10
+        eval: 2500 REM MOVING A PADDLE 
+        eval: 2510 K$=""
+        eval: 2520 K=0
+        eval: 2530 GET$ K$
+        eval: 2540 IF K$<>"" THEN K=ASC(K$)
+        eval: 2550 IF K=145 THEN P=P-1
+        eval: 2560 IF K=17 THEN P=P+1
+        eval: 2570 POKE ((P-1)*40) CHR$(32)
+        eval: 2571 POKE ((P+0)*40) CHR$(182)
+        eval: 2572 POKE ((P+1)*40) CHR$(182)
+        eval: 2573 POKE ((P+2)*40) CHR$(182)
+        eval: 2574 POKE ((P+3)*40) CHR$(182)
+        eval: 2575 POKE ((P+4)*40) CHR$(182)
+        eval: 2576 POKE ((P+5)*40) CHR$(32)
+        eval: 2580 GOTO 2500
+        eval: P=10
+        start: GOTO 2500
+      </script>   
+      <button id="btn16s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn16s-code">
+        stop
+      </script>   
+      <p>To get something running as soon as possible, we did not add any checks 
+        to make sure that the paddle does not run outside of the screen. If this 
+        happens, the program right now stops and you need to kill it using Ctrl+C.
+        To fix this, we need to draw spaces around the paddle only when it is not
+        at the start/end and ensure that P is between 0 and 20. We were wise enough
+        to use multiples of 10 as our line numbers, so we have space to insert this
+        code between 2560 and 2570.
+      </p>
+      <pre>2570 IF P&gt;0 THEN POKE ((P-1)*40) CHR$(32)
+2576 IF P&lt;20 THEN POKE ((P+5)*40) CHR$(32)
+2561 IF P&gt;0 THEN P=0
+2562 IF P&lt;20 THEN P=20
+GOTO 2500</pre>
+        <button class="active prebtn" id="btn17">⮡&nbsp; Show me</button>
+        <script type="text/c64" id="btn17-code">
+          eval: 2570 IF P>0 THEN POKE ((P-1)*40) CHR$(32)
+          eval: 2576 IF P<20 THEN POKE ((P+5)*40) CHR$(32)
+          eval: 2561 IF P<0 THEN P=0
+          eval: 2562 IF P>20 THEN P=20
+          start: GOTO 2500
+        </script>      
+        <button id="btn17s" class="active prebtn2">Stop running</button>
+        <script type="text/c64" id="btn17s-code">
+          stop
+        </script>
+      
+    
+      <h2>400 Putting everything together</h2>    
+      <p>We built two parts of the game largely independently. 
+        The code for the bouncing ball is between lines 2000 and 2500 and we can start it by
+        typing <code>RUN</code> or <code>GOTO 2000</code>. The code for the paddle starts after
+        that and we can run it using <code>GOTO 2500</code>. The last step is to connect the 
+        two parts! If you skipped a part of the tutorial, the following lets you reload all the
+        code.
+      </p>
+      <button class="active pbtn" id="btn18">⟳&nbsp; Reload all</button>
+      <script type="text/c64" id="btn18-code">
+        hidden: DELETE
+        hidden: 1000 REM STATE INITIALIZATION 
+        hidden: 1010 X=0
+        hidden: 1020 Y=0
+        hidden: 1030 DX=1
+        hidden: 1040 DY=1
+        hidden: 1050 P=10
+        hidden: 2000 REM BALL MOVEMENT
+        hidden: 2010 POKE ((Y*40)+X) CHR$(32)
+        hidden: 2020 X=X+DX
+        hidden: 2030 Y=Y+DY
+        hidden: 2040 IF X=40 THEN DX=-1
+        hidden: 2050 IF X=40 THEN X=38
+        hidden: 2060 IF X<0 THEN DX=1
+        hidden: 2070 IF X<0 THEN X=1
+        hidden: 2080 IF Y=25 THEN DY=-1
+        hidden: 2090 IF Y=25 THEN Y=23
+        hidden: 2100 IF Y<0 THEN DY=1
+        hidden: 2110 IF Y<0 THEN Y=2
+        hidden: 2200 POKE ((Y*40)+X) CHR$(209)
+        hidden: 2210 GOTO 2000
+        hidden: 2500 REM MOVING A PADDLE 
+        hidden: 2510 K$=""
+        hidden: 2520 K=0
+        hidden: 2530 GET$ K$
+        hidden: 2540 IF K$<>"" THEN K=ASC(K$)
+        hidden: 2550 IF K=145 THEN P=P-1
+        hidden: 2560 IF K=17 THEN P=P+1
+        hidden: 2561 IF P<0 THEN P=0
+        hidden: 2562 IF P>20 THEN P=20
+        hidden: 2570 IF P>0 THEN POKE ((P-1)*40) CHR$(32)
+        hidden: 2571 POKE ((P+0)*40) CHR$(182)
+        hidden: 2572 POKE ((P+1)*40) CHR$(182)
+        hidden: 2573 POKE ((P+2)*40) CHR$(182)
+        hidden: 2574 POKE ((P+3)*40) CHR$(182)
+        hidden: 2575 POKE ((P+4)*40) CHR$(182)
+        hidden: 2576 IF P<20 THEN POKE ((P+5)*40) CHR$(32)
+        hidden: 2580 GOTO 2500
+        hidden: PRINT "LOADED."
+      </script>      
+      <p>The whole code is now too long to fit on a screen when you run <code>LIST</code>. 
+        If you want to see it, you need to run <code>LIST -2500</code>
+        to see everything before line 2500 or <code>LIST 2500-</code> to see everything after.</p>
+      <p>To link the two parts, we need to make a couple of edits. First, we'll clear the screen 
+        at the end of the initialization code and update the bouncing so that the ball keeps
+        on the right of the paddle. Second, we'll connect the two parts. To do this, we merge
+        the two loops by removing <code>GOTO 2000</code> from the end of the ball movement code.
+        We'll jump to line 2000 only after also updating the paddle on line 2580.
+      </p>
+      <pre>1100 PRINT CHR$(147)
+2060 IF X&lt;1 THEN DX=1
+2070 IF X&lt;1 THEN X=2
+2210 
+2580 GOTO 2000
+RUN</pre>
+      <button id="btn19" class="active prebtn2">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn19-code">
+        eval: 1100 PRINT CHR$(147)
+        eval: 2060 IF X<1 THEN DX=1
+        eval: 2070 IF X<1 THEN X=2
+        eval: 2210 
+        eval: 2580 GOTO 2000
+        start: RUN
+      </script>
+      <button id="btn19s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn19s-code">
+        stop
+      </script>
+
+      <p>This looks like a game, but we are missing one last crucial bit. We need to add a 
+        check to detect when the ball does not hit the paddle while bouncing off the left
+        side of the screen. We insert this between lines 2030 and 2040, i.e just after we
+        update the ball location.
+      </p>
+      <pre>2031 IF (X=0) AND (Y&lt;P) THEN GOTO 3000
+2032 IF (X=0) AND (Y>(P+4)) THEN GOTO 3000
+3000 STOP
+RUN</pre>
+      <button id="btn20" class="active prebtn2">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn20-code">
+        eval: 2031 IF (X=0) AND (Y<P) THEN GOTO 3000
+        eval: 2032 IF (X=0) AND (Y>(P+4)) THEN GOTO 3000
+        eval: 3000 STOP
+        start: RUN
+      </script>
+      <button id="btn20s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn20s-code">
+        stop
+      </script>
+
+      <p>When the ball is below or above the paddle, the code jumps to line 3000 which 
+        uses the <code>STOP</code> command to terminate the program. To make the game
+        a bit nicer, we replace this with a nice GAME OVER effect. If you are typing this,
+        you can also run <code>GOTO 3000</code> at the end to debug just the game over
+        code, without having to play the game.
+      </p>
+      <pre>3000 REM GAME OVER
+3010 PRINT CHR$(147);
+3020 S=0
+3030 S=S+1
+3040 PRINT "               GAME OVER"
+3050 IF S&lt;25 THEN GOTO 3030
+3060 PRINT CHR$(147)
+RUN
+      </pre>
+      <button id="btn21" class="active prebtn2">⮡&nbsp; Show me</button>
+      <script type="text/c64" id="btn21-code">
+        eval: 3000 REM GAME OVER
+        eval: 3010 PRINT CHR$(147);
+        eval: 3020 S=0
+        eval: 3030 S=S+1
+        eval: 3040 PRINT "               GAME OVER"
+        eval: 3050 IF S<25 THEN GOTO 3030
+        eval: 3060 PRINT CHR$(147)
+        start: RUN
+      </script>
+      <button id="btn21s" class="active prebtn2">Stop running</button>
+      <script type="text/c64" id="btn21s-code">
+        stop
+      </script>
+      
+      <h2 id="interacting">500 Interacting with BASIC</h2>
+      <p>That's it! If you followed the individual steps of the article,
+        you now created a simple Breakout game in a bit less than 50 lines
+        of code. The point of the article was to let you experience how the
+        process of programming feels, but if you skipped over some parts, 
+        you can cheat and load the whole game below. After doing this, use
+        <code>RUN</code> to run it or <code>LIST</code> to see the full code.
+      </p>
+      <button class="active pbtn" id="btn22">⟳&nbsp; Load game</button>
+      <script type="text/c64" id="btn22-code">
+        hidden: DELETE
+        hidden: 1000 REM STATE INITIALIZATION 
+        hidden: 1010 X=0
+        hidden: 1020 Y=0
+        hidden: 1030 DX=1
+        hidden: 1040 DY=1
+        hidden: 1050 P=10
+        hidden: 1100 PRINT CHR$(147)
+        hidden: 2000 REM BALL MOVEMENT
+        hidden: 2010 POKE ((Y*40)+X) CHR$(32)
+        hidden: 2020 X=X+DX
+        hidden: 2030 Y=Y+DY
+        hidden: 2031 IF (X=0) AND (Y<P) THEN GOTO 3000
+        hidden: 2032 IF (X=0) AND (Y>(P+4)) THEN GOTO 3000
+        hidden: 2040 IF X=40 THEN DX=-1
+        hidden: 2050 IF X=40 THEN X=38
+        hidden: 2060 IF X<1 THEN DX=1
+        hidden: 2070 IF X<1 THEN X=2
+        hidden: 2080 IF Y=25 THEN DY=-1
+        hidden: 2090 IF Y=25 THEN Y=23
+        hidden: 2100 IF Y<0 THEN DY=1
+        hidden: 2110 IF Y<0 THEN Y=2
+        hidden: 2200 POKE ((Y*40)+X) CHR$(209)
+        hidden: 2500 REM MOVING A PADDLE 
+        hidden: 2510 K$=""
+        hidden: 2520 K=0
+        hidden: 2530 GET$ K$
+        hidden: 2540 IF K$<>"" THEN K=ASC(K$)
+        hidden: 2550 IF K=145 THEN P=P-1
+        hidden: 2560 IF K=17 THEN P=P+1
+        hidden: 2561 IF P<0 THEN P=0
+        hidden: 2562 IF P>20 THEN P=20
+        hidden: 2570 IF P>0 THEN POKE ((P-1)*40) CHR$(32)
+        hidden: 2571 POKE ((P+0)*40) CHR$(182)
+        hidden: 2572 POKE ((P+1)*40) CHR$(182)
+        hidden: 2573 POKE ((P+2)*40) CHR$(182)
+        hidden: 2574 POKE ((P+3)*40) CHR$(182)
+        hidden: 2575 POKE ((P+4)*40) CHR$(182)
+        hidden: 2576 IF P<20 THEN POKE ((P+5)*40) CHR$(32)
+        hidden: 2580 GOTO 2000
+        hidden: 3000 REM GAME OVER
+        hidden: 3010 PRINT CHR$(147);
+        hidden: 3020 S=0
+        hidden: 3030 S=S+1
+        hidden: 3040 PRINT "               GAME OVER"
+        hidden: 3050 IF S<25 THEN GOTO 3030
+        hidden: 3060 PRINT CHR$(147)
+        hidden: PRINT "LOADED."
+      </script>
+      <button class="active pbtn2" id="btn23">⮡&nbsp; Run game</button>
+      <script type="text/c64" id="btn23-code">
+        start: RUN
+      </script>
+
+      <p>I started this article by suggesting that <em>how we interact</em> with a 
+        programming environment is more important than the language that is used.
+        Computer science is very good for talking about programming languages, but 
+        it has traditionally said little about interacting.
+      </p>
+      <p>The point of this article is 
+        to point out some of the interesting aspects of interacting with Commodore 64 
+        BASIC. This is a very simple environment, but there are some valuable lessons:
+      </p>
+      <ol>
+        <li>It is easy to start programming. The system boots into a programming 
+          environment, making that the primary way of interacting with the machine.
+          Loading a game from a tape and running it involves the same kind of 
+          interactions as programming. 
+        </li>
+        <li>It is easy to learn. The fact that many programs were available 
+          as code listings in paper magazines may be an accidental virtue, but it
+          means that they are short and that you learn as you copy them.
+        </li>
+        <li>There is just one kind of interaction. You type commands into a console,
+          but this works both as a way of running commands immediately (REPL) and 
+          as a way of constructing a program (editor). 
+        </li>
+        <li>You get a simple yet flexible workspace. We created two parts of 
+          the game independently and then connected them by editing two
+          GOTOs. They are also easy to test independently, because we can set 
+          variables in the REPL mode and jump direclty into the middle of our code.
+        </li>
+        <li>Hacker access to extra features. I only partly demonstrated this, but
+          <code>POKE</code> (and <code>SYS</code>) give you access to many extra 
+          features of the system. The common things are simple, but curious 
+          hackers get a reward.
+        </li>
+      </ol>
+      <p>I'm not suggesting we should throw away our TypeScript with Visual Studio 
+        Code or Java with Eclipse and go back to Commodore 64 and BASIC. 
+        However, modern programming environments, even with REPL or live reloading,
+        can certainly learn a few tricks.
+      </p>
+      <p>Perhaps the most important point is 
+        that the language should be co-designed with the programming interactions. 
+        For example, line numbers in BASIC are not just poor man's loops. They 
+        enable many of the interesting interactions with the system.
+      </p>
+
+      <h2 id="ccs">510 Complementary science</h2>
+      <p>This article also tries to make a methodological point. A naive view of
+        science is that it is a progressive enterprise that gradually improves
+        our knowledge bit by bit. As historians and philosophers of science 
+        pointed out, actual science is much more complicated. </p>
+      <p>Pluralism in science means that there can sometimes be multiple accepted, 
+        but mutually inconsistent theories, which can still productively 
+        exchange ideas. Scientific revolutions mean that sometimes, revolutionary
+        shift in the basic assumptions invalidates past knowledge.
+      </p>
+      <p>Although we are sometimes reluctant to call computer science a science,
+        we nevertheless believe in the naive idea of its straightforward 
+        progressive nature. This view implies that our present knowledge 
+        encompasses all the good ideas from the past and forgotten ideas were
+        lost because they were simply not good. This is not true for sciences
+        like physics and much less so for computer science.
+      </p>
+      <p>What does this mean? If we accept that there might be something to
+        past scientific ideas that were lost, it becomes worthwhile to reconstruct
+        those ideas, bring them into a modern context and see how they can 
+        contribute to current developments. Historian of science,
+        Hasok Chang, calls this approach <em>complementary science</em>.
+      </p>
+      <p>Complementary computer science is exactly what I tried to do 
+        in this article. I believe that interesting ideas
+        on how to interact with a programming environment have been lost, largely
+        because programming research became so focused on <em>languages</em> 
+        (possibly under the influence of Algol). This article is an attempt to
+        recreate some of the interesting past ideas. My choice of starting with 
+        Commodore 64 BASIC is a fairly pragmatic one. There are more interesting 
+        past programming systems, but this one was relatively easy to recreate.
+      </p>
+      <p>
+        Talking about programming interactions is also harder
+        than talking about programming languages, because a language can easily be 
+        described formally in a printed paper. To make sense of an interaction,
+        you need to experience it. This is why this article is interactive and
+        why I encourage the reader to play with the environment, at least by 
+        copying some of the code. 
+      </p>
+      <p>In other words, we need to change both what we talk about and how we talk 
+        about it, because <em>the medium is the message</em>.</p>
+    
+    
+    
+      </div>
+    </article>
+    <div id="right">
+      <div id="screen" onclick="if (window.innerWidth < 900) document.getElementById('screen').style.display='none';">
+        <div id="screen-inner" style="position:relative">
+          <pre id="out"></pre>
+          <pre id="rem"></pre>
+          <div id="cursor" style="visibility:hidden"></div>
+        </div>      
+        <div id="btncc-box"><button id="btncc" onclick="document.getElementById('screen').style.display='none';">Close console</button></div>
+      </div>
+      <div id="notes">
+        <div class="note" style="display:block" id="note-h1">
+          <h2>Notes</h2>
+              
+          <p>To keep the main text shorter, you will find some additional details,
+            notes and references in the footnotes here. You can read them if you
+            like, but you won't miss anything important if you don't.
+          </p>
+          <p>
+            See [1] for more of my work on programming interaction. [2] is a fantastic
+            book introducing the idea of <em>complementary science</em> and [3] provides
+            rationale for presenting work using interactive articles.
+          </p>
+          <div class="refs">
+          <p>[1] Tomas Petricek (2019). <a href="http://tomasp.net/histogram">Histogram: You have to know the past to understand the present</a>, LIVE workshop 2019</p>
+          <p>[2] Hasok Chang (2007). <a href="https://amzn.to/33KsXrY">Inventing Temperature: Measurement and Scientific Progress</a>, Oxford University Press</p>
+          <p>[3] Jonathan Edwards, Stephen Kell, Tomas Petricek, Luke Church (2019). <a href="http://tomasp.net/academic/papers/evaluating-systems/">Evaluating programming systems design</a>, PPIG 2019</p>
+          </div>
+        </div>
+        <div class="note" id="note-start">
+          <h3>100 Hello World</h3>
+          <p>The interactive parts of this article use a simple C64 BASIC emulator
+            written in F# and compiled to JavaScript using Fable. It is limited, but feel free
+            to experiment! If things break, you just need to refresh this page.</p>
+          <p>
+            Unlike the real C64 BASIC, the emulator lets you use lower-case, but commands 
+            like PRINT need to be upper-case. POKE only works for drawing on screen and the 
+            offset is 0 to keep things simple.
+          </p>
+          <p>Get the source code: <a href="https://github.com/tpetricek/basic">https://github.com/tpetricek/basic</a></p>
+        </div>
+        <div class="note" id="note-maze">
+          <h3>110 Drawing a maze</h3>
+          <p>The maze is so famous that it has a whole book written about it [1]. To make it a
+            one-liner, you use the command separator ":" which my interpreter does not support.
+            The book inspired not just this example, but some aspects of the style of this article
+            and it is a great read!
+          </p>
+          <p>The character set used by Commodore 64 is called <a href="https://en.wikipedia.org/wiki/PETSCII">PETSCII</a>.
+            The interpreter on this page is using the fantastic <a href="https://style64.org/c64-truetype">C64 TrueType font</a>,
+            which maps Unicode characters to PETSCII, but also includes original key codes in an unused Unicode region,
+            used by the CHR$ function.
+          </p>
+          <div class="refs">
+          <p>[1] Nick Montfort, Patsy Baudoin, John Bell, Ian Bogost, Jeremy Douglass (2014). <a href="https://amzn.to/37dZicM">10 PRINT CHR$(205.5+RND(1)); : GOTO 10</a>, MIT Press</p>
+          </div>
+        </div>
+        <div class="note" id="note-moving">
+          <h3>200 Creating a moving ball</h3>
+          <p>In a real Commodore 64, you can use POKE to write (and PEEK to read) data from any part
+            of the 64k memory. This is used for doing a wide range of things not available through a
+            named command like changing colors or switching to lower-case. It also has a special hacker
+            ethos around itself. Once you know about it, you get curious what else can be done with it!
+          </p>
+          <p>The emulator implemented here only supports POKE for accessing screen memory. To keep things
+            simpler, it starts at offset 0 rather than at offset 1024 as in the real Commodore 64.
+            When you access an invalid address, e.g. by waiting until the ball runs off the screen, 
+            the operation fails and the program execution will stop.
+          </p>
+        </div>
+        <div class="note" id="note-input">
+          <h3>300 Handling keyboard input</h3>
+          <p>Commodore 64 distinguishes between two modes. In the direct mode, you are entering commands
+            and they are executed directly, as in a modern REPL. In the program mode, the machine 
+            executes previously intered program.
+          </p>
+          <p>The <code>GET$</code> operation is one of a few operations that can only be used in the 
+            program mode, so we cannot just run <code>GET$ K$</code>, but need to enter a program
+            instead. In a real Commodore 64, using <code>GET$</code> in the direct mode causes 
+            <code>?ILLEGAL DIRECT ERROR</code> but the emulator just ignores this.</p>
+        </div>
+        <div class="note" id="note-paddle">
+          <h3>310 Moving a paddle</h3>
+          <p>One of the points that this article illustrates is how Commodore 64 BASIC lets
+            you construct programs gradually and combine exploration with programming in a
+            single environment.
+          </p>
+          <p>This also means that we need to maintain state in the emulator between sections.
+            So far, this was only required within each section, but we will need code from
+            multiple sections next. To make following the article easier, the buttons to run
+            code will have the following indicators:
+          </p>
+          <p>
+            <span style="width:20px;display:inline-block">⮡</span>Code depends on some earlier code and will not work as stand-alone. <br />
+            <span style="width:20px;display:inline-block">⟳</span>Resets all the stored code and loads a new functional program.</p>
+        </div>
+        <div class="note" id="note-interacting">
+          <h3>500 Interacting with BASIC</h3>
+          <p>There are also a number of aspects of the whole ecosystem around 
+            Commodore 64 that contribute to the programming experience:</p>
+          <p>It is easy to start programming. The system boots into a programming 
+              environment, making that the primary way of interacting with the machine.
+              Loading a game from a tape and running it involves the same kind of 
+              interactions as programming. 
+            </p>
+          <p>It is easy to learn. The fact that many programs were available 
+              as code listings in paper magazines may be an accidental virtue, but it
+              means that they are short and that you learn as you copy them.
+            </p>
+        </div>
+        <div class="note" id="note-ccs">
+          <h3>510 Complementary science</h3>
+          <p>For a classic text that challenged the naive view of science, see [1].
+            My work has been more directly influenced by Hasok Chang, who writes about
+            scientific pluralism [2] and proposes the complementary science approach [3].
+            For more on interactive media for programming research, see [4]. I'm also
+            quoting McLuhan [5] in the conclusions.
+
+          </p>
+          <div class="refs">
+          <p>[1] Thomas Kuhn (1962). <a href="https://amzn.to/2Ha8ggI">The Structure of Scientific Revolution</a></p>
+          <p>[2] Hasok Chang (2012). <a href="https://amzn.to/3jeIhBG">Is Water H<sub>2</sub>O? Evidence, Realism and Pluralism</a></p>
+          <p>[3] Hasok Chang (2007). <a href="https://amzn.to/33KsXrY">Inventing Temperature: Measurement and Scientific Progress</a>, Oxford University Press</p>
+          <p>[4] Jonathan Edwards, Stephen Kell, Tomas Petricek, Luke Church (2019). <a href="http://tomasp.net/academic/papers/evaluating-systems/">Evaluating programming systems design</a>, PPIG 2019</p>
+          <p>[5] Marshall McLuhan, Quentin Fiore (1967). <a href="https://amzn.to/3dIUe1f">The Medium is the Massage</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <script src="bundle.js"></script>
+</body>
+</html>
