@@ -1,7 +1,7 @@
 # The Gamma: Democratizing data science
 
  - title: The Gamma: Democratizing data science
- - layout: post
+ - layout: article
  - tags: thegamma, data journalism
  - date: 2 February 2017
  - description: The goal of The Gamma project is to democratize data science. Our tools encourage 

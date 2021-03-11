@@ -5,7 +5,7 @@ Creating web sites with Suave: How to contribute to F# Snippets
 
  - date: 2015-09-15T23:26:01.8511959+01:00
  - description: The core of many web sites and web APIs is very simple. Given an HTTP request, produce a HTTP response. Sounds pretty simple, so why are there so many evil frameworks that make simple web programming difficult? In this blog post, I'll write about Suave -a nice composable library for web programming with F#. The blog post also shows a few interesting samples from the new version of F# Snippets and you are welcome to contribute!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/fssnip-suave/logo.png
  - tags: f#,web
  - title: Creating web sites with Suave: How to contribute to F# Snippets

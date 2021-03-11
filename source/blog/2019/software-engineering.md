@@ -10,7 +10,8 @@ What should a Software Engineering course look like?
     and methodologies. The key idea is that we need to focus on the motivation behind software
     engineering and the reasoning that leads to the adoption of particular software engineering
     methods in the face of particular problems that the software industry is attempting to address.
- - layout: post
+ - layout: article
+ - icon: fa fa-hammer
  - references: true
  - image-large: http://tomasp.net/blog/2019/software-engineering/sdi.jpg
  - tags: academic, teaching, philosophy

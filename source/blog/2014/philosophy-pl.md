@@ -3,7 +3,7 @@ What can programming language research learn from the philosophy of science?
 
  - date: 2014-04-10T17:16:36.2240707+01:00
  - description: This article looks at programming language research from the perspective of philosophy of science. We look at classic theories such as Popper's falsificationism and Feyerabend's theoretical anarchism and then look what can programming language research learn from the history.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/philosophy-pl/lakatos.jpg
  - tags: research,philosophy
  - title: What can programming language research learn from the philosophy of science?

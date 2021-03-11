@@ -132,8 +132,14 @@ module Filters =
   let dateNice (d:DateTime) = 
     d.ToString("dddd, d MMMM yyyy, h:mm tt", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))
 
+  let dateShort (d:DateTime) = 
+    d.ToString("dddd, d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))
+
   let trimHtml (s:string) = 
     html.Replace(s, "")
+
+  let afterDot (s:string) = 
+    if s.Contains(".") then s.Substring(s.IndexOf('.') + 1) else s
 
   let breakColons (s:string) = 
     match s.Split(':') |> List.ofSeq with

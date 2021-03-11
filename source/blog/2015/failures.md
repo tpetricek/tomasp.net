@@ -3,7 +3,7 @@ Miscomputation: Learning to live with errors
 
  - date: 2015-07-27T14:15:31.7814254+01:00
  - description: Charles Babbage once said that 'if trials of three or four simple cases have been made, it is scarcely possible that there can be any error'. We now know that errors are more common and harder to eliminate. In this blog post, I look at different strategies that programmers use for dealing with errors. It turns out that there is a surprisingly wide range of options!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/failures/babbage.png
  - tags: philosophy,research,programming languages
  - title: Miscomputation: Learning to live with errors

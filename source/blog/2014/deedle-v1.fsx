@@ -5,7 +5,7 @@ New features and improvements in Deedle v1.0
 
  - date: 2014-05-27T15:41:01.7294268+01:00
  - description: As Howard Mansell already announced we have officially released the '1.0' version of Deedle. In this blog post, I'll have a quick look at a couple of new features in Deedle. Howard's announcement has a more detailed list, but I just want to give a couple of examples and briefly comment on performance improvements we did.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/deedle-v1/mpg-per-cyl.png
  - tags: f#,deedle,data science
  - title: New features and improvements in Deedle v1.0

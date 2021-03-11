@@ -29,11 +29,12 @@ type Article<'T> =
     Layout : string option
     Abstract : 'T
     Body : 'T 
+    Icon : string
     Url : string }
   member x.With(abs, body) = 
     { Subtitle = x.Subtitle; Title = x.Title; Description = x.Description; Image = x.Image
       LargeImage = x.LargeImage; Tags = x.Tags; Date = x.Date; Url = x.Url; References = x.References
-      HasDate = x.HasDate; Layout = x.Layout; Abstract = abs; Body = body }
+      Icon = x.Icon; HasDate = x.HasDate; Layout = x.Layout; Abstract = abs; Body = body }
 
 // Used in DotLiquid
 
@@ -48,6 +49,7 @@ type Archives =
 
 type Site = 
   { Posts : seq<Article<string>> 
+    PostsTitle : string
     Archives : Archives
     Papers : seq<Article<string>> } 
 
@@ -70,11 +72,3 @@ type CalendarYear =
   { Year : string
     Months : seq<Month> 
     Archives : Archives }
-
-type CalendarMonth =
-  { Title : string
-    Link : string
-    Days : seq<Day>
-    Archives : Archives }
-
-

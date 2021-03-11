@@ -3,7 +3,7 @@ Why you should learn F# in 2015 (and how)?
 
  - date: 2015-01-07T13:36:04.9887235+00:00
  - description: I guess that it might be a bit too late for adding to your list of new year's resolution now.But just if you still have an empty slot (or in case an originally taken slot has become available), your new year's resolution should be to get involved with F#!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/why-fsharp-in-2015/gingerbread.jpg
  - tags: c#,f#,functional programming,talks
  - title: Why you should learn F# in 2015 (and how)?

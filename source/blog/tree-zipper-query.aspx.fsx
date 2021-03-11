@@ -4,7 +4,7 @@ Processing trees with F# zipper computation
 
  - date: 2012-12-19T14:22:47.0000000
  - description: One of the less frequently advertised new features in F# 3.0 is the query syntax. It allows adding custom operations to a computation expression block. This article shows how to define a custom computation for processing trees using zippers. We'll add navigation over a tree as custom operations to get a simple syntax.
- - layout: post
+ - layout: article
  - tags: f#,haskell,research,monads,linq
  - title: Processing trees with F# zipper computation
  - url: tree-zipper-query.aspx

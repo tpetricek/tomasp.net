@@ -8,9 +8,10 @@ On architecture, urban planning and software construction
     also quite messy despite theories telling us that such systems should not work. These are just
     a few of the reasons why software engineers can learn interesting things from reading about
     architecture and urban planning.
- - layout: post
+ - layout: article
  - references: true
  - image-large: http://tomasp.net/blog/2020/cities-and-programming/siding.jpg
+ - icon: fa fa-home
  - tags: academic, programming languages, philosophy
 
 ----------------------------------------------------------------------------------------------------

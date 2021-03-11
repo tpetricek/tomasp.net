@@ -7,7 +7,8 @@ The mythology of programming language ideas
     funny often had very solid reasoning behind them. In the same way, it is likely that some of 
     our current beliefs about computer science and programming will appear fantastically wrong to
     a computer scientist of 24th century.
- - layout: post
+ - layout: article
+ - icon: fa fa-broom
  - image: http://tomasp.net/blog/2017/programming-mythology/heliocentric-sq.jpg
  - tags: academic, programming languages, philosophy
  - title: The mythology of programming language ideas
@@ -86,9 +87,9 @@ drawn by the same [della Porta](https://en.wikipedia.org/wiki/Giambattista_della
 the experiment with magnets and garlic.
 
 <div class="wdecor">
-<a href="eye.jpg"><img src="eye.jpg"     style="width:45%;max-width:370px;padding:20px" /></a>
-<a href="penis.jpg"><img src="penis.jpg" style="width:45%;max-width:370px;padding:20px" /></a>
-<a href="hand.jpg"><img src="hand.jpg"   style="width:45%;max-width:370px;padding:20px" class="hidden-sm hidden-xs"/></a>
+<a href="eye.jpg"><img src="eye.jpg"     style="width:25%;max-width:370px;padding:20px" /></a>
+<a href="penis.jpg"><img src="penis.jpg" style="width:25%;max-width:370px;padding:20px" /></a>
+<a href="hand.jpg"><img src="hand.jpg"   style="width:25%;max-width:370px;padding:20px" class="hidden-sm hidden-xs"/></a>
 </div>
 
 It is a fascinating idea, but nobody (reasonable) would treat it as a scientific theory these days.

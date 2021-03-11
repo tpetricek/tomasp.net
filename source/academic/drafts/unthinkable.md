@@ -4,8 +4,8 @@
      What are some of the hidden assumptions that we never question and that 
      determine how programming languages are designed? And what might the world of programming 
      look like if we based our thinking on different basic principles? 
- - tags: academic, publication, draft
- - layout: paper
+ - tags: academic, publication
+ - layout: article
  - date: 6 September 2016
  - title: Programming language theory: Thinking the unthinkable
  - subtitle: Tomas Petricek. Presented at PPIG 2016.

@@ -5,7 +5,7 @@ Happy New Year 2016 around the World: Behind the scenes of my #FsAdvent project
 
  - date: 2015-12-30T18:09:34.5852095+00:00
  - description: This year, my #FsAdvent contribution ended up on December 31.To celebrate the beginning of the New Year 2016, I built an interactive web application that visualizes 'Happy New Year' tweets across the globe. It uses a range of interesting F# libraries including F# Data Toolbox for calling Twitter, Suave.io web server and F# agents.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/happy-new-year-tweets/thumb.png
  - tags: f#,data journalism,thegamma,data science,visualization
  - title: Happy New Year 2016 around the World

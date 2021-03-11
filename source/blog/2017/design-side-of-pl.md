@@ -8,7 +8,8 @@ The design side of programming language design
     Yet, it is almost impossible to come across a paper about programming languages that uses design 
     methods to study its subject. In this article, I want to convince you that this is a missed
     opportunity.
- - layout: post
+ - layout: article
+ - icon: fa fa-drafting-compass
  - image-large: http://tomasp.net/blog/2017/design-side-of-pl/bauhaus.jpg
  - tags: academic, research, programming languages, philosophy
 

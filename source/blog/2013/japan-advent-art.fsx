@@ -5,7 +5,7 @@ Advent Art：北斎の絵を生成する
 
  - date: 2013-12-24T03:58:37.5115170+00:00
  - description: この記事は毎年日本のF#コミュニティで主催されているF# Advent Calendarへの寄稿です。それゆえに、日本文化にインスパイアされたものになっています。ここではFreebaseにある日本の画家一覧を参照して、フラクタルとFunScript（！）を組み合わせることで絵画の一部の再生成を試みています。
- - layout: post
+ - layout: article
  - tags: f#,art,fractals,funscript,f# data
  - title: Advent Art：北斎の絵を生成する
  - url: 2013/japan-advent-art

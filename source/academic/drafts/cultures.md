@@ -5,7 +5,8 @@
     a particular perspective on programming. We identify four major cultures: hacker culture,
     engineering culture, managerial culture and mathematical culture.
  - tags: academic, publication, draft
- - layout: paper
+ - layout: article
+ - icon: fa fa-user-friends
  - date: 2 April 2019
  - title: Cultures of programming: Understanding the history of programming through controversies and technical artifacts
  - subtitle: Tomas Petricek. Unpublished draft.

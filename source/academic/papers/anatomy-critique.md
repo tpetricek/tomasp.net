@@ -5,7 +5,7 @@
     interact with the software more generally, but also what are effective metaphorical ways of
     thinking about software.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 15 April 2018
  - title: The Gamma: Programming tools for open data-driven storytelling
  - subtitle: Tomas Petricek. Proceedings of Salon des Refusés, 2018

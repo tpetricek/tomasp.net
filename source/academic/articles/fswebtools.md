@@ -6,7 +6,7 @@
     and server-side code.
  - tags: academic, publication, article
  - date: 30 April 2007
- - layout: paper
+ - layout: article
  - title: F# Web Tools: Rich client/server web applications in F#
  - subtitle: Tomas Petricek. Unpublished draft, 2007
  

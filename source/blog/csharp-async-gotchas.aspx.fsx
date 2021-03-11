@@ -4,7 +4,7 @@ Async in C# and F#: Asynchronous gotchas in C#
 
  - date: 2013-04-15T04:00:03.0000000
  - description: This article is inspired by an MVP summit talk about common pitfalls in the C# asynchronous programming model. I look at a number of easy to make mistakes when writing asynchronous code in C# and demonstrate that most of them would not easily happen when using F#.
- - layout: post
+ - layout: article
  - tags: async,c#,f#
  - title: Async in C# and F#: Asynchronous gotchas in C#
  - url: csharp-async-gotchas.aspx

@@ -5,8 +5,8 @@ Announcing FsLab: Data science package
 
  - date: 2015-05-05T15:55:01.9000642+01:00
  - description: After over a year of working on FsLab and talking about it at conferences, it is finally time for an official announcement. So, today, I'm excited to announce FsLab a cross-platform package for doing data science with .NET and Mono.
- - layout: post
- - image: http://fslab.org/img/logos/fslab.png
+ - layout: article
+ - image: http://tomasp.net/blog/2015/announcing-fslab/fslab.png
  - tags: f#,fslab,data science
  - title: Announcing FsLab: Data science package for Mono and .NET
  - url: 2015/announcing-fslab
@@ -15,7 +15,7 @@ Announcing FsLab: Data science package
  - standalone
 
 
-<img src="http://fslab.org/img/logos/fslab.png" style="width:120px;float:right;margin:10px" />
+<img src="http://tomasp.net/blog/2015/announcing-fslab/fslab.png" style="width:120px;float:right;margin:10px" />
 
 After over a year of working on FsLab and talking about it at conferences, it is finally time 
 for an official announcement. So, today, I'm excited to announce [FsLab](http://www.fslab.org) -
@@ -38,7 +38,7 @@ open-source ecosystem around F# and C#.
 #I "../packages/2015/"
 (**
 
-<img src="http://fslab.org/img/logos/fslab.png" style="width:120px;float:right;margin:10px" />
+<img src="http://tomasp.net/blog/2015/announcing-fslab/fslab.png" style="width:120px;float:right;margin:10px" />
 
 After over a year of working on FsLab and talking about it at conferences, it is finally time 
 for an official announcement. So, today, I'm excited to announce [FsLab](http://www.fslab.org) -

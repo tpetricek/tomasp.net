@@ -1,7 +1,7 @@
 # Functional Programming in F#
 
  - title: Functional Programming in F#
- - layout: paper
+ - layout: article
  - date: 1 March 2009
  - description: The course explains basic functional concepts such as function composition, functional data types and higher-order functions. It highlights some interesting connections between these and concepts that student may already know or will learn in various mathematics lectures. The site includes lecture slides and a number of simple homeworks that usually require some interesting insight.";
 

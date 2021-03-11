@@ -8,7 +8,7 @@
      In this article, I try to discover some of the hidden assumptions in the area of programming 
      research. What are assumptions that we never question and what might the world look like 
      if we based our design method on different basic principles?
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/thinking-unthinkable/bufo.jpg
  - tags: philosophy,programming languages
  

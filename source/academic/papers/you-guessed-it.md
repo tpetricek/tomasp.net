@@ -4,7 +4,7 @@
      make complex issues accessible for readers and overcome their preconceptions? We propose a novel
      way of presenting readers with data and raising awareness for individual bias and preconceptions.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 6 July 2018
  - title: You guessed it! Reflecting on preconceptions and exploring data without statistics
  - subtitle: Pablo León-Villagrá et al. Proceedings of European Data and Computational Journalism Conference, 2018

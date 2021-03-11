@@ -9,10 +9,11 @@ Write your own Excel in 100 lines of F#
      In this blog post, I'll cover my latest favorite example. You will see how the pragmatic F# design
      makes it easy to integrate with the external world (such as the JavaScript ecosystem and the React
      library) and how the core functional features make your code elegant and composable.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2018/write-your-own-excel/logo.png
  - tags: f#, functional, training, fable
  - title: Write your own Excel in 100 lines of F#
+ - icon: fa fa-table
  - url: 2018/write-your-own-excel
 
 ---------------------------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ and also how functional-first approach can be amazingly powerful for building us
 </script>
 
 What is a spreadsheet?
-======================
+---------------------
 
 The sample compiles to JavaScript, so the best way of explaining what we want to build is 
 to give you a live demo you can play with! Since this is a blog post about functional programming,
@@ -93,14 +94,13 @@ support parentheses and four standard numerical operators. When you make an edit
 automatically updates. If you make a syntax error, reference empty cell or create a recursive 
 reference, the spreadsheet will show `#ERR`.
 
-> _<i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>_
+> _<i class="fa fa-hand-point-right" style="font-size:110%;margin:0px 5px 0px 0px"></i>_
 > Full source code is available in my [elmish-spreadsheet repository on GitHub](https://github.com/tpetricek/elmish-spreadsheet/)
 > (as a hands-on exercise in `master` branch and fully working in the `completed` branch), but you
 > can also play with it in the [Fable REPL](https://fable.io/repl/) (see Samples, Elmish, Spreadsheet),
 > which lets you edit and run F# in the browser.
 
-Defining the domain model
--------------------------
+### Defining the domain model
 
 Following the typical F# type-driven development style, the first thing we need to think about
 is the domain model. Our types should capture what we work with in a spreadsheet application.
@@ -210,7 +210,7 @@ open Fable.Import
 
 (**
 Creating user interface using Elmish
-====================================
+------------------------------------
 
 I'm going to start by discussing the user interface and then get back to implementing the parsing
 and evaluation logic. For creating user interfaces, Fable comes with a great library called 
@@ -427,7 +427,7 @@ computing factorial and Fibonacci here). Then we use `mkProgram` to compose all 
 components together, we specify React as our execution engine and we start the Elmish application!
 
 Implementing spreadsheet logic
-==============================
+------------------------------
 
 So far, we defined the domain model which specifies what a spreadsheet is using F# types and
 we implemented the user interface using Elmish. The only thing we skipped so far is the 

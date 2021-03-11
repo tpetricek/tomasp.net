@@ -4,7 +4,7 @@ Composing Chrismas with F#
 
  - date: 2014-12-08T17:22:28.9828927+00:00
  - description: This blog post is a part of the F# Advent Calendar 2014, so it inevitably needs a Christmassy theme. However, there is also going to be a serious theme for the blog post, which is domain-specific languages. I'm going to cover two key ideas of DSLs in F# - composability and multiple layers of abstraction.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/composing-christmas/glowing.gif
  - tags: f#,fun,functional programming
  - title: Composing Christmas with F#

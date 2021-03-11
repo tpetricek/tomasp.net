@@ -6,7 +6,7 @@
      writing reactive computations in both control-flow and data-flow styles.
  - tags: academic, publication, thesis
  - date: 17 August 2010
- - layout: paper
+ - layout: article
  - title: Reactive Programming with Events (Master thesis)
 
 > Supervised by Don Syme (Microsoft Research, Cambridge)

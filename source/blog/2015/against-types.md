@@ -3,7 +3,7 @@ Against the definition of types
 
  - date: 2015-05-14T15:46:36.6659544+01:00
  - description: What is the definition of type? Having a clear and precise answer to this question would avoid many misunderstandings but it would hurt science, 'hamper the growth of knowledge' and 'deflect the course of investigation into narrow channels of things already understood'.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/against-types/paper-square.png
  - tags: philosophy,research
  - title: Against the definition of types

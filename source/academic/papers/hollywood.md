@@ -6,7 +6,7 @@
     correct reactive library based on this idea, implemented in F#.
  - date: 11 February 2010
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Collecting Hollywood's Garbage: Avoiding Space-Leaks in Composite Events
  - subtitle: Tomas Petricek and Don Syme. In Proceedings of ISMM 2010.
 

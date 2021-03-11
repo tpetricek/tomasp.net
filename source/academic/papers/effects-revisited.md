@@ -4,7 +4,7 @@
       effect systems based on complex algebraic structures and the development of semantic models based
       on monads. We show how _graded joinads_ link the two developments.
  - tags: academic, publication, top
- - layout: paper
+ - layout: article
  - title: Effect systems revisited - control-flow algebra and semantics
  - subtitle: Alan Mycroft, Dominic Orchard, Tomas Petricek.<br /> Semantics, Logics, and Calculi, 2016
  - date: 10 January 2016

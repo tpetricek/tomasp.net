@@ -3,8 +3,9 @@
  - description:  The paper presents [F# Data](http://fsharp.github.io/FSharp.Data), a library of type providers
       that integrate external data in XML, CSV and JSON formats into the type system of the F# language.
       F# Data infers the shape of structured documents and uses it to guarantee a relative safety property.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-code
  - title: Types from data: Making structured data first-class citizens in F#
  - subtitle: Tomas Petricek, Gustavo Guerra and Don Syme. In Proceedings of PLDI 2016
  - date: 1 May 2016

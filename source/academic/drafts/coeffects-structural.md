@@ -3,7 +3,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: Analysing context dependence in programs
 
 <br />

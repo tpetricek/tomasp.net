@@ -5,7 +5,7 @@ Solving fun puzzles with F#
 
  - date: 2014-03-25T14:27:08.0544354+00:00
  - description: Do you need to convince your friends and family that programming can be fun? Here is a story of how I managed to do that with F# at New Year's eve! I got a puzzle as a gift for Christmas and after a few days of failed attempts, I managed to solve it with F# in about 1 hour...
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/puzzling-fsharp/cube.jpg
  - tags: f#,fun,functional programming
  - title: Solving fun puzzles with F#

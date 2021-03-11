@@ -5,7 +5,7 @@ Stateful computations in F# with update monads
 
  - date: 2014-05-13T15:41:01.7294268+01:00
  - description: Most discussions about monads, even in F#, start by looking at the well-known monads for handling state (reader, writer and state). In a recent paper, Danel Ahman and Tarmo Uustalu revisit these and build a nicer abstraction called <em>update monads</em>. I implemented the idea in F# and I find that update monads are an excellent fit for F# computation expressions!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/update-monads/code.png
  - tags: f#,research,functional programming,monads
  - title: Stateful computations in F# with update monads

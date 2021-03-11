@@ -4,7 +4,7 @@
     avoid many misunderstandings but it would hurt science, "hamper the growth of knowledge" and
     "deflect the course of investigation into narrow channels of things already understood".
  - tags: academic, publication, top
- - layout: paper
+ - layout: article
  - title: Against a Universal Definition of 'Type'
  - date: 15 September 2015
  - subtitle: Tomas Petricek. In Proceedings of Onward! Essays 2015

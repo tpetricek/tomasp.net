@@ -4,7 +4,7 @@ In the age of the web: Typed functional-first programming revisited
 
  - date: 2015-09-09T17:14:07.1022415+01:00
  - description: Most programming languages were designed before the age of web. This matters because the web changes many assumptions that typed functional language designers tak for granted. In this blog post, I discuss how can statically-typed programming languages adapt for the new age.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/typed-revisited/tp.png
  - tags: f#,type providers,web,functional programming,research
  - title: In the age of the web: Typed functional-first programming revisited

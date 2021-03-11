@@ -1,0 +1,126 @@
+{% extends "page.html" %}
+{% block head %}
+<title>Tomas Petricek - List of publications</title>
+
+<meta name="description" content="I'm a lecturer at University of Kent and a partner at fsharpWorks. I work on making programming simpler and more open. To do so, I combine work on programming systems with history and philosophy of programming and computing." />
+<meta name="keywords" content="data science, data visualization, F#, fsharp, philosophy of science, programming languages and tools" />
+<meta name="author" content="Tomas Petricek" />
+<meta name="copyright" content="Tomas Petricek" />
+
+<meta property="og:title" content="Tomas Petricek - List of publications" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://tomasp.net" />
+<meta property="og:image" content="http://tomasp.net/img/tomas-sl-sq.jpg" />
+<meta property="og:description" content="I'm a lecturer at University of Kent and a partner at fsharpWorks. I work on making programming simpler and more open. To do so, I combine work on programming systems with history and philosophy of programming and computing." />
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@tomaspetricek">
+<meta name="twitter:creator" content="@tomaspetricek">
+<meta name="twitter:title" content="Tomas Petricek - List of publications" />
+<meta name="twitter:image" content="http://tomasp.net/img/tomas-sl-sq.jpg" />
+<meta name="twitter:description" content="I'm a lecturer at University of Kent and a partner at fsharpWorks. I work on making programming simpler and more open. To do so, I combine work on programming systems with history and philosophy of programming and computing." />
+{% endblock %}
+
+{% block bodyclass %}academic{% endblock %}
+
+{% block body %}
+<span class="tplink"><a href="/">TP</a></span>
+
+<article>
+  <h1><span class="hm"><a href="/" class="hidden">Tomas Petricek</a></span> List of publications</h1>
+
+  <div class="frr" style="margin-top:50px">
+    <div class="fl50"><div class="fmr">
+      <h2 class="first">Journal and conference publications</h2>
+      <p>The following papers have been published in recognized top-tier programming language
+        conferences and in journals and present my most important results. Further workshop
+        publications and abstracts, many of which are highly-cited, are listed below.</p>
+
+      {% for post in model.Papers %}
+      {% if post.Tags contains "top" %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}      
+
+      <h2>Recent workshop papers</h2>
+      <p>The following papers cover a wide range of topics from data journalism, theory and practice
+        of programming to philosophy and history of compter science. They appeared in workshop and
+        conference proceedings, but many have been highly influential.</p>
+
+      {% for post in model.Papers limit:20 %}
+      {% if post.Tags contains "article" %}
+      {% elsif post.Tags contains "thesis" %}
+      {% elsif post.Tags contains "draft" %}
+      {% elsif post.Tags contains "top" %}
+      {% else %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}
+
+    </div></div>
+    <div class="fr50"><div class="fml">
+
+      <h2 class="first">Work in progress</h2>
+      <p>Start here if you want to know what I'm currently working on. The documents below are
+        unpublished drafts and any feedback is more than welcome!</p>
+
+      {% for post in model.Papers %}
+      {% if post.Tags contains "draft" %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}
+
+      <h2>Older workshop papers</h2>
+      <p>The following papers cover a wide range of topics from data journalism, theory and practice
+        of programming to philosophy and history of compter science. They appeared in workshop and
+        conference proceedings, but many have been highly influential.</p>
+
+      {% for post in model.Papers offset:20 %}
+      {% if post.Tags contains "article" %}
+      {% elsif post.Tags contains "thesis" %}
+      {% elsif post.Tags contains "draft" %}
+      {% elsif post.Tags contains "top" %}
+      {% else %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}
+
+      <h2>Theses and older projects</h2>
+      <p>Here you'll find my PhD thesis on from University of Cambridge as well as Bachelor and Master 
+        thesis from Charles University in Prague. My PhD developed a theory of coeffects; 
+        my master thesis introduced <em>joinads</em> and my Bachelor thesis described one of the
+        first functional-language to JavaScript translators.</p>
+
+      {% for post in model.Papers %}
+      {% if post.Tags contains "thesis" %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}
+
+      <h2>Notes, articles and reports</h2>
+      <p>I wrote a couple of articles, notes and reports that were never formally published,
+        but might still be of interest. This includes my work on compiling F# to JavaScript
+        and notes on teaching functional programming.</p>
+
+      {% for post in model.Papers %}
+      {% if post.Tags contains "article" %}
+        <h3><a href="{{ post.Url }}">{{ post.Title }}</a></h3>
+        <p class="datepub">{{ post.Subtitle }}</p>
+        <p>{{ post.Description }}</p>
+      {% endif %}
+      {% endfor %}
+
+    </div></div>
+  </div>
+</article>
+{% endblock %}

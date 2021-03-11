@@ -4,7 +4,7 @@
  - description: The paper shows how to encode certain monadic computations (such as a continuation monad
      for asynchronus programming) using the iterator language feature in C# 2.0.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 1 June 2009
  - title: Encoding monadic computations in C# using iterators
 

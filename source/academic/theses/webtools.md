@@ -5,7 +5,7 @@
     program with monadic modality annotations into client-side JavaScript and server-side ASP.NET
     application.
  - tags: academic, publication, thesis
- - layout: paper
+ - layout: article
  - title: Client-side Scripting using Meta-programming (Bachelor thesis)
  - subtitle: Bachelor thesis. Charles University in Prague, 2007
  - date: 14 May 2007

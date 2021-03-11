@@ -4,8 +4,9 @@
     including per-variable properties (usage patterns, caching requirements) and
     whole-context properties (platform version, rebindable resources). This resolves
     questions that were left unanswered in the ICALP 2013 paper below.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-server
  - title: Coeffects: A calculus of context-dependent computation
  - subtitle: Tomas Petricek, Dominic Orchard and Alan Mycroft. In Proceedings of ICFP 2014
  - date: 29 August 2014

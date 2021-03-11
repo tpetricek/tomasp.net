@@ -7,8 +7,9 @@ What to teach as the first programming language and why
     much more interesting question: what art the kinds of arguments that are employed to support a
     particular choice? Following this perspective lets us learn what educators consider important
     in computer science and allow us to make our debates about education more informed.
- - layout: post
+ - layout: article
  - references: false
+ - icon: fa fa-university
  - image: http://tomasp.net/blog/2019/first-language/fortran.jpg
  - tags: functional, research, academic, programming languages, philosophy, writing
 

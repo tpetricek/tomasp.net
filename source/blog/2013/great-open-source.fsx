@@ -5,7 +5,7 @@ Building great open-source libraries
 
  - date: 2013-10-31T13:29:06.2249127+00:00
  - description: The hard part about open-source development is not putting the source code on the internet. The hard part is keeping the source, releases and documentation up-to-date. I'm still amazed how nicely FAKE solves this problem for F#.
- - layout: post
+ - layout: article
  - tags: open source,f#,fake,f# formatting
  - title: Building great open-source libraries
  - url: 2013/great-open-source

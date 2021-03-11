@@ -5,7 +5,7 @@ Writing custom F# LINQ query builder
 
  - date: 2015-04-07T13:41:29.5465755+01:00
  - description: F# 3.0 provides full support for writing LINQ-style queries and the syntax can be used with SQL databases and many other standard data sources. But you can also write your own querying computation. This blog post shows a minimal example that shows how to parse F# queries and translate them to other querying language (like SQL).
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/query-translation/img.png
  - tags: f#,functional programming,linq
  - title: Writing custom F# LINQ query builder

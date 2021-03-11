@@ -6,7 +6,8 @@
  	 	 Our approach allows journalists and the public to benefit from the rise
  	 	 of open data, by making data exploration easier, more transparent and more reproducible.  
  - tags: academic, publication, draft
- - layout: paper
+ - layout: article
+ - icon: fa fa-magic
  - date: 29 May 2020
  - title: The Gamma: Data Exploration through Iterative Prompting
  - subtitle: Tomas Petricek. Unpublished draft.

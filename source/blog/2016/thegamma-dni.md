@@ -8,7 +8,7 @@
     Today, I'm happy to announce that my project called The Gamma has been awarded funding from the
     DNI Innovation Fund and I'll be working on this topic over the next year at the Alan Turing
     Institute in London.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/thegamma-dni/dni-square.png
  - tags: thegamma,data journalism,programming languages
  - title: The Gamma and Digital News Innovation Fund

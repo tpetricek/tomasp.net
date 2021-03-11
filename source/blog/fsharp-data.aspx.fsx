@@ -4,7 +4,7 @@ F# Data: New type provider library
 
  - date: 2013-03-28T03:23:41.0000000
  - description: F# Data is a new library that gives you all you need to access data in F# 3.0. It implements type providers for WorldBank, Freebase and structured document formats (CSV, JSON and XML) as well as other helpers. This article introduces the library and gives a quick overview of its features.
- - layout: post
+ - layout: article
  - tags: open source,f#,f# data,type providers
  - title: F# Data: New type provider library
  - url: fsharp-data.aspx

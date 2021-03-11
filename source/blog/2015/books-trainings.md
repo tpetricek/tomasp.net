@@ -3,7 +3,7 @@ Upcoming F# book and event deals
 
  - date: 2015-03-27T11:16:27.7402497+00:00
  - description: I'm happy that we can offer some special deals on the recently publishedF# Deep Dives book and also on our upcoming F# FastTrack training and the F# eXchangeconference in April in London!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/books-trainings/snip.png
  - tags: c#,f#,functional programming,talks
  - title: Upcoming F# book and event deals

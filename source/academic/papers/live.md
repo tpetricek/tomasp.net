@@ -4,8 +4,9 @@
     They use few abstractions, work interactively and rely heavily on external libraries.
     We capture this way of working and build a programming environment that makes data exploration
     easier by providing instant live feedback.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-sync
  - date: 1 March 2020
  - title: Foundations of a live data exploration environment
  - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, 2020

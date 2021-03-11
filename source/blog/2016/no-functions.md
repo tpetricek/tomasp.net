@@ -7,7 +7,7 @@ Can programming be liberated from function abstraction?
      manipulation with concrete values - because functions introduce names with unknown values
      and types. Can we take inspiration from spreadsheet programming and build alternative 
      abstraction mechanism that does not introduce this problematic property?     
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/no-functions/lambda.png
  - tags: thegamma,research,programming languages
  - title: Can programming be liberated from function abstraction?

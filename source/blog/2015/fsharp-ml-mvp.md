@@ -3,7 +3,7 @@ F# + ML |> MVP Summit: Talk recordings, slides and source code
 
  - date: 2015-11-18T02:03:44.7462498+00:00
  - description: I was fortunate enough to make it to the Microsoft MVP summit this year. I didn't learn anything secret (and even if I did, I wouldn't tell you!) but one thing Idid learn is that there is a lot of interest in data science and machine learning. What was less expected and more exciting was that there was also a lot of interest in F#!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/fsharp-ml-mvp/fsml.png
  - tags: f#,fslab,talks,machine learning,data science
  - title: F# + ML |> MVP Summit Talks

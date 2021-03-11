@@ -1,112 +1,23 @@
-﻿#r "System.Xml.Linq.dll"
-#r "../packages/Newtonsoft.Json/lib/net45/Newtonsoft.Json.dll"
-#r "../packages/Suave/lib/net40/Suave.dll"
+﻿#r "../packages/Suave/lib/net40/Suave.dll"
 #r "../packages/FAKE/tools/FakeLib.dll"
-#r "../packages/DotLiquid/lib/NET45/DotLiquid.dll"
-#r "../packages/WindowsAzure.Storage/lib/net40/Microsoft.WindowsAzure.Storage.dll"
-#load "../packages/FSharp.Formatting/FSharp.Formatting.fsx"
-#load "config.fs"
-#load "domain.fs"
-#load "helpers.fs"
-#load "dotliquid.fs"
-#load "document.fs"
-#load "calendar.fs"
-#load "blog.fs"
 open Fake
 open System
 open System.IO
-open FsBlog
 open Fake.Git.CommandHelper
-
-// --------------------------------------------------------------------------------------
-// Blog configuration 
-// --------------------------------------------------------------------------------------
-
-let fullPath p = Path.GetFullPath(__SOURCE_DIRECTORY__ </> p)
-
-let config =
-  { // Where the site is hosted (without trailing '/')
-    Root = "http://tomasp.net"
-    // Directory with DotLiquid templates 
-    Layouts = fullPath "../layouts"
-
-    // Cache and outptu directory (can be outside of the repo)
-    Cache = fullPath "../../cache" 
-    Output = fullPath "../../output"
-
-    // Files from source are transformed/copied to the output
-    // Blog & Academic are also parsed and available in DotLiquid templates
-    Source = fullPath "../source" 
-    Blog = fullPath "../source/blog"
-    Academic = fullPath "../source/academic"
-    // Source with photos for the calendar
-    Calendar = fullPath "../../calendar" }
-
-// --------------------------------------------------------------------------------------
-// Generating and updating site
-// --------------------------------------------------------------------------------------
-
-DotLiquid.initialize config
-
-let loadSite () =
-  let posts, papers = Blog.groupArticles config
-  let archives = Blog.archives posts
-  { Posts = posts; Papers = papers; Archives = archives }
-
-let mutable site = loadSite ()
-
-/// Update site - generate all output files if they need to be refreshed
-/// When `full = true`, also update archives & calendar pages
-let updateSite full changes =
-  trace "Updating site"
-  traceImportant "Copying static files"
-  Blog.copyFiles config changes
-  traceImportant "Processing site source"
-  if Blog.processFiles config site.Archives changes then 
-    site <- loadSite()
-    
-  traceImportant "Processing special files"
-  let specialFiles = 
-    [ "404.html", "404.html", site
-      "index.html", "hp-main.html", site
-      "academic/index.html", "hp-academic.html", site
-      "blog/index.html", "listing.html", 
-        { site with Posts = Seq.take 20 site.Posts } ]
-  for target, layout, model in specialFiles do
-    DotLiquid.transform (config.Output </> target) (config.Layouts </> layout) model
-
-  if full then
-    traceImportant "Generating RSS feed"
-    Blog.generateRss (config.Output </> "rss.xml") config
-      "Tomas Petricek - Languages and tools, open-source, philosophy of science and F# coding"
-      ( "Tomas is a computer scientist, open-source developer and an occasional philosopher of " +
-        "science. I'm working on tools for data-driven storytelling, contribute to a number of F# " +
-        "projects and I run trainings and offer consulting via fsharpWorks." )
-      site.Posts 
-    traceImportant "Generating archives"
-    Blog.generateBlogArchives config site
-    Blog.generateTagArchives config site
-    Calendar.generateCalendarSite site.Archives config
-
-
-/// Regenerate site - clean the output folder & regenerate (does not clean cache)
-let regenerateSite () = 
-  trace "Regenerating site from scratch"
-  for dir in Directory.GetDirectories(config.Output) do
-    if not (dir.EndsWith(".git")) then 
-      CleanDir dir; Directory.Delete dir
-  for f in Directory.GetFiles(config.Output) do File.Delete f
-  updateSite true None
+open Suave
+open Suave.Filters
+open Suave.Operators
+open Suave.WebSocket
+open System.Diagnostics
 
 // --------------------------------------------------------------------------------------
 // Local Suave server for debugging 
 // --------------------------------------------------------------------------------------
 
-open Suave
-open Suave.Filters
-open Suave.Operators
-open Suave.WebSocket
-open Suave.Sockets.Control
+let fullPath p = Path.GetFullPath(__SOURCE_DIRECTORY__ </> p)
+let root = "http://tomasp.net"
+let output = fullPath "../../output"
+let layouts = fullPath "../layouts"
 
 let port = 11112
 let refreshEvent = new Event<unit>()
@@ -125,12 +36,10 @@ let wsRefresh = """
 
 // All generated content is index files in directories. When serving
 // them, we replace absolute links & inject websocket code for refresh
-// Also insert link to local Bootstrap for no-wifi editting support!
 let handleDir dir = 
-  let html = File.ReadAllText(config.Output </> dir </> "index.html")
-  html.Replace(config.Root, sprintf "http://localhost:%d" port)
+  let html = File.ReadAllText(output </> dir </> "index.html")
+  html.Replace(root, sprintf "http://localhost:%d" port)
       .Replace("</body", wsRefresh + "</body")
-      .Replace("</head", "<link href='/custom/bootstrap.css' rel='stylesheet'></head")
   |> Successful.OK
 
 let app = 
@@ -147,7 +56,7 @@ let app =
 
 let serverConfig =
   { Web.defaultConfig with
-      homeFolder = Some config.Output
+      homeFolder = Some output
       logger = Logging.Loggers.saneDefaultsFor Logging.LogLevel.Warn
       bindings = [ HttpBinding.mkSimple HTTP "127.0.0.1" port ] }
 
@@ -156,28 +65,41 @@ let startServer () =
   let cts = new System.Threading.CancellationTokenSource()
   Async.Start(start, cts.Token)
 
+let worker = 
+  let psi = 
+    ProcessStartInfo
+      ( FileName = (__SOURCE_DIRECTORY__  </> "../packages/FSharp.Compiler.Tools/tools/fsi.exe"), 
+        Arguments = "tools/update.fsx", UseShellExecute = false, 
+        RedirectStandardOutput = true, RedirectStandardInput = true)  
+  Process.Start(psi)
+
+let invokeUpdate cmd changes = 
+  worker.StandardInput.WriteLine(cmd + " " + String.concat " " changes)
+  let mutable s = ""
+  while (s <- worker.StandardOutput.ReadLine(); s <> "DONE") do printfn "%s" s
+
 // --------------------------------------------------------------------------------------
 // FAKE build targets
 // --------------------------------------------------------------------------------------
 
 Target "run" (fun () ->
-  updateSite false None
+  invokeUpdate "updateall" []
   let all = __SOURCE_DIRECTORY__ </> ".."  |> Path.GetFullPath
   use _watcher = 
-    !! (all </> "**/*.*") -- (all </> ".ionide.debug") 
+    !! (all </> "**/*.*") -- (all </> ".ionide.debug") -- (all </> "packages" </> "**/*.*") 
     |> WatchChanges (fun e ->
       printfn "Changed files"
       for f in e do printfn " - %s" f.Name
-      let changes = 
-        if e |> Seq.exists (fun f -> f.FullPath.StartsWith(config.Layouts)) then None
-        else Some (set [ for f in e -> f.FullPath ])
+      let cmd, changes = 
+        if e |> Seq.exists (fun f -> f.FullPath.StartsWith(layouts)) then "updateall", set []
+        else "update", (set [ for f in e -> f.FullPath ])
       try 
-        updateSite false changes 
+        invokeUpdate cmd changes 
         refreshEvent.Trigger ()
         trace "Site updated successfully..."
       with e ->
-        traceError "Updating site failed!"
-        traceException e )
+        traceException e 
+        traceError "Updating site failed!" )
   
   startServer ()
   Diagnostics.Process.Start(sprintf "http://localhost:%d" port) |> ignore
@@ -186,14 +108,14 @@ Target "run" (fun () ->
 )
 
 Target "update" (fun () ->
-  regenerateSite ()
+  invokeUpdate "regenerate" []
+  invokeUpdate "calendar" []
 )
 
 Target "publish" (fun () ->
-  Calendar.uploadCalendarFiles config
-  runGitCommand config.Output "add ." |> ignore
-  runGitCommand config.Output (sprintf "commit -a -m \"Updating site (%s)\"" (DateTime.Now.ToString("f"))) |> ignore
-  Git.Branches.push config.Output
+  runGitCommand output "add ." |> ignore
+  runGitCommand output (sprintf "commit -a -m \"Updating site (%s)\"" (DateTime.Now.ToString("f"))) |> ignore
+  Git.Branches.push output
 )
 
 "update" ==> "publish"

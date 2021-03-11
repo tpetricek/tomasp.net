@@ -5,7 +5,7 @@
      programme, avoid early over-emphasis on precision and I consider how to produce truly reusable
      experiments.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: What can Programming Language Research Learn from the Philosophy of Science?
  - subtitle: Tomas Petricek. In Proceedings of AISB 2014
  - date: 10 April 2014

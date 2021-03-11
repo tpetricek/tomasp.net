@@ -6,7 +6,7 @@
      for programming with context and verifying how it is accessed. The thesis summarizes all my work on
      coeffects.
  - tags: academic, publication, thesis
- - layout: paper
+ - layout: article
  - title: Context-aware programming languages (PhD thesis)
  - subtitle: Tomas Petricek. University of Cambridge, 2017
  - date: 18 December 2014

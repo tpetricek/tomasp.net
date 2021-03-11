@@ -3,7 +3,7 @@ Upcoming F# events - learn Suave, FsLab & more!
 
  - date: 2016-05-31T01:51:50.7286311+01:00
  - description: Some people in the F# community have reputation for traveling too much. I do not know how that is possible, but as it happens, I will be visiting a couple of places in June, so if you are thinking about getting into F#, web development with Suave playing with the new trendy F# to JavaScript compiler Fable, or learning about the recent features in FsLab and Ionide, then continue reading!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/fsharp-events/map.png
  - tags: c#,f#,functional programming,talks
  - title: Upcoming F# events - learn Suave, FsLab & more!

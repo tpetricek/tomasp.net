@@ -6,8 +6,9 @@ Data exploration calculus: Capturing the essence of exploratory data scripting
  - description: What would a small formal language for data scripting look like?
     The lambda calculus captures the essence of functional programming. In this article, I
     present a small formal calculus that captures the essence of data scripting as done, for example, by journalists exploring data using Python and pandas.
- - layout: post
+ - layout: article
  - references: false
+ - icon: fa fa-database
  - image-large: http://tomasp.net/blog/2020/data-exploration-calculus/calculus.png
  - tags: academic, research, programming languages, thegamma, data science
 

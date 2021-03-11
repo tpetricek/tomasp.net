@@ -1,6 +1,5 @@
 ﻿module FsBlog.Blog
 
-open Fake
 open System.IO
 open System.Xml.Linq
 open FsBlog
@@ -9,6 +8,9 @@ open FsBlog.Helpers
 
 // For pretty name formatting
 let private enGb = System.Globalization.CultureInfo.GetCultureInfo("en-GB")
+let private (</>) a b = Path.Combine(a, b)
+let private ensureDirectory d = 
+  if not (Directory.Exists(d)) then Directory.CreateDirectory(d) |> ignore
 
 /// Get all files in 'root' that are not in a directory containing
 /// either `.ignore` or another explicitly given ignore file
@@ -28,20 +30,20 @@ let private readArticles cfg files =
     | Extension ".md" as f -> 
         try Some(transformMarkdown cfg f) 
         with e -> 
-          traceError (sprintf "Error when processing Markdown file: %s" f) 
-          traceException e
+          printfn "Error when processing Markdown file: %s" f
+          printfn "%A" e
           None
     | Extension ".fsx" as f -> 
         try Some(transformFsScript cfg f) 
         with e -> 
-          traceError (sprintf "Error when processing F# Script file: %s" f) 
-          traceException e
+          printfn "Error when processing Markdown file: %s" f
+          printfn "%A" e
           None
     | EndsWith ".aspx.html" as f -> 
         try Some(transformLegacyHtml cfg f) 
         with e -> 
-          traceError (sprintf "Error when processing legacy HTML file: %s" f) 
-          traceException e
+          printfn "Error when processing Markdown file: %s" f
+          printfn "%A" e
           None
     | _ -> None ) 
   |> Seq.filter (fun p -> not (p.Title.Contains("[DRAFT]")))
@@ -62,7 +64,7 @@ let groupArticles cfg =
 /// Transform all Markdown, F# Script and legacy HTML files in the source folder
 /// Returns 'true' when any file was updated, 'false' if nothing has changed.
 let processFiles cfg archives changes = 
-  let layoutFiles = !! (cfg.Layouts </> "*.*")  |> List.ofSeq
+  let layoutFiles = Directory.GetFiles(cfg.Layouts)
   let sources = listFiles ".no-transform" cfg.Source
   let mutable anyChange = false
   for f in sources do
@@ -133,7 +135,7 @@ let generateBlogArchives cfg site =
     let outf = cfg.Output </> "blog" </> "archive" </> url </> "index.html"
     ensureDirectory (cfg.Output </> "blog" </> "archive" </> url)
     printfn "Generating history archive: %s" url
-    let tag = { site with Posts = posts }
+    let tag = { site with Posts = posts; PostsTitle = enGb.DateTimeFormat.GetMonthName(m) + " " + string y }
     File.WriteAllText(outf, DotLiquid.render (cfg.Layouts </> "listing.html") tag)
 
 /// Generates archives by tag. Stored in `blog/tag/philosophy/index.html`
@@ -146,7 +148,7 @@ let generateTagArchives cfg site =
     let outf = cfg.Output </> "blog" </> "tag" </> url </> "index.html"
     printfn "Generating tag archive: %s" url
     ensureDirectory (cfg.Output </> "blog" </> "tag" </> url)
-    let tag = { site with Posts = posts }
+    let tag = { site with Posts = posts; PostsTitle = "Tagged " + t }
     File.WriteAllText(outf, DotLiquid.render (cfg.Layouts </> "listing.html") tag)
 
 /// Generate RSS feed from a collection of articles

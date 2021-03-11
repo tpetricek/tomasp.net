@@ -3,7 +3,7 @@ Coeffects: The next big programming challenge
 
  - date: 2014-01-08T15:31:49.9070738+00:00
  - description: This blog post is a tabloid-style introduction to my PhD thesis. I look at how practical motivations influence language design. One such practical motivation, that is becoming increasingly important, is capturing how program uses the context (or environment) where it runs. Coeffects are a way to track this property...
- - layout: post
+ - layout: article
  - tags: research,coeffects,functional programming,comonads
  - title: Coeffects: The next big programming challenge
  - url: 2014/why-coeffects-matter

@@ -3,7 +3,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: F# Data: Making structured data first-class citizens
 
 This paper has been published in PLDI 2016 and so it is no longer a draft.

@@ -4,7 +4,7 @@ TypeScript for F# zealots [DRAFT]
  - title: TypeScript for F# zealots
  - date: 2019-09-08T12:22:57.7521867+01:00
  - description: TBD
- - layout: post
+ - layout: article
  - references: true
  - image-large: http://tomasp.net/blog/2019/software-engineering/sdi.jpg
  - tags: fsharp

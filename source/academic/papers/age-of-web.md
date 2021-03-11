@@ -4,7 +4,7 @@
     changes many assumptions that typed functional language designers take for granted.
     In this paper, we present how F# language and libraries face the challenges posed by the web.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: In the Age of Web: Typed Functional-First Programming Revisited
  - date: 4 April 2015
  - subtitle: Tomas Petricek, Don Syme. In Post-proceedings of ML 2014

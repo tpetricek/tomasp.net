@@ -3,7 +3,7 @@ BREAKING: Open-source C# 6.0 released
 
  - date: 2014-04-01T14:24:30.0899752+01:00
  - description: At last, the long wait is finally over! After 4 years of waiting, the fully managed implementation of the C# compiler codenamed Roslyn has been finally released.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/csharp-6-released/csharp.jpg
  - tags: c#,fun,functional programming
  - title: BREAKING: Open-source C# 6.0 released

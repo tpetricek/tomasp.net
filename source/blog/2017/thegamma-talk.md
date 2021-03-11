@@ -7,8 +7,9 @@ Towards open and transparent data-driven storytelling: Notes from my Alan Turing
     I recently gave a talk about my work on programming tools for open, transparent
     data-driven storytelling at the Alan Turing Institute in London. You can watch the talk on
     YouTube, but if you prefer text, this blog post is a short summary of the key ideas.      
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2017/thegamma-talk/ati.jpg
+ - icon: fa fa-chalkboard
  - tags: thegamma,data journalism,programming languages
  - title: Towards open and transparent data-driven storytelling: Notes from my Alan Turing Institute talk
  

@@ -5,7 +5,7 @@ Library patterns: Multiple levels of abstraction
 
  - date: 2015-02-03T15:54:30.6183730+00:00
  - description: Over the last few years, I created or contributed to a number of libraries. In this blog post (or perhaps a series), I'll share some of the things I learned when trying to answer the question: What should a good library look like? I'll start by looking at a library design pattern that I call 'levels of abstraction'.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/library-layers/layers.png
  - tags: f#,open source,functional programming
  - title: Library patterns: Multiple levels of abstraction

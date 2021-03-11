@@ -6,7 +6,7 @@
     examples that make Haskell even better and safer for effectful
     programming.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Embedding effect systems in Haskell
  - subtitle: Dominic Orchard, Tomas Petricek. Haskell 2014
  - date: 19 August 2014

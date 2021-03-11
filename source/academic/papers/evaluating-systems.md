@@ -4,7 +4,7 @@
     their full complexity. In this paper, we ask whether new media such as multimedia essays can
     serve as publication formats, more suitable for evaluating programming systems design.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 29 August 2019
  - title: Evaluating programming systems design
  - subtitle: Jonathan Edwards, Stephen Kell, Tomas Petricek, Luke Church. Proceedings of PPIG 2019

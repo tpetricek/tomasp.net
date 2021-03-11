@@ -5,7 +5,7 @@
     how programmers think about them and how they are used in practice, we need to consider a 
     broader perspective. In this paper, we develop such broader understanding of monads.
  - tags: academic
- - layout: paper
+ - layout: article
  - date: 1 December 2017
  - title: Monads are not what they seem
  - subtitle: Tomas Petricek. Unpublished draft.

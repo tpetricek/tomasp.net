@@ -7,7 +7,8 @@ The Gamma dataviz package now available!
     are often not particularly exciting. This is the problem that I'm trying to address with 
     The Gamma project - and today, I'm happy to share the first reusable component based on the 
     work that you can use in your data visualization projects.
- - layout: post
+ - layout: article
+ - icon: fa fa-box-open
  - image-large: http://tomasp.net/blog/2017/thegamma-package/facts.jpg
  - tags: thegamma,data journalism,data science,research,visualization
  - title: The Gamma dataviz package now available!

@@ -8,7 +8,8 @@ Would aliens understand lambda calculus?
     knowledge. Are mathematical theories and results about them invented, i.e. constructed by
     humans, or discovered, i.e. are they eternal truths that exist regardless of whether there are
     humans to know them? 
- - layout: post
+ - layout: article
+ - icon: fa fa-rocket
  - image: http://tomasp.net/blog/2018/alien-lambda-calculus/human.jpg
  - tags: academic, research, programming languages, philosophy
 

@@ -3,7 +3,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: In the Age of Web: Typed Functional-First Programming Revisited
 
 <br />

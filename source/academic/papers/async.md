@@ -6,7 +6,7 @@
      transitions between synchronous and asynchronous code and eliminates the inversion of control.
  - date: 18 January 2011
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: The F# Asynchronous Programming Model
 
 > Don Syme, Tomas Petricek and Dmitry Lomov

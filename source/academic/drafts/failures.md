@@ -2,7 +2,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: Miscomputation in software: Learning to live with errors
 
 <br />

@@ -23,29 +23,22 @@
 
 {% block bodyclass %}calendar{% endblock %}
 
-
 {% block body %}
-  <article>
-    <div class="container calendar-year">
-      <div class="row">
-        <div class="col-sm-12">
-          <h1>Calendar {{ model.Year }}</h1>
-        </div>
-      </div>
-      <div class="row">
-        {% for m in model.Months %}
-          <div class="col-sm-6 col-md-4" itemscope itemtype="http://schema.org/Photograph">
-            <div class="calendar-year-item">
-              <h2 itemprop="name"><a href="{{ m.Link }}/">{{ m.Name }}</a></h2>
-              <div class="wrapper1"><div class="wrapper2">
-                <a itemprop="sameAs" href="/calendar/{{ model.Year}}/{{ m.Link }}/">
-                  <img itemprop="image" src="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Year }}/{{ m.Link }}-preview.jpg" />
-                </a>
-              </div></div>
-            </div>            
-          </div>
-        {% endfor %}
-      </div>
+<span class="tplink"><a href="/">TP</a></span>
+
+<article>
+  <h1>Calendar {{ model.Year }}</h1>
+
+  {% for m in model.Months %}
+  <div class="month">
+    <h2>{{ m.Name }} {{ model.Year }}</h2>
+    <div class="photo">
+      <a href="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Year }}/{{ m.Link }}-original.jpg">
+        <img itemprop="image" src="https://tomaspweb.blob.core.windows.net/calendar/{{ model.Year }}/{{ m.Link }}.jpg" />
+      </a>
     </div>
-  </article>
+  </div>
+  {% endfor %}
+
+</article>
 {% endblock %}

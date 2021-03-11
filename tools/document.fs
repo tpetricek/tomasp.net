@@ -5,7 +5,6 @@ open System.IO
 open System.Collections.Generic
 open System.Text.RegularExpressions
 
-open Fake
 open FSharp.Literate
 open FSharp.Markdown
 open FSharp.Markdown.Html
@@ -15,6 +14,10 @@ open FsBlog.Helpers
 // --------------------------------------------------------------------------------------
 // Document transformations
 // --------------------------------------------------------------------------------------
+
+let private (</>) a b = Path.Combine(a, b)
+let private ensureDirectory d = 
+  if not (Directory.Exists(d)) then Directory.CreateDirectory(d) |> ignore
 
 let private (|CharSeparatedSpans|_|) (sep:char) spans =
   let rec loop before spans =
@@ -118,6 +121,7 @@ let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstract
 
   { Title = formatSpans title
     Subtitle = defaultArg (tryFind "subtitle" props) ""
+    Icon = defaultArg (tryFind "icon" props) ""
     Description = defaultArg (tryFind "description" props) ""
     Image = match tryFind "image" props, tryFind "image-large" props with Some i, _ | _, Some i -> i | _ -> ""
     LargeImage = (tryFind "image-large" props).IsSome
@@ -156,13 +160,10 @@ let private transformMarkdownOrScript (cfg:SiteConfig) plain (inf:string) =
     let body = document.With(List.map generateSubheadings body)
 
     let abs = document.With(article.Abstract)
-
-    use tmpAbs = DisposableFile.CreateTemp(".html")
-    use tmpDoc = DisposableFile.CreateTemp(".html")
-    Literate.ProcessDocument(body, tmpDoc.FileName)
-    Literate.ProcessDocument(abs, tmpAbs.FileName)
-
-    let res = article.With(File.ReadAllText tmpAbs.FileName, File.ReadAllText tmpDoc.FileName)
+    let da = Literate.ProcessDocument(abs, "document")
+    let db = Literate.ProcessDocument(body, "document")
+    let fetch (o:GeneratorOutput) = (dict o.Parameters).[o.ContentTag] + (dict o.Parameters).["tooltips"]
+    let res = article.With(fetch da, fetch db)
     ensureDirectory (Path.GetDirectoryName cached)
     File.WriteAllText(cached, Json.toJson res)
     res

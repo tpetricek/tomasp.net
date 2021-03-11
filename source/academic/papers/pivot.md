@@ -5,8 +5,9 @@
      requires expert programming skills. In this paper, we describe the design of a data
      exploration language that makes the task more accessible by embedding advanced programming
      concepts into a simple core language.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-table
  - date: 12 April 2017
  - title: Data exploration through dot-driven development
  - subtitle: Tomas Petricek. In proceedings of ECOOP 2017.

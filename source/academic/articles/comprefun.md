@@ -5,7 +5,7 @@
     notation that is supported in the re-designed monad comprehension syntax in Haskell. The examples
     are inspired by the work on joinads and include parsers, parallel and concurrent computations.
  - tags: academic, publication, article
- - layout: paper
+ - layout: article
  - title: Fun with Parallel Monad Comprehensions
  - subtitle: Tomas Petricek. The Monad.Reader Issue 18.
  - date: 15 May 2011 

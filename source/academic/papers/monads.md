@@ -5,8 +5,9 @@
     how programmers think about them and how they are used in practice, we need to consider a
     broader perspective. This paper explains how computer scientists and programmers talk about
     monads and why they do so.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-box
  - date: 21 March 2018
  - title: Monads are not what they seem
  - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, 2018

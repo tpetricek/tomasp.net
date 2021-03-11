@@ -5,7 +5,7 @@ How many tuple types are there in C#?
 
  - date: 2013-09-17T14:11:57.7562922+01:00
  - description: In a recent StackOverflow question, the poster asked about the choice between a function that takes a tuple and a function that uses the curried form. In this article I look at the problem from the C# perspective.
- - layout: post
+ - layout: article
  - tags: c#,f#,functional programming
  - title: How many tuple types are there in C#?
  - url: 2013/tuples-in-csharp

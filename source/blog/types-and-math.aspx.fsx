@@ -5,7 +5,7 @@ Power of mathematics: Reasoning about functional types
 
  - date: 2013-05-14T17:54:00.0000000
  - description: In this article, I explore the amazing relationship between functional data types and algebraic operations. We will use this relationship to reason about domain model and understand the differences between several possible representations.
- - layout: post
+ - layout: article
  - tags: f#,research,functional programming
  - title: Power of mathematics: Reasoning about functional types
  - url: types-and-math.aspx

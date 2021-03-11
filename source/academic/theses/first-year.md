@@ -7,7 +7,7 @@
     done during the first-year (including the work on _joinads_ and _coeffects_) and
     it proposes future research projects.
  - tags: academic, publication, article
- - layout: paper
+ - layout: article
  - title: Effect and coeffect type systems (First-year PhD report)
  - date: 17 September 2011
  - subtitle: Tomas Petricek. First year report, Computer Laboratory.

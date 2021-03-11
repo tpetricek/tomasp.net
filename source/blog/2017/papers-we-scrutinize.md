@@ -8,7 +8,8 @@ Papers we Scrutinize: How to critically read papers
     try to uncover some of the caveats when reading papers - how we misread history and ignore 
     historical context in which paper was written. I discuss different ways of reading papers
     and suggest a more active way of reading.
- - layout: post
+ - layout: article
+ - icon: fa fa-search
  - image: http://tomasp.net/blog/2017/papers-we-scrutinize/medium-sq.png
  - tags: academic, programming languages, philosophy
  - title: Papers we Scrutinize: How to critically read papers

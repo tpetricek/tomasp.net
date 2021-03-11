@@ -4,7 +4,7 @@ Pattern matching in action using C# 6
 
  - date: 2015-04-01T11:41:49.5611652+01:00
  - description: The new release of the C# language migth seem as a minor version, but in fact, it contains a hidden gem. In fact, it contains awesome support for pattern matching - but for some reason, this is concealed under the name 'exception filters'.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png
  - tags: c#,fun,functional programming
  - title: Pattern matching in action using C# 6

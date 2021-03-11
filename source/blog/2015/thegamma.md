@@ -3,7 +3,7 @@ The Gamma: Simple code behind interactive articles
 
  - date: 2015-09-28T17:07:08.0598479+01:00
  - description: Computer programming may not be the new literacy, but it is finding its way intomany areas of modern society. In particular, data journalism turns traditional news reports from a mix of text and images into something that is much closer to a computer program.By treating articles as programs, we can make data journalism more transparent, reproducible and interactive. This is what I've been working on recently, so check out the prototype!
- - layout: post
+ - layout: article
  - image-large: http://tomasp.net/blog/2015/thegamma/chart.png
  - tags: thegamma,type providers,data journalism,programming languages
  - title: The Gamma: Simple code behind interactive articles

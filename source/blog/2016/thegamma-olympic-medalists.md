@@ -7,7 +7,7 @@ The Gamma — Visualizing Olympic Medalists
     in advance. I used this year's Olympic Games in Rio as a motivation to resume working on The 
     Gamma project, which aims to build tooling for open, reproducible and interactive 
     data-driven storytelling.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016//thegamma-olympic-medalists/gamma-logo.png
  - tags: thegamma,data journalism,programming languages
  - title: The Gamma — Visualizing Olympic Medalists

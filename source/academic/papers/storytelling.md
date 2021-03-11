@@ -4,7 +4,7 @@
     data available. At the same time, the general public increasingly distrusts statistics and
     post-truth has been chosen as the word of 2016. The Gamma project aims to help reverse this development.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 6 July 2017
  - title: The Gamma: Programming tools for open data-driven storytelling
  - subtitle: Tomas Petricek. Proceedings of European Data and Computational Journalism Conference, 2017

@@ -5,7 +5,7 @@
     coeffect system that can be used for checking liveness and properties of
     data-flow or distributed programs,
  - tags: academic, publication, top
- - layout: paper
+ - layout: article
  - title: Coeffects: Unified static analysis of context-dependence
  - date: 17 June 2013
  - subtitle: Tomas Petricek, Dominic Orchard and Alan Mycroft. In Proceedings of ICALP 2013.

@@ -4,7 +4,7 @@ Announcing: Literate programming tools for F#
 
  - date: 2013-01-22T17:35:36.0000000
  - description: This article introduces a new F# package that makes it possible to write literate F# programs that combine code with documentation. Given an F# script with a special comments or Markdown document with F# code, you get a nicely formatted HTML that can be used to build documentation or write blogs.
- - layout: post
+ - layout: article
  - tags: open source,f#,writing,literate
  - title: Announcing: Literate programming tools for F#
  - url: fsharp-literate-programming.aspx

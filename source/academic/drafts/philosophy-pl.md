@@ -3,7 +3,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: What can Programming Language Research Learn from the Philosophy of Science?
 
 <br />

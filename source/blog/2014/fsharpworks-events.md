@@ -3,7 +3,7 @@ Welcome fsharpWorks & upcoming F# events
 
  - date: 2014-05-20T13:47:06.7287744+01:00
  - description: If you are following me or the #fsharp hashtag on Twitter,you might have already come across a link to fsharpWorks or one of theupcoming F# events organized by fsharpWorks. So, what is fsharpWorks and what are we planningfor you?
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/fsharpworks-events/logo-sm.png
  - tags: c#,f#,functional programming,talks
  - title: Welcome fsharpWorks & F# events

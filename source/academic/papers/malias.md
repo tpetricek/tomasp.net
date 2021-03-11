@@ -5,7 +5,7 @@
     an operation <code>malias</code>. We also show how to give <em>call-by-need</em> translation for certain
     monads.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Evaluation strategies for monadic computations
  - subtitle: Tomas Petricek. In Proceedings of MSFP 2012.
  - date: 17 March, 2012

@@ -4,8 +4,9 @@
     the desperate state of the software industry continue to be released with almost ritualistic 
     regularity. In this paper, we look at the 60 years history of programming and at the different 
     practical methods that software community developed to live with programming errors.
- - tags: academic, publication, top
- - layout: paper
+ - tags: academic, publication, top, home
+ - layout: article
+ - icon: fa fa-bomb
  - date: 3 April 2017
  - title: Miscomputation in software: Learning to live with errors
  - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, 2017

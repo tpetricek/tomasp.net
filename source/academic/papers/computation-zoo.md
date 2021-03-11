@@ -5,7 +5,7 @@
       close to built-in language features of Python and C#. This article provides the details
       shows that the right syntax can often be determined by considering laws.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: The F# Computation Expression Zoo
  - subtitle: Tomas Petricek and Don Syme. In Proceedings of PADL 2014.
  - date: 3 February 2014

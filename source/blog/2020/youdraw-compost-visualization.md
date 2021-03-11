@@ -8,8 +8,9 @@ Creating interactive You Draw bar chart with Compost
     bar chart inspired by the awesome interactive line charts from New York Times.
     The example shows the power of Compost including the use of domain-specific values,
     compositionality and the use of Model View Update architecture of interactivity.
- - layout: post
+ - layout: article
  - references: false
+ - icon: fa fa-chart-bar
  - image-large: http://tomasp.net/blog/2020/youdraw-compost-visualization/card.png
  - tags: functional, functional programming, data science, thegamma, data journalism, visualization
 

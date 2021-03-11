@@ -4,7 +4,7 @@ Comparing date range handling in C# and F#
 
  - date: 2015-04-22T16:55:20.5498839+01:00
  - description: I was recently working on some code for handling data ranges and I wrote initial version in C#. Later, I realized that I needed an F# version, so I went through the process of rewriting a simple function from C# to F#. This blog post compares the two versions.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/restricting-ranges/card.png
  - tags: f#,c#,deedle,linq,functional programming
  - title: Comparing date range handling in C# and F#

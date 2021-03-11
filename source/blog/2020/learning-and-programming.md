@@ -8,8 +8,9 @@ Is deep learning a new kind of programming? Operationalistic look at programming
     measured by a ruler is a different concept than a length measured by the time it takes
     light to travel. However, what if we thought about programs in the same way? Is a program
     constructed manually the same as a program obtained by training a neural network?
- - layout: post
+ - layout: article
  - references: true
+ - icon: fa fa-code
  - image-large: http://tomasp.net/blog/2020/learning-and-programming/pyrometer.jpg
  - tags: programming languages, philosophy, research
 

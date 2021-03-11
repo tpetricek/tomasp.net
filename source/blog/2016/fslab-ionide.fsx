@@ -5,7 +5,7 @@ Better F# data science with FsLab and Ionide
 
  - date: 2016-07-06T16:03:23.8677625+01:00
  - description: The most recent version of Ionide comes with a completely revamped version of F# Interactive which makes it possible to format the results of running F# code as HTML. This blog post provides some of the details about how this works and it also introduces an Ionide integration with FsLab, which gives you new powerful tools for doing data science with F#.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/fslab-ionide/prices.png
  - tags: f#,fslab,data science
  - title: Better F# data science with FsLab and Ionide

@@ -5,7 +5,7 @@
      versioning and reproducibility difficult. Wrattler revisits the architecture and allows
      richer forms of interactivity, efficient evaluation and guaranteed reproducibility.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Wrattler: Reproducible, live and polyglot notebooks
  - date: 26 June 2018
  - subtitle: Tomas Petricek, James Geddes, Charles Sutton. In Proceedings of TaPP 2018

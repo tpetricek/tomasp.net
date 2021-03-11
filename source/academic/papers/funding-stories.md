@@ -4,7 +4,7 @@
     on EU funding to the UK. We report on some of the fundamental difficulties we observed whilst
     analysing this data and we suggest ways of addressing such difficulties.
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - date: 6 July 2018
  - title: Stories of storytelling about UK’s EU funding
  - subtitle: Mariana Marasoiu et al. Proceedings of European Data and Computational Journalism Conference, 2018

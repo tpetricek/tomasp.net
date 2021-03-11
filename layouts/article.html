@@ -1,4 +1,5 @@
 {% extends "page.html" %}
+
 {% block head %}
   <title>{{ model.Article.Title }} - Tomas Petricek</title>
 
@@ -57,33 +58,33 @@
   </script>
 {% endblock %}
 
-{% block body %}
-  <article class="post">
-    <div class="container"><div class="row">
-      <div class="col-lg-2 col-md-1"></div>
-      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-8">
-        {{ model.Article.Body }}
+{% block body %}  
+  <span class="tplink"><a href="/">TP</a></span>
 
-        <div class="info">
-        <p class="share">
-            <a target="_blank" href="https://twitter.com/intent/tweet?url={{ model.Article.Url | urlEncode }}&amp;text={{ model.Article.Title | urlEncode }}{{ "via @tomaspetricek" | urlEncode }}">
-              <i class="fa fa-twitter-square"></i></a>
-            <a target="_blank" href="https://www.facebook.com/sharer.php?u={{ model.Article.Url | urlEncode }}">
-              <i class="fa fa-facebook-official"></i></a>
-            <a href="http://www.reddit.com/submit?url={{ model.Article.Url | urlEncode }}&title={{ model.Article.Title | urlEncode }}">
-              <i class="fa fa-reddit-square"></i></a>
-            <a href="mailto:?subject={{ model.Article.Title | mailEncode }}&body={{ model.Article.Description | mailEncode }}%0a%0a{{ "See: " | mailEncode }}{{ model.Article.Url | mailEncode }}">
-              <i class="fa fa-envelope"></i></a>
-        </p>
-        <p class="details">
-          <strong>Published:</strong> {{ model.Article.Date | dateNice }}<br />
-          <strong>Author:</strong> Tomas Petricek<br />
-          <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
-          <strong>Tags:</strong> {% assign next=false %}{% for tag in model.Article.Tags %}{% if next %}, {% endif %}<a
+  <article class='article{% if model.Article.Tags contains "publication" %} publication{% endif %}''>
+    {{ model.Article.Body }}
+
+    <div class="info">
+    <p class="share">
+        <a target="_blank" href="https://twitter.com/intent/tweet?url={{ model.Article.Url | urlEncode }}&amp;text={{ model.Article.Title | urlEncode }}{{ "via @tomaspetricek" | urlEncode }}">
+          <i class="fab fa-twitter-square"></i></a>
+        <a target="_blank" href="https://www.facebook.com/sharer.php?u={{ model.Article.Url | urlEncode }}">
+          <i class="fab fa-facebook-square"></i></a>
+        <a href="http://www.reddit.com/submit?url={{ model.Article.Url | urlEncode }}&title={{ model.Article.Title | urlEncode }}">
+          <i class="fab fa-reddit-square"></i></a>
+        <a href="mailto:?subject={{ model.Article.Title | mailEncode }}&body={{ model.Article.Description | mailEncode }}%0a%0a{{ "See: " | mailEncode }}{{ model.Article.Url | mailEncode }}">
+          <i class="fa fa-envelope"></i></a>
+    </p>
+    <p class="details">
+      <strong>Published:</strong> {{ model.Article.Date | dateNice }}<br />
+      <strong>Author:</strong> Tomas Petricek<br />
+      <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+      {% if model.Article.Tags contains "publication" %} 
+      {% else %}
+        <strong>Tags:</strong> {% assign next=false %}{% for tag in model.Article.Tags %}{% if next %}, {% endif %}<a
           href="/blog/tag/{{ tag | tagUrl }}/">{{ tag }}</a>{% assign next=true %}{% endfor tag %}</span><br />
-        </p>
-        </div>
-      </div>
-    </div></div>
+      {% endif %}
+    </p>
+    </div>
   </article>
 {% endblock %}

@@ -5,7 +5,7 @@
       that we have observed during the work on F# 3.0 type providers.
  - tags: academic, publication
  - subtitle: Don Syme, Keith Battocchi, Kenji Takeda, Donna Malayeri and Tomas Petricek. DDFP 2013
- - layout: paper
+ - layout: article
  - date: 1 February 2013
  - title: Themes in Information-Rich Functional Programming for Internet-Scale Data Sources
 

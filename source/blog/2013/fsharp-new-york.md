@@ -3,7 +3,7 @@ Hello New York. Learn some F#!
 
  - date: 2013-08-29T14:02:06.1127373+01:00
  - description: As some people in the F# community may already know, I'm visiting New York  for three months and I'm working (doing an internship) with Howard Mansell at  Blue Mountain Capital. We're working on some interesting F# tools for data science, but it also means that I can be more involved in the great New York F# community!
- - layout: post
+ - layout: article
  - tags: f#,training,talks,new york
  - title: Hello New York. Learn some F#!
  - url: 2013/fsharp-new-york

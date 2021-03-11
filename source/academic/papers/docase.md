@@ -5,7 +5,7 @@
     operations to form a near-semiring, which gurantees that the notation resembles pattern matching.
  - date: 5 September 2011
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Extending monads with pattern matching
  - subtitle: Tomas Petricek, Alan Mycroft and Don Syme. In Haskell Symposium 2011.
 

@@ -5,7 +5,7 @@ Library patterns: Why frameworks are evil
 
  - date: 2015-03-03T16:13:48.1147024+00:00
  - description: This article continues my mini-series on functional library design. Previously, I discussed why your library should provide multiple levels of abstraction. Today, we look at composability and avoiding callbacks. These two often go together - frameworks are based on callbacks and are not composable, while good libraries avoid callbacks and compose well.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/library-frameworks/diagram.png
  - tags: f#,open source,functional programming
  - title: Library patterns: Why frameworks are evil
@@ -514,7 +514,7 @@ the power they need to combine your library with others (or replace some parts o
 like them!)
 
 Summary
-=======
+-------
 
 In this article, I looked at a number of functional library design principles. This is a second
 article in this mini-series - the [first one](http://tomasp.net/blog/2015/library-layers) contains

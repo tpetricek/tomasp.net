@@ -3,7 +3,7 @@ Update on the F# Deep Dives book
 
  - date: 2013-08-27T04:15:40.2249017+01:00
  - description: It has been some time since I last wrote about F# Deep Dives, so I'd like to write a quick update. In summary, having 10 authors does not mean that the book will be finished in 1/10 of the time, but now that the holidays are almost over, you can expect more frequent updates again!
- - layout: post
+ - layout: article
  - tags: manning,f#,writing,books,deep dives
  - title: Update on the F# Deep Dives book
  - url: 2013/deep-dives-update

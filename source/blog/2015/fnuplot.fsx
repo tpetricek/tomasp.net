@@ -5,7 +5,7 @@ FnuPlot: Cross-platform charting with gnuplot
 
  - date: 2015-01-15T16:58:17.9508797+00:00
  - description: There is a bunch of visualization and charting libraries for F#. Sadly, perhaps the most advanced ones do not work particularly well outside of Windows. This blog post introduces a new work-in-progress library called FnuPlot which is a lightweight and cross-platform wrapper for gnuplot.
- - layout: post
+ - layout: article
  - image: http://fsprojects.github.io/FnuPlot/img/logo.png
  - tags: f#,fslab,data science
  - title: FnuPlot: Cross-platform charting with gnuplot

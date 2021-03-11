@@ -9,8 +9,9 @@ Programming as interaction: A new perspective for programming language research
     a result of a sequence of interactions that create it. This includes usual things such as 
     writing code and refactoring, but if we also include, say, running a part of the program,
     we become capable of saying many more interesting things and building new powerful programming tools.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2018/programming-interaction/kent-sq.png
+ - icon: fa fa-mouse-pointer
  - tags: academic, research, programming languages, data science
 
 ----------------------------------------------------------------------------------------------------

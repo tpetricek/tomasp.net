@@ -5,7 +5,7 @@ Advent Art: Generating Hokusai paintings
 
  - date: 2014-01-21T18:49:00.0000000
  - description: This article is a contribution to the F# Advent Calendar that is organized every year by the Japanese F# community - and so the article is inspired by the Japanese culture. We look at a list of Japanese artists in Freebase and try to recreate one piece using fractals and FunScript!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2014/japan-advent-art-en/hokusai_sm.jpg
  - tags: f#,art,fractals,funscript,f# data
  - title: Advent Art: Generating Hokusai paintings

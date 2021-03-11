@@ -2,7 +2,7 @@
 
 - description:
 - tags: academic
-- layout: paper
+- layout: article
 - title: Design and implementation of a live coding environment for data science
 
 This paper has been published in Programming 2020 and so it is no longer a draft.

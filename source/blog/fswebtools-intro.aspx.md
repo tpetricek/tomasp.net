@@ -3,7 +3,7 @@ F# Web Tools: "Ajax" applications made simple
 
  - date: 2007-07-13T04:32:29.0000000
  - description: This article introduces the F# Web Toolkit, which is an \"Ajax\" web framework that solves three major problems that many people have to face when developing modern web applications.
- - layout: post
+ - layout: article
  - tags: web,f#
  - title: F# Web Tools: \"Ajax\" applications made simple
  - url: fswebtools-intro.aspx

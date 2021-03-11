@@ -1,6 +1,5 @@
 ﻿module FsBlog.Calendar
 
-open Fake
 open System
 open System.IO
 open System.Drawing
@@ -8,6 +7,10 @@ open System.Drawing.Imaging
 open Microsoft.WindowsAzure.Storage
 open FsBlog
 open FsBlog.Helpers
+
+let private (</>) a b = Path.Combine(a, b)
+let private ensureDirectory d = 
+  if not (Directory.Exists(d)) then Directory.CreateDirectory(d) |> ignore
 
 // Get objects needed for JPEG encoding
 let private jpegCodec = ImageCodecInfo.GetImageEncoders() |> Seq.find (fun c -> c.FormatID = ImageFormat.Jpeg.Guid)
@@ -81,7 +84,7 @@ let private generateCalendarIndex archives (cfg:SiteConfig) year file =
         let name = enGb.DateTimeFormat.GetMonthName(m)
         { Name = name; Link = name.ToLower() } ]
   let model = { Archives = archives; Year = string year; Months = months }
-  File.WriteAllText(file, DotLiquid.render (cfg.Layouts </> "cal-year.html") model)
+  File.WriteAllText(file, DotLiquid.render (cfg.Layouts </> "calendar.html") model)
 
 
 /// Generate all calendar pages
@@ -97,7 +100,8 @@ let generateCalendarSite archives (cfg:SiteConfig) =
     let yearFile = cfg.Output </> "calendar" </> string year </> "index.html"
     generateCalendarIndex archives cfg year yearFile
 
-    // Individual month pages
+(*
+// Individual month pages
     for month in 1 .. 12 do 
       let monthName = enGb.DateTimeFormat.GetMonthName(month)
       let monthFile = cfg.Output </> "calendar" </> string year </> monthName.ToLower() </> "index.html"
@@ -108,3 +112,4 @@ let generateCalendarSite archives (cfg:SiteConfig) =
           Days = [ for i in 1 .. enGb.Calendar.GetDaysInMonth(year, month) ->
                     { Day = i; Highlighted = enGb.Calendar.GetDayOfWeek(DateTime(year, month, i)) = DayOfWeek.Sunday } ] }
       File.WriteAllText(monthFile, DotLiquid.render (cfg.Layouts </> "cal-month.html") model)
+*)

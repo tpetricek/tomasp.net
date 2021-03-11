@@ -4,7 +4,7 @@ Visualizing interesting world facts with FsLab
 
  - date: 2015-06-30T16:07:13.5363212+01:00
  - description: This blog post combines two interesting FsLab libraries. It uses the  World Bank type provider from F# Data to get a number of interesting indicators about different countries of the world and it visualizes them using the XPlot library which makes it easy to build rich HTML5 visualizations using Google Charts and Plotly.
- - layout: post
+ - layout: article
  - image-large: http://tomasp.net/blog/2015/fslab-world-visualization/world-large.png
  - tags: f#,fslab,data science,data journalism,thegamma
  - title: Visualizing interesting world facts with FsLab

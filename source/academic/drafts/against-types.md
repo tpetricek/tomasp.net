@@ -3,7 +3,7 @@
 
  - description: 
  - tags: academic
- - layout: paper
+ - layout: article
  - title: Against the definition of types
 
 <br />

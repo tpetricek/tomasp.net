@@ -3,7 +3,7 @@ Philosophy of science books every computer scientist should read
 
  - date: 2015-12-10T12:42:25.6129283+00:00
  - description: When I tell my fellow computer scientists or software developers that I'm interested in philosophy of science, they first look a bit confused, then we have a really interesting discussion about it and then they ask me for some interesting books they could read about it. So, I thought I should turn my answer into a blog post!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2015/reading-list/latour-sq.jpg
  - tags: philosophy,research,talks
  - title: Philosophy of science books every computer scientist should read

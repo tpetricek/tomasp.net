@@ -3,7 +3,7 @@ Coeffects playground: Interactive essay based on my PhD thesis
 
  - date: 2016-04-12T15:33:52.3133917+01:00
  - description: In my PhD thesis, I worked on integrating contextual information into a type system of functional programming languages. Most of the work is on theory, but I wanted to make it more accessible. To do this, I built an interactive essay where you can write, run, type check and parse simple context-aware programs and learn more about the (dry) theory in a more fun way.
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/coeffects-playground/coeffects.png
  - tags: coeffects,research,functional programming,programming languages
  - title: Coeffects playground: Interactive essay based on my PhD thesis

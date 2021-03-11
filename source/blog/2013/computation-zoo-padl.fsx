@@ -5,7 +5,7 @@ The F# Computation Expression Zoo (PADL'14)
 
  - date: 2013-11-08T06:42:56.7559875+00:00
  - description: A month or so back, I wrote a tweet saying that F# computation expressions are amazing and no other language has anything like that. I can finally provide all the evidence by linking to a PADL 2014 paper about them.
- - layout: post
+ - layout: article
  - tags: haskell,research,f#,functional programming
  - title: The F# Computation Expression Zoo (PADL'14)
  - url: 2013/computation-zoo-padl

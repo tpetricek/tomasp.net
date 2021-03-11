@@ -4,7 +4,7 @@
      programming in the industry, it is becoming important to teach functional concepts to experienced
      developers. This requires a very different approach.
  - tags: academic, publication, article
- - layout: paper
+ - layout: article
  - date: 9 November, 2012
  - title: Teaching Functional Programming to Professional .NET Developers
  - subtitle: Tomas Petricek. In Pre-proceedings of TFPIE 2012.

@@ -8,7 +8,8 @@ Getting started with The Gamma just got easier
      via a REST service. The new Gallery makes it easy to upload your own CSV file or paste
      data from Excel and it also guides you through the process and lets you easily embed the
      results into your blog. If you were curious about The Gamma, now you can start using it!
- - layout: post
+ - layout: article
+ - icon: fa fa-images
  - image-large: http://tomasp.net/blog/2017/thegamma-getting-started/gallery-card.png
  - tags: thegamma,data journalism,data science,research,visualization
  - title: Getting started with The Gamma just got easier

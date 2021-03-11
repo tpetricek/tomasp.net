@@ -4,7 +4,7 @@ Calculi as metaphors [DRAFT]
  - title: Calculi as metaphors
  - date: 2019-09-08T12:22:57.7521867+01:00
  - description: TBD
- - layout: post
+ - layout: article
  - references: true
  - image-large: http://tomasp.net/blog/2019/software-engineering/sdi.jpg
  - tags: fsharp

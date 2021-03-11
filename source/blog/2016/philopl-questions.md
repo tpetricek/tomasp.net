@@ -3,7 +3,7 @@ Philosophical questions about programming
 
  - date: 2016-05-26T13:33:26.1498716+01:00
  - description: Combining philosophy and computer science might appear a bit odd, but the fact that the disciplines do not overlap might very well be the reason why putting them together is interesting - the antidisciplinary field that opens presents a number of important questions about programming language research and computer science in general!
- - layout: post
+ - layout: article
  - image: http://tomasp.net/blog/2016/philopl-questions/thinker-sq.jpg
  - tags: philosophy,programming languages
  - title: Philosophical questions about programming

@@ -5,7 +5,7 @@
     pattern matching that can be used for encoding a wide range of these models.
  - date: 20 January 2011
  - tags: academic, publication
- - layout: paper
+ - layout: article
  - title: Joinads: a retargetable control-flow construct for reactive, parallel and concurrent programming
  - subtitle: Tomas Petricek and Don Syme. In Proceedings of PADL 2011.
 
