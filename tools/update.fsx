@@ -97,8 +97,9 @@ let regenerateSite () =
   updateSite true None
 
 /// Run some operation based on command line argument
-while true do
-  let cmd = Console.ReadLine()
+let mutable cmd = ""
+while cmd <> null do
+  cmd <- Console.ReadLine()
   if cmd <> null then
     let args = cmd.Split([|' '|], StringSplitOptions.RemoveEmptyEntries) |> List.ofSeq 
     printfn "Running command: %A" args
