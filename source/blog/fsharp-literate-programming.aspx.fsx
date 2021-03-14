@@ -25,8 +25,8 @@ During the Christmas break, I finally found enough time to clean-up the code I
 was using and package it properly into a documented library that is easy to install and use.
 Here are the most important links:
 
- - [F# Formatting home page](http://tpetricek.github.com/FSharp.Formatting)
- - [F# Formatting source code](https://github.com/tpetricek/FSharp.Formatting) on GitHub
+ - [F# Formatting home page](https://fsprojects.github.io/FSharp.Formatting/)
+ - [F# Formatting source code](https://github.com/fsprojects/FSharp.Formatting) on GitHub
  - [F# Formatting package](https://nuget.org/packages/FSharp.Formatting) on NuGet
 
 To learn more about this tool and how to use it, [continue reading](http://tomasp.net/blog/fsharp-literate-programming.aspx)!
@@ -48,8 +48,8 @@ During the Christmas break, I finally found enough time to clean-up the code I
 was using and package it properly into a documented library that is easy to install and use.
 Here are the most important links:
 
- - [F# Formatting home page](http://tpetricek.github.com/FSharp.Formatting)
- - [F# Formatting source code](https://github.com/tpetricek/FSharp.Formatting) on GitHub
+ - [F# Formatting home page](https://fsprojects.github.io/FSharp.Formatting/)
+ - [F# Formatting source code](https://github.com/fsprojects/FSharp.Formatting) on GitHub
  - [F# Formatting package](https://nuget.org/packages/FSharp.Formatting) on NuGet
 
 Introducing literate programming
