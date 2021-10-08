@@ -10,7 +10,7 @@ Pop-up from Hell: On the growing opacity of web programs
     rendering limit extensibility. Is this an accident, or an inevitable law of software evolution?
  - layout: article
  - icon: fa fa-window-restore
- - image: http://tomasp.net/blog/2021/popup-from-hell/card.png
+ - image-large: http://tomasp.net/blog/2021/popup-from-hell/card.png
  - tags: academic, research, web, philosophy, talks
 
 ----------------------------------------------------------------------------------------------------
