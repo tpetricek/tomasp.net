@@ -2,7 +2,7 @@ Software designers, not engineers: An interview from alternative universe
 =========================================================================
 
  - title: Software designers, not engineers: An interview from alternative universe
- - date: 2021-02-08T12:22:57.7521867+01:00
+ - date: 2021-04-19T13:30:57.7521867+01:00
  - description: How very different the world of software is in an alternative universe which has
     software designers rather than software engineers? In this interview, we look at a range
     of topics from software design sketching to software designer education, as well as the way

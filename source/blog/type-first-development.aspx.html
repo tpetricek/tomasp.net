@@ -12,10 +12,10 @@
 <img src="http://tomasp.net/articles/type-first-development/tfd.png" class="rdecor" />
 
 <p>Using functional programming language changes the way you write code in a number
-of ways. Many of the changes are at a <em>small-scale</em>. For example, you learn how to express 
+of ways. Many of the changes are at a <em>small-scale</em>. For example, you learn how to express
 computations in a shorter, more declarative way using higher-order functions.
 However, there are also many changes at a <em>large-scale</em>. The most notable one
-is that, when designing a program, you start thinking about the (data) types 
+is that, when designing a program, you start thinking about the (data) types
 that represent the data your code works with.</p>
 
 <p>In this article, I describe this approach. Since the acronym TDD is already taken,
@@ -23,13 +23,13 @@ I call the approach Type-First Development (TFD), which is probably a better nam
 The development is not <em>driven</em> by types. It <em>starts</em> with types, but the rest of the
 implementation can still use test-driven development for the implementation.</p>
 
-<p>This article demonstrates the approach using a case study from a real life: 
-My example is a project that I started working on with a friend who needed a 
-system to log journeys with a company car (for expense reports). Using the 
+<p>This article demonstrates the approach using a case study from a real life:
+My example is a project that I started working on with a friend who needed a
+system to log journeys with a company car (for expense reports). Using the
 type-first approach made it easier to understand and discuss the problem.</p>
 
 <p>In many ways, TFD is a very simple approach, so this article just gives a name
-to a practice that is quite common among functional and F# programmers (and 
+to a practice that is quite common among functional and F# programmers (and
 we have been <a href="http://functional-programming.net/courses/">teaching it at our F# trainings</a> for the last year)...</p>
 [/abstract] -->
 
@@ -37,10 +37,10 @@ we have been <a href="http://functional-programming.net/courses/">teaching it at
 <img src="http://tomasp.net/articles/type-first-development/tfd.png" class="rdecor" />
 
 <p>Using functional programming language changes the way you write code in a number
-of ways. Many of the changes are at a <em>small-scale</em>. For example, you learn how to express 
+of ways. Many of the changes are at a <em>small-scale</em>. For example, you learn how to express
 computations in a shorter, more declarative way using higher-order functions.
 However, there are also many changes at a <em>large-scale</em>. The most notable one
-is that, when designing a program, you start thinking about the (data) types 
+is that, when designing a program, you start thinking about the (data) types
 that represent the data your code works with.</p>
 
 <p>In this article, I describe this approach. Since the acronym TDD is already taken,
@@ -48,13 +48,13 @@ I call the approach Type-First Development (TFD), which is probably a better nam
 The development is not <em>driven</em> by types. It <em>starts</em> with types, but the rest of the
 implementation can still use test-driven development for the implementation.</p>
 
-<p>This article demonstrates the approach using a case study from a real life: 
-My example is a project that I started working on with a friend who needed a 
-system to log journeys with a company car (for expense reports). Using the 
+<p>This article demonstrates the approach using a case study from a real life:
+My example is a project that I started working on with a friend who needed a
+system to log journeys with a company car (for expense reports). Using the
 type-first approach made it easier to understand and discuss the problem.</p>
 
 <p>In many ways, TFD is a very simple approach, so this article just gives a name
-to a practice that is quite common among functional and F# programmers (and 
+to a practice that is quite common among functional and F# programmers (and
 we have been <a href="http://functional-programming.net/courses/">teaching it at our F# trainings</a> for the last year).</p>
 
 <div style="clear:both;font-size:90%;border:1px solid #381400;background:#ded0b0;font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif; margin:10px 30px 30px 30px; padding:4px;">
@@ -63,15 +63,15 @@ we have been <a href="http://functional-programming.net/courses/">teaching it at
 
 <h2>Preamble</h2>
 
-<p>Ideas for this article occurred to me when reading an interesting post 
+<p>Ideas for this article occurred to me when reading an interesting post
 on <a href="http://www.tikalk.com/incubator/type-driven-design/">type driven design</a>.
 The article discusses quite different aspects of types, but it starts with an
 inspiring quote:</p>
 
 <blockquote>
-  <p>When writing code in a statically typed language sometimes types are 
-considered as orthogonal to the logic of the code. We write them to appease 
-the compiler, or get performance or IntelliSense &amp; navigation, but all of 
+  <p>When writing code in a statically typed language sometimes types are
+considered as orthogonal to the logic of the code. We write them to appease
+the compiler, or get performance or IntelliSense &amp; navigation, but all of
 these has no relation to the code itself.</p>
 
   <p>This is wrong.</p>
@@ -80,7 +80,7 @@ these has no relation to the code itself.</p>
 <p>How do I use types when writing code in F#? First of all, I use them as a
 useful notation for quickly and easily writing down ideas about program design
 and as a specification of a program. And I believe this is the case for many
-other F# programmers. In fact, this use of types is not limited to 
+other F# programmers. In fact, this use of types is not limited to
 <em>statically-typed languages</em>. I think it applies similarly to other functional
 languages, although Scheme or LISP programmers would probably talk about
 <em>data structures</em> instead of <em>types</em>.</p>
@@ -95,30 +95,30 @@ I believe the F# code should be understandable to less technical people too).</p
 
 <h3>Designing Journey log types</h3>
 
-<p>The purpose of the application is to calculate how expensive were various car 
+<p>The purpose of the application is to calculate how expensive were various car
 journeys, how much money was spent for different cars etc. However, the first
-question is, what data the application processes? 
-It needs to record date when a journey started, driver's name, total distance and, 
-most importantly, a list of refuelings. In F#, this can be written as the 
+question is, what data the application processes?
+It needs to record date when a journey started, driver's name, total distance and,
+most importantly, a list of refuelings. In F#, this can be written as the
 following (record) type:</p>
 
 <pre class="fssnip">
 <span class="k">type</span> <span onmouseout="hideTip(event, 'ft13', 17)" onmouseover="showTip(event, 'ft13', 17)" class="i">Refueling</span> <span class="o">=</span> <span id="ftt14" onmouseout="hideTip(event, 'ft14', 18)" onmouseover="showTip(event, 'ft14', 18, document.getElementById('ftt14'))" class="omitted">(...)</span>
 
-<span class="k">type</span> <span onmouseout="hideTip(event, 'ft15', 19)" onmouseover="showTip(event, 'ft15', 19)" class="i">Journey</span> <span class="o">=</span> 
-  { <span onmouseout="hideTip(event, 'ft16', 20)" onmouseover="showTip(event, 'ft16', 20)" class="i">Start</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft17', 21)" onmouseover="showTip(event, 'ft17', 21)" class="i">DateTime</span> 
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft15', 19)" onmouseover="showTip(event, 'ft15', 19)" class="i">Journey</span> <span class="o">=</span>
+  { <span onmouseout="hideTip(event, 'ft16', 20)" onmouseover="showTip(event, 'ft16', 20)" class="i">Start</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft17', 21)" onmouseover="showTip(event, 'ft17', 21)" class="i">DateTime</span>
     <span onmouseout="hideTip(event, 'ft18', 22)" onmouseover="showTip(event, 'ft18', 22)" class="i">Driver</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft19', 23)" onmouseover="showTip(event, 'ft19', 23)" class="i">string</span>
     <span onmouseout="hideTip(event, 'ft20', 24)" onmouseover="showTip(event, 'ft20', 24)" class="i">Distance</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 25)" onmouseover="showTip(event, 'ft7', 25)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 26)" onmouseover="showTip(event, 'ft3', 26)" class="i">km</span><span class="o">&gt;</span>
     <span onmouseout="hideTip(event, 'ft21', 27)" onmouseover="showTip(event, 'ft21', 27)" class="i">Refueling</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft22', 28)" onmouseover="showTip(event, 'ft22', 28)" class="i">list</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft21', 29)" onmouseover="showTip(event, 'ft21', 29)" class="i">Refueling</span><span class="o">&gt;</span> }</pre>
 
 
 <p>At this point, we do not know what <code>Refueling</code> represents, but we could already
-define a type representing <code>Journey</code>. Note that I use a type <code>float&lt;km&gt;</code> for distance - 
+define a type representing <code>Journey</code>. Note that I use a type <code>float&lt;km&gt;</code> for distance -
 this is using F# <em>units of measure</em>, which make it possible to attach unit information
 to types (and check them at compile time), but it also serves as a useful documentation.</p>
 
 <p>The next question is, what information does the application have about refuelings?
-In other words, what is the declaration of the <code>Refueling</code> type. Here, the story is 
+In other words, what is the declaration of the <code>Refueling</code> type. Here, the story is
 more interesting:</p>
 
 <ul>
@@ -127,18 +127,18 @@ more interesting:</p>
 <li>We can use a canister (in which case we log everything except for a price)</li>
 </ul>
 
-<p>For all refuelings, we need to log the state of the total kilometer counter 
+<p>For all refuelings, we need to log the state of the total kilometer counter
 (showing the total number of kilometers traveled so far in the car) and fuel
 (in some cars you can combine biodiesel and diesel, etc.) This leads us to the
 following F# type declarations:</p>
 
 <pre class="fssnip">
-<span class="k">type</span> <span onmouseout="hideTip(event, 'ft23', 30)" onmouseover="showTip(event, 'ft23', 30)" class="i">RefuelingKind</span> <span class="o">=</span> 
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft23', 30)" onmouseover="showTip(event, 'ft23', 30)" class="i">RefuelingKind</span> <span class="o">=</span>
   | <span onmouseout="hideTip(event, 'ft24', 31)" onmouseover="showTip(event, 'ft24', 31)" class="i">FillTank</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft6', 32)" onmouseover="showTip(event, 'ft6', 32)" class="i">PricePerUnit</span>
   | <span onmouseout="hideTip(event, 'ft25', 33)" onmouseover="showTip(event, 'ft25', 33)" class="i">FillCanister</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'ft6', 34)" onmouseover="showTip(event, 'ft6', 34)" class="i">PricePerUnit</span>
   | <span onmouseout="hideTip(event, 'ft26', 35)" onmouseover="showTip(event, 'ft26', 35)" class="i">UseCanister</span>
 
-<span class="k">type</span> <span onmouseout="hideTip(event, 'ft27', 36)" onmouseover="showTip(event, 'ft27', 36)" class="i">Refueling</span> <span class="o">=</span> 
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft27', 36)" onmouseover="showTip(event, 'ft27', 36)" class="i">Refueling</span> <span class="o">=</span>
   { <span onmouseout="hideTip(event, 'ft28', 37)" onmouseover="showTip(event, 'ft28', 37)" class="i">Counter</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 38)" onmouseover="showTip(event, 'ft7', 38)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft3', 39)" onmouseover="showTip(event, 'ft3', 39)" class="i">km</span><span class="o">&gt;</span>
     <span onmouseout="hideTip(event, 'ft29', 40)" onmouseover="showTip(event, 'ft29', 40)" class="i">Fuel</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft29', 41)" onmouseover="showTip(event, 'ft29', 41)" class="i">Fuel</span>
     <span onmouseout="hideTip(event, 'ft30', 42)" onmouseover="showTip(event, 'ft30', 42)" class="i">Amount</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'ft7', 43)" onmouseover="showTip(event, 'ft7', 43)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft4', 44)" onmouseover="showTip(event, 'ft4', 44)" class="i">litre</span><span class="o">&gt;</span>
@@ -148,19 +148,19 @@ following F# type declarations:</p>
 <p>For the <code>Refueling</code> type is again written as a record that combines all information we want
 to keep for every refueling. The specific details are captured by <code>RefuelingKind</code>. This is
 an F# discriminated union - a type that can have <em>either</em> <code>FillTank</code> value, <code>FillCanister</code> value
-or <code>UseCanister</code> value. For the first two cases, we need to keep the price per litre. 
+or <code>UseCanister</code> value. For the first two cases, we need to keep the price per litre.
 The two remaining types, <code>Fuel</code> and <code>PricePerUnit</code> can be defined as follows:</p>
 
 <pre class="fssnip">
 <span class="k">type</span> <span onmouseout="hideTip(event, 'ft32', 47)" onmouseover="showTip(event, 'ft32', 47)" class="i">PricePerUnit</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'ft7', 48)" onmouseover="showTip(event, 'ft7', 48)" class="i">float</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'ft5', 49)" onmouseover="showTip(event, 'ft5', 49)" class="i">GBP</span> <span class="o">/</span> <span onmouseout="hideTip(event, 'ft4', 50)" onmouseover="showTip(event, 'ft4', 50)" class="i">litre</span><span class="o">&gt;</span>
-<span class="k">type</span> <span onmouseout="hideTip(event, 'ft33', 51)" onmouseover="showTip(event, 'ft33', 51)" class="i">Fuel</span> <span class="o">=</span> 
+<span class="k">type</span> <span onmouseout="hideTip(event, 'ft33', 51)" onmouseover="showTip(event, 'ft33', 51)" class="i">Fuel</span> <span class="o">=</span>
   | <span onmouseout="hideTip(event, 'ft9', 52)" onmouseover="showTip(event, 'ft9', 52)" class="i">Biodiesel</span> | <span onmouseout="hideTip(event, 'ft10', 53)" onmouseover="showTip(event, 'ft10', 53)" class="i">Diesel</span> | <span onmouseout="hideTip(event, 'ft11', 54)" onmouseover="showTip(event, 'ft11', 54)" class="i">LPG</span> | <span onmouseout="hideTip(event, 'ft12', 55)" onmouseover="showTip(event, 'ft12', 55)" class="i">Gasoline</span></pre>
 
 
 <p>The <code>PricePerUnit</code> type is a type alias specifying that price is measured in GBP per litre.
 Again, we can use F# units of measure to capture this additional information (later in the
-implementation, the compiler will check that we use the number correctly and, i.e. always 
-multiply it by amount when calculating total price). The <code>Fuel</code> type is a simple 
+implementation, the compiler will check that we use the number correctly and, i.e. always
+multiply it by amount when calculating total price). The <code>Fuel</code> type is a simple
 discriminated union that simply lists the different fuels (although we might later want
 to change it and make the system more extensible).</p>
 
@@ -169,8 +169,8 @@ to change it and make the system more extensible).</p>
 <img src="http://tomasp.net/articles/type-first-development/uml.png" class="rdecor" />
 
 <p>What have we achieved so far? We described the <em>domain model</em> for the Journey log application
-with less than 20 lines of code. When writing the code for the first time, I typed a few 
-type declarations, explained them to my friend and he gave me feedback saying what was 
+with less than 20 lines of code. When writing the code for the first time, I typed a few
+type declarations, explained them to my friend and he gave me feedback saying what was
 wrong with my first design. This means that the process was quite collaborative and
 iterative.</p>
 
@@ -178,9 +178,9 @@ iterative.</p>
 right. You can see that the F# types quite closely correspond to what you would draw as
 a UML diagram (although the detailed meaning is a bit different).</p>
 
-<p>However, there is one major benefit in writing the ideas down as <em>code</em>. The code is 
+<p>However, there is one major benefit in writing the ideas down as <em>code</em>. The code is
 executable. As you develop the application, you will add documentation, evolve the code
-in many ways, but the <em>core domain</em> can still stay as a reasonably short single file 
+in many ways, but the <em>core domain</em> can still stay as a reasonably short single file
 in your project and it will always be <em>in sync</em>. New developers joining the project
 (or a person coming back to it after some time) can just read that single file and get
 a very good idea about the project.</p>
@@ -188,12 +188,12 @@ a very good idea about the project.</p>
 <h3>Adding Journey log functionality</h3>
 
 <p>The discussion so far was focused on types that are used to represent the <em>data</em> that the
-application works with. However, type-first development is equally useful if we want to 
+application works with. However, type-first development is equally useful if we want to
 focus on the <em>behaviour</em>. What kind of operations we expect from the Journey log application?</p>
 
-<p>One task that we need for producing expenses is to calculate how much was spent on 
+<p>One task that we need for producing expenses is to calculate how much was spent on
 individual fuels in a given month (or, perhaps an arbitrary date range). Another
-important task is to calculate what the average prices per kilometer for LPG, Gasoline 
+important task is to calculate what the average prices per kilometer for LPG, Gasoline
 and other fuels are. In a type-first development, we start by writing the types of
 the functions:</p>
 
@@ -211,23 +211,23 @@ the functions:</p>
 that work with journey log always take <code>JourneyLog</code> as their first argument.</p>
 
 <p>The function <code>reportExpenses</code> takes <code>DateTime * TimeSpan</code>, which represents a date range and
-the kind of <code>Fuel</code> we are interested in. The result is a price in pounds, represented 
+the kind of <code>Fuel</code> we are interested in. The result is a price in pounds, represented
 as <code>float&lt;GBP&gt;</code>. Units of measure are again very useful - they clearly inform us that the
 result is price (as opposed to, i.e. fuel consumption, which would be <code>float&lt;litre/kilometer&gt;</code>).
-The function <code>averagePrice</code> takes journey log, fuel and calculates a price per kilometer 
+The function <code>averagePrice</code> takes journey log, fuel and calculates a price per kilometer
 (as specified by the type <code>float&lt;GBP / kilometer&gt;</code>).</p>
 
 <h3>Reading function types</h3>
 
 <img src="http://tomasp.net/articles/type-first-development/flow.png" class="rdecor" />
 
-<p>By looking at the type signature, you can get a reasonably good idea about what the 
-operation might do (this is even more the case for higher-order functions as discussed 
+<p>By looking at the type signature, you can get a reasonably good idea about what the
+operation might do (this is even more the case for higher-order functions as discussed
 in the <a href="http://www.tikalk.com/incubator/type-driven-design/">type driven design</a>
 article).</p>
 
-<p>One important aspect of function types is that they tell you what results you can 
-get from what inputs (and how). The diagram on the right demonstrates this in a 
+<p>One important aspect of function types is that they tell you what results you can
+get from what inputs (and how). The diagram on the right demonstrates this in a
 bit more complicated scenario. Aside from <code>JourneyLog</code>, we also have a type <code>ExpenseList</code>
 that represents a list of expense reports.</p>
 
@@ -237,9 +237,9 @@ that represents a list of expense reports.</p>
 can obtain <code>Invoice</code> using <code>printInvoice</code>.</p>
 
 <p>This is a fairly simple example, but it demonstrates an important fact. If you use
-types to represent different data structures that your code uses, the types of 
+types to represent different data structures that your code uses, the types of
 functions tell you how you can process such data structures. When reading code, you
-can often use function types to understand what is happening. For example, in the 
+can often use function types to understand what is happening. For example, in the
 diagram, we can only go from <code>JourneyLog</code> to <code>ExpenseList</code>, so the function probably
 only uses some of the information from journey log. However, it is worth storing the
 result in a separate data type (<code>ExpenseList</code>), so the expense list is probably used
@@ -248,7 +248,7 @@ in a number of ways in the application.</p>
 <h2>Type-First Development</h2>
 
 <p>The example above demonstrated what I call type-first development (TFD). As discussed
-earlier, I believe this is a method that many users of F# and similar languages 
+earlier, I believe this is a method that many users of F# and similar languages
 (perhaps more Haskell than Scala) use in practice. Let me now describe a few key
 points about this approach.</p>
 
@@ -271,19 +271,19 @@ is emphasized by other techniques like <a href="http://en.wikipedia.org/wiki/Beh
 <h3>2. TFD enables quick prototyping</h3>
 
 <p>The code that you need to write to get a complete list of definitions that model your
-problem domain is very short (at least, in languages like F#). This means that you 
-do not have to worry about doing it wrong. You can start by writing down some types 
+problem domain is very short (at least, in languages like F#). This means that you
+do not have to worry about doing it wrong. You can start by writing down some types
 and if you see they do not correspond to your domain, simply throw the first version away.</p>
 
-<p>When you have <em>data types</em> describing your domain and <em>function types</em> describing the 
+<p>When you have <em>data types</em> describing your domain and <em>function types</em> describing the
 behaviour, you can start implementing some of the functions, but it is similarly easy
 to write an incomplete, mock implementation just to have something you can test.</p>
 
 <h3>3. TFD works well with testing</h3>
 
-<p>This leads us to the next point. Type-first development (TFD) works very well with 
-test-driven development (TDD). In some way, when writing types, we are writing only 
-code that is necessary to write our first tests. Once we write the type of a function 
+<p>This leads us to the next point. Type-first development (TFD) works very well with
+test-driven development (TDD). In some way, when writing types, we are writing only
+code that is necessary to write our first tests. Once we write the type of a function
 such as <code>averagePrice</code>, you can start writing tests for the function and based on these
 tests, you can then fill-in the implementation of the function.</p>
 
@@ -307,32 +307,32 @@ have).</p>
 <h2>Summary</h2>
 
 <p>In this article, I described a development style that often comes with functional
-programming languages such as F#. It was partly inspired by a related article on 
+programming languages such as F#. It was partly inspired by a related article on
 <a href="http://www.tikalk.com/incubator/type-driven-design/">type driven design</a>,
 but I discussed the topic from a different perspective - instead of looking at types
 technically, I tried to highlight what they mean in practice, for the <em>development style</em>.</p>
 
-<p>The key idea of the type-first development (TFD) is that we start designing and 
+<p>The key idea of the type-first development (TFD) is that we start designing and
 prototyping applications by writing the types they work with. In F#, this is done
 by writing type declarations (using records and discriminated unions), but the same
 methodology can work in other languages - even in dynamically typed ones.</p>
 
 <p>As demonstrated by a simple case study, focusing on the types first gives you a very
-powerful way to communicate and prototype ideas about design. Using types is very 
-developer-friendly approach, but I believe that it is accessible to any somewhat 
+powerful way to communicate and prototype ideas about design. Using types is very
+developer-friendly approach, but I believe that it is accessible to any somewhat
 technical person. Moreover, the methodology works well with test-driven development
 style and it helps writing extensible code.</p>
 
-<p>Of course, no one size fits all. There are clearly scenarios where TFD is not the 
+<p>Of course, no one size fits all. There are clearly scenarios where TFD is not the
 right way. As mentioned, it is very developer centric and so if you need to work with
-non-technical analysts or customers on a complex projects, approaches like 
+non-technical analysts or customers on a complex projects, approaches like
 <a href="http://en.wikipedia.org/wiki/Behavior-driven_development">behaviour-driven development (BDD)</a>
 may be more relevant.</p>
 
 <h3>References</h3>
 <ul>
   <li><a href="http://www.lucacardelli.name/Papers/TypefulProg.pdf">Luca Cardelli: Typeful Programming</a> (PDF) - describes the idea of typeful programming, which is similar to what is discussed in this article. It emphasizes types and describes various sophisticated uses.</li>
-  <li><a href="http://www.tikalk.com/incubator/type-driven-design/">Ittay Dror: Type Driven Design</a> - an article that inspired this one. It describes the use of types from a more advanced perspective, mainly for understanding behaviour of programs.</li>
+  <li><a href="https://web.archive.org/web/20170119182544/http:/www.tikalk.com/incubator/type-driven-design/">Ittay Dror: Type Driven Design</a> (archived <a href="http://www.tikalk.com/incubator/type-driven-design/">from</a>) - an article that inspired this one. It describes the use of types from a more advanced perspective, mainly for understanding behaviour of programs.</li>
 </ul>
 
 <!-- HTML for Tool Tips -->
