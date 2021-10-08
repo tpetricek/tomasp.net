@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono&family=Kreon:wght@300;400;500;600&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>  
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <script src="/custom/tooltips.js" type="text/javascript"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#004C6B">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#004C6B">    
+  
+  <title>Composable data visualizations - Tomas Petricek</title>
+
+  <meta name="description" content=" Compost is a data visualization library that lets you compose rich interactive data
+visualizations from a small number of basic primitives. The library is based on the
+functional programming idea of composable domain-specific languages. This functional
+programming pearl is a tutorial that introduces Compost through a wide range of examples." />
+  <meta name="keywords" content="academic, publication, top, home, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Composable data visualizations" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/academic/papers/compost/" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content=" Compost is a data visualization library that lets you compose rich interactive data
+visualizations from a small number of basic primitives. The library is based on the
+functional programming idea of composable domain-specific languages. This functional
+programming pearl is a tutorial that introduces Compost through a wide range of examples." />
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Composable data visualizations" />
+  <meta name="twitter:image" content="" />
+  <meta name="twitter:description" content=" Compost is a data visualization library that lets you compose rich interactive data
+visualizations from a small number of basic primitives. The library is based on the
+functional programming idea of composable domain-specific languages. This functional
+programming pearl is a tutorial that introduces Compost through a wide range of examples." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Composable data visualizations",
+    "headline": "Composable data visualizations",
+  	"description": " Compost is a data visualization library that lets you compose rich interactive data
+visualizations from a small number of basic primitives. The library is based on the
+functional programming idea of composable domain-specific languages. This functional
+programming pearl is a tutorial that introduces Compost through a wide range of examples.",
+  	"url": "http://tomasp.net/academic/papers/compost/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2021-06-17T00:00:00.0000000",
+  	"datePublished": "2021-06-17T00:00:00.0000000",
+    "dateModified": "2021-06-17T00:00:00.0000000",
+    "mainEntityOfPage": "http://tomasp.net/academic/papers/compost/",
+  	"image": "",
+  	"thumbnailUrl": "",
+  	"keywords": ["academic", "publication", "top", "home",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+  
+</head>
+<body class="default">  
+    
+  <span class="tplink"><a href="/">TP</a></span>
+
+  <article class='article publication''>
+    <h1>Composable data visualizations</h1>
+<blockquote>
+<p>Tomas Petricek</p>
+<p>Journal of Functional Programming, vol. 31, 2021</p>
+</blockquote>
+<p>When visualizing data, you have to choose between high-level data visualization libraries
+such as Google Charts or low-level libraries like D3. In high-level libraries, you specify
+the type of chart you want, but you are limited to the features that the author of the library
+implemented. With low-level libraries, you have full control over the look of the chart, but
+you have to tediously transform your values to coordinates in pixels yourself.</p>
+<p>What would an elegant functional approach to data visualization look like? A functional programmer
+would want a domain-specific language that has a small number of primitives that allow us to define
+high level abstractions such as a bar chart, but does not limit what we can do. When creating
+charts, we should be able to use domain values such as a currency exchange rate, rather than pixels
+in its basic building blocks.</p>
+<p>As is often the case with domain-specific languages, finding the right primitives is more of an art
+than science. For this reason, we present our solution, a library named Compost, as a functional
+pearl. We hope to convince the reader that Compost is elegant and we illustrate this with a wide
+range of examples</p>
+<h2>Paper and more information</h2>
+<ul>
+<li>Download <a href="jfp.pdf">local copy (PDF)</a> or <a href="https://www.cambridge.org/core/journals/journal-of-functional-programming/article/composable-data-visualizations/CFC3E7AFACBEE62AE3AC70AD6DF4F3D5">through open-access</a></li>
+<li>Learn more at <a href="https://compostjs.github.io/compost/">the Compost.js project home page</a></li>
+</ul>
+<h2>Sample chart</h2>
+<p>The following brief example, from the <a href="https://compostjs.github.io/compost/">project homepage</a>
+shows how to use the Compost JavaScript API to create a chart that combines a line chart,
+showing the GBP-USD exchange rate, with a two-part background distinguishing the time before
+the Brexit vote and after the Brexit vote.</p>
+<script src="https://compostjs.github.io/compost/releases/compost-latest.js"></script>
+<script src="https://compostjs.github.io/compost/lib/docs.js"></script>
+<div id="demo" class="compost-out" style="max-width:600px;height:250px;margin:30px auto 10px auto"></div>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Exchange rate range for the background</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">lo</span> <span class="o">=</span> <span class="n">1.25</span><span class="pn">,</span> <span class="id">hi</span> <span class="o">=</span> <span class="n">1.52</span><span class="pn">;</span>
+<span class="c">// Overlay three shapes and add axes on three sides</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">xchg</span> <span class="o">=</span> <span class="id">c</span><span class="pn">.</span><span class="id">axes</span><span class="pn">(</span><span class="s">&quot;left right bottom&quot;</span><span class="pn">,</span> <span class="id">c</span><span class="pn">.</span><span class="id">overlay</span><span class="pn">(</span><span class="pn">[</span>
+  <span class="c">// Fill area behind first 16 values in blue</span>
+  <span class="id">c</span><span class="pn">.</span><span class="id">fillColor</span><span class="pn">(</span><span class="s">&quot;#1F77B460&quot;</span><span class="pn">,</span>  <span class="id">c</span><span class="pn">.</span><span class="id">shape</span><span class="pn">(</span>
+    <span class="pn">[</span> <span class="pn">[</span><span class="n">0</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="id">lo</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="n">16</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs1', 4)" onmouseover="showTip(event, 'fs1', 4)" class="id">lo</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="n">16</span><span class="pn">,</span><span class="id">hi</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="n">0</span><span class="pn">,</span><span class="id">hi</span><span class="pn">]</span> <span class="pn">]</span><span class="pn">)</span><span class="pn">)</span><span class="pn">,</span>
+  <span class="c">// Fill area behind the remaining values in red</span>
+  <span class="id">c</span><span class="pn">.</span><span class="id">fillColor</span><span class="pn">(</span><span class="s">&quot;#D6272860&quot;</span><span class="pn">,</span>  <span class="id">c</span><span class="pn">.</span><span class="id">shape</span><span class="pn">(</span>
+    <span class="pn">[</span> <span class="pn">[</span><span class="id">gbpusd</span><span class="pn">.</span><span class="id">length</span><span class="o">-</span><span class="n">1</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs1', 5)" onmouseover="showTip(event, 'fs1', 5)" class="id">lo</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="n">16</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs1', 6)" onmouseover="showTip(event, 'fs1', 6)" class="id">lo</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="n">16</span><span class="pn">,</span><span class="id">hi</span><span class="pn">]</span><span class="pn">,</span> <span class="pn">[</span><span class="id">gbpusd</span><span class="pn">.</span><span class="id">length</span><span class="o">-</span><span class="n">1</span><span class="pn">,</span><span class="id">hi</span><span class="pn">]</span> <span class="pn">]</span><span class="pn">)</span><span class="pn">)</span><span class="pn">,</span>
+  <span class="c">// Draw a black line using &#39;gbpusd&#39; array</span>
+  <span class="id">c</span><span class="pn">.</span><span class="id">strokeColor</span><span class="pn">(</span><span class="s">&quot;#202020&quot;</span><span class="pn">,</span> <span class="id">c</span><span class="pn">.</span><span class="id">line</span><span class="pn">(</span><span class="id">gbpusd</span><span class="pn">.</span><span class="id">map</span><span class="pn">(</span><span class="pn">(</span><span class="id">v</span><span class="pn">,</span> <span class="id">i</span><span class="pn">)</span> <span class="o">=&gt;</span> <span class="pn">[</span><span class="id">i</span><span class="pn">,</span> <span class="id">v</span><span class="pn">]</span><span class="pn">)</span><span class="pn">)</span><span class="pn">)</span>
+<span class="pn">]</span><span class="pn">)</span><span class="pn">)</span><span class="pn">;</span>
+<span class="c">// Render chart on &amp;lt;div id=&quot;demo&quot; /&amp;gt;</span>
+<span class="id">c</span><span class="pn">.</span><span class="id">render</span><span class="pn">(</span><span class="s">&quot;demo&quot;</span><span class="pn">,</span> <span class="id">xchg</span><span class="pn">)</span><span class="pn">;</span>
+</code></pre></td>
+</tr>
+</table>
+<script type="text/javascript">
+// Exchange rate range for the background
+let lo = 1.25, hi = 1.52;
+// Overlay three shapes and add axes on three sides
+let xchg = c.axes("left right bottom", c.overlay([
+  // Fill area behind first 16 values in blue
+  c.fillColor("#1F77B460",  c.shape(
+    [ [0,lo], [16,lo], [16,hi], [0,hi] ])),
+  // Fill area behind the remaining values in red
+  c.fillColor("#D6272860",  c.shape(
+    [ [gbpusd.length-1,lo], [16,lo], [16,hi], [gbpusd.length-1,hi] ])),
+  // Draw a black line using 'gbpusd' array
+  c.strokeColor("#202020", c.line(gbpusd.map((v, i) => [i, v])))
+]));
+// Render chart on &lt;div id="demo" /&gt;
+c.render("demo", xchg);
+</script>
+<h2><a id="cite">Bibtex</a></h2>
+<p>If you want to cite the paper, you can use the following BibTeX information.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="tex">@article{compost-jfp2021,
+  author={Petricek, Tomas},
+  title={Composable data visualizations},
+  volume={31},
+  doi={10.1017/S0956796821000046},
+  journal={Journal of Functional Programming},
+  publisher={Cambridge University Press},
+  year={2021},
+}
+</code></pre></td></tr></table>
+<p>If you have any comments, suggestions or related ideas, I'll be happy to
+hear from you! Send me an email at <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a>
+or get in touch via Twitter at <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a>.</p>
+<div class="tip" id="fs1">val lo : float * bool</div>
+<div class="tip" id="fs2">val xchg : obj</div>
+
+
+    <div class="info">
+    <p class="share">
+        <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2facademic%2fpapers%2fcompost%2f&amp;text=Composable+data+visualizationsvia+%40tomaspetricek">
+          <i class="fab fa-twitter-square"></i></a>
+        <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2facademic%2fpapers%2fcompost%2f">
+          <i class="fab fa-facebook-square"></i></a>
+        <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2facademic%2fpapers%2fcompost%2f&title=Composable+data+visualizations">
+          <i class="fab fa-reddit-square"></i></a>
+        <a href="mailto:?subject=Composable%20data%20visualizations&body=%20Compost%20is%20a%20data%20visualization%20library%20that%20lets%20you%20compose%20rich%20interactive%20data%0d%0avisualizations%20from%20a%20small%20number%20of%20basic%20primitives.%20The%20library%20is%20based%20on%20the%0d%0afunctional%20programming%20idea%20of%20composable%20domain-specific%20languages.%20This%20functional%0d%0aprogramming%20pearl%20is%20a%20tutorial%20that%20introduces%20Compost%20through%20a%20wide%20range%20of%20examples.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2facademic%2fpapers%2fcompost%2f">
+          <i class="fa fa-envelope"></i></a>
+    </p>
+    <p class="details">
+      <strong>Published:</strong> Thursday, 17 June 2021, 12:00 AM<br />
+      <strong>Author:</strong> Tomas Petricek<br />
+      <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+       
+      
+    </p>
+    </div>
+  </article>
+
+  
+  <footer>
+  <div class="footer-body">
+    <div class="fl70"><div class="fmr">
+      <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      <p>
+      
+      <a href="/blog/archive/october_2021/">October 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2021/">April 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2020/">October 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2020/">July 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2019/">December 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2018/">October 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2018/">May 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2017/">September 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+      </p>
+    </div></div>
+    <div class="fr30"><div class="fmr">
+      <h4>License and about</h4>
+      <p>All articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fab fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fab fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div></div>
+  </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</body>
+</html>
