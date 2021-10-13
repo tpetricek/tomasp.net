@@ -66,8 +66,7 @@ still open new windows when you open a detailed view or start writing a new emai
 As told in [The Internet's Original Sin](https://www.theatlantic.com/technology/archive/2014/08/advertising-is-the-internets-original-sin/376041/),
 the first use of `window.open` for advertising was probably at the [Tripod.com](https://en.wikipedia.org/wiki/Tripod.com)
 web hosting site, which used it to disassociate the advertisements from the (potentially
-not-safe-for-work) content hosted on the site by its users. While the original intent was
-not particularly
+not-safe-for-work) content hosted on the site by its users.  
 
 Since then, pop-ups became _"one of the most hated tools in the advertiser's toolkit."_
 The early web allowed opening pop-ups whenever a web page wanted. You could successfully
