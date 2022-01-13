@@ -3,7 +3,7 @@
  - description: Many beloved programming system like Smalltalk and LISP are image-based.
      This encourages exploration and allows flexibility, but it makes collaboration hard.
      We tackle the problem of schema change in image-based programming systems using static types.
- - tags: academic, publication, home
+ - tags: academic, publication
  - layout: article
  - icon: fa fa-edit
  - date: 19 October 2021
