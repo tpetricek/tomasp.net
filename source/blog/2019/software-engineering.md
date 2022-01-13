@@ -55,7 +55,7 @@ students know some of the practices, tools and methodologies that they are using
 
 
 <div style="max-width:550px;padding:10px" class="rdecor">
-<img class="img-responsive" src="ibm.jpg" style="border:solid 6px black" />
+<img src="ibm.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 Consequently, _software engineering_ becomes just a course trying to cover _whatever methods and
@@ -113,7 +113,7 @@ mean...
 ### 1.2 Where Software Engineering comes from
 
 <div style="max-width:600px;padding:10px" class="rdecor">
-<img class="img-responsive" src="nato.jpg" style="border:solid 6px black" />
+<img src="nato.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 In the 1960s programming appeared to be a black art. Some programmers were good at it, but there was no
@@ -178,7 +178,7 @@ but that does not mean it is any less _fundamental_. It's just a different kind 
 ### 2.1 Historically situated Software Engineering
 
 <div style="max-width:550px;padding:10px" class="rdecor">
-<img class="img-responsive" src="snowbird.jpg" style="border:solid 6px black" />
+<img src="snowbird.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 If you came here for a list of topics that I think we should teach in a software engineering
@@ -218,7 +218,7 @@ about a system in a more readable form is definitely worth discussing. Again, I 
 methods need to be discussed with an appropriate context that explains when they work.
 
 <div style="max-width:600px;padding:10px" class="rdecor">
-<img class="img-responsive" src="pattern.jpg" style="border:solid 6px black" />
+<img src="pattern.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 * What was the context in which UML appeared and how does it compare to other methods such as
@@ -289,7 +289,7 @@ Given that software engineering is an essentially human discipline, the answer w
 mathematical. There are not many similar principles, but there are some:
 
 <div style="max-width:500px;padding:10px" class="rdecor">
-<img class="img-responsive" src="sdi.jpg" style="border:solid 6px black" />
+<img src="sdi.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 * One principle has been described in Fred Brooks' essay [No Silver Bullet][silver]. The
@@ -346,7 +346,7 @@ If we are teaching Software Engineering, we need to expand our focus and also ou
 because a good Software Engineering course will need to be different.
 
 <div style="max-width:300px;padding:10px" class="rdecor">
-<img class="img-responsive" src="modern.jpg" style="border:solid 6px black" />
+<img src="modern.jpg" style="border:solid 6px black;width:100%" />
 </div>
 
 If learning software engineering at a university taught you the same things as learning software
