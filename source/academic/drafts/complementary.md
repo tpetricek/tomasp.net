@@ -27,6 +27,13 @@ ideas from, against all odds, Commodore 64 BASIC.
  - Download [the HaPoC extended abstract (PDF)](hapoc-2021.pdf)
  - Check out [the related Commodore 64 interactive essay](http://tomasp.net/commodore64)
 
+## Talk recording
+Watch a pre-recorded talk for the History and Philosophy of Computing Symposium:
+
+<div style="padding:5px 20px 0px 20px;position:relative;">
+<div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/669588847?h=dbbcad3c1d&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Complementary science of interactive programming systems (HaPoC 2021)"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
+</div>
+
 ## Comments are welcome!
 
 If you have any comments, suggestions or related ideas, I'll be happy to
