@@ -12,7 +12,7 @@ On architecture, urban planning and software construction
  - references: true
  - image-large: http://tomasp.net/blog/2020/cities-and-programming/siding.jpg
  - icon: fa fa-home
- - tags: academic, programming languages, philosophy, design
+ - tags: academic, programming languages, philosophy, design, architecture
 
 ----------------------------------------------------------------------------------------------------
 

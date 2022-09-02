@@ -10,7 +10,7 @@ Software designers, not engineers: An interview from alternative universe
  - layout: article
  - icon: fa fa-monument
  - image: http://tomasp.net/blog/2021/software-designers/ways-sq.png
- - tags: academic, research, design, philosophy
+ - tags: academic, research, design, philosophy, architecture
 
 ----------------------------------------------------------------------------------------------------
 
