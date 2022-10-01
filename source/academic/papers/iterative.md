@@ -1,6 +1,8 @@
 # The Gamma: Programmatic Data Exploration for Non-programmers
 
- - description:
+ - description: Data exploration tools based on code can access any data source, result in reproducible scripts and encourage users
+    to verify, reuse and modify existing code, but can we make them accessible to non-experts? The Gamma is a novel text-based
+    data exploration tool that answers the question in the affirmative. 
  - tags: academic, publication, top, home
  - layout: article
  - icon: fa fa-search
