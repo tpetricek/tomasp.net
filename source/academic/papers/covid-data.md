@@ -3,7 +3,7 @@
  - description: This paper charts responses to urgent appeals by welfare charities through crowd
     funding websites  in order to examine the impact of the Covid-19 pandemic on public generosity
     and social cohesion in the UK.
- - tags: academic, publication, top, home
+ - tags: academic, publication, top
  - layout: article
  - icon: fa fa-disease
  - date: 6 December 2021

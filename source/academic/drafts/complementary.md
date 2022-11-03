@@ -4,7 +4,7 @@
      ideas that could be utilized by present-day computer scientists? This paper argues that this
      is the case and presents an early experiment that recovers a number of interesting programming
      ideas from, against all odds, Commodore 64 BASIC.
- - tags: academic, publication, home
+ - tags: academic, publication
  - icon: fa fa-terminal
  - layout: article
  - date: 28 October 2021
