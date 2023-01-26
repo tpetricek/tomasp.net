@@ -43,8 +43,9 @@ If you want to cite the paper, you can use the following BibTeX information.
     [lang=tex]
     @unpublished{typedimage-hatra21,
       author = {Edwards, Jonathan and Petricek, Tomas},
-      title  = {Foundations of a live data exploration environment},
-      note   = {Online at \url{http://tomasp.net/academic/papers/typed-image}},
+      title  = {Typed Image-based Programming with Structure Editing},
+      note   = {Presented at Human Aspects of Types and Reasoning Assistants (HATRA).
+                Online at \url{http://tomasp.net/academic/papers/typed-image}},
       year   = {2021}
     }
 
