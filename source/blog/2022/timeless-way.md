@@ -9,7 +9,7 @@ The Timeless Way of Programming
     of ideas for better software and programming, triggered by reading of Alexander's book
     The Timeless Way of Building.
  - layout: article
- - icon: fa fa-magic
+ - icon: fa fa-torii-gate
  - image-large: http://tomasp.net/blog/2022/timeless-way/card.png
  - tags: academic, research, programming languages, architecture, design
  - references: true
