@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono&family=Kreon:wght@300;400;500;600&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <script src="/custom/tooltips.js" type="text/javascript"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#004C6B">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#004C6B">
+  
+  <title>Where programs live? Vague spaces and software systems - Tomas Petricek</title>
+
+  <meta name="description" content=" Terrain vague in a city is abandoned space without clear purpose. Does it also
+exist in programs and can we learn something useful about reading programs and the space in
+which program exist from the inter-disciplinary study of terrain vague in cities?" />
+  <meta name="keywords" content="research, academic, programming languages, design, architecture, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Where programs live? Vague spaces and software systems" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2023/vague-spaces/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2023/vague-spaces/zizkov.jpg" />
+  <meta property="og:description" content=" Terrain vague in a city is abandoned space without clear purpose. Does it also
+exist in programs and can we learn something useful about reading programs and the space in
+which program exist from the inter-disciplinary study of terrain vague in cities?" />
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Where programs live? Vague spaces and software systems" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2023/vague-spaces/zizkov.jpg" />
+  <meta name="twitter:description" content=" Terrain vague in a city is abandoned space without clear purpose. Does it also
+exist in programs and can we learn something useful about reading programs and the space in
+which program exist from the inter-disciplinary study of terrain vague in cities?" />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Where programs live? Vague spaces and software systems",
+    "headline": "Where programs live? Vague spaces and software systems",
+  	"description": " Terrain vague in a city is abandoned space without clear purpose. Does it also
+exist in programs and can we learn something useful about reading programs and the space in
+which program exist from the inter-disciplinary study of terrain vague in cities?",
+  	"url": "http://tomasp.net/blog/2023/vague-spaces/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2023-02-10T23:44:19.4904357+01:00",
+  	"datePublished": "2023-02-10T23:44:19.4904357+01:00",
+    "dateModified": "2023-02-10T23:44:19.4904357+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2023/vague-spaces/",
+  	"image": "http://tomasp.net/blog/2023/vague-spaces/zizkov.jpg",
+  	"thumbnailUrl": "http://tomasp.net/blog/2023/vague-spaces/zizkov.jpg",
+  	"keywords": ["research", "academic", "programming languages", "design", "architecture",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+
+</head>
+<body class="default">
+    
+  <span class="tplink"><a href="/">TP</a></span>
+
+  <article class='article''>
+    <h1><span class="hmq">Where programs live</span><span class="hs"> Vague spaces and software systems</span></h1>
+<p>Architecture and urban planning have been a useful source of ideas for thinking about programming.
+I have written <a href="https://tomasp.net/blog/tag/design/">various blog posts</a> and a paper
+<a href="https://tomasp.net/academic/papers/metaphors/">Programming as Architecture, Design, and Urban Planning</a>
+that argue why and explore some of those ideas. Like urban planning and architecture, the design of
+any interesting software system deals with complex problems that can rarely be analysed in full and
+with structures that will continue to evolve in unexpected ways after they are created.</p>
+<p>My most recent reading on cities was a book <a href="https://www.academia.cz/mesto-naruby-2-dotisk--haluzik-radan--academia--2021">The City Inside Out</a>
+(Czech only, unfortunately) that explore places referred to as <a href="https://www.atributosurbanos.es/en/terms/terrain-vague/">terrain vague</a>.
+This term refers to unused and abandoned spaces that have lost their purpose or
+do not have a clear use, but are used in various ways nevertheless. For various historical
+reasons, there seem to be quite a few of such places in Prague (Figure 1) and, more generally,
+Central European cities, which is the focus of the book.</p>
+<p>The book is an interesting inspiration for thinking about programming in many ways.
+It uses an inter-disciplinary approach ranging from history and philosophy to
+<a href="https://en.wikipedia.org/wiki/Paleoethnobotany">archaeobotany</a>, which is much needed for thinking
+about programming too. (Not archeobotany, but inter-disciplinary thinking certainly!)
+More specifically, it makes you think about the concept of a <em>space</em> in
+which cities and programs exist, how the spaces inhabited by the two differ, what would it look
+like if they were different and what structures get created in those spaces as a result of
+social and technical forces.</p>
+<div class="wdecor" style="text-align:center">
+<a href="https://iprpraha.cz/projekt/120/nakladove-nadrazi-zizkov"><img src="http://tomasp.net/blog/2023/vague-spaces/zizkov.jpg" style="max-width:100%;border:solid 4px black" /></a>
+<p><strong>Figure 1.</strong> Nákladové nádraží (freight railway station) Žižkov - an example of a large<br />
+space in Prague that no longer serves its original purpose (<a href="https://hotelove.cz/nakladove-nadrazi-zizkov/">photo source</a>)</p>
+</div>
+<h2>Vague spaces in programs and cities</h2>
+<p>I will start with the most concrete ideas and look at a couple of ways in which terrain vague
+emerges in cities, what is its structure and whether there are similar structures in programs
+or programming systems. It is worth saying that this metaphor for thinking about programs is,
+just like any other metaphor, not perfect. There are no truly unused structures or structures
+that serve no purpose in computer programs (unless you want to talk about dead code) and
+the nature of space in which cities and programs exists is different. Still, I think we can get
+some interesting ideas from thinking about the similarities.</p>
+<h3>Dialectic between the planned and the unplanned</h3>
+<div class="rdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/naruby.jpg" style="max-width:320px;border:solid 4px black" />
+<div style="max-width:320px">
+<p><strong>Figure 2.</strong> <a href="https://www.academia.cz/mesto-naruby-2-dotisk--haluzik-radan--academia--2021">Město naruby (The City Inside Out)</a>, Radan Haluzík, ed., Academia 2021</p>
+</div></div>
+<p>One way of understanding terrain vague is as <em>places that have not been intentionally planned</em>.
+In a city, this happens for historical reasons, when an place that had some purpose earlier
+no longer serves this purpose. This may be the case for a river port that is no longer used,
+abandoned factories or railways and other industrial areas. It also happens at what the authors
+of <a href="https://www.academia.cz/mesto-naruby-2-dotisk--haluzik-radan--academia--2021">The City Inside Out</a>
+call <em>inner borders</em>. Those borders may be created by a path that cuts through the city and
+separates it, such as a railway track, highway or a river, as well as at the boundaries of two
+clearly distinguishable regions such as an industrial complex and a residential district.</p>
+<p>The main surprising point made in the book is that the terrain vague is not just some temporarily
+forgotten area that will soon be redeveloped, eventually leading to a nice and clean "fully
+optimized" city. There is a dialectic relationship between the planned (city) and unplanned
+(vague spaces) and the two are in a mutual relationship. Creation of planned spaces inevitably
+also creates unplanned spaces at the borders or in temporarily unused areas. The existence of
+unplanned spaces creates the potential for redevelopment and the building of new planned structures.</p>
+<p>Vague spaces around old structures, as well as around carefully designed new structures also
+exist in software systems.</p>
+<h3>Historicity of unplanned spaces</h3>
+<div class="rdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/brana.jpg" style="max-width:400px;border:solid 4px black" />
+<div style="max-width:400px">
+<p><strong>Figure 3.</strong> <a href="https://en.wikipedia.org/wiki/The_Holocaust_in_Bohemia_and_Moravia">Gate of No Return memorial</a> at Praha-Bubny railway station
+commemorating the deportation of tens of thousands Jews via the station (<a href="http://www.tady.cz/dadajena1/120.htm">image source</a>)</p>
+</div></div>
+<p>The first and the most obvious source of unplanned spaces in cities is history. As cities evolve,
+large harbours, freight railway stations and industrial complexes are no longer needed for their
+original purpose and become vague spaces. Often, these also serve as reminder of troublesome
+history as is the case with the <a href="https://iprpraha.cz/project/66/bubny-zatory">Bubny-Zátory</a> district
+in Prague (Figure 3):</p>
+<blockquote>
+<p>Terrain vague refers to the state of memory of the society, more exactly to its
+displaced parts and sometimes even directly to societal traumas.</p>
+<div style="text-align:right;margin-top:10px"><p style="display:inline-block;max-width:400px">
+(Terrain vague as social memory and social mirror
+Radoslava Schmelzová in The City Inside Out)</p></div>
+</blockquote>
+<p>One interesting aspect of such historical spaces is that they do not follow the modern logic
+that is accepted in the rest of the city. The spaces had their own logic, but this may not be
+commensurable with our modern thinking about the city:</p>
+<blockquote>
+<p>A part of the well-being of each system is the presence of empty spaces, existing outside of
+the syntax of the system. Spaces, which preserve the fragments of older syntaxes (...) or
+spaces that simply remind us of the possibility of other syntaxes and of the existence of
+forces that shape our order as well as other orders.</p>
+<div style="text-align:right"><p style="display:inline-block;max-width:400px">
+(Empty spaces in cities (and their analogy), Michal Ajvaz in The City Inside Out)</p></div>
+</blockquote>
+<p>I believe the same is the case for large software systems. When a system is around for long
+enough, it will include legacy components that have not been fully replaced in recent rewrites
+or that are necessary for some arcane legacy reasons like the <a href="https://www.joelonsoftware.com/2000/05/24/strategy-letter-ii-chicken-and-egg-problems/">memory allocator hack
+in Windows 95</a>
+added to make SimCity work.</p>
+<p>The legacy code often has its own inner logic that may not be compatible with the new design
+and, as a result, requires various wrappers to be created. Such wrappers are quite like
+the terrain vague in cities. They are the result of historical processes and do not have their
+own purpose (in the sense of providing specific functionality), but are needed to make the new
+design and new logic work.</p>
+<p>I experienced this myself when working on a project that was replacing an existing data
+manipulation library in a C# system with the F# data frame library <a href="https://fslab.org/Deedle/">Deedle</a>.
+After replacing most of the existing logic with Deedle, we inevitably found a place where
+this was not easily doable and so fully ripping out the old code was not (an easy) option.
+But after some more investigation, it of course turned out that there was yet another bit of
+code for working with data tables, used only in one or two places, that was a leftover of an
+even earlier version of the system and was left in place for the very same reasons. I admit this
+is not a story to be proud of, but I'm afraid it is way too common and real.</p>
+<p>In those legacy parts of code base, we find the aforementioned spaces, <em>"which preserve the
+fragments of old syntaxes"</em> and <em>"remind us of the existence of forces that shape our order."</em>
+Just like we need to look at history in order to make sense of vague spaces, we often need to
+look at history in order to understand legacy code bases and their (now forgotten) inner logic.
+As with the terrain vague in cities, legacy bits of code surrounded by layers of wrappers
+also sometimes refer to [team] traumas.</p>
+<h3>Unplanned spaces around inner borders</h3>
+<div class="rdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/zlin.jpg" style="max-width:400px;border:solid 4px black" />
+<div style="max-width:400px">
+<p><strong>Figure 4.</strong> <a href="https://en.wikipedia.org/wiki/Zl%C3%ADn">Zlín, a "hypermodern industrial city with functionalist character"</a>
+with a separation between residential and working districts and vague spaces along the borders.
+(<a href="https://www.denik.cz/regiony/region-zlinsko-bude-bez-zlina-tratit20110411.html">image source</a>)</p>
+</div></div>
+<p>The second common source of vague spaces in cities are inner borders, either along linear paths
+or between districts with different inner logic. Modernist cities which assign different
+functions to separate districts would be one such example (Figure 4).
+To quote from The City Inside Out (with my poor translation):</p>
+<blockquote>
+<p>This conceptualization of the terrain vague as the meeting point of various kinds of order (...)
+[is an] adequate description of its physical form. (...) [Such spaces] are characterized
+by localization at the interface between different parts or functions of the city (...).
+These are places where it is difficult to predict what (...) will be around the corner.</p>
+<div style="text-align:right"><p style="display:inline-block;max-width:400px">
+(Terrain vague as a blind spot of urban planning, Cyril Říha in The City Inside Out)</p></div>
+</blockquote>
+<p>We can definitely find similar interfaces between different parts of a system in software systems.
+In the <a href="https://en.wikipedia.org/wiki/Microservices">microservice architecture</a>, each microservice
+is an independent component with its own function and own internal structure and logic. However,
+putting all those services together requires a lot of integration and infrastructure, or code
+that does not have any particular (application-specific) purpose.</p>
+<p>Terrain vague in this case would be all the tedious parsing, data marshalling, messaging and
+logging that has to be there in order to make the components with neat logical inner order work.
+(This also sounds similar to the idea of "dark twins" from <a href="https://amzn.to/3XeVSNm">Scott's Seeing Like a State</a>
+which are informal structures and practices that inevitably supplement modernist designs in
+order to make them actually work in practice.)</p>
+<p>The authors of The City Inside Out see "terrain vague as an unintended consequence of a master plan"
+of the city. In other words, any attempt to produce a logical order in a part of the city will
+also result in the inevitably vague borders around it. Moreover, the more rigid the structure
+is (the more zoning constraints there are), the larger and more vague spaces emerge around it.</p>
+<p>This seems to be the case with software systems as well. The more clearly you try to separate
+individual components and the more freedom they have in defining their own inner logic, the
+more "vague code" such as parsers, messaging, wrappers and integrations are needed:</p>
+<ul>
+<li>
+<p>In a microservice architecture, each service can not just use its own logic, but even a
+different language. The consequence is that each service also needs to parse and format data
+it is exchanging into a common format like JSON, requiring more "vague code".</p>
+</li>
+<li>
+<p>In a software system in a single language, organized using modules, some of the logic is the
+same across all the modules (they use the same language and may directly exchange data).
+There may still be some vague code to initialize and connect all the components.</p>
+</li>
+<li>
+<p>In a "spaghetti code" where code is not clearly separated into components, there is no
+clear overall logic, but this also eliminates a lot of the "vague code" that is needed in
+more structured approaches.</p>
+</li>
+</ul>
+<p>Having more freedom in defining a logic for individual components leads to more vague spaces
+as illustrated by the socialist housing estates in Prague (Figure 5) that were often greenfield
+developments with no restrictions imposed by neighbouring districts. In the world of software,
+various constraints arguably also lead to smaller amount of vague code. You will probably not
+find a lot of "vague code" in the <a href="https://github.com/id-Software/wolf3d">source code of Wolfenstein 3D</a>
+and other early highly optimized games. There just wasn't any "space" for it.</p>
+<div class="wdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/jizak.jpg" style="max-width:100%;border:solid 4px black" />
+<div style="max-width:80%;display:inline-block">
+<p><strong>Figure 5.</strong> <a href="https://en.wikipedia.org/wiki/Ji%C5%BEn%C3%AD_M%C4%9Bsto">Jižní Město housing estate</a>,
+built in the 1970s in Prague. This was a "radical" greenfield development with very few space constraints,
+making room for a lot of vague spaces (photo by Jaromír Čejka, <a href="https://vikend.hn.cz/c1-65448130-jizni-mesto-ctyricet-let-betonovych-krabicek-od-sirek-ktere-jako-by-nekomu-vypadly-z-kapsy">source</a>)</p>
+</div></div>
+<h2>Comparing program and city space</h2>
+<p>One objection against what I wrote about structures emerging in a city and structures emerging
+in software systems is that the nature of the space in which they exist is different. In particular,
+terrain vague in cities often exists in now fairly central areas that were once peripheral.
+Because the nature of the space is fixed, terrain vague ends up occupying valuable central space.
+No such fixed structure of space exists in programs, at least not at the first sight.</p>
+<ul>
+<li>
+<p><strong>City space.</strong> Cities exist in (more or less) two-dimensional fixed space. Areas of that
+space tend to be (temporarily) occupied by various districts, facilities or regions. There are
+physical borders between those areas and the areas evolve in time. Some of them lose their
+earlier function and become available for new uses while some expand.</p>
+</li>
+<li>
+<p><strong>Program space.</strong> Programs in conventional programming languages exist in space that can be
+arbitrarily created. There are links between components (method calls, nesting), but you can
+always allocate space for a new component (add a file or a class to a file) and create new links
+between existing areas and the new one. If an area is no longer needed (dead code) it can be
+removed and disappears from the space.</p>
+</li>
+</ul>
+<h3>Space in non-conventional programming systems</h3>
+<p>The above may be the case for current conventional main-stream programming systems, but
+there are quite a few systems that use space that is not as infinitely expandable as that in
+conventional programming languages. Here are a few examples:</p>
+<ul>
+<li>
+<p><strong>BASIC on Microcomputers</strong> where you have to prefix each line with a line number uses
+a sort of one-dimensional space. If you leave enough gaps in your numbering scheme, you can
+expand the space and you can also attach more space with <code>GOTO</code>, but you have to think about
+space when programming (and perhaps have different components in different line ranges).</p>
+</li>
+<li>
+<p><strong>Dynamicland</strong> (<a href="https://dynamicland.org/">read more</a>) embeds computation in ordinary physical
+space. (As far as I understand, there is still a lot of ordinary code too, but a large-scale
+computation taking a whole room would certainly have its vague spaces!)</p>
+</li>
+<li>
+<p><strong>Scratch and visual programming languages</strong> more generally typically exist in fixed (sometimes
+expandable) two-dimensional space. In something like Labview, the layout may correspond to
+physical layout of instruments. In Scratch, the two-dimensional space is (as far as I can see)
+not used in any meaningful way - a missed opportunity perhaps!</p>
+</li>
+<li>
+<p>And finally, <strong>Spreadsheets</strong> (Figure 6) are the obvious example of a programming system that
+exists in a space with interesting characteristics. Spreadsheet programs exist in three-dimensional
+space (grid + multiple sheets) where every location has a known address. The space is fairly
+fixed, although you can insert columns and rows.</p>
+</li>
+</ul>
+<p>Out of these, BASIC and Spreadsheets are perhaps the two that would deserve a more detailed
+analysis, because people have used them to create complex systems that evolved over time.
+I'm pretty sure that there are some, if unwritten, guidelines for how to use the limited space
+effectively when programming so that you avoid having clashes between districts with different logic.</p>
+<p>I'm not familiar enough with either of those to say whether there are vague spaces in
+BASIC or Excel programs at the border between different areas with inner logic. (Though I certainly
+have used the space just around a table in an Excel spreadsheet for adding random notes that
+would not fit into the table or for off-hand calculations like currency conversions, so perhaps
+those are good examples of terrain vague in spreadsheets.)</p>
+<div class="wdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/excel.png" style="max-width:100%;border:solid 4px black" />
+<div style="max-width:70%;display:inline-block">
+<p><strong>Figure 6.</strong> <a href="http://2050-calculator-tool-wiki.decc.gov.uk/">The UK 2050 calculator</a>
+is an Excel spreadsheet that "enables users to experiment with many different ways of
+meeting the UK’s target to reduce emissions 80% by 2050".</p>
+</div></div>
+<h3>Imagining new kinds of spaces</h3>
+<p>It would be interesting to characterize the different properties of the spaces used
+by the above (more interesting) programming system and think about what those properties
+allow. (And see if any of them correspond to properties of <a href="https://en.wikipedia.org/wiki/Topological_space">Topological
+spaces</a> known in mathematics.)
+A space in which program exists may be:</p>
+<ul>
+<li>
+<p><strong>Expandable,</strong> that is you can allocate more space in between existing things if you need
+to insert additional logic. This is true in conventional languages, to a limited extent in
+BASIC and often involves manually moving things around in visual languages.</p>
+</li>
+<li>
+<p><strong>Zoomable.</strong> You can "zoom in" to see more details. I'm not sure if any programming system
+does this in a satisfactory way - but I would like to be able to view program in space in
+a high-level way and be able to focus on details as needed.</p>
+</li>
+<li>
+<p><strong>Addressable,</strong> meaning that you can uniquely identify locations in the program. This is the
+case for spreadsheets and BASIC. In conventional programs, you can only address certain locations
+(methods). An interesting case is addressing of DOM elements using CSS, which makes it possible
+to address pretty much any part of the DOM space, but without primitive indices as in the case
+of BASIC line numbers.</p>
+</li>
+</ul>
+<p>I believe that if we think about the properties of space in which programs may exist more
+deeply, we can come up with interesting alternatives to the conventional "infinitely expandable"
+space. There are clear benefits of having more limited number of dimensions (you can better
+visualize it), addressability and zoomability.</p>
+<p>I do not expect we will ever be able to live in a city that exists in a space with characteristics
+other than those of our usual physical space. Yet, it would be fun to see what would the behaviour
+of the city be if someone created a city-building game (Figure 7) where you can arbitrarily expand
+space or create areas that are <em>bigger on the inside</em>.</p>
+<div class="wdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/simcity.png" style="max-width:100%;border:solid 4px black" />
+<div style="max-width:600px;display:inline-block">
+<p><strong>Figure 7.</strong> SimCity 2000 game screenshot. Could a game like this explore what cities
+would look like in a more flexible space?</p>
+</div></div>
+<h2>Ways of looking at computer programs</h2>
+<p>The authors of the book talk about a couple of feelings that are typical for terrain vague. One
+of those is the feeling of emptiness. When you enter a vague space in a city, it seems that
+there is not much there. But when you talk to locals, you'll soon find out this space has
+many uses. The feeling of emptiness does not come from a true emptiness of the space:</p>
+<blockquote>
+<p>It is not so much an emptiness, but a lack of central unified code, or even (as we may add here)
+unified sense and function, through which spaces we typically read, and perceive, spaces in a city.</p>
+<div style="text-align:right;margin-top:10px"><p style="display:inline-block;max-width:400px">
+(Introduction: Looking at the city from the inside out,
+Radan Haluzík in The City Inside Out)</p></div>
+</blockquote>
+<div class="rdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/prazelenina.jpg" style="max-width:500px;border:solid 4px black" />
+<div style="max-width:500px">
+<p><strong>Figure 8.</strong> <a href="https://prazelenina.cz">Prazelenina</a> - a community garden in Praha Holešovice, in
+a vague space near a former port (<a href="https://prazelenina.cz/pages/galerie/">image source</a>)</p>
+</div></div>
+<p>The authors talk about multiple overlapping layers of meaning in vague spaces. The old use of the
+space (and the structures that remain from those times) are interleaved with new emerging uses,
+both official and unofficial (Figure 8). When passing through the space, you can view it
+very differently depending on your perspective, none of which is quite in line with typical
+thinking about orderly city.</p>
+<p>Again, I find some of those perspectives very useful for thinking about programs. Like in cities,
+there are spaces that have _multiple overlapping layers of meaning that are not obvious to see
+and that may be read differently depending on how you look.</p>
+<h3>Clashes of narrative strategies</h3>
+<p>One example of the different reading of a space discussed in the book is a clash between
+locals who view the vague space as a park (and want it preserved) and planners who see it as
+brownfield (and want to redevelop it). This is an example of epistemic struggle between two
+perspectives that interpret the space through a different language and live in different
+(incommensurable) worlds.</p>
+<div class="rdecor" style="text-align:center">
+<img src="http://tomasp.net/blog/2023/vague-spaces/pi.png" style="max-width:400px;border:solid 4px black" />
+<div style="max-width:400px">
+<p><strong>Figure 9.</strong> <a href="https://www.ioccc.org/1989/roemer.c">roemer.c</a> from the
+Obfuscated C Contest (1989), which plays with the contrast between human and computer
+meaning of code (<span style="text-decoration:underline dashed" title="The code prints the number 'e'.">hint</span>).</p>
+</div></div>
+<p>The basic similar overlapping layers of meanings in software systems is the meaning as intended
+for the human reader of the code (supported by the names and comments) and the meaning as
+intended for the machine executing the program (to which all names and comments can be ignored).
+We typically try to keep those aligned (in a somewhat tricky sense), but you can also creatively
+abuse this multi-layered meaning (Figure 9).</p>
+<p>Another basic distinction is between the programmer and the user of a system. The way programmer
+looks at software system, while being aware of its internal logic, will inevitably be quite
+different from the look of a user.</p>
+<p>This is likely the case even between a different kinds of programmers looking at code. As someone
+interested in understanding the mathematical model that code implements, you will be looking at
+very different aspects of code than someone interested in reliable and reproducible deployment.
+Perhaps the epistemic struggles of terrain vague in cities can help programmers understand
+such issues about reading code better.</p>
+<h3>Exploring vague spaces</h3>
+<p>Reading code and finding your way through it is another topic that can take inspiration from
+city planning. It is also something that <a href="https://tomasp.net/blog/2020/cities-and-programming/">I have looked at before</a>
+(section 2.3), but focusing more on how could code be organized in order to be more legible.
+With terrain vague, we are facing spaces that are not (immediately) legible and that we want
+to explore in order to find somewhat unexpected and hidden points. Methodologies for doing this
+may suggest interesting ways of looking at code, perhaps complementing the obvious way
+where you focus on making sense of the program logic.</p>
+<p>In "How we researched the places in-between", the authors of The City Inside Out talk about
+various methodologies that they have used in order to map the vague spaces in a city.
+The idea, inspired by the <a href="https://en.wikipedia.org/wiki/D%C3%A9rive">Dérive strategy</a> is
+to explore the urban space in some systematic way that explicitly avoids using the typical
+strategies for moving in space (such as the ones you use when going to a shop).
+Their various strategies range from one where you take snapshots of the space and "zoom in"
+on what you find interesting to regular or random sampling of the physical space as well as
+to a strategy where you try to follow a fixed line through the space as closely as possible.</p>
+<p>Code of an unfamiliar software system could likely be read in similar ways:</p>
+<ul>
+<li>
+<p><strong>Zoom-in.</strong> Start at the entry point, pick an interesting method or a function call,
+look at that and continue until you reach a function with no further (internal) calls.
+After a few iterations, you will likely get a good sense of how deeply nested (and complex)
+or uniform the system is.</p>
+</li>
+<li>
+<p><strong>Random sampling.</strong> Just look at a number of randomly generated locations. You will likely
+see how much "core program logic" there is when contrasted with other things like tests,
+infrastructure, build scripts and so on.</p>
+</li>
+<li>
+<p><strong>Regular sampling.</strong> With more regularity in your samples, you can probably get a sense
+of the overall terrain. Are there many different areas, one big uniform space with a few
+additional (differently looking) spaces?</p>
+</li>
+<li>
+<p><strong>Following a line.</strong> Following the linear order of the code alphabetically (or in order
+defined by the language) is probably less interesting, though it will certainly reveal
+characteristics of languages that require <a href="https://fsharpforfunandprofit.com/series/dependency-cycles/">strict dependency ordering</a>.
+Perhaps there are other lines one could follow though!</p>
+</li>
+</ul>
+<p>All of these are probably interesting complements to the practice of "close reading" that
+exists in <a href="https://en.wikipedia.org/wiki/Critical_code_studies">critical code studies</a>. In close
+reading, one typically focuses on careful reading of a small snippet of code, unpacking its many
+connections with the social and cultural context. With the above, you may get a somewhat more
+technical perspective, but still one that forces you to not think just about the obvious
+question - what the code does - and understood more about how it has been written and what are
+its non-functional characteristics.</p>
+<h2>Potential and limitations of the city metaphor</h2>
+<p>In place of conclusions, I want to return to the dangers and virtues of using metaphors for
+thinking about programs and programming. There are certainly some ways in which thinking
+about terrain vague in cities can provide useful ideas for thinking about programs. I think
+seeing various wrappers (around sub-components or historical code) is one useful idea.
+Finding new strategies for navigating through and reading code is another one. Perhaps most
+importantly, the analysis of terrain vague in The City Inside Out is a nice example of how you
+can approach one problem from a wide range of perspectives. Similarly, analysis of programs
+should range from technical to historical, literary and philosophical.</p>
+<p>There are also some limitations that are apparent in my analysis. The most obvious one,
+that I discussed extensively, is that the nature of space in conventional programming
+languages is quite different from that of cities. In most programming systems, terrain
+vague is not occupying valuable central space that you would want to reclaim and use for
+redevelopment (as in the case of cities). But perhaps, if we had programming systems
+where this was the case, they would more explicitly require maintenance and, consequently,
+we would end up with long-living high quality systems that do not become obsolete.</p>
+
+
+    <div class="info">
+    <p class="share">
+        <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2023%2fvague-spaces%2f&amp;text=Where+programs+live%3f+Vague+spaces+and+software+systemsvia+%40tomaspetricek">
+          <i class="fab fa-twitter-square"></i></a>
+        <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2023%2fvague-spaces%2f">
+          <i class="fab fa-facebook-square"></i></a>
+        <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2023%2fvague-spaces%2f&title=Where+programs+live%3f+Vague+spaces+and+software+systems">
+          <i class="fab fa-reddit-square"></i></a>
+        <a href="mailto:?subject=Where%20programs%20live%3f%20Vague%20spaces%20and%20software%20systems&body=%20Terrain%20vague%20in%20a%20city%20is%20abandoned%20space%20without%20clear%20purpose.%20Does%20it%20also%0d%0aexist%20in%20programs%20and%20can%20we%20learn%20something%20useful%20about%20reading%20programs%20and%20the%20space%20in%0d%0awhich%20program%20exist%20from%20the%20inter-disciplinary%20study%20of%20terrain%20vague%20in%20cities%3f%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2023%2fvague-spaces%2f">
+          <i class="fa fa-envelope"></i></a>
+    </p>
+    <p class="details">
+      <strong>Published:</strong> Friday, 10 February 2023, 11:44 PM<br />
+      <strong>Author:</strong> Tomas Petricek<br />
+      <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+      
+        <strong>Tags:</strong> <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a>, <a
+          href="/blog/tag/design/">design</a>, <a
+          href="/blog/tag/architecture/">architecture</a></span><br />
+      
+    </p>
+    </div>
+  </article>
+
+
+  <footer>
+  <div class="footer-body">
+    <div class="fl70"><div class="fmr">
+      <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      <p>
+      
+      <a href="/blog/archive/february_2023/">February 2023 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2022/">September 2022 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2022/">April 2022 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2021/">October 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2021/">April 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2020/">October 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2020/">July 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2019/">December 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2018/">October 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2018/">May 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2017/">September 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+      </p>
+    </div></div>
+    <div class="fr30"><div class="fmr">
+      <h4>License and about</h4>
+      <p>All articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fab fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fab fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+      <p style="text-align:center;margin-top:15px;"><img src="http://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div></div>
+  </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</body>
+</html>
