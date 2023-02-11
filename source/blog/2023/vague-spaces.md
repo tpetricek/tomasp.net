@@ -360,7 +360,7 @@ very differently depending on your perspective, none of which is quite in line w
 thinking about orderly city.
 
 Again, I find some of those perspectives very useful for thinking about programs. Like in cities,
-there are spaces that have _multiple overlapping layers of meaning that are not obvious to see
+there are spaces that have _multiple_ overlapping layers of meaning that are not obvious to see
 and that may be read differently depending on how you look.
 
 ### Clashes of narrative strategies
