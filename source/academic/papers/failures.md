@@ -1,39 +1,39 @@
 # Miscomputation in software: Learning to live with errors
 
- - description:  Computer programs do not always work as expected. In fact, ominous warnings about 
-    the desperate state of the software industry continue to be released with almost ritualistic 
-    regularity. In this paper, we look at the 60 years history of programming and at the different 
+ - description:  Computer programs do not always work as expected. In fact, ominous warnings about
+    the desperate state of the software industry continue to be released with almost ritualistic
+    regularity. In this paper, we look at the 60 years history of programming and at the different
     practical methods that software community developed to live with programming errors.
- - tags: academic, publication, top, home
+ - tags: academic, publication, home
  - layout: article
  - icon: fa fa-bomb
  - date: 3 April 2017
  - title: Miscomputation in software: Learning to live with errors
  - subtitle: Tomas Petricek. The Art, Science, and Engineering of Programming, 2017
- 
+
 > Tomas Petricek
 >
 > The Art, Science, and Engineering of Programming, 2017
 
-Computer programs do not always work as expected. In fact, ominous warnings about the desperate 
+Computer programs do not always work as expected. In fact, ominous warnings about the desperate
 state of the software industry continue to be released with almost ritualistic regularity.
-In this paper, we look at the 60 years history of programming and at the different practical 
+In this paper, we look at the 60 years history of programming and at the different practical
 methods that software community developed to live with programming errors.
 
 We do so by observing a class of students discussing different approaches to programming errors.
 While learning about the different methods for dealing with errors, we uncover basic assumptions
-that proponents of different paradigms follow. We learn about the mathematical attempt to eliminate 
+that proponents of different paradigms follow. We learn about the mathematical attempt to eliminate
 errors through formal methods, scientific method based on testing, a way of building reliable
-systems through engineering methods, as well as an artistic approach to live coding that accepts 
+systems through engineering methods, as well as an artistic approach to live coding that accepts
 errors as a creative inspiration.
 
-This way, we can explore the differences and similarities among the different paradigms. By 
+This way, we can explore the differences and similarities among the different paradigms. By
 inviting proponents of different methods into a single discussion, we hope to open potential for
-new thinking about errors. When should we use which of the approaches? And what can software 
-development learn from mathematics, science, engineering and art? 
+new thinking about errors. When should we use which of the approaches? And what can software
+development learn from mathematics, science, engineering and art?
 
 When programming or studying programming, we are often enclosed in small communities and we
-take our basic assumptions for granted. Through the discussion in this paper, we attempt to 
+take our basic assumptions for granted. Through the discussion in this paper, we attempt to
 map the large and rich space of programming ideas and provide reference points for exploring,
 perhaps foreign, ideas that can challenge some of our assumptions.
 
@@ -62,7 +62,7 @@ If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
     @article{failures,
-      author  = {Petricek, Tomas}, 
+      author  = {Petricek, Tomas},
       title   = {Miscomputation in software: Learning to live with errors},
       journal = {The Art, Science, and Engineering of Programming},
       year    = {2017},
@@ -70,6 +70,6 @@ If you want to cite the paper, you can use the following BibTeX information.
       volume  = {1}
     }
 
-If you have any comments, suggestions or related ideas, I'll be happy to 
+If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
 or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).

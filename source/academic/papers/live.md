@@ -4,7 +4,7 @@
     They use few abstractions, work interactively and rely heavily on external libraries.
     We capture this way of working and build a programming environment that makes data exploration
     easier by providing instant live feedback.
- - tags: academic, publication, top, home
+ - tags: academic, publication, home
  - layout: article
  - icon: fa fa-sync
  - date: 1 March 2020

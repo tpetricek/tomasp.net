@@ -20,7 +20,7 @@ Olympic Games are perfect opportunity to do a fun data visualization project - j
 will happen and you can get something interesting ready in advance. I used this year's
 Games in Rio as a motivation to resume working on [The Gamma
 project](http://tomasp.net/blog/2016/thegamma-dni/). If you did not read my [previous
-article](http://localhost:11112/blog/2016/thegamma-dni/),
+article](http://tomasp.net/blog/2016/thegamma-dni/),
 the idea is to build tooling for open, reproducible and interactive data-driven storytelling.
 When you see a visualization, not only you should be able to see how it has been created
 (what data it uses & how), but you should also be able to modify it, without much programming

@@ -11,11 +11,12 @@ open Suave.WebSocket
 open System.Diagnostics
 
 // --------------------------------------------------------------------------------------
-// Local Suave server for debugging 
+// Local Suave server for debugging
 // --------------------------------------------------------------------------------------
 
 let fullPath p = Path.GetFullPath(__SOURCE_DIRECTORY__ </> p)
-let root = "http://tomasp.net"
+let root1 = "http://tomasp.net"
+let root2 = "https://tomasp.net"
 let output = fullPath "../../output"
 let layouts = fullPath "../layouts"
 
@@ -36,20 +37,21 @@ let wsRefresh = """
 
 // All generated content is index files in directories. When serving
 // them, we replace absolute links & inject websocket code for refresh
-let handleDir dir = 
+let handleDir dir =
   let html = File.ReadAllText(output </> dir </> "index.html")
-  html.Replace(root, sprintf "http://localhost:%d" port)
+  html.Replace(root1, sprintf "http://localhost:%d" port)
+      .Replace(root2, sprintf "http://localhost:%d" port)
       .Replace("</body", wsRefresh + "</body")
   |> Successful.OK
 
-let app = 
+let app =
   choose [
     path "/websocket" >=> handShake (fun ws ctx -> async {
       let msg = System.Text.Encoding.UTF8.GetBytes "refreshed"
       while true do
         do! refreshEvent.Publish |> Control.Async.AwaitEvent
         do! ws.send Text msg true |> Async.Ignore
-      return Choice1Of2 () }) 
+      return Choice1Of2 () })
     path "/" >=> request (fun _ -> handleDir "")
     pathScan "/%s/" handleDir
     Files.browseHome ]
@@ -65,15 +67,15 @@ let startServer () =
   let cts = new System.Threading.CancellationTokenSource()
   Async.Start(start, cts.Token)
 
-let worker = 
-  let psi = 
+let worker =
+  let psi =
     ProcessStartInfo
-      ( FileName = (__SOURCE_DIRECTORY__  </> "../packages/FSharp.Compiler.Tools/tools/fsi.exe"), 
-        Arguments = "tools/update.fsx", UseShellExecute = false, 
-        RedirectStandardOutput = true, RedirectStandardInput = true)  
+      ( FileName = (__SOURCE_DIRECTORY__  </> "../packages/FSharp.Compiler.Tools/tools/fsi.exe"),
+        Arguments = "tools/update.fsx", UseShellExecute = false,
+        RedirectStandardOutput = true, RedirectStandardInput = true)
   Process.Start(psi)
 
-let invokeUpdate cmd changes = 
+let invokeUpdate cmd changes =
   worker.StandardInput.WriteLine(cmd + " " + String.concat " " changes)
   let mutable s = ""
   while (s <- worker.StandardOutput.ReadLine(); s <> "DONE") do printfn "%s" s
@@ -85,26 +87,26 @@ let invokeUpdate cmd changes =
 Target "run" (fun () ->
   invokeUpdate "updateall" []
   let all = __SOURCE_DIRECTORY__ </> ".."  |> Path.GetFullPath
-  use _watcher = 
-    !! (all </> "**/*.*") -- (all </> ".ionide.debug") -- (all </> "packages" </> "**/*.*") 
+  use _watcher =
+    !! (all </> "**/*.*") -- (all </> ".ionide.debug") -- (all </> "packages" </> "**/*.*")
     |> WatchChanges (fun e ->
       printfn "Changed files"
       for f in e do printfn " - %s" f.Name
-      let cmd, changes = 
+      let cmd, changes =
         if e |> Seq.exists (fun f -> f.FullPath.StartsWith(layouts)) then "updateall", set []
         else "update", (set [ for f in e -> f.FullPath ])
-      try 
-        invokeUpdate cmd changes 
+      try
+        invokeUpdate cmd changes
         refreshEvent.Trigger ()
         trace "Site updated successfully..."
       with e ->
-        traceException e 
+        traceException e
         traceError "Updating site failed!" )
-  
+
   startServer ()
   Diagnostics.Process.Start(sprintf "http://localhost:%d" port) |> ignore
   trace "Waiting for changes, press Enter to stop...."
-  Console.ReadLine () |> ignore 
+  Console.ReadLine () |> ignore
 )
 
 Target "update" (fun () ->
