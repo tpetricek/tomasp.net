@@ -77,7 +77,7 @@ often not very well explained and so the general perception is more like this:
 
 <img src="tweets.png" style="margin:10px 0px 30px 40px;" alt="Proof by Tweet!" />
 
-This is something hat we tried to clarify in the upcoming PADL 2014 paper which explains
+This is something that we tried to clarify in the upcoming PADL 2014 paper which explains
 how computation expression fit with standard abstract computation types _such as_ monads
 and shows what makes them unique. If you're interested in the details, then follow the link 
 to the paper below. In the rest of the blog post, I'll try to give a quick summary with one 
