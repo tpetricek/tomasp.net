@@ -55,7 +55,7 @@ may or may not be entirely coincidental. It has been largely inspired by the boo
 > article about you and your work and it calls you a _softwarenova_. I'm curious what this means.
 
 I do not really like the term, but it is a portmanteau inspired by the term [starchitect](https://en.wikipedia.org/wiki/Starchitect)
-that is used to describe architects with celebrity status. Someone in our universe though it would
+that is used to describe architects with celebrity status. Someone in our universe thought it would
 be witty to combine the terms _software_ and _supernova_ to talk about influential software
 designers.
 
@@ -89,7 +89,7 @@ method of synthesis and its objective is appropriateness.
 
 Well, when we start a software project, we think of it in more general terms. A typical form
 of what you call _specification_ in our world is a bit more like a [design brief](https://en.wikipedia.org/wiki/Design_brief).
-A much more space is dedicated to the context in which the work is happening, the problem that
+Much more space is dedicated to the context in which the work is happening, the problem that
 you are trying to solve and constraints that you are facing, but design briefs say very little
 about any specific potential software solution to the problem.
 

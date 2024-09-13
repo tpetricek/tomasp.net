@@ -385,7 +385,7 @@ and can specify additional parameters.
 The fact that makes custom operations interesting is that they can have types such 
 as `TreeZipper<'T> -> TreeZipper<'T>` which is exactly the type of our navigational
 operations. The syntax allows other operations - such as zipping, grouping and
-joinging - but we will not need these in this article.
+joining - but we will not need these in this article.
 
 To add navigational operations, transformations and getter for the current element,
 we can write the following code:
