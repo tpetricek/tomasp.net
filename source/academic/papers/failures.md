@@ -4,7 +4,7 @@
     the desperate state of the software industry continue to be released with almost ritualistic
     regularity. In this paper, we look at the 60 years history of programming and at the different
     practical methods that software community developed to live with programming errors.
- - tags: academic, publication, home
+ - tags: academic, publication, top
  - layout: article
  - icon: fa fa-bomb
  - date: 3 April 2017

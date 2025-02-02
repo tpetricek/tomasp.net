@@ -8,13 +8,13 @@
  - tags: academic, publication, top, home
  - layout: article
  - icon: fa fa-wand-magic-sparkles
- - date: 3 November 2022
+ - date: 3 September 2023
  - title: AI Assistants: A Framework for Semi-Automated Data Wrangling
- - subtitle: Tomas Petricek, Gerrit J J van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K I Williams. IEEE Transactions on Knowledge and Data Engineering, 2022
+ - subtitle: Tomas Petricek, Gerrit J J van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K I Williams. IEEE Transactions on Knowledge and Data Engineering, 2023
 
 > Tomas Petricek, Gerrit J.J. van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K. I. Williams.
 >
-> IEEE Transactions on Knowledge and Data Engineering (TKDE), To appear 2022
+> IEEE Transactions on Knowledge and Data Engineering (TKDE), 2023
 
 Data wrangling tasks such as obtaining and linking data from various sources, transforming data
 formats, and correcting erroneous records, can constitute up to 80% of typical data engineering work.
@@ -35,6 +35,8 @@ it easy to perform tasks that would be difficult to do manually or with a fully 
 ## Paper and more information
 
  - Download the [paper pre-print (PDF)](tkde.pdf)
+ - Get the official [journal version from
+    IEEE](https://www.computer.org/csdl/journal/tk/2023/09/09953543/1IlJyZsPxwQ)
  - Download an [archival copy from arXiv](https://arxiv.org/abs/2211.00192)
 
 ## <a id="cite">Bibtex</a>
@@ -45,10 +47,14 @@ If you want to cite the paper, you can use the following BibTeX information.
       author={Petricek, Tomas and van den Burg, Gerrit J.J. and Nazábal, Alfredo
         and Ceritli, Taha and Jiménez-Ruiz, Ernesto and Williams, Christopher K. I.},
       title={AI Assistants: A Framework for Semi-Automated Data Wrangling},
-      volume={To appear},
+      year={2023},
+      volume={35},
+      number={09},
+      ISSN={1558-2191},
+      pages={9295-9306},
+      doi={10.1109/TKDE.2022.3222538},
+      publisher={IEEE Computer Society},
       journal={IEEE Transactions on Knowledge and Data Engineering},
-      publisher={IEEE},
-      year={2022},
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

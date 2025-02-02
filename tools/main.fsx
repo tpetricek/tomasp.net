@@ -76,7 +76,7 @@ let worker =
   Process.Start(psi)
 
 let invokeUpdate cmd changes =
-  worker.StandardInput.WriteLine(cmd + " " + String.concat " " changes)
+  worker.StandardInput.WriteLine(cmd + ";" + String.concat ";" changes)
   let mutable s = ""
   while (s <- worker.StandardOutput.ReadLine(); s <> "DONE") do printfn "%s" s
 
