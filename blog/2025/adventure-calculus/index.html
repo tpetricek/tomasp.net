@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono&family=Kreon:wght@300;400;500;600&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="alternate" type="application/rss+xml" title="Latest news from Tomas Petricek" href="/rss.xml" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <link href="/custom/style.css" rel="stylesheet">
+  <link href="/custom/tooltips.css" rel="stylesheet">
+  <script src="/custom/tooltips.js" type="text/javascript"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-big.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/img/favicon-big.png">
+  <meta name="msapplication-TileColor" content="#004C6B">
+  <meta name="msapplication-TileImage" content="/img/favicon-big.png">
+  <meta name="theme-color" content="#004C6B">
+  
+  <title>Choose Your Own Adventure Calculus - Tomas Petricek</title>
+
+  <meta name="description" content=" How do we formally model and understand interaction with programming systems?
+The choose-your-own-adventure calculus is a small model of an interaction pattern that we find
+in data exploration, data wrangling or interactive theorem proving. The calculus lets us
+talk about the pattern and study its different properties, much like formal models based on
+the lambda calculus let us understand programming languages." />
+  <meta name="keywords" content="research, academic, programming languages, thegamma, type providers, " />  
+  <meta name="author" content="Tomas Petricek" />
+  <meta name="copyright" content="Tomas Petricek" />
+  
+  <meta property="og:title" content="Choose Your Own Adventure Calculus" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="http://tomasp.net/blog/2025/adventure-calculus/" />
+  <meta property="og:image" content="http://tomasp.net/blog/2025/adventure-calculus/def.png" />
+  <meta property="og:description" content=" How do we formally model and understand interaction with programming systems?
+The choose-your-own-adventure calculus is a small model of an interaction pattern that we find
+in data exploration, data wrangling or interactive theorem proving. The calculus lets us
+talk about the pattern and study its different properties, much like formal models based on
+the lambda calculus let us understand programming languages." />
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:site" content="@tomaspetricek">
+  <meta name="twitter:creator" content="@tomaspetricek">  
+  <meta name="twitter:title" content="Choose Your Own Adventure Calculus" />
+  <meta name="twitter:image" content="http://tomasp.net/blog/2025/adventure-calculus/def.png" />
+  <meta name="twitter:description" content=" How do we formally model and understand interaction with programming systems?
+The choose-your-own-adventure calculus is a small model of an interaction pattern that we find
+in data exploration, data wrangling or interactive theorem proving. The calculus lets us
+talk about the pattern and study its different properties, much like formal models based on
+the lambda calculus let us understand programming languages." />
+    
+  <script type="application/ld+json">
+  {
+  	"@context": "http:\/\/schema.org",
+  	"@type": "Article",
+  	"name": "Choose Your Own Adventure Calculus",
+    "headline": "Choose Your Own Adventure Calculus",
+  	"description": " How do we formally model and understand interaction with programming systems?
+The choose-your-own-adventure calculus is a small model of an interaction pattern that we find
+in data exploration, data wrangling or interactive theorem proving. The calculus lets us
+talk about the pattern and study its different properties, much like formal models based on
+the lambda calculus let us understand programming languages.",
+  	"url": "http://tomasp.net/blog/2025/adventure-calculus/",
+  	"author": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	},
+  	"creator": ["Tomas Petricek"],
+  	"dateCreated": "2025-02-02T14:52:03.4153334+01:00",
+  	"datePublished": "2025-02-02T14:52:03.4153334+01:00",
+    "dateModified": "2025-02-02T14:52:03.4153334+01:00",
+    "mainEntityOfPage": "http://tomasp.net/blog/2025/adventure-calculus/",
+  	"image": "http://tomasp.net/blog/2025/adventure-calculus/def.png",
+  	"thumbnailUrl": "http://tomasp.net/blog/2025/adventure-calculus/def.png",
+  	"keywords": ["research", "academic", "programming languages", "thegamma", "type providers",  "tomas", "petricek"],
+  	"inLanguage": "en-us",
+  	"publisher": {
+  		"@type": "Person",
+  		"name": "Tomas Petricek",
+  		"url": "http://tomasp.net",
+      "logo": "http://tomasp.net/img/favicon-big.png",
+  		"sameAs": ["http://twitter.com/tomaspetricek"]
+  	}
+  }  
+  </script>
+
+</head>
+<body class="default">
+    
+  <span class="tplink"><a href="/">TP</a></span>
+
+  <article class='article''>
+    <h1>Choose Your Own Adventure Calculus</h1>
+<p>The rule of three suggests that if you encounter the same pattern for the third time in your
+code, you should refactor it into a reusable abstraction. The same thing applies in programming
+language theory. When you find that you are doing the same thing for the third time, it is
+probably a good idea to stop and think - is there a general pattern?</p>
+<div class="rdecor" style="max-width:400px;text-align:center">
+<img src="https://tomasp.net/blog/2025/adventure-calculus/olympics.png" style="width:100%" />
+<p><strong>Figure 1.</strong> Auto-completion list showing possible operations in The Gamma</p>
+</div>
+<p>In my <a href="https://tomasp.net/academic/theses/coeffects/" title="Tomas Petricek (2017). Context-aware programming languages">PhD thesis on context-aware computations</a>, I did exactly this. When we realised
+that liveness analysis, resource tracking and checking of data-flow computations all require
+type system with similar structure, we came up with the idea of <em>coeffects</em>, which is an
+abstraction that can capture all three (and so, you only need to add one mechanism for
+tracking context into your language).</p>
+<p>Recently, the same thing happened to me again. A lot of my work has been around interaction
+with <a href="https://tomasp.net/techdims/" title="Joel Jakubovic, Jonathan Edwards, Tomas Petricek (2023). Technical dimensions of programming systems">programming systems</a>. I am interested in looking not just at the programming
+languages, but also the stateful, interactive systems they are part of - and how programs are
+created through interactive editor tools, gradually revised in notebook systems or how proofs
+are created in interactive proof assistants. And interestingly, in three recent collaborations
+around those ideas, we ended up finding a very similar pattern.</p>
+<p>In multiple different systems, we encountered a pattern where the programming system
+iteratively offers the user (programmer, data scientist, proof theoretician) a choice of
+options that the user can choose from to construct or refine their program (see Figure 1).
+In all systems, the user can also edit the code in other ways, but a lot (sometimes
+everything!) can be done just by choosing options.</p>
+<p>I now have three examples, so it is time to describe the general pattern. Earlier,
+we called this (jokingly) dot-driven development, (seriously) AI assistants and (foolishly)
+iterative prompting. For the lack of a better name, I will refer to the abstraction
+as the <em>choose-your-own-adventure calculus</em>.</p>
+<div style="display:none">
+<p><span class="math">\[\newcommand{\sigmaN}{\sigma_0}
+\newcommand{\choose}{\textit{choose}}
+\newcommand{\preview}{\textit{preview}}
+\newcommand{\links}{\textit{links}}
+\newcommand{\choices}{\textit{choices}}
+\newcommand{\op}{\textit{op}}
+\newcommand{\argmax}{\textit{arg}\,\textit{max}\,}\]</span></p>
+</div>
+<h2>The three examples</h2>
+<p>I'll start by going through the three specific instances of the interaction pattern, starting
+from data exploration (using a type provider) and data wrangling to the most example, which
+we encountered in work on interactive theorem proving.</p>
+<h3>Data exploration in The Gamma</h3>
+<p><a href="https://tomasp.net/academic/papers/inforich/" title="Don Syme, Keith Battocchi, Kenji Takeda, Donna Malayeri and Tomas Petricek (2013). Themes in Information-Rich Functional Programming for Internet-Scale Data Sources">F# type providers</a> are a mechanism that lets you integrate external data sources
+into the F# type system. Type providers generate types behind the scenes, based on some external
+schema or sample, and you can then access data using the generated types. Often, this involves
+typing "." to see what is available in the data source. For example, if you are reading a JSON
+using the <a href="https://tomasp.net/academic/papers/fsharp-data/" title="Tomas Petricek, Gustavo Guerra, Don Syme (2016). Types from data Making structured data first-class citizens in F#">F# Data</a> library, you will be navigating through nested records using a
+series of "." (<a href="https://x.com/ptrelford">Phil Trelford</a> is to blame for the term dot-driven
+development that we sometimes jokingly used for this and I borrowed the Choose Your Own
+Adventure reference from the infamous <a href="https://web.archive.org/web/20230328042629/http://www.pinksquirrellabs.com/blog/2013/07/29/choose-your-own-adventure-type-provider/">Choose Your Own Adventure Type
+Provider</a>).</p>
+<p>When working on F# Data, it occurred to me that you could use the same style of working not just
+for navigation through data sources, but also for constructing queries. The result was
+<a href="https://thegamma.net">The Gamma</a>, a web-based tool that lets you explore data using type
+providers and is designed to be used by non-programmers (like journalists). In The Gamma, you
+can write SQL-like queries just by typing "." and choosing one of the offered options (Figure 2).</p>
+<script>function swap(el) { el.src = (el.src.indexOf("-still") > 0) ?
+ el.src.replace("-still","") : el.src.replace(".gif", "-still.gif") }</script>
+<a href="javascript:swap(document.getElementById('thegamma'));">
+<img id="thegamma" src="thegamma-still.gif" style="max-width:90%;margin:0px 5% 0px 5%"/>
+</a>
+<p style="margin-bottom:20px;text-align:center"><strong>Figure 2.</strong> Aggregating Olympic medal data using
+The Gamma type provider (click to play).</p>
+<p>I've <a href="https://tomasp.net/academic/papers/pivot/" title="Tomas Petricek (2017). Data exploration through dot-driven development">written about TheGamma</a> and how it lets <a href="https://tomasp.net/academic/papers/iterative/" title="Tomas Petricek (2022). The Gamma Programmatic Data Exploration for Non-programmers">non-programmers construct code</a>
+already, so I will not go into the details here. The type provider that is used in the example
+keeps track of the current schema of the data and generates types that let you construct operations
+that make sense based on the structure of the data. This is done lazily, because the structure is
+potentially infinite.</p>
+<p>The system also generates a live preview (which <a href="https://tomasp.net/academic/papers/live/" title="Tomas Petricek (2020). Foundations of a live data exploration environment">is computed efficiently</a>)
+and the operations users can choose from the auto-completion can also be sometimes constructed
+by interacting with the live preview. For example, when constructing the aggregation operation,
+the drop-down can be used to select the key and the "+" button on the right lets you add
+aggregations.</p>
+<p>But the key point is the interaction pattern. You start with an empty query and you repeatedly
+choose one item from the auto-complete list to construct an entire program.</p>
+<h3>Cleaning data with AI assistants</h3>
+<p>The second instance of the interaction pattern comes from the <a href="https://www.turing.ac.uk/research/research-projects/artificial-intelligence-data-analytics-aida">AI for Data Analytics</a>
+project that I was involved with at <a href="https://turing.ac.uk">The Alan Turing Institute</a>.
+As part of the project, a number of colleagues created various automatic AI-based data cleaning
+tools, such as <a href="https://github.com/alan-turing-institute/datadiff">datadiff</a> that merges CSV files
+in mismatching formats or <a href="https://github.com/alan-turing-institute/CleverCSV">CleverCSV</a> that
+infers CSV file format parameters. All of these worked in something like 80-95% cases, but in
+the remaining case, they needed some hint from the user. This was typically done by tweaking some
+parameters, such as increasing a weight or disabling some part of the logic - a pretty fiddly
+interaction!</p>
+<p>To make tweaking the results easier, we came up with an idea of turning the existing automatic
+tools into semi-automatic <a href="https://tomasp.net/academic/papers/ai-assistants/" title="Tomas Petricek, Gerrit J.J. van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K. I. Williams (2022). AI Assistants A Framework for Semi-Automated Data Wrangling">AI assistants</a>. An AI assistant tries to solve the problem
+automatically and generates an initial solution, but it also generates a number of constraints
+that the user can choose from to adapt the initial solution. If the initial solution is not
+correct, the user chooses a constraint and the AI assistant runs again, respecting the constraint.
+After adding one or two constraints, you get the right result.</p>
+<p>The Figure 3 shows an example. It uses the datadiff AI assistant (running
+inside <a href="http://www.wrattler.org">Wrattler</a>) to merge broadband quality data published by
+<a href="https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/data-downloads2/">Ofcom</a> for
+two different years. Alas, the format of the CSV has changed between the years - some columns
+were added, some removed, all were renamed and their order has changed. Here, I selected a few
+columns in a data frame called <code>bb15nice</code> (year 2015) and I want to add data from <code>bb14</code> (year 2014).</p>
+<a href="javascript:swap(document.getElementById('aia'));">
+<img id="aia" src="aia-still.gif" style="max-width:90%;margin:10px 5% 0px 5%"/>
+</a>
+<p style="margin-bottom:20px;text-align:center"><strong>Figure 3.</strong> Merging data files using the datadiff AI assistant (click to play).</p>
+<p>When the AI assistant runs automatically, it decides to map the <code>Urban.rural</code> column in the 2014
+data set to the <code>Nation</code> column in 2015. This happens because they are both categorical, have
+three values (Scotland, England, Wales vs. Urban, Rural, Semi-urban) and have a similar
+distribution of the values. But a data analyst can quickly see this is wrong. So, we click on the
+"+" button to add a constraint and specify that the two columns should not be matched. Datadiff
+then runs again and finds the correct matching.</p>
+<p>The interaction pattern is exactly the same as before! We construct the correct data transformation
+by repeatedly choosing from a list of options, until we obtain the result that we wanted.
+However, things work a bit differently behind the scenes. First, in the case of The Gamma, we are
+constructing a program (adding operations to a method chain). Here, we are collecting constraints
+and the AI assistant then synthesizes a data transformation based on those constraints.
+Second, in the case of The Gamma, the completion list offered all possible members. Here,
+it offers choice of constraints that are recommended by the AI assistant. The assistant also
+sorts those by how likely it thinks they are. In some cases, however, it may not be able to
+generate all possible constraints.</p>
+<h3>Mixed-initiative proof assistant</h3>
+<p>Finally, the third example of the very same interaction pattern comes from our recent early work
+with Jan Liam Verter on <a href="https://tomasp.net/academic/papers/mixed-initiative-proofs/" title="Jan Liam Verter, Tomas Petricek (2024). Don't Call Us, We'll Call You Towards Mixed-Initiative Inte­ractive Proof Assistants for Programming Language Theory">mixed-initiative inte­ractive proof assistants for PLT</a>.
+When constructing a proof about programming language theory, you typically state the property and
+then develop the proof manually, until an automatic strategy can fill the remaining gaps.
+We wanted to try something different. The idea of <em>mixed-initiative</em> is that the automatic search
+could do a bit of work, but when it gets stuck, it would ask the user for instructions what
+to do next. Given that PLT proofs often have a fairly typical structure, this approach may be
+able to eliminate a lot of the basic tedious steps and let the proof author only step in to
+provide interesting insight when it is needed.</p>
+<p>So far, we only have a basic prototype, but you can get some idea of how this might work
+from <a href="https://tomasp.net/academic/papers/mixed-initiative-proofs/" title="Jan Liam Verter, Tomas Petricek (2024). Don't Call Us, We'll Call You Towards Mixed-Initiative Inte­ractive Proof Assistants for Programming Language Theory">the HATRA paper</a>. The following slide from Jan's presentation illustrates how
+the interaction may look like. In Figure 4, we are trying to prove that addition (in Peano arithmetic)
+is commutative. That is, show that <span class="math">\(\forall n_1,\! n_2,\, \exists n_3\, .\, n_1\!+\!n_2\!=\!n_3 \wedge n_2\!+\!n_1\!=\!n_3\)</span>.
+The assistant automatically figured out how to prove the zero cases, but then it got stuck.
+We manually wrote the two lines instructing it to use the induction hypothesis.
+Now, we need to prove the equality and we invoked the "interactive mode" where the assistant
+offers us options of what we can do and we can then select them. In the example, we only get
+one offered option, which is to split the conjunction into two goals.</p>
+<img src="proof.png" style="max-width:90%;margin:10px 5% 0px 5%"/>
+<p style="margin-bottom:20px;text-align:center"><strong>Figure 4.</strong> Interacting with a (hypothetical)
+mixed-initiative interactive theorem prover.</p>
+<p>When discussing the next steps for the project, it occurred to us that the example also
+hints at the pattern we've seen earlier. We do not yet have an implementation, but one
+can imagine how the interaction would look.</p>
+<p>Let's say that we have some part of the proof (like above) and are in one of the branches.
+The branch contains some kind of hole - representing the fact that we do not yet have a proof
+for it. A proof assistant could suggest various things we may want to do. We can split the
+conjunction (create a tuple from two values), apply some earlier theorem or a lemma (call a
+function), use an induction hypothesis (recursive call) or do a few other things
+(although we imagine more human-readable suggestions, there is a similarity with tactic-based
+theorem prover inside <a href="https://www.type-driven.org.uk/edwinb/papers/impldtp.pdf" title="Edwin Brady (2013). Idris, a General Purpose Dependently Typed Programming Language: Design and Implementation">Idris</a>).</p>
+<p>An interactive theorem prover could be fully build around this pattern. You start with an empty
+proof, the prover gives you a list of options to choose from, you choose one and a step of the
+proof is added. You now have multiple holes to fill and use the same process iteratively until
+the proof is complete.</p>
+<p>This way, the system would be fully manual. You just choose options rather than typing the
+code (or issuing the commands). But the example also suggests how automation can be integrated
+with the interaction pattern. Rather than letting you choose in every step, a semi-automatic
+theorem prover could try choosing the best option itself - and keep searching through the
+offered options to see if it can find a proof (or a part of it). This is just the same
+interaction mode, except sometimes, the computer can make the choices for you!</p>
+<h2>Formalising the interaction pattern</h2>
+<p>In fact, the formal model that I call the choose-your-own-adventure calculus is already (pretty
+much) included in the <a href="https://tomasp.net/academic/papers/ai-assistants/" title="Tomas Petricek, Gerrit J.J. van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K. I. Williams (2022). AI Assistants A Framework for Semi-Automated Data Wrangling">AI assistants</a> paper as the definition of <em>AI assistant</em>. The
+definition is written using a language specific for the data wrangling domain (it talks about input
+and output data, and the best cleaning script), but it is very close to what we need to describe all
+the other examples. Here, I will slightly simplify it and rewrite it using a more general terminology.</p>
+<p>Now, I'm not sure if the term <em>calculus</em> is quite right here. I'm using it in the very broad sense
+as a model of a programming language "thing" that we want to be able to treat formally. But
+what I'm trying to define is not a model of the language, but a model of interactive systems
+that help programmers construct programs. Also, a calculus is typically a concrete thing - it has
+some expressions and reduction rules. The model I want to define is abstract. It says that
+any specific interactive system can be defined in terms of a certain primitive interface.</p>
+<p><strong>Definition.</strong> <em>Given expressions <span class="math">\(e\)</span> and states <span class="math">\(\sigma\)</span>, a choose-your-own-adventure
+(interactive programming) system is a tuple <span class="math">\((\sigmaN, \textit{choices}, \textit{choose})\)</span>
+consisting of an initial state and two operations such that:</em></p>
+<p><span class="math">\[\begin{array}{rcl}
+\choices(\sigma) &amp;=&amp; (\sigma_1, \sigma_2, \ldots, \sigma_n)\\
+\choose(\sigma) &amp;=&amp; e
+\end{array}\]</span></p>
+<p>The formal model is extremely simple. An interactive programming system based on the calculus keeps some
+internal state <span class="math">\(\sigma\)</span>. This may contain the schema of the data table (as in The Gamma), a list of
+constraints (as in AI assistants) or the state of the proof. It then has to be able to do two things.</p>
+<ul>
+<li>
+<p>Given the current state, the <span class="math">\(\choices\)</span> operation generates possible options to choose
+from. The formal model ignores the fact that the options have some textual label and simply models
+them as a vector of possible next states.</p>
+</li>
+<li>
+<p>The <span class="math">\(\choose\)</span> operation generates the
+constructed program based on the state of the interactive tool (every system state represents
+some program, but the system may need to keep track of other things than just the source code
+and so we need separate system states).</p>
+</li>
+</ul>
+<h3>Using a choose-your-own adventure system</h3>
+<p>The basic use of a choose-your-own-adventure system is inside an IDE such as the code editor
+in The Gamma or the Wrattler notebook system used to host AI assistants. This does not need to
+be a graphical environment - you could do the same on a terminal. Using the formal definition,
+we can describe how the IDE interaction works.</p>
+<ul>
+<li>
+<p>The editor starts with the initial state <span class="math">\(\sigmaN\)</span>. It generates the initial source code using
+<span class="math">\(\choose(\sigmaN)\)</span>, displays that to the user and then it generates a list of options
+using <span class="math">\(\choices(\sigmaN)\)</span> and also shows them to the user.</p>
+</li>
+<li>
+<p>When the user chooses an option <span class="math">\(\sigma'\)</span>, the system generates new version of the source
+code using <span class="math">\(\choose(\sigma')\)</span> and also new list of choices using <span class="math">\(\choices(\sigma')\)</span>.</p>
+</li>
+<li>
+<p>The process is repeated until the user accepts the generated source code, or until
+the returned list of options is empty.</p>
+</li>
+</ul>
+<p>As usual with formal models, we are ignoring some important practical details. The
+choose-your-own-adventure system is typically invoked with some input parameters (data source,
+theorem we are proving) and the user can also make various edits in the code manually and then
+invoke the system again or use the system to edit only part of the code. Those aspects can be
+captured using the basic formal model too - rather than having a single tuple, we could have a
+family of tuples (indexed by input parameters); rather than having an initial state, we could
+have a way of constructing the initial state from a location inside the current expression
+(when the user triggers the system).</p>
+<h2>Revisiting the examples</h2>
+<p>Before we continue, it is useful to say a bit more about the three examples. How exactly do
+they fit the above formal model? All three of them wrap some kind of domain-specific logic.
+I will not try to describe the domain-specific aspects (doing so would make this even longer),
+but will try to explain how this fits with the general model.</p>
+<h3>Data exploration in The Gamma</h3>
+<p>In The Gamma, the system is used to construct a query
+that transforms some input data. The query is a sequence of operations <span class="math">\(\op(p_1, \ldots, p_n)\)</span>
+with some parameters. I will write <span class="math">\(\op(\boldsymbol{p})\)</span> for an operation with a vector
+of parameters.</p>
+<p>The available queries are generated based on the schema <span class="math">\(S\)</span>
+of the data, so the state of the system needs to keep the current schema and the operations
+selected so far. The empty state starts with some given schema, but has no operations:</p>
+<p><span class="math">\[\begin{array}{rcl}
+\sigma &amp;=&amp; S, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n}))\\
+\sigmaN &amp;=&amp; S, ()
+\end{array}\]</span></p>
+<p>The <span class="math">\(\choices\)</span> operation in The Gamma actually lets you choose both the next operation and
+the parameters of the previously selected operation. I will write <span class="math">\(?\)</span> for unspecified parameter.
+In the state <span class="math">\(\sigma\)</span>, the schema <span class="math">\(S\)</span> now needs to represent the schema after applying all the
+fully-specified operations.</p>
+<p>If the last operation has an unspecified parameter, the type provider
+gives us possible parameters <span class="math">\(p_1, p_2, \ldots\)</span> based on the schema <span class="math">\(S\)</span>, operation type <span class="math">\(\op\)</span>
+and the already known parameters <span class="math">\(\boldsymbol{p_n}\)</span>. We generate choices that fill the parameter.
+Note that if we fill the last parameter and the operation is now fully specified, we need to
+return the new schema <span class="math">\(S'\)</span> (which the type provider knows how to compute based on the previous
+schema and the new operation):</p>
+<p><span class="math">\[\begin{array}{l}
+\choices(S, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n},?,\boldsymbol{p'_n}))) =\\
+\quad S', (~(\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n},p_1,\boldsymbol{p'_n})),\\
+\quad\quad\;\;\;\, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n},p_2,\boldsymbol{p'_n})), ~\ldots ~)
+\end{array}\]</span></p>
+<p>If the last operation in the state is fully specified, the type provider offers us a choice of
+possible next operations. This is generated based on the schema (for example, floating window is
+only available if the schema contains a column representing time). We generate choices offering
+the possible operations <span class="math">\(\op', \op'', \ldots\)</span> with all parameters unspecified (for simplicity,
+I assume all operations need at least one parameter):</p>
+<p><span class="math">\[\begin{array}{l}
+\choices(S, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n}))) =\\
+\quad S, (~(\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n}), \op'(\boldsymbol{?})),\\
+\quad\quad\;\;\, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n}), \op''(\boldsymbol{?})),  ~\ldots ~)
+\end{array}\]</span></p>
+<p>Finally, the <span class="math">\(\choose\)</span> operation takes the state and generates an expression that applies the
+data transformation. In The Gamma, the type provider already knows the data source, so it also
+specified the input. This is only possible if all parameters are fully-specified. For simplicity,
+assume that we drop the last operation if it is not fully-specified. With a slight abuse of notation,
+say that <span class="math">\(f\circ g\)</span> is a function composition and expressions can be formed by composing the
+primitive operations:</p>
+<p><span class="math">\[\begin{array}{l}
+\choose(S, (\op_1(\boldsymbol{p_1}), \ldots, \op_n(\boldsymbol{p_n}))) =\\
+\quad \op_1(\boldsymbol{p_1}) \circ \ldots \circ \op_n(\boldsymbol{p_n})
+\end{array}\]</span></p>
+<p>The type provider behind The Gamma knows how to generate possible operations and their parameters
+based on the current schema of the data. We can wrap this into the unified choose-your-own-adventure
+calculus definition.</p>
+<h3>Cleaning data with AI assistants</h3>
+<p>The <a href="https://tomasp.net/academic/papers/ai-assistants/" title="Tomas Petricek, Gerrit J.J. van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K. I. Williams (2022). AI Assistants A Framework for Semi-Automated Data Wrangling">AI assistants paper</a> contains (a variation on) the above definition, but then it points
+out that most AI assistants have a more specific structure. They perform statistical optimization
+with respect to a set of constraints specified by the user. That is, they look for an expression
+(cleaning script) from the set of all possible expressions that optimizes some objective function
+that assigns score to the expression with respect to the input data. (The assistants do not actually
+iterate over all expressions. They use some machine learning method to solve the problem.)</p>
+<p>This serves as another, quite different, way of implementing the choose-your-own-adventure pattern.
+Now, the state <span class="math">\(\sigma\)</span> consists of a set of constraints specified by the user (I write <span class="math">\(c\)</span> for
+individual constraints and <span class="math">\(\boldsymbol{c}\)</span> for the whole set). We also need to keep track of the
+input data <span class="math">\(X\)</span> that we are cleaning, but since this does not change, I will treat <span class="math">\(\choose_X\)</span> and
+<span class="math">\(\choices_X\)</span> as families of functions, indexed by the input data.</p>
+<p><span class="math">\[\begin{array}{rcl}
+\sigma &amp;=&amp; \{ c_1, \ldots, c_n \}\\
+\sigmaN &amp;=&amp; \emptyset
+\end{array}\]</span></p>
+<p>It is worth noting that <span class="math">\(X\)</span> can be the actual input data, but also a representative sample. This
+may be useful if we want to infer cleaning script based on a subset of the full data (or based on
+a typical input) and then run it on full input data later.</p>
+<p>The optimization algorithm runs when we want to choose the best expression based on the specified
+constraints. Formally, we can write this using the <span class="math">\(\argmax\)</span> operator which finds the argument
+value (expression) for which the given function (scoring function) is maximized. The user-specified
+constraints can either filter the set of possible expressions or influence the scoring function.</p>
+<p>In the following, <span class="math">\(E_\boldsymbol{c}\)</span> is the set of expressions that respect constraints <span class="math">\(\boldsymbol{c}\)</span>
+(this is a subset of all possible expressions <span class="math">\(E\)</span>) and <span class="math">\(Q_\boldsymbol{c}(X, e)\)</span> is a scoring function
+adapted based on the constraints, which returns the score of an expression - how good <span class="math">\(e\)</span> is
+at cleaning data <span class="math">\(X\)</span>.</p>
+<p><span class="math">\[\choose_X(\boldsymbol{c}) = \argmax_{e \in E_\boldsymbol{c}} Q_\boldsymbol{c}(X, e)\]</span></p>
+<p>Again, it is useful to note that the actual implementations use various machine learning
+techniques to find the optimal expression. The second part of the problem is generating
+possible constraints. Here, the AI assistants typically offer the user options to block
+some of the inferences made by the system. For example, if datadiff decides to match two
+columns, it will generate a constraint to prevent their matching. It also generates constraints
+that force specific matching.</p>
+<p>To implement <span class="math">\(\choices_X\)</span>, the optimization-based AI assistants first call <span class="math">\(\choose_X(\sigma)\)</span> to
+get the best expression <span class="math">\(e\)</span>. Based on this, they generate possible constraints <span class="math">\(c_1, c_2, \ldots\)</span>
+that the user may want to choose from (this operation is specific to the particular AI assistant).
+They then offer a list of constraint sets where the possible constraints are added to the
+previously collected set:</p>
+<p><span class="math">\[\choices_X(\boldsymbol{c}) = (\boldsymbol{c}\cup\{ c_1 \}, \boldsymbol{c}\cup\{ c_2 \}, \ldots)\]</span></p>
+<p>The key logic behind AI assistant is the argument optimization function they implement (this is
+where interesting machine learning happens) and also the constraint generation (typically quite
+simple). But again, we can wrap this logic behind the choose-your-own-adventure interface!</p>
+<h3>Tactic-based theorem proving</h3>
+<p>We have not yet figured out all the details of the third example, so I will be a bit more vague
+(also, I do not know much about theorem proving!) I will also rely on the Curry-Howard
+correspondence between logical formulas and types and write my explanation in terms of types
+and expressions.</p>
+<p>Let's say that we have some type (formula) <span class="math">\(T\)</span> and we want to construct an expression <span class="math">\(e\)</span> of the
+type (proof of the formula). The expression <span class="math">\(e\)</span> can have some typed holes - that is, parts where
+we do not yet have an implementation (proof). However, the holes are typed, and so we know what
+remains to be implemented (sub-goals that we need to prove).</p>
+<p>Taking inspiration from the <a href="https://www.type-driven.org.uk/edwinb/papers/impldtp.pdf" title="Edwin Brady (2013). Idris, a General Purpose Dependently Typed Programming Language: Design and Implementation">tactic-based theorem proving in Idris</a>, we can assume that
+we have a collection of tactics that can suggest different ways of filling the holes in the
+expression. As we may have multiple holes inside an expression, let's also say that (for simplicity)
+the tactics only suggest ways of filling the first hole. They will also only suggest correct ways,
+i.e., whatever they suggest will always be well-typed (but it may contain more holes).</p>
+<p>Let's say that we start with an expression that is just a hole and we want to implement (prove)
+the following function (implication):</p>
+<p><span class="math">\[(\_ : (\alpha \rightarrow \beta) \rightarrow \alpha \rightarrow \beta)\]</span></p>
+<p>Our context already contains the identity function (theorem) <span class="math">\(\mathit{id}\)</span> of type
+<span class="math">\(\forall \alpha . \alpha \rightarrow \alpha\)</span>, so one way of solving the above is to use the
+function. Another is to construct an explicit lambdas. Two tactics could give us the following
+two options:</p>
+<p><span class="math">\[\begin{array}{rcl}
+e_1 &amp;=&amp; (\mathit{id} : (\alpha \rightarrow \beta) \rightarrow \alpha \rightarrow \beta)\\
+e_2 &amp;=&amp; (\lambda f.\lambda x.\_ : (\alpha \rightarrow \beta) \rightarrow \alpha \rightarrow \beta)\\
+\end{array}\]</span></p>
+<p>The expression <span class="math">\(e_1\)</span> contains no more holes, so it solves the problem already. The expression
+<span class="math">\(e_2\)</span> still contains a hole, so if we choose it, we would need to run our tactics again. One
+of them would be possibly able to figure out that we can get the right type by generating
+a function application <span class="math">\(f~x\)</span>.</p>
+<p>For the sake of simplicity, I'm leaving out a lot of important details that a real theorem prover
+would need to do. In particular, the function I wanted to prove should also be universally quantified
+(polymorphic) and we need to introduce the quantifiers. The <span class="math">\(\textit{id}\)</span> function is also
+unversally quantified ($\forall \alpha.\alpha \rightarrow \alpha) and so we need to specify its
+type argument first. But the point is that this kind of system can again fit the same
+choose-your-own-adventure pattern!</p>
+<p>This time, the states are the possible expressions and the initial state is a type-annotated
+hole (as in the above example). If we want to prove some <span class="math">\(\delta\)</span>, we start with <span class="math">\(\sigmaN = (\_ : \delta)\)</span>.
+The <span class="math">\(\choices\)</span> operation uses the available tactics to generate possible new expressions <span class="math">\(e_1, e_2, \ldots\)</span>
+and offers them as options to the user, while the <span class="math">\(\choose\)</span> operation simply returns the expression:</p>
+<p><span class="math">\[\begin{array}{rcl}
+\choices(e) &amp;=&amp; (e_1, e_2, \ldots)\\
+\choose(e)  &amp;=&amp; e
+\end{array}\]</span></p>
+<p>The definitions are really simple, because all the interesting logic is hidden inside the tactics
+that suggest possible ways of filling the holes. But we can, again, wrap the logic inside our
+definition.</p>
+<div style="margin-bottom:20px;text-align:center">
+<img src="alf.png" style="max-width:90%;margin:10px 0px 0px"/>
+<p><strong>Figure 5.</strong> Pop-up menu showing possible ways of filling a placeholder in the <a href="https://people.cs.nott.ac.uk/psztxa/publ/alf94.pdf" title="Thorsten Altenkirch, Veronica Gaspes, Bengt Nordström, and Björn von Sydow (1994). A user's guide to ALF">Alf editor (1994)</a>.</p>
+</div>
+<p>As a theorem prover (or program synthesizer), the above is fully manual. The user experience when
+working with the interactive system would probably be a bit like using the <a href="https://people.cs.nott.ac.uk/psztxa/publ/alf94.pdf" title="Thorsten Altenkirch, Veronica Gaspes, Bengt Nordström, and Björn von Sydow (1994). A user's guide to ALF">ALF theorem prover</a>
+from 1994! We can gradually construct the expression by choosing from different options to fill the
+holes, but there is no automation.</p>
+<p>However, automation is one of the interesting things we can think about in more general terms
+thanks to the choose-your-own-adventure calculus!</p>
+<h2>Automating program construction</h2>
+<p>Most of the discussion so far focused on manual interaction. The user of The Gamma constructs a
+query and the user of AI assistants chooses constraints. But the example of proof assistant
+suggests that, perhaps, the choices could also be made automatically by some kind of search
+engine (searching for a proof) or an AI recommender. I will discuss two examples of this - one
+using an LLM to recommend operations for The Gamma and one adding search to the proof assistant.</p>
+<h3>LLM assistant for data exploration</h3>
+<p>The nice thing about The Gamma is that it helps the user understand how the query works.
+If you construct it step-by-step, you have a chance to understand how it works and how exactly are
+the numbers calculated (for example, are we summing all medals or just gold medals?)
+These days, an LLM can probably construct a query in SQL or Python for you directly based on
+a natural language description of the query - but this may be harder to understand and check for
+non-programmers.</p>
+<p>But what if we could combine the two? The idea, which my student Mikoláš Fromm explored in his
+<a href="https://dspace.cuni.cz/bitstream/handle/20.500.11956/192074/130389069.pdf" title="Mikoláš Fromm (2024). Design of LLM prompts for iterative data exploration">fantastic Bachelor's thesis</a>, is to use LLM not to generate code, but to make the choices.
+In his system, the user can specify a query over the data set in a natural language such as
+(using a data set on railway consumption energy):</p>
+<blockquote>
+<p>Group data by carrier 'CDC' and show count of distinct values in each column.</p>
+</blockquote>
+<p>The data exploration environment works almost as before. It offers the different operations
+to the user and the user can choose one of the options. However, it also asks LLM to recommend
+an option to choose and highlights that for the user. Assume we already selected the grouping
+operation and we now want to choose an aggregation operation. To get a recommendation from the
+LLM, the system uses a prompt akin to the following:</p>
+<style>blockquote ol li { padding:0px; margin:0px 0px 0px 30px; line-height:1.5em; }</style>
+<blockquote>
+<p>You are helping user to complete a task in an interactive programming environment.
+The user's query is: "Group data by carrier 'CDC' and show count of distinct values in each column."</p>
+<p>The query built so far is: <code>GroupBy.Carrier</code>.</p>
+<p>The environment offers the user possible aggregations.
+Choose an aggregation that the should be applied to the grouped dataset:</p>
+<ol>
+<li><code>Sum</code></li>
+<li><code>Avg</code></li>
+<li><code>Concat</code></li>
+<li><code>CountDistinct</code></li>
+<li><code>CountAll</code></li>
+</ol>
+<p>You should answer with the number of the aggregation and no further explanation.</p>
+</blockquote>
+<p>It takes a bit of work to get the LLM to answer with just the number, but in this case, it
+is fairly reliably able to recommend the option 4. The system could be fully automatic - asking
+the LLM repeatedly (and adding an option to stop), but we argue that semi-automatic interaction
+has its benefits - it guides the user through the solution, but the user still constructs the
+query and can verify that it is what they wanted.</p>
+<p>Mikoláš explored the idea specifically for data exploration, but the method of using an LLM
+assistant can be applied generally to any tool that implements the choose-your-own-adventure
+pattern. That is, if we have some state <span class="math">\(\sigma\)</span> and a list of options generated using
+<span class="math">\(\choices(\sigma)=(\sigma_1, \ldots, \sigma_n)\)</span>, we can ask the LLM to recommend an option
+to choose from. To do this, we need:</p>
+<ul>
+<li>
+Some way of formulating the problem we are trying to solve, like natural language description
+of the query we are building.
+</li>
+<li>
+Some way of turning <span class="math">\(\sigma\)</span> into a natural language description of the current state, like
+a list of operations applied so far.
+</li>
+<li>
+And some way of briefly summarizing the options <span class="math">\(\sigma_1, \ldots, \sigma_n\)</span>. In practice,
+those will come with labels to be displayed in the auto-completion, so we can use those.
+</li>
+</ul>
+<p>I do not think the mechanism would work well in the case of AI assistants or proof assistant,
+but it is quite possible that there are other instances of the choose-your-own-adventure pattern
+where it may be useful to invoke LLM in the same way. (Actually, in the case of datadiff, an
+LLM may well be able to recommend the "Don't match 'Urban.rural' and 'Nation'" based on the
+understanding of the name of the columns, which is something the datadiff AI assistant
+ignores...)</p>
+<h3>Automating proof search</h3>
+<p>There are multiple different ways of recommending or even automatically choosing options offered
+by the <span class="math">\(\choices\)</span> operation in the choose-your-own-adventure calculus. In order to use an LLM,
+we needed some kind of natural language description of what we are trying to achieve and a natural
+language specification of the state. To search for proof terms automatically in an interactive
+theorem prover based on the pattern, we would instead need:</p>
+<ul>
+<li>
+<p>A way of deciding whether the current state represents the desired resulting program. In case
+of proof search, this is the case if there are no holes (and the program is well-typed).</p>
+</li>
+<li>
+<p>Some kind of search strategy and a heuristic for making a choice. In the simplest case, this
+could follow breadth or depth-first search with some simple heuristic.</p>
+</li>
+</ul>
+<p>A simple strategy like the <a href="https://coq.inria.fr/doc/v8.19/refman/proofs/automatic-tactics/auto.html">Coq <code>auto</code> tactic</a>
+could likely be implemented in a fairly general way for any kind of choose-your-own-adventure
+system where you can decide whether the resulting program is what you wanted and where you have
+some way of characterising which options are worth trying (Coq uses a hint database for this).</p>
+<p>If we wanted to implement a more sophisticated proof search strategy that would combine
+forward based reasoning (generating further conclusions from the available facts) and
+backward reasoning (working from the desired conclusion and generating sub-goals). To do this,
+the search strategy would need a more detailed understanding of the system states <span class="math">\(\sigma\)</span>.</p>
+<p>The idea of choose-your-own-adventure-calculus is not going to help you write a better interactive
+theorem prover. What it gives you is a common interface for thinking about multiple different
+kinds of systems and multiple different ways of automating what they do. It also makes it quite
+easy to imagine how those could be combined. For example, a theorem prover based on the model
+could combine a range of automatic and manual approaches.</p>
+<p>It could search for proofs automatically using a simple depth-first search (like <code>auto</code>), use some
+clever proof-specific search algorithm, or even a LLM-based approach (akin to the one for The
+Gamma) - which is also a <a href="https://machine-learning-for-theorem-proving.github.io/">topic people are looking at</a>.
+At the same time, all of these would be integrated with the basic interactive approach - you could
+write some of the proof manually, run one of those strategies, review the proof if they succeed,
+but also explore the intermediate states they generate to see if any of them can be completed
+using the interactive mode.</p>
+<h2>Interactive system properties</h2>
+<p>One of the interesting claims that I made about <a href="https://tomasp.net/academic/papers/iterative/" title="Tomas Petricek (2022). The Gamma Programmatic Data Exploration for Non-programmers">The Gamma</a> is that the interface it
+offers is both <em>correct</em> and <em>complete</em>. The first means that all the programs you can construct
+using the interface - by repeatedly choosing from the auto-completion list - are well-typed.
+They may not always return useful data, but they will always run without an error. The second
+means that you can use the auto-completion to construct all possible programs. There are no
+(well-typed) programs that you cannot construct using just the completion.</p>
+<p>Previously, I only described the properties informally, but using the choose-your-own-adventure
+calculus, we can describe those through formal definitions.</p>
+<p><strong>Definition (Correctness).</strong> <em>Assume that <span class="math">\(E\)</span> is a set of all possible expressions in a language
+and <span class="math">\(\mathcal{E}\subseteq E\)</span> is a set of all expressions that are correct with respect to some
+case-specific notion of correctness (e.g. well-typed). A choose-your-own-adventure system is
+correct if:</em></p>
+<p><span class="math">\(\forall \sigma_1,\sigma_2,\ldots\)</span> such that <span class="math">\(\sigma_i \in \choices(\sigma_{i-1})\)</span> it is the case
+that <span class="math">\(\choose(\sigma_i) \in \mathcal{E}\)</span>.</p>
+<p>That is, if we make any sequence of choices that result in intermediate states <span class="math">\(\sigma_1, \sigma_2, \ldots\)</span>
+(starting from the intitial state <span class="math">\(\sigma_0\)</span>) then the programs generated from all of those
+states are from the set of correct expressions. All of the three systems I talked about above
+satisfy this property:</p>
+<ul>
+<li>
+<p>The type provider in The Gamma offers only operations and parameters that are valid with respect
+to the schema of the input data. Those are then exposed via <span class="math">\(\choices\)</span>. A small caveat is that a
+program with <span class="math">\(?\)</span> as parameter would be invalid - this is why <span class="math">\(\choose\)</span> drops operations that are
+not fully specified when producing an expression.</p>
+</li>
+<li>
+<p>The constraints generated for AI assistants are generated by a simple operation that picks
+constraint types and arguments from a valid set of values.</p>
+</li>
+<li>
+<p>The program refinements that a tactic in a theorem prover generates can easily be
+restricted to only valid programs. Even if the tactics were more general rewriting rules that can
+possibly generate non-well-typed programs, we can restrict the set of options to those that
+type check.</p>
+</li>
+</ul>
+<p>In general, there may be some systems that offer incorrect options. For example, it may be useful
+to let the user see programs generated by a (general) proof tactic even if that does not lead to
+a correct answer (they may learn something and refine the proof/program). It is also possible to
+imagine an LLM assistant that simply returns whatever the AI algorithm generates, even if it is not
+fully correct (again, the user may be able to fix the result).</p>
+<p>Regardless of whether offerring incorrect completions is useful or not, the
+choose-your-own-adventure calculus gives us a framework for talking about the
+system property! This is equally the case for the second property I mentioned above.</p>
+<p><strong>Definition (Completeness).</strong> <em>Assume that <span class="math">\(E\)</span> is a set of all possible expressions in a language
+and <span class="math">\(\mathcal{E}\subseteq E\)</span> is a set of all expressions that are correct with respect to some
+case-specific notion of correctness (e.g. well-typed). A choose-your-own-adventure system is
+complete if:</em></p>
+<p><span class="math">\(\forall e\in \mathcal{E}.~\exists \sigma_1,\ldots,\sigma_n\)</span> such that
+<span class="math">\(\sigma_i \in \choices(\sigma_{i-1})\)</span> and <span class="math">\(e=\choose(\sigma_n)\)</span>.</p>
+<p>That is, for any correct program, there is a sequence of choices that leads to a system state
+that <span class="math">\(\choose\)</span> turns into the given program. This is a more subtle property that not all of my
+above examples have:</p>
+<ul>
+<li>
+<p>In The Gamma, the programs that can be generated are restricted - you can only use a fixed set
+of aggregation operations (rather than writing your own) and only a restricted set of parameters
+(sorting by a key, but not based on a custom expression). For those, the type provider is
+complete. However, if we treated a more general-purpose query language as the underlying
+language, the provider would not be complete.</p>
+</li>
+<li>
+<p>In AI assistants, the system offers a set of constraints that is generated based on the selected
+expression, but this does not let you construct arbitrary constraints. Moreover, because the
+<span class="math">\(\choose\)</span> operation is AI-based, it is not guaranteed that there is a way to get it to generate
+a specific program (unless we can supply constraints that restrict the set of programs <span class="math">\(E_\boldsymbol{c}\)</span>
+to just a single program).</p>
+</li>
+<li>
+<p>In interactive theorem prover, we could possibly offer all possible ways of filling a hole
+(up to renaming), but this would not be very practical. It is more likely that
+tactics will only generate a subset of valid proof/program steps and the user has to write some
+other steps manually.</p>
+</li>
+</ul>
+<p>The nice thing about the choose-your-own-adventure formalism is that it also lets us talk about
+(and think about!) properties that are more specifically about the user interaction with an
+interactive programming system.</p>
+<h3>Programming by demonstration</h3>
+<p>To give one example, consider the graphical user interface that The Gamma provides.
+The interface not only shows a preview of the current data (after applying all the previous
+transformations), but it also lets you specify the next transformation. Figure 7a and Figure 7b
+show two examples.</p>
+<div class="wdecor container">
+  <div class="fl50" style="text-align:center">
+    <img src="gui-sort.png" style="max-width:95%" />
+    <p><strong>Figure 7a.</strong> Specifying sorting key in The Gamma. The GUI offers the options
+    in a menu, but they could also appear as up/down arrows by the column names.</p>
+  </div>
+  <div class="fr50" style="text-align:center">
+    <img src="gui-group.png" style="max-width:95%" />
+    <p><strong>Figure 7b.</strong> Once we choose a group key, we only see the key and already
+      specified aggregations. All other columns are hidden.</p>
+  </div>
+</div>
+<p>The two figures illustrate an interesting problem. Sometimes, there is a "natural" place in the
+preview to which the subsequent operations that one can choose from can be linked. When specifying
+the search key, the preview shows a table with all the column names. Sorting could be done by
+clicking on up/down arrows in the column header (The Gamma actually shows them in a menu, but a
+nicer GUI would use up/down arrows.)</p>
+<p>In other cases, the preview does not make this possible. When we choose a grouping key and some
+aggregations, the columns that are not already aggregated are not visible in the preview, because
+the preview shows aggregation constructed so far. This means that there is no natural place where
+we can let the user choose further aggregations. In The Gamma, this can be done in the "+" menu,
+but perhaps, there could be a better preview? Or a structure of the choose-your-own-adventure
+system where you can always "nicely" offer all the next possible steps?</p>
+<p>The choose-your-own-adventure calculus, again, lets us to talk about properties such as the one
+above more formally. We need a formal model of previews to do this. Say, <span class="math">\(\preview(e)=p\)</span> is a
+preview constructed for an expression <span class="math">\(e\)</span> and that <span class="math">\(\links(p)=\sigma_1, \ldots, \sigma_n\)</span> gives
+us all the links (think hypertext) from the preview that point to next system states.
+(A preview is like a web page with links that you can click to choose the next system state
+instead of choosing them from a menu as in the earlier examples.)</p>
+<p><strong>Definition (Gradual constructability).</strong> <em>Assume that <span class="math">\(E\)</span> is a set of all possible expressions,
+<span class="math">\(\Sigma\)</span> is a set of all possible system states and <span class="math">\(\preview\)</span> with <span class="math">\(\links\)</span> define a preview
+mechanism for the system. A choose-your-own-adventure  system has the gradual constructability
+property if:</em></p>
+<p><span class="math">\(\forall \sigma \in \Sigma\)</span> and <span class="math">\(\forall \sigma_i \in \choices(\sigma)\)</span> where
+<span class="math">\(e=\choose(\sigma)\)</span>, it is the case that <span class="math">\(\sigma_i \in \links(\preview(e))\)</span>.</p>
+<p>In other words, all the options that are generated by the <span class="math">\(\choices\)</span> operation for any of the
+programs are linked in the preview generated for the program corresponding to the system state.</p>
+<p>This also means that we can construct any program through the programming-by-demonstration
+mechanism where a user demonstrates to the system how to proceed based on a concrete example
+(how to transform data, based on a concrete data sample) and the system turns the interaction
+into a reproducible program. Here, the programming-by-demonstration means starting with the initial
+program preview and following links (choosing actions) that gradually construct program and
+refine the preview.</p>
+<h2>Conclusions</h2>
+<p>The basic motivation for a lot of my recent work has been the fact that <em>programming systems</em>
+are much more interesting and important than <em>programming languages</em>. A language is always
+embedded in some system, but the properties of the system matter more than the properties of
+the language. And while we know very well how to study programming languages, we only know little
+about how to study programming systems.</p>
+<p>This is a motivation I share with a number of my collaborators, most notably Joel Jakubovic and
+Jonathan Edwards. It was a motivation for our joint work on <a href="https://tomasp.net/techdims/" title="Joel Jakubovic, Jonathan Edwards, Tomas Petricek (2023). Technical dimensions of programming systems">Technical dimensions of programming
+systems</a>, which provides a qualitative heuristic framework for talking about
+programming systems.</p>
+<p>The idea of a <em>choose-your-own-adventure calculus</em> presented here is another part of the answer.
+It attempts to capture a minimal kind of interaction with an interactive programming system and
+study its properties. I believe the post shows convincingly that there is a surprising
+number of existing interactive systems that fit the model - ranging from data exploration and
+data wrangling tools to interactive proof assistants. And just like the lambda calculus allowed
+programming language theoreticians to study a wide range of properties of programming languages,
+I hope the <em>choose-your-own-adventure calculus</em> (or some future version thereof) will let us
+study and understand the formal side of interactive programming systems and revers <a href="https://dreamsongs.com/Files/Incommensurability.pdf" title="Richard Gabriel (2012). The structure of a programming language revolution">the
+curse described by Richard P. Gabriel</a>!</p>
+<h2>References</h2>
+<ol>
+<li><a href='https://tomasp.net/academic/papers/ai-assistants/'>Tomas Petricek, Gerrit J.J. van den Burg, Alfredo Nazábal, Taha Ceritli, Ernesto Jiménez-Ruiz, Christopher K. I. Williams (2022). AI Assistants A Framework for Semi-Automated Data Wrangling</a></li>
+<li><a href='https://tomasp.net/academic/papers/pivot/'>Tomas Petricek (2017). Data exploration through dot-driven development</a></li>
+<li><a href='https://tomasp.net/academic/papers/mixed-initiative-proofs/'>Jan Liam Verter, Tomas Petricek (2024). Don't Call Us, We'll Call You Towards Mixed-Initiative Inte­ractive Proof Assistants for Programming Language Theory</a></li>
+<li><a href='https://tomasp.net/academic/theses/coeffects/'>Tomas Petricek (2017). Context-aware programming languages</a></li>
+<li><a href='https://tomasp.net/techdims/'>Joel Jakubovic, Jonathan Edwards, Tomas Petricek (2023). Technical dimensions of programming systems</a></li>
+<li><a href='https://tomasp.net/academic/papers/iterative/'>Tomas Petricek (2022). The Gamma Programmatic Data Exploration for Non-programmers</a></li>
+<li><a href='https://tomasp.net/academic/papers/inforich/'>Don Syme, Keith Battocchi, Kenji Takeda, Donna Malayeri and Tomas Petricek (2013). Themes in Information-Rich Functional Programming for Internet-Scale Data Sources</a></li>
+<li><a href='https://tomasp.net/academic/papers/fsharp-data/'>Tomas Petricek, Gustavo Guerra, Don Syme (2016). Types from data Making structured data first-class citizens in F#</a></li>
+<li><a href='https://tomasp.net/academic/papers/live/'>Tomas Petricek (2020). Foundations of a live data exploration environment</a></li>
+<li><a href='https://www.type-driven.org.uk/edwinb/papers/impldtp.pdf'>Edwin Brady (2013). Idris, a General Purpose Dependently Typed Programming Language: Design and Implementation</a></li>
+<li><a href='https://people.cs.nott.ac.uk/psztxa/publ/alf94.pdf'>Thorsten Altenkirch, Veronica Gaspes, Bengt Nordström, and Björn von Sydow (1994). A user's guide to ALF</a></li>
+<li><a href='https://dspace.cuni.cz/bitstream/handle/20.500.11956/192074/130389069.pdf'>Mikoláš Fromm (2024). Design of LLM prompts for iterative data exploration</a></li>
+<li><a href='https://dreamsongs.com/Files/Incommensurability.pdf'>Richard Gabriel (2012). The structure of a programming language revolution</a></li>
+</ol>
+
+
+    <div class="info">
+    <p class="share">
+        <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2025%2fadventure-calculus%2f&amp;text=Choose+Your+Own+Adventure+Calculusvia+%40tomaspetricek">
+          <i class="fab fa-twitter-square"></i></a>
+        <a target="_blank" href="https://www.facebook.com/sharer.php?u=http%3a%2f%2ftomasp.net%2fblog%2f2025%2fadventure-calculus%2f">
+          <i class="fab fa-facebook-square"></i></a>
+        <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2025%2fadventure-calculus%2f&title=Choose+Your+Own+Adventure+Calculus">
+          <i class="fab fa-reddit-square"></i></a>
+        <a href="mailto:?subject=Choose%20Your%20Own%20Adventure%20Calculus&body=%20How%20do%20we%20formally%20model%20and%20understand%20interaction%20with%20programming%20systems%3f%0d%0aThe%20choose-your-own-adventure%20calculus%20is%20a%20small%20model%20of%20an%20interaction%20pattern%20that%20we%20find%0d%0ain%20data%20exploration%2c%20data%20wrangling%20or%20interactive%20theorem%20proving.%20The%20calculus%20lets%20us%0d%0atalk%20about%20the%20pattern%20and%20study%20its%20different%20properties%2c%20much%20like%20formal%20models%20based%20on%0d%0athe%20lambda%20calculus%20let%20us%20understand%20programming%20languages.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2025%2fadventure-calculus%2f">
+          <i class="fa fa-envelope"></i></a>
+    </p>
+    <p class="details">
+      <strong>Published:</strong> Sunday, 2 February 2025, 2:52 PM<br />
+      <strong>Author:</strong> Tomas Petricek<br />
+      <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
+      
+        <strong>Tags:</strong> <a
+          href="/blog/tag/research/">research</a>, <a
+          href="/blog/tag/academic/">academic</a>, <a
+          href="/blog/tag/programming-languages/">programming languages</a>, <a
+          href="/blog/tag/thegamma/">thegamma</a>, <a
+          href="/blog/tag/type-providers/">type providers</a></span><br />
+      
+    </p>
+    </div>
+  </article>
+
+
+  <footer>
+  <div class="footer-body">
+    <div class="fl70"><div class="fmr">
+      <h4><a href="http://tomasp.net/rss.xml"><i class="fa fa-rss" style="margin-right:5px;"></i></a> Blog archives</h4>
+      <p>
+      
+      <a href="/blog/archive/february_2025/">February 2025 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2023/">December 2023 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2023/">February 2023 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2022/">September 2022 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2022/">April 2022 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2021/">October 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2021/">April 2021 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2020/">October 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2020/">July 2020 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2020/">April 2020 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2019/">December 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2019/">February 2019 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2018/">November 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2018/">October 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2018/">May 2018 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2017/">September 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2017/">June 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2017/">April 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2017/">March 2017 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2017/">January 2017 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2016/">October 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2016/">September 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2016/">August 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2016/">July 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2016/">May 2016 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2016/">April 2016 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2015/">December 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2015/">November 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2015/">September 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2015/">July 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2015/">June 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2015/">May 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2015/">April 2015 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2015/">March 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2015/">February 2015 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2015/">January 2015 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2014/">December 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2014/">May 2014 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2014/">April 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2014/">March 2014 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2014/">January 2014 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2013/">December 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2013/">November 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2013/">October 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2013/">September 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2013/">August 2013 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2013/">May 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2013/">April 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2013/">March 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2013/">February 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2013/">January 2013 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2012/">December 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2012/">October 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2012/">August 2012 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2012/">June 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2012/">April 2012 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2012/">March 2012 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2012/">February 2012 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2012/">January 2012 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2011/">November 2011 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2011/">August 2011 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2011/">July 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2011/">June 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2011/">May 2011 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2011/">March 2011 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2010/">December 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2010/">November 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2010/">October 2010 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2010/">September 2010 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2010/">July 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2010/">June 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2010/">May 2010 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2010/">February 2010 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2010/">January 2010 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2009/">December 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2009/">July 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2009/">June 2009 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2009/">May 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2009/">April 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2009/">March 2009 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2009/">February 2009 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2008/">December 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2008/">November 2008 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2008/">October 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2008/">September 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2008/">June 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2008/">March 2008 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2008/">February 2008 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2007/">December 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2007/">November 2007 (6)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2007/">October 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/september_2007/">September 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2007/">August 2007 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2007/">July 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2007/">April 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2007/">March 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/february_2007/">February 2007 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2007/">January 2007 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2006/">November 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/october_2006/">October 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/august_2006/">August 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2006/">July 2006 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2006/">June 2006 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2006/">May 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2006/">April 2006 (2)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2005/">December 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/july_2005/">July 2005 (4)</a>,&nbsp;
+      
+      <a href="/blog/archive/june_2005/">June 2005 (5)</a>,&nbsp;
+      
+      <a href="/blog/archive/may_2005/">May 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/april_2005/">April 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/march_2005/">March 2005 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/january_2005/">January 2005 (1)</a>,&nbsp;
+      
+      <a href="/blog/archive/december_2004/">December 2004 (3)</a>,&nbsp;
+      
+      <a href="/blog/archive/november_2004/">November 2004 (2)</a>,&nbsp;
+      
+      </p>
+    </div></div>
+    <div class="fr30"><div class="fmr">
+      <h4>License and about</h4>
+      <p>All articles on this site are licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution Share Alike</a>.
+        All source code samples are licensed under the MIT License.
+      </p>
+      <p>This site is hosted on GitHub and is generated using <a href="https://github.com/tpetricek/FSharp.Formatting">F# Formatting</a>
+        and <a href="http://dotliquidmarkup.org/">DotLiquid</a>.
+        For more info, see the <a href="https://github.com/tpetricek/tomasp.net">website source on GitHub</a>.
+      </p>
+      <p>Please submit issues &amp; corrections on GitHub. Use pull requests for minor corrections only.</p>
+      <ul>
+        <li><i class="fab fa-twitter"></i> Twitter: <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a></li>
+        <li><i class="fab fa-github"></i> GitHub: <a href="https://github.com/tpetricek">@tpetricek</a></li>
+        <li><i class="fa fa-envelope"></i> Email: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a></li>
+      </ul>
+      <p style="text-align:center;margin-top:15px;"><img src="https://tomasp.net/img/cc-sa.png" alt="CC License logo" /></p>
+    </div></div>
+  </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1561220-1']);
+    _gaq.push(['_trackPageview']);
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</body>
+</html>
