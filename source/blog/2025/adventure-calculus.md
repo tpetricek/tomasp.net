@@ -52,6 +52,17 @@ as the _choose-your-own-adventure calculus_.
 
 ----------------------------------------------------------------------------------------------------
 
+<style type="text/css">.blurb { background:#004C6B;color:white;padding:20px;margin:20px 10px; }
+.blurb p { margin:0px; line-height:1.4em; }
+.blurb p a { color:white; text-decoration:underline; } </style>
+<div class="blurb">
+
+**Interested?**&nbsp;
+I'm looking for PhD students and post-docs to join [our research group](https://d3s.mff.cuni.cz/plas)
+at Charles University in Prague. See [PhD applications](https://d3s.mff.cuni.cz/phd/) or
+get in touch at [tomas@tomasp.net](mailto:tomas@tomasp.net).
+
+</div>
 <div style="display:none">
 
 $$$
