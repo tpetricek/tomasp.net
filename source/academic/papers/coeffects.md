@@ -39,6 +39,8 @@ monads can lead to a widespread use of the concept.
  - Download [the paper (PDF)](coeffects-icalp.pdf)
  - View talk slides from [ICALP conference](icalp-talk.pdf)
  - Our [ICFP 2014](../structural/index.html) paper extends the work presented here.
+ - [Poster about coeffects (PDF)](coeffects-src-poster.pdf) from ACM Student Research Competition
+ - Extended abstract ([2 page version](coeffects-src-short.pdf) and [4 page version](coeffects-src-long.pdf)) from ACM SRC
 
 ## <a id="cite">Bibtex</a>
 If you want to cite the paper, you can use the following BibTeX information, or

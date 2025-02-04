@@ -32,18 +32,25 @@ safety guarantees when contrasted with the widely used weakly typed techniques.
  - Download [the paper (PDF)](fsharp-data.pdf)
  - [Supplementary screencast](https://vimeo.com/165159144) shows the library in action
  - For more info, see [F# Data homepage](http://fsharp.github.io/FSharp.Data/)
- - [Poster about F# Data (PDF)](fsharp-data-poster.pdf) from Student Research Competition
+ - [Poster about F# Data (PDF)](fsharp-data-poster.pdf) from ACM Student Research Competition
+ - Extended abstract ([2 page version](fsharp-data-src-short.pdf) and [4 page version](fsharp-data-src-long.pdf)) from ACM SRC
 
 ## Watch the talk
 
 As far as I'm aware, the PLDI 2016 talk has not been recorded, but I did a brief practical
 demonstration of the F# Data library, similar to one that I did in a [number of industry
-talks](http://fsharpworks.com/materials.html). One good talk to watch has been recorded by
+talks](http://fsharpworks.com/materials.html).
+
+
+<!--One good talk to watch has been recorded by
 Microsoft's Channel 9 team:
+
+Dead :-(
 
 <div style="padding-left:20px">
 <iframe src="https://channel9.msdn.com/posts/Understanding-the-World-with-F/player" width="640" height="360" allowFullScreen frameBorder="0"></iframe>
 </div>
+-->
 
 ## <a id="cite">Bibtex</a>
 If you want to cite the paper, you can use the following BibTeX information, or

@@ -461,7 +461,7 @@ a function application $f~x$.
 For the sake of simplicity, I'm leaving out a lot of important details that a real theorem prover
 would need to do. In particular, the function I wanted to prove should also be universally quantified
 (polymorphic) and we need to introduce the quantifiers. The $\textit{id}$ function is also
-unversally quantified ($\forall \alpha.\alpha \rightarrow \alpha) and so we need to specify its
+universally quantified ($\forall \alpha.\alpha \rightarrow \alpha$) and so we need to specify its
 type argument first. But the point is that this kind of system can again fit the same
 choose-your-own-adventure pattern!
 
