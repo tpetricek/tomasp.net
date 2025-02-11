@@ -12,7 +12,7 @@
  - title: Schema Evolution in Interactive Programming Systems
  - subtitle: Jonathan Edwards, Tomas Petricek, Tijs van der Storm, Geoffrey Litt. The Art, Science, and Engineering of Programming, 2024
 
-> Joel Jakubovic, Jonathan Edwards, Tomas Petricek
+> Jonathan Edwards, Tomas Petricek, Tijs van der Storm, Geoffrey Litt
 >
 > The Art, Science, and Engineering of Programming, 2029
 
