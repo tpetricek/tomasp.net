@@ -5,7 +5,7 @@
     within. However, the few examples that exist are tightly linked to textual language-based
     accounts of compiler bootstrapping. We explore how the bootstrapping process can work in
     more structured, visual programming environments.
- - tags: academic, publication, top, home
+ - tags: academic, publication, top
  - layout: article
  - icon: fa fa-stairs
  - date: 8 December 2022
