@@ -14,7 +14,7 @@
 
 > Jonathan Edwards, Tomas Petricek, Tijs van der Storm, Geoffrey Litt
 >
-> The Art, Science, and Engineering of Programming, 2029
+> The Art, Science, and Engineering of Programming, 2024
 
 Many improvements to programming have come from shortening feedback loops, for example with
 Integrated Development Environments, Unit Testing, Live Programming, and Distributed Version
