@@ -9,11 +9,11 @@
  - icon: fa fa-layer-group
  - date: 30 September 2025
  - title: Denicek: Computational Substrate for Document-Oriented End-User Programming
- - subtitle: Tomas Petricek and Jonathan Edwards, UIST 2025
+ - subtitle: Tomas Petricek and Jonathan Edwards. In Proceedings of UIST 2025
 
 > Tomas Petricek, Jonathan Edwards
 >
-> UIST 2025
+> In Proceedings of UIST 2025
 
 User-centric programming research gave rise to a variety of compelling programming experiences,
 including collaborative source code editing, programming by demonstration, incremental
