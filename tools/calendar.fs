@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Drawing
 open System.Drawing.Imaging
-open Microsoft.WindowsAzure.Storage
+//open Microsoft.WindowsAzure.Storage
 open FsBlog
 open FsBlog.Helpers
 
@@ -19,27 +19,24 @@ let private qualityParam = new EncoderParameters(Param = [| new EncoderParameter
 
 let private enGb = System.Globalization.CultureInfo.GetCultureInfo("en-GB")
 
-// Get the 'calendar' container from Azure storaget
-let private container = Lazy.Create (fun () ->
-  let account = CloudStorageAccount.Parse(Config.CalendarStorage)
-  let container = account.CreateCloudBlobClient().GetContainerReference("calendar")
-  if not (container.Exists()) then failwith "container 'calendar' not found" 
-  else container)
-
 /// Check if file exists
-let private calendarFileExists name = 
-  container.Value.GetBlobReference(name).Exists()
+let private calendarFileExists (cfg:SiteConfig) name = 
+  File.Exists(cfg.Output </> "calendar" </> name)
 
 /// Write file to Azure container
-let private writeCalendarImage name path = 
-  let blob = container.Value.GetBlockBlobReference(name)
-  blob.UploadFromFile(path)
+let private writeCalendarImage (cfg:SiteConfig) name path = 
+  let year = Path.GetDirectoryName(name)
+  ensureDirectory (cfg.Output </> "calendar")
+  ensureDirectory (cfg.Output </> "calendar" </> year)
+  File.Copy(path, cfg.Output </> "calendar" </> name)
 
 /// Write file (bytes) to Azure container
-let private writeCalendarBytes name bytes = 
-  let blob = container.Value.GetBlockBlobReference(name)
-  blob.UploadFromByteArray(bytes, 0, bytes.Length)
-
+let private writeCalendarBytes (cfg:SiteConfig) name bytes = 
+  let year = Path.GetDirectoryName(name)
+  ensureDirectory (cfg.Output </> "calendar")
+  ensureDirectory (cfg.Output </> "calendar" </> year)
+  File.WriteAllBytes(cfg.Output </> "calendar" </> name, bytes)
+  
 /// Resize file so that both width & height are smaller than 'maxSize'
 let private resizeFile maxSize source (target:string) = 
   use bmp = Bitmap.FromFile(source)
@@ -60,7 +57,7 @@ let uploadCalendarFiles (cfg:SiteConfig) =
     for month in 1 .. 12 do 
       let monthName = enGb.DateTimeFormat.GetMonthName(month).ToLower()
       let blob suffix = string year + "/" + monthName + suffix
-      if not (calendarFileExists (blob ".non-na")) then 
+      if not (calendarFileExists cfg (blob ".non-na")) then 
         let source = cfg.Calendar </> (blob ".jpg")
         let source, na = if File.Exists(source) then source, false else cfg.Calendar </> "na.png", true
         let writeFile size suffix = 
@@ -69,11 +66,11 @@ let uploadCalendarFiles (cfg:SiteConfig) =
           let file =
             if size = -1 then source 
             else resizeFile size source target.FileName; target.FileName
-          writeCalendarImage (blob suffix) file          
-        writeFile -1 "-original.jpg"
+          writeCalendarImage cfg (blob suffix) file          
+        //writeFile -1 "-original.jpg"
         writeFile 700 ".jpg"
         writeFile 240 "-preview.jpg"
-        if not na then writeCalendarBytes (blob ".non-na") [||]
+        if not na then writeCalendarBytes cfg (blob ".non-na") [||]
 
 
 /// Generate page for a given calendar year
