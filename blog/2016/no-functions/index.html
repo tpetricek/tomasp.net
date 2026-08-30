@@ -158,23 +158,23 @@ offer you members that all .NET objects have. This is not very useful. Now, ther
 of options that we have:</p>
 <ul>
 <li>
-<p>In F#, you can add a type annotation that specifies the type of <code>country</code>. With World Bank
+In F#, you can add a type annotation that specifies the type of <code>country</code>. With World Bank
 type provider, the provided type is somewhat hard to find, but it has a name and you can
 use it. This is harder with some type providers where types of entities do not have obvious
-names and so finding the right type for a type annotation is not something you'd want to do.</p>
+names and so finding the right type for a type annotation is not something you'd want to do.
 </li>
 <li>
-<p>In languages with structural type system, you could allow the user to access property of any
+In languages with structural type system, you could allow the user to access property of any
 name (say <code>GDP (current USD)</code>) and infer a type specifying that the <code>country</code> value needs to
 have this property. But this means the auto-completion cannot give you any useful hints and
 you'll only discover typos when you try calling the function - telling you that the name is
-actually <code>US$</code> and not <code>USD</code>.</p>
+actually <code>US$</code> and not <code>USD</code>.
 </li>
 <li>
-<p>You could do some more fancy whole-program type inference and deduce the type of <code>getGdpInYear</code>
+You could do some more fancy whole-program type inference and deduce the type of <code>getGdpInYear</code>
 from the later part of the code where you call the function, but this forces you to write the
 code in an odd order - you need to declare your function, then use it and then go back to
-actually implement it.</p>
+actually implement it.
 </li>
 </ul>
 <h3>How functions break value-based tooling</h3>
@@ -227,13 +227,13 @@ on multiple inputs while <em>always</em> working with <em>concrete, relevant val
 does amazingly well. The Excel feature does have good and bad aspects:</p>
 <ul>
 <li>
-<p>The formula in the above example is copied and the reference to the original one is lost,
-so changing the formula in all rows of the table is error-prone.</p>
+The formula in the above example is copied and the reference to the original one is lost,
+so changing the formula in all rows of the table is error-prone.
 </li>
 <li>
-<p>If you mark the data as table explicitly, Excel will let you refer to columns using the <code>[@Rate]</code>
+If you mark the data as table explicitly, Excel will let you refer to columns using the <code>[@Rate]</code>
 syntax, which makes the formulas nicer and it also automatically extends the formula over all
-rows, but this works because spreadsheets are dealing with a fairly simple grid.</p>
+rows, but this works because spreadsheets are dealing with a fairly simple grid.
 </li>
 </ul>
 <h3>From spreadsheets to general-purpose programming</h3>
@@ -243,31 +243,31 @@ concrete value. You can only refer to cells using their index (B4 or C4) and tho
 valid values.</p>
 <ul>
 <li>
-<p>In the Haskell <a href="https://wiki.haskell.org/Pointfree">point-free style</a>,
+In the Haskell <a href="https://wiki.haskell.org/Pointfree">point-free style</a>,
 you can write <code>(sum .) . zipWith (*)</code> with no names (aside from known functions). Here, we are
 not transforming values, but instead composing a function. There are no concrete values <em>at all</em>.
 You might like this style for many reasons, but it does not make it possible to get the nice
-programming tooling that that you get with <code>.</code> when you know the value of an object.</p>
+programming tooling that that you get with <code>.</code> when you know the value of an object.
 </li>
 <li>
-<p>Language that is perhaps the closest to this idea is Smalltalk with its runtime system
+Language that is perhaps the closest to this idea is Smalltalk with its runtime system
 where you work with concrete objects (values) and you modify them live. However, in Smalltalk,
 this works good at the entire-system level, but it is not (as far as I'm aware) used that much
-when it comes to writing code at message-level.</p>
+when it comes to writing code at message-level.
 </li>
 <li>
-<p>A possibly related design point is LINQ in C# and <a href="https://msdn.microsoft.com/en-us/library/bb384667.aspx">especially in Visual
+A possibly related design point is LINQ in C# and <a href="https://msdn.microsoft.com/en-us/library/bb384667.aspx">especially in Visual
 Basic</a>. In VB, you start your query
 by specifying data source using <code>From</code> and then select members at the end using <code>Select</code>.
 According to a rumor I've heard, the original proposal was to use SQL-style with
 <code>Select .. From ..</code>, but there was no way to make the user experience as good as if the
-names refer to objects of known types.</p>
+names refer to objects of known types.
 </li>
 <li>
-<p>Interestingly, visual tools for UI design have similar problem. For example, tools for
+Interestingly, visual tools for UI design have similar problem. For example, tools for
 Silverlight have <a href="https://msdn.microsoft.com/en-us/library/ee341450(v=expression.40).aspx">elaborate methods for generating sample data</a>,
 so that when you design the UI, you are working with concrete values. But having to explicitly
-generate fake data does not sound like a reasonable general mechanism to me.</p>
+generate fake data does not sound like a reasonable general mechanism to me.
 </li>
 </ul>
 <h2>Conclusions</h2>
@@ -303,6 +303,7 @@ setupVid(4);
 </script>
 
 
+
     <div class="info">
     <p class="share">
         <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f&amp;text=Can+programming+be+liberated+from+function+abstraction%3fvia+%40tomaspetricek">
@@ -311,11 +312,11 @@ setupVid(4);
           <i class="fab fa-facebook-square"></i></a>
         <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f&title=Can+programming+be+liberated+from+function+abstraction%3f">
           <i class="fab fa-reddit-square"></i></a>
-        <a href="mailto:?subject=Can%20programming%20be%20liberated%20from%20function%20abstraction%3f&body=%20Functions%20are%20the%20reason%20why%20many%20nice%20features%20become%20hard%20or%20impossible%20to%20implement.%0d%0aFunctions%20make%20type%20inference%20hard%20and%20they%20make%20it%20impossible%20to%20use%20tools%20that%20rely%20on%0d%0amanipulation%20with%20concrete%20values%20-%20because%20functions%20introduce%20names%20with%20unknown%20values%0d%0aand%20types.%20Can%20we%20take%20inspiration%20from%20spreadsheet%20programming%20and%20build%20alternative%0d%0aabstraction%20mechanism%20that%20does%20not%20introduce%20this%20problematic%20property%3f%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f">
+        <a href="mailto:?subject=Can%20programming%20be%20liberated%20from%20function%20abstraction%3f&body=%20Functions%20are%20the%20reason%20why%20many%20nice%20features%20become%20hard%20or%20impossible%20to%20implement.%0aFunctions%20make%20type%20inference%20hard%20and%20they%20make%20it%20impossible%20to%20use%20tools%20that%20rely%20on%0amanipulation%20with%20concrete%20values%20-%20because%20functions%20introduce%20names%20with%20unknown%20values%0aand%20types.%20Can%20we%20take%20inspiration%20from%20spreadsheet%20programming%20and%20build%20alternative%0aabstraction%20mechanism%20that%20does%20not%20introduce%20this%20problematic%20property%3f%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2016%2fno-functions%2f">
           <i class="fa fa-envelope"></i></a>
     </p>
     <p class="details">
-      <strong>Published:</strong> Tuesday, 27 September 2016, 5:53 PM<br />
+      <strong>Published:</strong> Tuesday, 27 September 2016, 5:53 pm<br />
       <strong>Author:</strong> Tomas Petricek<br />
       <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
       

@@ -166,26 +166,26 @@ that happen during programming. Now, imagine that they were not just interaction
 editor, but actually something that the programming language understands!</p>
 <ul>
 <li>
-<p><strong>Code completion.</strong> The demo uses auto-completion to enter some long names. All modern
+<strong>Code completion.</strong> The demo uses auto-completion to enter some long names. All modern 
 editors do this, but few language designers think about this. Selecting an item from a list
 is way easier than typing a name or a piece of code. How could we design a language that
 makes as much as possible available through <em>selection</em>? (I did a bit of work on this in
-my <a href="http://tomasp.net/academic/papers/pivot/">dot-driven data exploration</a> paper.)</p>
+my <a href="http://tomasp.net/academic/papers/pivot/">dot-driven data exploration</a> paper.)
 </li>
 <li>
-<p><strong>Running code in REPL.</strong> In the demo, I use REPL to check that my code returns values in
+<strong>Running code in REPL.</strong> In the demo, I use REPL to check that my code returns values in 
 the correct range. In F#, you can do this by selecting block of code and evaluating it, but
 alternative model is to type directly into the REPL console. Again, this is just an editor
 feature and the language does not understand it. What if it helped me to make sure that the
-code I select will run?</p>
+code I select will run?
 </li>
 <li>
-<p><strong>Introducing a function.</strong> After testing the code, I wrap it in a function. Many editors
+<strong>Introducing a function.</strong> After testing the code, I wrap it in a function. Many editors
 have a refactoring for doing this, but again, the language does not know how the function
 was created. If it knew that, could it then suggest that the value 6 might be a good example
 input for the parameter <code>sides</code> and perhaps even use it automatically when I try to run
 the body in REPL? (I wrote about <a href="http://tomasp.net/blog/2016/no-functions/">problems with functions</a>
-on this blog before.)</p>
+on this blog before.)
 </li>
 </ul>
 <p>My first example was writing extremely basic piece of code in a statically typed functional
@@ -224,31 +224,31 @@ wrote before and then try to write some new code to perform a simple calculation
 a couple of interesting things happening in notebook systems.</p>
 <ul>
 <li>
-<p><strong>Understanding the dependencies.</strong> I run cells from top to bottom, but that's not always
+<strong>Understanding the dependencies.</strong> I run cells from top to bottom, but that's not always
 required. You can go back and rerun an earlier cell. What your program returns depends on
 how you interact with it! Could a better data science language understand the dependencies
 between cells and recommend what interactions are reasonable and which are not? And could
 the system also remember how we interact to make the results reproducible? (Our work on
 <a href="http://tomasp.net/academic/papers/wrattler/">Wrattler</a> in the Alan Turing Institute is
-looking into this.)</p>
+looking into this.)
 </li>
 <li>
-<p><strong>Live previews and editors.</strong> An inherent part of any notebook system is that it displays
+<strong>Live previews and editors.</strong> An inherent part of any notebook system is that it displays 
 previews of results such as the data frame in this demo. In Jupyter, this happens only when
 you explicitly run the program, but what if the previews were created on the fly as you write
 code? How do we design programming interactions so that code always has a valid preview?
 And how do we design libraries that allow us to gradually construct results, such as data
-visualizations? (Live previews in <a href="https://thegamma.net/">TheGamma</a> do some of this.)</p>
+visualizations? (Live previews in <a href="https://thegamma.net/">TheGamma</a> do some of this.)
 </li>
 <li>
-<p><strong>Typing for notebooks.</strong> In the example, the type of the <code>ms</code> data frame is
+<strong>Typing for notebooks.</strong> In the example, the type of the <code>ms</code> data frame is 
 <code>Frame&lt;DateTime, string&gt;</code>. This says that rows are indexed by <code>DateTime</code> and columns are
 indexed by <code>string</code>, but the type does not know anything about the names and types of the
 columns in the data frame. This is hardly surprising, because the data come from a live URL!
 Consequently, we have to write rather ugly <code>ms.GetColumn&lt;float&gt;("Open")</code> rather than just
 <code>ms.Open</code>. However, what if running the cell that loads the data gave the type checker more
 information about the data frame and the type in a later cell was refined based on this
-information?</p>
+information?
 </li>
 </ul>
 <h2>Theory of programming interactions</h2>
@@ -300,41 +300,41 @@ the idea of event-sourcing or a system following the Elm-style architecture. Wha
 things would this enable?</p>
 <ul>
 <li>
-<p><strong>Reliable copy and paste.</strong> If copy and paste was an interaction, the environment would know
+<strong>Reliable copy and paste.</strong> If copy and paste was an interaction, the environment would know
 that a certain part of code is copied from somewhere else. If you changed it in one place, the
 editor could ask whether you want this change to happen just in this one place or in all other
 places where the code appears. (The <a href="http://www.subtext-lang.org">Subtext programming language</a>
-treats copy and paste in this way.)</p>
+treats copy and paste in this way.)
 </li>
 <li>
-<p><strong>Interaction-based typing.</strong> Type checking can also be done over the interaction list, rather
+<strong>Interaction-based typing.</strong> Type checking can also be done over the interaction list, rather 
 than over the expression tree of a program at one point in time. This means that a type can
 be, in part, based on earlier interactions including running a part of code. It can, for example,
 be based on the structure of data loaded in earlier steps (as in notebooks) or even use sample
 values from REPL to give a probabilistic type (floating-point number with values that are
-typically in a certain range).</p>
+typically in a certain range).
 </li>
 <li>
-<p><strong>Direct program manipulation.</strong> This is a more fancy idea that could be very useful in the
+<strong>Direct program manipulation.</strong> This is a more fancy idea that could be very useful in the 
 data science context. If we can give preview of a data frame as a table, could we also allow
 the user to edit data in the data frame? This could be tracked as another kind of interaction
 (making the program reproducible), but it should also play well with <em>extract function</em>
-refactoring, which would produce a function that applies the same edit operation to a given input.</p>
+refactoring, which would produce a function that applies the same edit operation to a given input.
 </li>
 <li>
-<p><strong>Automatic selection correction.</strong> Let's say that you write a program and select a member
+<strong>Automatic selection correction.</strong> Let's say that you write a program and select a member
 <code>Substr</code> but then the library author renames the member to <code>Substring</code> using the <em>rename</em>
 refactoring. If the library is also a list of interactions, we can automatically suggest
 a fix for the user code using the library. If the library is opaque, we could at least go through
 all selection interactions that fail against the new version and ask the programmer to make
-their own choice.</p>
+their own choice.
 </li>
 <li>
-<p><strong>Semantic merging.</strong> Finally, we could also have a more clever merging algorithm than just
+<strong>Semantic merging.</strong> Finally, we could also have a more clever merging algorithm than just
 diff3. Given two sequences of interactions that diverge at some point, we would need to find a
 way to append all the new interactions so that the resulting program makes sense. This could,
 for example, mean that refactoring done in one branch (and recorded as an interaction) will not
-conflict with manual edit of the refactored code in another branch.</p>
+conflict with manual edit of the refactored code in another branch.
 </li>
 </ul>
 <p>All of these ideas are based on the simple list of interactions above, but I suspect that once
@@ -400,7 +400,6 @@ or send an email to <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a>.</p>
 
 
 
-
     <div class="info">
     <p class="share">
         <a target="_blank" href="https://twitter.com/intent/tweet?url=http%3a%2f%2ftomasp.net%2fblog%2f2018%2fprogramming-interaction%2f&amp;text=Programming+as+interaction%3a+A+new+perspective+for+programming+language+researchvia+%40tomaspetricek">
@@ -409,11 +408,11 @@ or send an email to <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a>.</p>
           <i class="fab fa-facebook-square"></i></a>
         <a href="http://www.reddit.com/submit?url=http%3a%2f%2ftomasp.net%2fblog%2f2018%2fprogramming-interaction%2f&title=Programming+as+interaction%3a+A+new+perspective+for+programming+language+research">
           <i class="fab fa-reddit-square"></i></a>
-        <a href="mailto:?subject=Programming%20as%20interaction%3a%20A%20new%20perspective%20for%20programming%20language%20research&body=%20In%20programming%20research%2c%20we%20say%20a%20lot%20about%20programs%20and%20languages%2c%20but%20very%20little%0d%0aabout%20the%20actual%20process%20of%20programming.%20One%20simple%20trick%20that%20will%20make%20programming%20language%0d%0aresearch%20significantly%20more%20interesting%20is%20to%20think%20about%20programs%20not%20as%20expressions%2c%20but%20as%0d%0aa%20result%20of%20a%20sequence%20of%20interactions%20that%20create%20it.%20This%20includes%20usual%20things%20such%20as%0d%0awriting%20code%20and%20refactoring%2c%20but%20if%20we%20also%20include%2c%20say%2c%20running%20a%20part%20of%20the%20program%2c%0d%0awe%20become%20capable%20of%20saying%20many%20more%20interesting%20things%20and%20building%20new%20powerful%20programming%20tools.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2018%2fprogramming-interaction%2f">
+        <a href="mailto:?subject=Programming%20as%20interaction%3a%20A%20new%20perspective%20for%20programming%20language%20research&body=%20In%20programming%20research%2c%20we%20say%20a%20lot%20about%20programs%20and%20languages%2c%20but%20very%20little%0aabout%20the%20actual%20process%20of%20programming.%20One%20simple%20trick%20that%20will%20make%20programming%20language%0aresearch%20significantly%20more%20interesting%20is%20to%20think%20about%20programs%20not%20as%20expressions%2c%20but%20as%0aa%20result%20of%20a%20sequence%20of%20interactions%20that%20create%20it.%20This%20includes%20usual%20things%20such%20as%0awriting%20code%20and%20refactoring%2c%20but%20if%20we%20also%20include%2c%20say%2c%20running%20a%20part%20of%20the%20program%2c%0awe%20become%20capable%20of%20saying%20many%20more%20interesting%20things%20and%20building%20new%20powerful%20programming%20tools.%0a%0aSee%3a%20http%3a%2f%2ftomasp.net%2fblog%2f2018%2fprogramming-interaction%2f">
           <i class="fa fa-envelope"></i></a>
     </p>
     <p class="details">
-      <strong>Published:</strong> Monday, 8 October 2018, 1:22 PM<br />
+      <strong>Published:</strong> Monday, 8 October 2018, 1:22 pm<br />
       <strong>Author:</strong> Tomas Petricek<br />
       <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
       

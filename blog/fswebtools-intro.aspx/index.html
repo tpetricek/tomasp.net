@@ -170,16 +170,16 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// F# record type, which will be used for sending lookup </span>
 <span class="c">// results from the server-side to the client-side</span>
-<span class="k">type</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="t">SearchResult</span> <span class="o">=</span> { <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">English</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">string</span>; <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">Other</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="t">string</span>; }
+<span class="k">type</span> <span data-fsdocs-tip="fs1" data-fsdocs-tip-unique="1" class="rt">SearchResult</span> <span class="o">=</span> <span class="pn">{</span> <span class="prop">English</span><span class="pn">:</span><span data-fsdocs-tip="fs2" data-fsdocs-tip-unique="2" class="rt">string</span><span class="pn">;</span> <span class="prop">Other</span><span class="pn">:</span><span data-fsdocs-tip="fs2" data-fsdocs-tip-unique="3" class="rt">string</span><span class="pn">;</span> <span class="pn">}</span>
 
 <span class="c">// Code-behind type for the ASP.NET page</span>
-[&lt;<span class="i">MixedSide</span>&gt;]
-<span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">Suggest</span> <span class="o">=</span> 
-  <span class="k">inherit</span> <span class="i">ClientPage</span> <span class="k">as</span> <span class="k">base</span>
+<span class="pn">[&lt;</span><span class="id">MixedSide</span><span class="pn">&gt;]</span>
+<span class="k">type</span> <span data-fsdocs-tip="fs3" data-fsdocs-tip-unique="4" class="rt">Suggest</span> <span class="o">=</span> 
+  <span class="k">inherit</span> <span class="id">ClientPage</span> <span class="k">as</span> <span class="k">base</span>
 
   <span class="c">// Controls for entering text and displaying result</span>
-  <span class="k">val</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="v">txtInput</span> <span class="o">:</span> <span class="i">TextBox</span>
-  <span class="k">val</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="v">ctlOutput</span> <span class="o">:</span> <span class="i">Element</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span class="prop">txtInput</span> <span class="pn">:</span> <span class="id">TextBox</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span class="prop">ctlOutput</span> <span class="pn">:</span> <span class="id">Element</span>
 
   <span class="c">(* .. interaction of components will go here .. *)</span>
 </code></pre></td>
@@ -204,15 +204,15 @@
 <span class="l">10: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Searches the dictionary for specified prefix</span>
-<span class="k">static</span> <span class="k">member</span> <span class="i">LoadSuggestions</span>(<span class="i">prefix</span>) <span class="o">=</span> 
-  <span class="i">server</span>
-    { <span class="k">let</span> <span class="i">db</span> <span class="o">=</span> <span class="i">DictionaryDb</span>(<span class="i">connectionString</span>)
-      <span class="k">let</span> <span class="i">res</span> <span class="o">=</span> 
-        <span class="i">SQL</span> &lt;@@ { <span class="k">for</span> <span class="i">p</span> <span class="k">in</span> 
-                 <span class="k">when</span> <span class="i">p</span><span class="o">.</span><span class="i">English</span><span class="o">.</span><span class="i">StartsWith</span>(
-                 <span class="k">-&gt;</span> {<span class="i">English</span><span class="o">=</span><span class="i">p</span><span class="o">.</span><span class="i">English</span>; <span class="i">Other</span><span class="o">=</span><span class="i">p</span><span class="o">.</span><span class="i">Other</span>} }
-                 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="i">truncate</span> <span class="n">10</span> @@&gt; 
-      <span class="k">return</span> (<span class="k">new</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="i">ResizeArray</span><span class="o">&lt;</span>_<span class="o">&gt;</span>(<span class="i">res</span>)) }
+<span class="k">static</span> <span class="k">member</span> <span class="id">LoadSuggestions</span><span class="pn">(</span><span class="id">prefix</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="id">server</span>
+    <span class="pn">{</span> <span class="k">let</span> <span class="id">db</span> <span class="o">=</span> <span class="id">DictionaryDb</span><span class="pn">(</span><span class="id">connectionString</span><span class="pn">)</span>
+      <span class="k">let</span> <span class="id">res</span> <span class="o">=</span> 
+        <span class="id">SQL</span> <span class="pn">&lt;@@</span> <span class="pn">{</span> <span class="k">for</span> <span class="id">p</span> <span class="k">in</span> 
+                 <span class="k">when</span> <span class="id">p</span><span class="pn">.</span><span class="id">English</span><span class="pn">.</span><span class="id">StartsWith</span><span class="pn">(</span>
+                 <span class="k">-&gt;</span> <span class="pn">{</span><span class="id">English</span><span class="o">=</span><span class="id">p</span><span class="pn">.</span><span class="id">English</span><span class="pn">;</span> <span class="id">Other</span><span class="o">=</span><span class="id">p</span><span class="pn">.</span><span class="id">Other</span><span class="pn">}</span> <span class="pn">}</span>
+                 <span class="o">|&gt;</span> <span data-fsdocs-tip="fs4" data-fsdocs-tip-unique="5" class="id">truncate</span> <span class="n">10</span> <span class="pn">@@&gt;</span> 
+      <span class="k">return</span> <span class="pn">(</span><span class="k">new</span> <span data-fsdocs-tip="fs5" data-fsdocs-tip-unique="6" class="id">ResizeArray</span><span class="pn">&lt;</span><span class="id">_</span><span class="pn">&gt;</span><span class="pn">(</span><span class="id">res</span><span class="pn">)</span><span class="pn">)</span> <span class="pn">}</span>
 </code></pre></td>
 </tr>
 </table>
@@ -233,10 +233,10 @@
 <span class="l">5: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Initialization on the client side - attach event handlers    </span>
-[&lt;<span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="i">ReflectedDefinition</span>&gt;]
-<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">Client_Load</span>(<span class="i">sender</span>, <span class="i">e</span>) <span class="o">=</span>
-  <span class="i">client</span>
-    { <span class="k">do</span> <span class="i">this</span><span class="o">.</span><span class="i">txtInput</span><span class="o">.</span><span class="i">ClientKeyUp</span><span class="o">.</span><span class="i">AddClient</span>(<span class="i">this</span><span class="o">.</span><span class="i">UpdateSuggestions</span>) }
+<span class="pn">[&lt;</span><span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="7" class="id">ReflectedDefinition</span><span class="pn">&gt;]</span>
+<span class="k">member</span> <span class="id">this</span><span class="pn">.</span><span class="id">Client_Load</span><span class="pn">(</span><span class="id">sender</span><span class="pn">,</span> <span class="id">e</span><span class="pn">)</span> <span class="o">=</span>
+  <span class="id">client</span>
+    <span class="pn">{</span> <span class="k">do</span> <span class="id">this</span><span class="pn">.</span><span class="id">txtInput</span><span class="pn">.</span><span class="id">ClientKeyUp</span><span class="pn">.</span><span class="id">AddClient</span><span class="pn">(</span><span class="id">this</span><span class="pn">.</span><span class="id">UpdateSuggestions</span><span class="pn">)</span> <span class="pn">}</span>
 </code></pre></td>
 </tr>
 </table>
@@ -255,14 +255,14 @@
 <span class="l">9: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// When text changes, trigger server call to update suggestions</span>
-[&lt;<span onmouseout="hideTip(event, 'fs10', 12)" onmouseover="showTip(event, 'fs10', 12)" class="i">ReflectedDefinition</span>&gt;]
-<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">UpdateSuggestions</span>(<span class="i">sender</span>, <span class="i">e</span>) <span class="o">=</span>
-  <span class="i">client</span>
-    { <span class="k">do!</span> <span class="i">asyncExecute</span>
-           (<span class="i">client_async</span> 
-             { <span class="k">let</span>  <span class="i">sprefix</span> <span class="o">=</span> <span class="i">this</span><span class="o">.</span><span class="i">txtInput</span><span class="o">.</span><span class="i">Text</span>
-               <span class="k">let!</span> <span class="i">sugs</span> <span class="o">=</span> <span class="i">serverExecute</span>(<span onmouseout="hideTip(event, 'fs5', 13)" onmouseover="showTip(event, 'fs5', 13)" class="i">Suggest</span><span class="o">.</span><span class="i">LoadSuggestions</span>(<span class="i">sprefix</span>))
-               <span class="k">do!</span>  <span class="i">this</span><span class="o">.</span><span class="i">DisplayResponse</span>(<span class="i">sugs</span>) }) }            
+<span class="pn">[&lt;</span><span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="8" class="id">ReflectedDefinition</span><span class="pn">&gt;]</span>
+<span class="k">member</span> <span class="id">this</span><span class="pn">.</span><span class="id">UpdateSuggestions</span><span class="pn">(</span><span class="id">sender</span><span class="pn">,</span> <span class="id">e</span><span class="pn">)</span> <span class="o">=</span>
+  <span class="id">client</span>
+    <span class="pn">{</span> <span class="k">do!</span> <span class="id">asyncExecute</span>
+           <span class="pn">(</span><span class="id">client_async</span> 
+             <span class="pn">{</span> <span class="k">let</span>  <span class="id">sprefix</span> <span class="o">=</span> <span class="id">this</span><span class="pn">.</span><span class="id">txtInput</span><span class="pn">.</span><span class="id">Text</span>
+               <span class="k">let!</span> <span class="id">sugs</span> <span class="o">=</span> <span class="id">serverExecute</span><span class="pn">(</span><span data-fsdocs-tip="fs3" data-fsdocs-tip-unique="9" class="id">Suggest</span><span class="pn">.</span><span class="id">LoadSuggestions</span><span class="pn">(</span><span class="id">sprefix</span><span class="pn">)</span><span class="pn">)</span>
+               <span class="k">do!</span>  <span class="id">this</span><span class="pn">.</span><span class="id">DisplayResponse</span><span class="pn">(</span><span class="id">sugs</span><span class="pn">)</span> <span class="pn">}</span><span class="pn">)</span> <span class="pn">}</span>            
 </code></pre></td>
 </tr>
 </table>
@@ -291,15 +291,15 @@
 <span class="l">10: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Display newly received array with results</span>
-[&lt;<span onmouseout="hideTip(event, 'fs10', 14)" onmouseover="showTip(event, 'fs10', 14)" class="i">ReflectedDefinition</span>&gt;]
-<span class="k">member</span> <span class="i">this</span><span class="o">.</span><span class="i">DisplayResponse</span> (<span class="i">sugs</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs9', 15)" onmouseover="showTip(event, 'fs9', 15)" class="i">ResizeArray</span><span class="o">&lt;</span><span class="i">Result</span><span class="o">&gt;</span>) <span class="o">=</span>
-  <span class="i">client</span>
-    { <span class="k">let</span> <span class="i">sb</span> <span class="o">=</span> <span class="i">StringBuilder</span>()
-      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 16)" onmouseover="showTip(event, 'fs11', 16)" class="i">array</span> <span class="o">=</span> <span class="i">sugs</span><span class="o">.</span><span class="i">ToArray</span>()
-      <span class="k">do</span>  <span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="i">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 18)" onmouseover="showTip(event, 'fs13', 18)" class="i">iter</span> (<span class="k">fun</span> (<span class="i">res</span>) <span class="k">-&gt;</span> 
-            <span class="i">sb</span><span class="o">.</span><span class="i">Append</span>(<span class="s">&quot;&lt;li&gt;&lt;strong&gt;&quot;</span> <span class="o">+</span> <span class="i">r</span><span class="o">.</span><span class="i">Source</span> <span class="o">+</span> 
-                      <span class="s">&quot;&lt;/strong&gt; - &quot;</span> <span class="o">+</span> <span class="i">r</span><span class="o">.</span><span class="i">Target</span> <span class="o">+</span> <span class="s">&quot;&lt;/li&gt;&quot;</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs14', 19)" onmouseover="showTip(event, 'fs14', 19)" class="i">ignore</span>)
-      <span class="k">do</span>   <span class="i">this</span><span class="o">.</span><span class="i">ctlOutput</span><span class="o">.</span><span class="i">InnerHtml</span> <span class="o">&lt;-</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> <span class="o">+</span> (<span class="i">sb</span><span class="o">.</span><span class="i">ToString</span>()) <span class="o">+</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> }
+<span class="pn">[&lt;</span><span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="10" class="id">ReflectedDefinition</span><span class="pn">&gt;]</span>
+<span class="k">member</span> <span class="id">this</span><span class="pn">.</span><span class="id">DisplayResponse</span> <span class="pn">(</span><span class="id">sugs</span><span class="pn">:</span><span data-fsdocs-tip="fs5" data-fsdocs-tip-unique="11" class="id">ResizeArray</span><span class="pn">&lt;</span><span data-fsdocs-tip="fs7" data-fsdocs-tip-unique="12" class="id">Result</span><span class="pn">&gt;</span><span class="pn">)</span> <span class="o">=</span>
+  <span class="id">client</span>
+    <span class="pn">{</span> <span class="k">let</span> <span class="id">sb</span> <span class="o">=</span> <span class="id">StringBuilder</span><span class="pn">(</span><span class="pn">)</span>
+      <span class="k">let</span> <span data-fsdocs-tip="fs8" data-fsdocs-tip-unique="13" class="id">array</span> <span class="o">=</span> <span class="id">sugs</span><span class="pn">.</span><span class="id">ToArray</span><span class="pn">(</span><span class="pn">)</span>
+      <span class="k">do</span>  <span data-fsdocs-tip="fs9" data-fsdocs-tip-unique="14" class="id">Array</span><span class="pn">.</span><span data-fsdocs-tip="fs10" data-fsdocs-tip-unique="15" class="id">iter</span> <span class="pn">(</span><span class="k">fun</span> <span class="pn">(</span><span class="id">res</span><span class="pn">)</span> <span class="k">-&gt;</span> 
+            <span class="id">sb</span><span class="pn">.</span><span class="id">Append</span><span class="pn">(</span><span class="s">&quot;&lt;li&gt;&lt;strong&gt;&quot;</span> <span class="o">+</span> <span class="id">r</span><span class="pn">.</span><span class="id">Source</span> <span class="o">+</span> 
+                      <span class="s">&quot;&lt;/strong&gt; - &quot;</span> <span class="o">+</span> <span class="id">r</span><span class="pn">.</span><span class="id">Target</span> <span class="o">+</span> <span class="s">&quot;&lt;/li&gt;&quot;</span><span class="pn">)</span> <span class="o">|&gt;</span> <span data-fsdocs-tip="fs11" data-fsdocs-tip-unique="16" class="id">ignore</span><span class="pn">)</span>
+      <span class="k">do</span>   <span class="id">this</span><span class="pn">.</span><span class="id">ctlOutput</span><span class="pn">.</span><span class="id">InnerHtml</span> <span class="k">&lt;-</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> <span class="o">+</span> <span class="pn">(</span><span class="id">sb</span><span class="pn">.</span><span class="id">ToString</span><span class="pn">(</span><span class="pn">)</span><span class="pn">)</span> <span class="o">+</span> <span class="s">&quot;&lt;ul&gt;&quot;</span> <span class="pn">}</span>
 </code></pre></td>
 </tr>
 </table>
@@ -333,22 +333,34 @@
   <li>[7] Book: <a href="http://www.amazon.com/Foundations-F-Robert-Pickering/dp/1590597575">Foundations of F#</a> [<a href="http://www.amazon.com/Foundations-F-Robert-Pickering/dp/1590597575" target="_blank">^</a>] - Robert Pickering</li>
   <li>[8] <a href="http://research.microsoft.com/~dsyme/papers/ml03-syme.pdf">Leveraging .NET Meta-programming Components from F#</a> (PDF)</li>
 </ul>
+<div popover class="fsdocs-tip" id="fs1">type SearchResult =
+  {
+    English: string
+    Other: string
+  }</div>
+<div popover class="fsdocs-tip" id="fs2">Multiple items<br />val string: value: &#39;T -&gt; string<br /><br />--------------------<br />type string = System.String</div>
+<div popover class="fsdocs-tip" id="fs3">type Suggest =
+  val mutable txtInput: obj
+  val mutable ctlOutput: obj</div>
+<div popover class="fsdocs-tip" id="fs4">val truncate: value: &#39;T -&gt; &#39;T (requires member Truncate)</div>
+<div popover class="fsdocs-tip" id="fs5">type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;</div>
+<div popover class="fsdocs-tip" id="fs6">Multiple items<br />type ReflectedDefinitionAttribute =
+  inherit Attribute
+  new: unit -&gt; ReflectedDefinitionAttribute + 1 overload
+  member IncludeValue: bool<br /><br />--------------------<br />new: unit -&gt; ReflectedDefinitionAttribute<br />new: includeValue: bool -&gt; ReflectedDefinitionAttribute</div>
+<div popover class="fsdocs-tip" id="fs7">Multiple items<br />module Result
 
+from Microsoft.FSharp.Core<br /><br />--------------------<br />
+type Result&lt;&#39;T,&#39;TError&gt; =
+  | Ok of ResultValue: &#39;T
+  | Error of ErrorValue: &#39;TError</div>
+<div popover class="fsdocs-tip" id="fs8">type &#39;T array = &#39;T array</div>
+<div popover class="fsdocs-tip" id="fs9">module Array
 
-<div class="tip" id="fs1">type SearchResult =<br />&#160;&#160;{English: string;<br />&#160;&#160;&#160;Other: string;}<br /><br />Full name: fswebtoolsintroaspx.SearchResult</div>
-<div class="tip" id="fs2">SearchResult.English: string</div>
-<div class="tip" id="fs3">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
-<div class="tip" id="fs4">SearchResult.Other: string</div>
-<div class="tip" id="fs5">type Suggest =<br />&#160;&#160;inherit obj<br />&#160;&#160;val mutable txtInput: obj<br />&#160;&#160;val mutable ctlOutput: obj<br /><br />Full name: fswebtoolsintroaspx.Suggest</div>
-<div class="tip" id="fs6">Suggest.txtInput: obj</div>
-<div class="tip" id="fs7">Suggest.ctlOutput: obj</div>
-<div class="tip" id="fs8">val truncate : value:&#39;T -&gt; &#39;T (requires member Truncate)<br /><br />Full name: Microsoft.FSharp.Core.Operators.truncate</div>
-<div class="tip" id="fs9">type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.ResizeArray&lt;_&gt;</div>
-<div class="tip" id="fs10">Multiple items<br />type ReflectedDefinitionAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ReflectedDefinitionAttribute<br />&#160;&#160;new : includeValue:bool -&gt; ReflectedDefinitionAttribute<br />&#160;&#160;member IncludeValue : bool<br /><br />Full name: Microsoft.FSharp.Core.ReflectedDefinitionAttribute<br /><br />--------------------<br />new : unit -&gt; ReflectedDefinitionAttribute<br />new : includeValue:bool -&gt; ReflectedDefinitionAttribute</div>
-<div class="tip" id="fs11">type &#39;T array = &#39;T []<br /><br />Full name: Microsoft.FSharp.Core.array&lt;_&gt;</div>
-<div class="tip" id="fs12">module Array<br /><br />from Microsoft.FSharp.Collections</div>
-<div class="tip" id="fs13">val iter : action:(&#39;T -&gt; unit) -&gt; array:&#39;T [] -&gt; unit<br /><br />Full name: Microsoft.FSharp.Collections.Array.iter</div>
-<div class="tip" id="fs14">val ignore : value:&#39;T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore</div>
+from Microsoft.FSharp.Collections</div>
+<div popover class="fsdocs-tip" id="fs10">val iter: action: (&#39;T -&gt; unit) -&gt; array: &#39;T array -&gt; unit</div>
+<div popover class="fsdocs-tip" id="fs11">val ignore: value: &#39;T -&gt; unit</div>
+
 
 
     <div class="info">
@@ -363,7 +375,7 @@
           <i class="fa fa-envelope"></i></a>
     </p>
     <p class="details">
-      <strong>Published:</strong> Friday, 13 July 2007, 4:32 AM<br />
+      <strong>Published:</strong> Friday, 13 July 2007, 4:32 am<br />
       <strong>Author:</strong> Tomas Petricek<br />
       <strong>Typos:</strong> <a href="http://github.com/tpetricek/tomasp.net">Send me a pull request</a>!<br />
       
