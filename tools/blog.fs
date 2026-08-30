@@ -20,8 +20,8 @@ let rec private listFiles blocker root = seq {
     for d in Directory.GetDirectories(root) do
       yield! listFiles blocker d }
 
-let private (|Extension|) f = Path.GetExtension(f)
-let private (|EndsWith|_|) s (f:string) = if f.EndsWith(s) then Some() else None
+let private (|Extension|) (f:string) = Path.GetExtension(f)
+let private (|EndsWith|_|) (s:string) (f:string) = if f.EndsWith(s) then Some() else None
 
 /// Read given articles (and cache transformed Article<string> objects)
 let private readArticles cfg files = 
@@ -33,19 +33,7 @@ let private readArticles cfg files =
           printfn "Error when processing Markdown file: %s" f
           printfn "%A" e
           None
-    | Extension ".fsx" as f -> 
-        try Some(transformFsScript cfg f) 
-        with e -> 
-          printfn "Error when processing Markdown file: %s" f
-          printfn "%A" e
-          None
-    | EndsWith ".aspx.html" as f -> 
-        try Some(transformLegacyHtml cfg f) 
-        with e -> 
-          printfn "Error when processing Markdown file: %s" f
-          printfn "%A" e
-          None
-    | _ -> None ) 
+    | _ -> None )
   |> Seq.filter (fun p -> not (p.Title.Contains("[DRAFT]")))
   |> Seq.sortByDescending (fun p -> p.Date) 
   |> Seq.toArray  
@@ -72,18 +60,7 @@ let processFiles cfg archives changes =
     let forlay = Seq.append [f] layoutFiles
     match f, changes with
     | f, Some changes when not (Set.contains f changes) -> ()
-    | EndsWith ".aspx.html", _ ->
-        if Helpers.sourceChangedSeq forlay outf then
-          printfn "Processing file: %s" (f.Replace(cfg.Source, ""))
-          ensureDirectory (Path.GetDirectoryName outf)
-          let article = transformLegacyHtml cfg f
-          let layout = defaultArg article.Layout "post"
-          let model = { Article = article; Archives = archives }
-          File.WriteAllText(outf, DotLiquid.render (layout + ".html") model)
-          anyChange <- true
-
-    | Let transformFsScript (transform, Extension ".fsx"), _
-    | Let transformMarkdown (transform, Extension ".md"), _-> 
+    | Let transformMarkdown (transform, Extension ".md"), _->
         if sourceChangedSeq forlay outf then
           printfn "Processing file: %s" (f.Replace(cfg.Source, ""))
           ensureDirectory (Path.GetDirectoryName outf)
@@ -102,7 +79,7 @@ let copyFiles (cfg:SiteConfig) changes =
   let sources = listFiles ".no-copy" cfg.Source
   for f in sources do
     match f, changes with
-    | (Extension ".md" | EndsWith ".aspx.html" | Extension ".fsx"), _ -> ()
+    | (Extension ".md" | Extension ".fsx"), _ -> ()
     | f, Some changes when not (Set.contains f changes) -> ()
     | _ -> 
         let outf = f.Replace(cfg.Source, cfg.Output)

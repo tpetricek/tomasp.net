@@ -7,8 +7,11 @@ type SiteConfig =
     Source : string
     Layouts : string
     Calendar : string
+    /// Repo folder holding layouts/ and source/ - where calendar.json lives
+    Website : string
+    /// Public base URL the calendar images are served from
+    CalendarRoot : string
     Output : string
-    Cache : string 
     Blog : string
     Academic : string
     }
@@ -71,4 +74,5 @@ type Month =
 type CalendarYear =
   { Year : string
     Months : seq<Month> 
+    ImageRoot : string
     Archives : Archives }

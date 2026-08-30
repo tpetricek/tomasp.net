@@ -5,9 +5,8 @@ open System.IO
 open System.Collections.Generic
 open System.Text.RegularExpressions
 
-open FSharp.Literate
-open FSharp.Markdown
-open FSharp.Markdown.Html
+open FSharp.Formatting.Literate
+open FSharp.Formatting.Markdown
 
 open FsBlog.Helpers
 
@@ -25,8 +24,8 @@ let private (|CharSeparatedSpans|_|) (sep:char) spans =
     | Literal(text=s)::rest when s.Contains(sep.ToString()) ->
         let s1, s2 = s.Substring(0, s.IndexOf(sep)).Trim(), s.Substring(s.IndexOf(sep)+1)
         let before = List.rev before
-        let before = if String.IsNullOrWhiteSpace(s1) then before else Literal(s1, None)::before
-        let rest = if String.IsNullOrWhiteSpace(s2) then rest else Literal(s2, None)::rest
+        let before = if String.IsNullOrWhiteSpace(s1) then before else Literal(s1, MarkdownRange.zero)::before
+        let rest = if String.IsNullOrWhiteSpace(s2) then rest else Literal(s2, MarkdownRange.zero)::rest
         Some(before, rest)
     | [] -> None
     | x::xs -> loop (x::before) xs
@@ -35,22 +34,11 @@ let private (|CharSeparatedSpans|_|) (sep:char) spans =
 let private (|ColonSeparatedSpans|_|) spans = (|CharSeparatedSpans|_|) ':' spans
 let private (|QMarkSeparatedSpans|_|) spans = (|CharSeparatedSpans|_|) '?' spans
 
-let private createFormattingContext writer =
-  { Writer = writer
-    Links = dict []
-    Newline = "\n"
-    LineBreak = ignore
-    WrapCodeSnippets = false
-    GenerateHeaderAnchors = true
-    UniqueNameGenerator = new UniqueNameGenerator()
-    ParagraphIndent = ignore }
-
+/// Format inline spans as HTML. A `Span` paragraph renders inline, without the `<p>` that
+/// a `Paragraph` would add. The trailing newline `ToHtml` appends has to go - these strings
+/// end up inside `<title>` and `<meta>` tags.
 let private formatSpans spans =
-  let sb = Text.StringBuilder()
-  ( use wr = new StringWriter(sb)
-    let fc = createFormattingContext wr
-    Html.formatSpans fc spans )
-  sb.ToString()
+  Markdown.ToHtml(MarkdownDocument([ Span(spans, MarkdownRange.zero) ], dict [])).TrimEnd('\r', '\n')
 
 let private formatPlainSpans spans =
   let sb = Text.StringBuilder()
@@ -65,13 +53,13 @@ let private formatPlainSpans spans =
 
 let private generateSubheadings = function
   | Heading(size=1; body=QMarkSeparatedSpans(before, after)) ->
-        InlineBlock
+        InlineHtmlBlock
           (sprintf "<h1><span class=\"hmq\">%s</span><span class=\"hs\">%s</span></h1>"
-            (formatSpans before) (formatSpans after), None)
+            (formatSpans before) (formatSpans after), None, MarkdownRange.zero)
   | Heading(size=1; body=ColonSeparatedSpans(before, after)) ->
-        InlineBlock
+        InlineHtmlBlock
           (sprintf "<h1><span class=\"hm\">%s</span><span class=\"hs\">%s</span></h1>"
-            (formatSpans before) (formatSpans after), None)
+            (formatSpans before) (formatSpans after), None, MarkdownRange.zero)
   | p -> p
 
 // --------------------------------------------------------------------------------------
@@ -113,9 +101,9 @@ let private tryFind k (props:IDictionary<string, string>) =
 let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstractOpt, body) =
   let abs, body =
     match abstractOpt with
-    | Some(true, abs) -> abs, Heading(1, title, None)::body
-    | Some(false, abs) -> abs, Heading(1, title, None)::(abs @ body)
-    | None -> [], Heading(1, title, None)::body
+    | Some(true, abs) -> abs, Heading(1, title, MarkdownRange.zero)::body
+    | Some(false, abs) -> abs, Heading(1, title, MarkdownRange.zero)::(abs @ body)
+    | None -> [], Heading(1, title, MarkdownRange.zero)::body
   let date = tryFind "date" props |> Option.map DateTime.Parse
   let references = tryFind "references" props = Some "true"
 
@@ -136,74 +124,61 @@ let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstract
     Abstract = abs; Body = body }
 
 let private generateReferences (refs:System.Collections.Generic.IDictionary<_, _>) =
-  [ Heading(2, [Literal("References", None)], None)
+  [ Heading(2, [Literal("References", MarkdownRange.zero)], MarkdownRange.zero)
     ListBlock(MarkdownListKind.Ordered,
       [ for url, titleOpt in refs.Values do
           match titleOpt with
           | None -> ()
           | Some title ->
               let ref = sprintf "<a href='%s'>%s</a>" url title
-              yield [ InlineBlock(ref, None) ] ], None) ]
+              yield [ InlineHtmlBlock(ref, None, MarkdownRange.zero) ] ], MarkdownRange.zero) ]
 
-let private transformMarkdownOrScript (cfg:SiteConfig) plain (inf:string) =
-  let cached = Path.ChangeExtension(cfg.Cache </> inf.Substring(cfg.Source.Length+1), ".json")
-  if not (sourceChanged inf cached) then
-    Json.fromJson (File.ReadAllText cached)
-  else
-    printfn "Parsing F#/MD file: %s" (inf.Replace(cfg.Source, ""))
-    let document =
-      if plain then Literate.ParseMarkdownFile(inf)
-      else Literate.ParseScriptFile(inf)
+let private transformMarkdownFile (cfg:SiteConfig) (inf:string) =
+  printfn "Parsing MD file: %s" (inf.Replace(cfg.Source, ""))
+  let document = Literate.ParseMarkdownFile(inf)
 
-    let article = parseMetadata cfg inf (readMetadata document.Paragraphs)
-    let body = if article.References then article.Body @ generateReferences document.DefinedLinks else article.Body
-    let body = document.With(List.map generateSubheadings body)
+  let article = parseMetadata cfg inf (readMetadata document.Paragraphs)
+  let body = if article.References then article.Body @ generateReferences document.DefinedLinks else article.Body
+  let body = document.With(paragraphs = List.map generateSubheadings body)
 
-    let abs = document.With(article.Abstract)
-    let da = Literate.ProcessDocument(abs, "document")
-    let db = Literate.ProcessDocument(body, "document")
-    let fetch (o:GeneratorOutput) = (dict o.Parameters).[o.ContentTag] + (dict o.Parameters).["tooltips"]
-    let res = article.With(fetch da, fetch db)
-    ensureDirectory (Path.GetDirectoryName cached)
-    File.WriteAllText(cached, Json.toJson res)
-    res
+  let abs = document.With(paragraphs = article.Abstract)
+  article.With(Literate.ToHtml(abs), Literate.ToHtml(body))
+
+// --------------------------------------------------------------------------------------
+// Articles with a raw HTML body
+// --------------------------------------------------------------------------------------
+
+/// Marks an article whose abstract and body are raw HTML; only the header is Markdown.
+/// The HTML must not be round-tripped through the Markdown parser, which ends a raw HTML
+/// block at the first blank line - common inside `<pre>` code samples.
+let private rawBodyRegex = Regex(@"(?m)^\s*-\s*rawbody:\s*true\s*\r?$")
+
+/// Matches the `-----` separators that delimit the header, abstract and body
+let private fenceRegex = Regex(@"(?m)^-{3,}[ \t]*\r?$")
+
+/// Read article with a Markdown header and a raw HTML abstract and body
+let private transformRawBody (cfg:SiteConfig) (inf:string) (text:string) =
+  printfn "Parsing HTML file: %s" (inf.Replace(cfg.Source, ""))
+  let fences = fenceRegex.Matches(text)
+  if fences.Count < 2 then
+    failwithf "Article with a raw body needs two '-----' separators: %s" inf
+  let headerEnd = fences.[0].Index
+  let absStart = fences.[0].Index + fences.[0].Length
+  let bodyStart = fences.[1].Index + fences.[1].Length
+  let article =
+    parseMetadata cfg inf (readMetadata (Markdown.Parse(text.Substring(0, headerEnd)).Paragraphs))
+  // Each separator is a line of its own, so exactly one newline follows it. Everything
+  // after that is content verbatim - trimming would drop newlines the HTML relies on.
+  let afterNewline (s:string) =
+    if s.StartsWith("\r\n") then s.Substring(2)
+    elif s.StartsWith("\n") then s.Substring(1)
+    else s
+  let abs = afterNewline (text.Substring(absStart, fences.[1].Index - absStart))
+  let body = afterNewline (text.Substring(bodyStart))
+  article.With(abs, body)
 
 /// Read Markdown document, parse metadata and format it as HTML
 let transformMarkdown cfg file =
-  transformMarkdownOrScript cfg true file
-
-/// Read F# script with inline Markdown, parse metadata and format it as HTML
-let transformFsScript cfg file =
-  transformMarkdownOrScript cfg false file
-
-/// Old articles on tomasp.net are in ugly HTML foramt...
-let private legacyRegex =
-  Regex
-    ("\<!-- \[info\](.*)\[/info\] --\>.*" +
-     "\<!-- \[abstract\](.*)\[/abstract\] --\>.*" +
-     "\<h1\>(.*)\</h1\>(.*)", RegexOptions.Singleline)
-
-/// Read legacy HTML with Markdown in comment, parse metadata and format it as HTML
-let transformLegacyHtml cfg (inf:string) =
-  let cached = Path.ChangeExtension(cfg.Cache </> inf.Substring(cfg.Source.Length+1), ".json")
-  if not (sourceChanged inf cached) then
-    Json.fromJson (File.ReadAllText cached)
-  else
-    printfn "Parsing HTML file: %s" (inf.Replace(cfg.Source, ""))
-    let html = File.ReadAllText(inf)
-    let rmatch = legacyRegex.Match(html)
-    if not rmatch.Success then failwithf "Failed to parse legacy html: %s" inf
-
-    let props = rmatch.Groups.[1].Value
-    let abstr = rmatch.Groups.[2].Value
-    let title = rmatch.Groups.[3].Value
-    let body = rmatch.Groups.[4].Value
-
-    let article =
-      parseMetadata cfg inf
-        (readMetadata (Heading(1, [Literal(title, None)], None)::Markdown.Parse(props).Paragraphs))
-
-    let res = article.With(abstr, "<h1>" + title + "</h1>" + body)
-    ensureDirectory (Path.GetDirectoryName cached)
-    File.WriteAllText(cached, Json.toJson res)
-    res
+  let text = File.ReadAllText(file:string)
+  if rawBodyRegex.IsMatch(text) then transformRawBody cfg file text
+  else transformMarkdownFile cfg file

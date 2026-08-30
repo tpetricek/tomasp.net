@@ -56,7 +56,7 @@ let private parseTemplate template typ : Renderer<'M> =
 
 /// Loads a template & remembers the last write time
 /// (so that we can automatically reload the template when file changes)
-let private fileTemplate (typ, fileName) = 
+let private fileTemplate (typ, (fileName:string)) = 
   let writeTime = File.GetLastWriteTime fileName
   use file = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
   use reader = new StreamReader(file)
@@ -109,15 +109,17 @@ let registerFiltersByName name =
   let typ = 
     asm.GetTypes()
     |> Seq.collect (fun t -> Seq.append [t] (t.GetNestedTypes()))
-    |> Seq.filter (fun t -> t.FullName.EndsWith(name) && not(t.FullName.Contains("<StartupCode")))
+    |> Seq.filter (fun t -> t.FullName.EndsWith(name:string) && not(t.FullName.Contains("<StartupCode")))
     |> Seq.last
   Template.RegisterFilter typ
 
 /// Filters that can be used in DotLiquid files
-module Filters = 
+module Filters =
   let private html = Regex("\<[^\>]*\>")
 
-  let tagUrl (s:string) = 
+  let private enGb = System.Globalization.CultureInfo.GetCultureInfo("en-GB")
+
+  let tagUrl (s:string) =
     s.Replace(".", "dot").Replace("#", "sharp").Replace(" ", "-")
 
   let urlEncode (url:string) =
@@ -126,14 +128,14 @@ module Filters =
   let mailEncode (url:string) =
     urlEncode(url).Replace("+", "%20")
 
-  let dateAsIso (d:DateTime) = 
+  let dateAsIso (d:DateTime) =
     d.ToString("o")
 
-  let dateNice (d:DateTime) = 
-    d.ToString("dddd, d MMMM yyyy, h:mm tt", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))
+  let dateNice (d:DateTime) =
+    d.ToString("dddd, d MMMM yyyy, h:mm tt", enGb)
 
-  let dateShort (d:DateTime) = 
-    d.ToString("dddd, d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))
+  let dateShort (d:DateTime) =
+    d.ToString("dddd, d MMMM yyyy", enGb)
 
   let trimHtml (s:string) = 
     html.Replace(s, "")

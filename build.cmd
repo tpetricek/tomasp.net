@@ -1,14 +1,6 @@
 @echo off
-.paket\paket.bootstrapper.exe
-if errorlevel 1 (
-  exit /b %errorlevel%
+rem Local R2 credentials, if present (see .env.example)
+if exist "%~dp0.env" (
+  for /f "usebackq eol=# tokens=1,* delims==" %%a in ("%~dp0.env") do set "%%a=%%b"
 )
-if not exist paket.lock (
-  .paket\paket.exe install
-) else (
-  .paket\paket.exe restore
-)
-if errorlevel 1 (
-  exit /b %errorlevel%
-)
-packages\FAKE\tools\FAKE.exe %* --fsiargs tools\main.fsx
+dotnet run --project "%~dp0tools" -c Release -- %*
