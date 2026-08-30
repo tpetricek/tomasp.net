@@ -73,12 +73,10 @@ visualization is far from easy. The concrete example illustrates this quite clea
    that you could scrape. It does not have data for Rio 2016, so you'd need to scrape
    [Rio 2016 results](https://www.rio2016.com/en/medal-count-athletes) and match slightly different
    naming of disciplines...
-
  - The neat visualization you can see above is a [D3 Streamgraph](https://bl.ocks.org/mbostock/4060954),
    so once you have the data (downloaded using, say, Python) you'll need to write some JavaScript
    to build the visualization. This typically involves modifying existing samples, because writing
    D3 from scratch is fairly hard.
-
  - If you scroll down on the New York Times visualization page, you'll find a number of other
    variations on the visualization that display medals by different disciplines. You'll probably
    need to write some more code to partition the data by disciplines - and even then, you cannot

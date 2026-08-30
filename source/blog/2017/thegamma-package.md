@@ -55,7 +55,6 @@ two most interesting ones:
    operations, so when you type `'filter data'.'Games is'.` the type provider offers a list
    of available values including e.g. `Rio (2016)`. This means that you do not have to learn 
    much about programming - you just need to choose what you want to do!
-   
  - **Spreadsheet-inspired editor** - a nice thing about spreadsheets is that you always see
    concrete values you're working with. I [wrote about this recently](http://tomasp.net/blog/2016/no-functions/)
    and used spreadsheets as an inspiration for an editor that is included in The Gamma package.
@@ -130,7 +129,6 @@ work-in-progress and I'll add it to the documentation soon):
    for the Olympic medals data set. The protocol that the service exposes is documented at
    [publishing data](/publishing) page. The provider automatically generates members that let you
    write data aggregations and transformations using `.` as in the demo.  
-
  - The `library` provider takes a JSON that specifies the types and structure of JavaScript 
    libraries - the `thegamma-script` package comes with a couple of wrappers for Google Charts
    and for generating tables that you can see in the [Olympic Medalists demo](http://rio2016.thegamma.net/).

@@ -258,15 +258,12 @@ philosophy of science can give you a new perspective in many ways:
  - **Methodology.** Can we learn something from other sciences so that computer science 
    and software development practices improve? How does the _scientific method_ do this in
    other disciplines? (And is there such thing in the first place?)
-   
  - **What things are.** Every discipline has basic tools, entities and concepts that it uses, but
    what is their nature? When does it make sense to compare things and what discussions are
    meaningless?
-   
  - **History and progress.** How can we learn and better understand the history of our discipline?
    When we look at the history, are we understanding it in the right context? Or do we subtly mix 
    the history with our modern understanding? And when is this a problem?
-   
  - **Theory and practice.** How do computer scientists actually work and write papers? When you
    read a paper, what can you expect to see there? And what thoughts will it (almost) never
    question because they are taken for granted?

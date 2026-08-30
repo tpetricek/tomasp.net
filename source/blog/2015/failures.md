@@ -87,16 +87,13 @@ Introducing the heroes
  - _"Errors are a curse and must be avoided at all costs,"_ says our first hero _"if it contains
    an error, you cannot even call it a program!"_ This sounds a bit idealistic, but our hero hopes
    that dependently typed languages will make this dream a reality.
-
  - _"But how do you know it works?"_ comes a reply from our second doubtful hero. _"You need to
    write a specification, or tests!"_ And our second hero becomes even more extreme _"In fact,
    I will only write new code to fix errors revealed by tests!"_
-
  - As our first two heroes start arguing, a third (a bit weird) hero comes in saying _"You both
    really believe you can eliminate all errors?"_ Our two heroes start looking puzzled and the
    newcomer adds _"When there is an error, just let it crash!"_ Our first two heroes burst into
    laughter, but start feeling uneasy as the third hero continues looking like she _knows something_.
-
  - As if the situation was not bad enough already, a new hero appears (looking a bit like a rock
    star): _"I like errors. Errors are fun!"_ Everyone else steps back a bit as our fourth hero
    continues _"How do you even tell what is an error? Just watch what's going on. Maybe it'll do
@@ -317,7 +314,6 @@ and it is perfectly possible to see this exact approach used in other environmen
    mostly through spreadsheet-like applications. Imagine they could write live code to trade on the
    markets! The ability to see unexpected behaviour and quickly react (to adapt it) would, no doubt,
    be one of the key aspects of the programming environment.
-
  - In the web space, someone is typically ready to interact with the servers all the time if something
    goes wrong. The DevOps movement is making the link between developers and the system shorter to
    the extent that you can (almost?) live code your web server.  

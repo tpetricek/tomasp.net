@@ -51,16 +51,13 @@ and form **fsharpWorks**!
  * At fsharpWorks, you can get a help from a team of F# experts who have years of experience
    solving real-world problems with F# in a range of areas & who also contribute to the core F# 
    open-source projects.
-
  * We offer a range of F# trainings focused on functional-first programming,
    domain modelling, machine-learning as well as finance. This includes the 
    [F# FastTrack course](https://skillsmatter.com/courses/473-tomas-petricek-phil-trelford-fast-track-to-fsharp) 
    with SkillsMatter and a number of new courses that will be announced soon.
-
  * We also provide in-house trainings based on your needs, consulting, support and other
    services with a guaranteed availability. If you need to grow a high-performing F# 
    team, or start an F# project on the right foot, [let us know!](mailto:info@fsharpworks.com)
-   
  * Joining forces at fsharpWorks also makes it easier for us to speak at community events,
    conferences and to host affordable one day F# workshops. To see what is coming up soon,
    continue reading!

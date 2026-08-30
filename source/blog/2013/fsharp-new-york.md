@@ -57,7 +57,6 @@ learn F#, you have a unique chance this September:
    on **16.-17. September** which is our two day training that explains F# basics followed by 
    the most important F# application areas - domain specific languages, data processing and
    concurrent programming.
-
  * Right after that, [Progressive F# Tutorials](http://skillsmatter.com/event/scala/progressive-f-tutorials-nyc)
    are two days event with a keynotes by **Don Syme** and 
    **Miguel de Icaza** and two tracks full of both beginner and advanced F# sessions.

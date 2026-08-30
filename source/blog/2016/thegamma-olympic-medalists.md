@@ -44,12 +44,10 @@ on your own. However, continue reading and I'll describe the most important part
    for the language that is used to write the visualizations. It is written using [F#](http://fsharp.org)
    and [Fable](https://fable-compiler.github.io/) and generates JavaScript using
    [Babel](http://babeljs.io/)
-
  - [TheGamma Olympics Web <i class="fa fa-github"></i>](https://github.com/the-gamma/thegamma-olympics-web)
    is a minimal web site that hosts the visualizations. You can find all the source code for
    individual visualizations in [the docs folder](https://github.com/the-gamma/thegamma-olympics-web/tree/master/docs).
    For example, see [medals per athlete](https://github.com/the-gamma/thegamma-olympics-web/blob/master/docs/medals-per-athlete.md).
-
  - [TheGamma Services <i class="fa fa-github"></i>](https://github.com/the-gamma/thegamma-script)
    implements a server-side component that provides data for the client. This serves the
    [cleaned CSV data set](https://github.com/the-gamma/thegamma-services/blob/master/data/medals-expanded.csv)
@@ -112,13 +110,11 @@ visualization and also about the data:
    former Czechoslovakia (split in 1993), but also Bohemia! This was a part of Austro-Hungarian
    empire that [competed in the Olympics](https://en.wikipedia.org/wiki/Bohemia_at_the_Olympics)
    between 1900 and 1912 and got 4 medals!
-
  * There are two suspicious spikes in 1964 and 1980. It turns out that Czechoslovakia won
    [football and volleyball](https://en.wikipedia.org/wiki/Czechoslovakia_at_the_1964_Summer_Olympics)
    team competition in the first one and [football and field
    hockey](https://en.wikipedia.org/wiki/Czechoslovakia_at_the_1980_Summer_Olympics) in the latter.
    For team events, there is a large number of individual medals.
-
  * The fact that the visualization is open means that we can easily modify it - by adding
    `'count distinct Event'` we calculate number of events where a medal was won, rather than
    every single medal - and as you can see, with this change, the two spikes disappear!
@@ -163,7 +159,6 @@ Visualizations page. This lets you edit parameters of the visualization in a use
    we want to include in the timeline (this is the same structure as the list of all countries
    to be included in a chart in the previous demo). The editors are linked to corresponding
    parts of the source code and changing one automatically updates the other.
-
  * All "options" are automatically generated from code and so this aspect of The Gamma
    provides additional user-friendly interactivity to any visualization (although making
    the descriptions nice requires some additional annotations on the types). For lists, we
@@ -217,7 +212,6 @@ Gamma script, but in The Gamma, _everything_ is done via type providers.
    (and compiled to JavaScript using Fable). This gives you access to the various charting
    libraries in The Gamma, for example [wrapper for Google
    Charts](https://github.com/the-gamma/thegamma-script/blob/master/src/libraries/google/charts.fs)
-
  - There is a "REST provider" that makes it possible to import external data. This is what's
    running when you type `olympics` and start navigating through the data set. The provider
    uses the [REST provider protocol](https://fsprojects.github.io/RestProvider/) and it communicates
@@ -290,13 +284,11 @@ of the things that I'm thinking of for the near future:
    to continue developing the project through practical applications. Do you have some interesting
    data-driven story? Let me know at [@tomaspetricek](http://twitter.com/tomaspetricek) or
    [tomas@tomasp.net](mailto:tomas@tomasp.net).
-
  * **More spreadsheets, less programming.** Writing data aggregations with the Pivot type provider
    definitely makes programming easier, but I believe that we can do a lot more. What would it
    take to make the programming experience in The Gamma feel a bit more like working with Excel?
    (I think better automatically generated "options" and various ideas from live programming
    are good inspiration.)
-
  * **Cleaning data sources.** Another big task for The Gamma is making more data available via
    type providers. For Olympics, I used a manually cleaned CSV file, so the data access was
    easy, but ideally, you would like to extract data automatically from various online sources.

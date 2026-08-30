@@ -84,7 +84,6 @@ itself, accessible only to Excel developers.</p>
  * If there are multiple substrates, sooner or later, users who are familiar with one will hit
    its limits and will need to invest into learning the next more powerful substrate. This may be
    a large (or even unbridgeable) gap.
-
  * If you need to change system in complex ways, you will need a substrate that is sufficiently
    expressive. In other words, the right bottom corner in the diagram will always be empty. This
    is a point made by Fred Brooks in his [No Silver Bullet][manmonth] essay -
@@ -119,7 +118,6 @@ But there are two problems.
 * The first is that this may not scale. In March 2020, Zoom was still
   newish and the API was changing, so the no-code platform developers would have to keep up with that
   to make sure the integration works and exposes all that is needed.
-
 * The second problem are the exceptions. In my case, I had to get student marks from an internal
   system, which was obscure (and was replaced the following year). I had a JavaScript hack to
   extract the data that I could paste into a browser JavaScript console, which mostly worked.
@@ -145,7 +143,6 @@ individual donations. In reality, it is not as easy:
 * Some of the services just return HTML, but one loads all data dynamically through GraphQL,
   so you either need to work at a browser level (simulating clicks) which is slow, or extract data
   from different structures (funny HTML, funny JSON).
-
 * As always, there are unexpected changes. After about a year of running my script, one of the platforms
   renamed some CSS classes; after a few more months, one page was collecting donations in Euros
   (one in Dollars appeared later too). Two years after I started doing this, one page reported
@@ -175,7 +172,6 @@ Several technical dimensions are highly relevant for no-code systems:
   This may be complemented by some small DSL, e.g., for specifying conditions, and eventually
   also a programming language (exposed or not), e.g., for writing extensions for integrating with
   other platforms.
-
 * **Self-sustainability** - _To what extent can the behaviour of a system be changed within itself?_
   In Java or C#, this is limited to reflection, but Smalltalk or Lisp Machines make it possible to
   modify the development environment from within itself.
@@ -184,7 +180,6 @@ Several technical dimensions are highly relevant for no-code systems:
   largely written in another programming language and can be only used to build applications in
   a particular domain. Even integration for other services has to be done outside of the
   system.
-
 * **Degrees of automation** - _What part of program logic does not need to be explicitly specified?_
   In C# or Java, the only thing that is done automatic is garbage collection, but you can go
   further. For example, Prolog and SQL automate evaluation and you need more declarative programs.
@@ -319,7 +314,6 @@ those I do not know. But I also think that there are some fundamental limits.
 * A system that is not self-sustainable will inevitably, sooner or later, make it impossible
   for the user to do something they want to do. (The horror stories I sometimes hear about some
   elaborate Excel uses in the finance sector are a proof of that.)
-
 * Automation can only help to a certain degree. Ultimately, programming is thinking about the
   problem we are solving and trying to eliminate that would be a move in a wrong direction.
   Finding ways to encourage clear high-level thinking (possibly using visual metaphor as attempted

@@ -142,15 +142,12 @@ them (or their backing representation) as programs.
  - You can use provenance tracking methods to understand where data is coming from. For example,
    is the conclusion based on generally trustworthy data sources such as the ones available 
    through the [Open Government Data](https://data.gov.uk/)?
-   
  - You can use other program analysis methods to look for potential errors or misleading 
    calculations. Is the visualization extrapolating from too few data points? Is it adding 
    numbers with wrong units?
-   
  - You can provide additional context. A number telling you that GDP per capita in the UK is 
    $41,787 does not tell you much. If we know where the number comes from, the article can 
    automatically generate comparison with previous years and similar countries.
-   
  - You can automatically generate user interface that lets the reader change some of the 
    parameters of the visualization without even looking at the code. For example, see some
    of the [examples from my Olympic data visualization](http://tomasp.net/blog/2016/thegamma-olympic-medalists/).

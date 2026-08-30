@@ -99,13 +99,11 @@ of options that we have:
    type provider, the provided type is somewhat hard to find, but it has a name and you can
    use it. This is harder with some type providers where types of entities do not have obvious
    names and so finding the right type for a type annotation is not something you'd want to do.
-
  * In languages with structural type system, you could allow the user to access property of any
    name (say `GDP (current USD)`) and infer a type specifying that the `country` value needs to
    have this property. But this means the auto-completion cannot give you any useful hints and
    you'll only discover typos when you try calling the function - telling you that the name is
    actually `US$` and not `USD`.
-
  * You could do some more fancy whole-program type inference and deduce the type of `getGdpInYear`
    from the later part of the code where you call the function, but this forces you to write the
    code in an odd order - you need to declare your function, then use it and then go back to
@@ -172,7 +170,6 @@ does amazingly well. The Excel feature does have good and bad aspects:
 
  * The formula in the above example is copied and the reference to the original one is lost,
    so changing the formula in all rows of the table is error-prone.
-
  * If you mark the data as table explicitly, Excel will let you refer to columns using the `[@Rate]`
    syntax, which makes the formulas nicer and it also automatically extends the formula over all
    rows, but this works because spreadsheets are dealing with a fairly simple grid.
@@ -189,19 +186,16 @@ valid values.
    not transforming values, but instead composing a function. There are no concrete values _at all_.
    You might like this style for many reasons, but it does not make it possible to get the nice
    programming tooling that that you get with `.` when you know the value of an object.
-
  * Language that is perhaps the closest to this idea is Smalltalk with its runtime system
    where you work with concrete objects (values) and you modify them live. However, in Smalltalk,
    this works good at the entire-system level, but it is not (as far as I'm aware) used that much
    when it comes to writing code at message-level.
-
  * A possibly related design point is LINQ in C# and [especially in Visual
    Basic](https://msdn.microsoft.com/en-us/library/bb384667.aspx). In VB, you start your query
    by specifying data source using `From` and then select members at the end using `Select`.
    According to a rumor I've heard, the original proposal was to use SQL-style with
    `Select .. From ..`, but there was no way to make the user experience as good as if the
    names refer to objects of known types.
-
  * Interestingly, visual tools for UI design have similar problem. For example, tools for
    Silverlight have [elaborate methods for generating sample data](https://msdn.microsoft.com/en-us/library/ee341450(v=expression.40).aspx),
    so that when you design the UI, you are working with concrete values. But having to explicitly

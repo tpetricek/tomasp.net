@@ -81,7 +81,6 @@ with data and it complements the language with spreadsheet-inspired tooling:
    when `.` is typed. For example, `by Gold descending` is offered after typing `sort data` because
    the language understands what columns will be available after grouping data. This means that 
    the user can construct the whole program just by choosing one of the available operations.
- 
  * **Spreadsheet-inspired editing.** One of the reasons why spreadsheets are easy to use is that the 
    user can always see the data they are working with and manipulate it directly. We adapt this 
    paradigm to programming — in our live editor, the user can always see preview of the aggregation 
@@ -111,14 +110,12 @@ and by presenting the interesting research aspects of the work to the academic c
    What would the table of top athletes look for a different country? What if European Union or 
    the Commonwealth competed as a single country? More information about the project can be
    found in a [summary blog post](http://tomasp.net/blog/2016/thegamma-olympic-medalists/).
-
  * **Library: [Tools for open data-driven storytelling](https://thegamma.net).** In December,
    we released The Gamma as an open-source library that anyone can use to build their own 
    open data-driven visualizations. The package is [hosted on GitHub](http://github.com/the-gamma), 
    [available via npm](https://www.npmjs.com/package/thegamma-script) (JavaScript package 
    repository) and already started attracting [early external contributors][contr]. The
    [project announcement](http://tomasp.net/blog/2017/thegamma-package/) contains more information.
-   
  * **Paper: [Data exploration through dot-driven development](paper.pdf)** (submitted).
    In a recently submitted paper, we describe how our scripting language simplifies writing scripts
    for data exploration by exposing data transformations through a unified mechanism of member

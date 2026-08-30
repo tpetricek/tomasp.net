@@ -104,12 +104,10 @@ properties:
    data sources, but reproducing report using just a citation involves a lot of manual work. 
    It should be possible to reproduce the results and _verify their correctness_ just by rerunning
    the code behind the report.
- 
  * **Transparency** - Reproducibility is a good start, but we should also be able to change the
    report easily. I want to be able to change parameters and see how that affects the result. Does
    it still support the story? I want to see that the report is _not misleading_,  intentionally 
    (or unintentionally).
-
  * **Interactivity** - Finally, I think we should also enable novel user experience with reports.
    Newspaper are no longer (just) printed on paper where we need text and images. We should use
    the reproducibility and transparency behind reports to allow new user experiences. The reader
@@ -188,10 +186,8 @@ lets you explore those:
 
  - What was the situation like in 1990 or 1980? You can explore this by clicking "options" and 
    changing the year using the drop down. (When did China overtook US as the largest polluter?)
- 
  - What if we compare CO2 emissions _per capita_ rather than absolute numbers? (It turns out that
    large developing countries like China and India are no longer the largest polluters...)
-
  - How is this actually created? There is no pre-processing in this demo, but you can still see
    all the details (like the color scheme) if you click on the "source" button.
 

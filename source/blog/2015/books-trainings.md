@@ -22,7 +22,7 @@ never quite found time to actually do them. This included [getting the R provide
 Mac](http://bluemountaincapital.github.io/FSharpRProvider/mac-and-linux.html) and also creating a new 
 web site for my various functional programming trainings and books. I even have a nice domain name:
 
- - **[www.functional-programming.net](http://www.functional-programming.net)**
+ - <strong><a href="http://www.functional-programming.net">www.functional-programming.net</a></strong>
 
 The page also discusses a couple of business reasons for looking into functional programming. So, if you're
 a business person wondering why you should send your developers on an F# course, the site has the answers
@@ -49,7 +49,7 @@ never quite found time to actually do them. This included [getting the R provide
 Mac](http://bluemountaincapital.github.io/FSharpRProvider/mac-and-linux.html) and also creating a new 
 web site for my various functional programming trainings and books. I even have a nice domain name:
 
- - **[www.functional-programming.net](http://www.functional-programming.net)**
+ - <strong><a href="http://www.functional-programming.net">www.functional-programming.net</a></strong>
 
 The page also discusses a couple of business reasons for looking into functional programming. So, if you're
 a business person wondering why you should send your developers on an F# course, the site has the answers

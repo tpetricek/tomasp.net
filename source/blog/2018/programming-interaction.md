@@ -100,13 +100,11 @@ editor, but actually something that the programming language understands!
    is way easier than typing a name or a piece of code. How could we design a language that 
    makes as much as possible available through _selection_? (I did a bit of work on this in 
    my [dot-driven data exploration](http://tomasp.net/academic/papers/pivot/) paper.)
-   
  * **Running code in REPL.** In the demo, I use REPL to check that my code returns values in 
    the correct range. In F#, you can do this by selecting block of code and evaluating it, but
    alternative model is to type directly into the REPL console. Again, this is just an editor
    feature and the language does not understand it. What if it helped me to make sure that the
    code I select will run? 
- 
  * **Introducing a function.** After testing the code, I wrap it in a function. Many editors
    have a refactoring for doing this, but again, the language does not know how the function
    was created. If it knew that, could it then suggest that the value 6 might be a good example
@@ -162,14 +160,12 @@ a couple of interesting things happening in notebook systems.
    the system also remember how we interact to make the results reproducible? (Our work on
    [Wrattler](http://tomasp.net/academic/papers/wrattler/) in the Alan Turing Institute is
    looking into this.)
- 
  * **Live previews and editors.** An inherent part of any notebook system is that it displays 
    previews of results such as the data frame in this demo. In Jupyter, this happens only when
    you explicitly run the program, but what if the previews were created on the fly as you write
    code? How do we design programming interactions so that code always has a valid preview?
    And how do we design libraries that allow us to gradually construct results, such as data
    visualizations? (Live previews in [TheGamma](https://thegamma.net/) do some of this.)
- 
  * **Typing for notebooks.** In the example, the type of the `ms` data frame is 
    `Frame<DateTime, string>`. This says that rows are indexed by `DateTime` and columns are
    indexed by `string`, but the type does not know anything about the names and types of the
@@ -230,27 +226,23 @@ things would this enable?
    editor could ask whether you want this change to happen just in this one place or in all other
    places where the code appears. (The [Subtext programming language](http://www.subtext-lang.org) 
    treats copy and paste in this way.)
-   
  * **Interaction-based typing.** Type checking can also be done over the interaction list, rather 
    than over the expression tree of a program at one point in time. This means that a type can 
    be, in part, based on earlier interactions including running a part of code. It can, for example,
    be based on the structure of data loaded in earlier steps (as in notebooks) or even use sample
    values from REPL to give a probabilistic type (floating-point number with values that are
    typically in a certain range).
- 
  * **Direct program manipulation.** This is a more fancy idea that could be very useful in the 
    data science context. If we can give preview of a data frame as a table, could we also allow
    the user to edit data in the data frame? This could be tracked as another kind of interaction 
    (making the program reproducible), but it should also play well with _extract function_ 
    refactoring, which would produce a function that applies the same edit operation to a given input.
- 
  * **Automatic selection correction.** Let's say that you write a program and select a member
    `Substr` but then the library author renames the member to `Substring` using the _rename_ 
    refactoring. If the library is also a list of interactions, we can automatically suggest 
    a fix for the user code using the library. If the library is opaque, we could at least go through
    all selection interactions that fail against the new version and ask the programmer to make
    their own choice. 
- 
  * **Semantic merging.** Finally, we could also have a more clever merging algorithm than just
    diff3. Given two sequences of interactions that diverge at some point, we would need to find a
    way to append all the new interactions so that the resulting program makes sense. This could,

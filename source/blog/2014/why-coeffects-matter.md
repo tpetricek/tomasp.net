@@ -23,7 +23,6 @@ I'm the most familiar with), but you can surely find similar examples in other l
  * **Multi-core** is an easy to see challenge caused by an external development. 
    It led to the popularity of _immutable_ data structures (and functional programming,
    in general) and it was also partly motivation for [asynchronous workflows][async].
-
  * **Data access** is a more subtle challenge. Technologies like [LINQ][linq] make it
    significantly easier, but it was not easy to see that inline SQL was a poor solution.
    This is even more the case for F# _type providers_. You will not realize how poor the
@@ -51,7 +50,6 @@ I'm the most familiar with), but you can surely find similar examples in other l
  * **Multi-core** is an easy to see challenge caused by an external development. 
    It led to the popularity of _immutable_ data structures (and functional programming,
    in general) and it was also partly motivation for [asynchronous workflows][async].
-
  * **Data access** is a more subtle challenge. Technologies like [LINQ][linq] make it
    significantly easier, but it was not easy to see that inline SQL was a poor solution.
    This is even more the case for F# _type providers_. You will not realize how poor the
@@ -77,10 +75,8 @@ What are some concrete examples of such _context_? For example:
  - When writing a cross-platform application, different platforms (and even different 
    versions of the same platform) provide different contexts - the API functions that are 
    available.
-      
  - When creating a mobile app, the different capabilities that you may (or may not) have
    access to are context (GPS sensor, accelerometer, battery status).
-
  - When working with data (be it sensitive database or social network data from Facebook),
    you have permissions to access only some of the data (depending on your identity) and
    you may want to track _provenance_ information. This is another example of a context.
@@ -238,7 +234,6 @@ essentially two aspects:
    available in the execution environment (regardless of where in the program you 
    access them). Examples include resources like GPS sensors or databases, battery status,
    framework version and similar. 
-
  - **Structural context** contains additional meta-data related to variables. This can include
    provenance (source of the variable value), usage information (how often is the value
    accessed) or security information (does it contain sensitive data). 

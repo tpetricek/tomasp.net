@@ -166,12 +166,10 @@ that types are developing in very different directions. Here are some of them:
    and they extend the traditional "whole-language safety" property to another level. But they
    also (interestingly) change how we think about programming - given sufficiently precise type,
    you may be able to generate the program automatically.
-
  - _Unsound type systems_ is another direction that includes TypeScript and Dart - both use types
    mainly for documentation and structuring code (rather than for proving logical properties) and
    so they focus on simplicity and ease of use (which introduces safety holes like covariant
    generics). But this does not break language safety, because this is enforced at runtime anyway.
-
  - _Relatively sound systems_ is how I would label F# type providers. Type providers very much follow
    the traditional safety properties of ML, but they make them relative. They give you safety
    provided that the "world behaves nicely". For example, World Bank type provider turns countries

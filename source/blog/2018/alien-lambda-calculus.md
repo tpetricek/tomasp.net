@@ -107,12 +107,10 @@ that are also relevant to programming:
  * The idea of an _essence_ goes back to Aristotle. Believing that there is such essence that,
    somehow, accurately captures the nature of a thing is rooted in our culture and it is perfectly
    reasonable to imagine that other cultures might not share the concept of essence.
-
  * The idea of _foundations_ for a subject matter is another culturally rooted concept.
    The famous [Hilbert's program](https://en.wikipedia.org/wiki/Hilbert%27s_program) was trying
    to provide foundations for mathematics. If it was not for our culture, the program would
    likely not be interesting and influential in the community.
-
  * The idea that human reason is a form of logic is another idea that goes back to Aristotle.
    Any form of _reasoning_ about programs using _laws_ relies on this cultural fabric of mathematics.
 
@@ -163,12 +161,10 @@ is constructed using the following components:
    a curtain and measure how long the babies look at the result - they look longer if the
    unexpected thing happens (because a toy is secretly put back behind a curtain). This
    suggests that we are capable of basic addition and subtraction of small numbers.
-
  * **Conceptual metaphors.** Basic metaphors link different concepts via neural conflation.
    For example, our innate arithmetic capability of counting to three is linked with real-world
    ideas such as collections of objects or movement following a line. This allows us to extend
    the concept of number from just three to numbers appearing in the nature.
-
  * **Layering metaphors.** Finally, more abstract mathematical concepts are constructed using
    layering metaphors that link between multiple metaphorically constructed ideas. This is how
    we can go, for example, from a number series to a more abstract structure such as a monoid.

@@ -37,7 +37,6 @@ from four books that I've read recently. There are two general areas:
 - First, writing about architecture and urban planning often uses interesting methodologies
   that research on programming could adopt to gain new insights into systems, programming
   and its problems.
-
 - Second, there are a number of more concrete ideas in architecture and urban planning that
   might directly apply to software. For example, can programmers learn how to deal with complexity
   of software by looking at how urban planners deal with the complexity of cities? Or, can we learn
