@@ -7,7 +7,7 @@ type SiteConfig =
     Source : string
     Layouts : string
     Calendar : string
-    /// Repo folder holding layouts/ and source/ - where calendar.json lives
+    /// Repo folder holding layouts/ and source/ - where calendar.txt lives
     Website : string
     /// Public base URL the calendar images are served from
     CalendarRoot : string
