@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Drawing
 open System.Drawing.Imaging
-//open Microsoft.WindowsAzure.Storage
 open FsBlog
 open FsBlog.Helpers
 
@@ -12,75 +11,90 @@ let private (</>) a b = Path.Combine(a, b)
 let private ensureDirectory d = 
   if not (Directory.Exists(d)) then Directory.CreateDirectory(d) |> ignore
 
-// Get objects needed for JPEG encoding
-let private jpegCodec = ImageCodecInfo.GetImageEncoders() |> Seq.find (fun c -> c.FormatID = ImageFormat.Jpeg.Guid)
-let private jpegEncoder = Encoder.Quality
-let private qualityParam = new EncoderParameters(Param = [| new EncoderParameter(jpegEncoder, 95L) |])
+// Lazy because System.Drawing is Windows-only - generating the calendar *pages* has to
+// work anywhere, only resizing needs the imaging stack.
+let private jpegCodec =
+  lazy (ImageCodecInfo.GetImageEncoders() |> Seq.find (fun c -> c.FormatID = ImageFormat.Jpeg.Guid))
+let private qualityParam =
+  lazy (new EncoderParameters(Param = [| new EncoderParameter(Encoder.Quality, 95L) |]))
 
 let private enGb = System.Globalization.CultureInfo.GetCultureInfo("en-GB")
 
-/// Check if file exists
-let private calendarFileExists (cfg:SiteConfig) name = 
-  File.Exists(cfg.Output </> "calendar" </> name)
+/// Which months of which years are uploaded. Committed, so CI can generate the calendar
+/// pages without the photo library.
+let private manifestFile (cfg:SiteConfig) = cfg.Website </> "calendar.json"
 
-/// Write file to Azure container
-let private writeCalendarImage (cfg:SiteConfig) name path = 
-  let year = Path.GetDirectoryName(name)
-  ensureDirectory (cfg.Output </> "calendar")
-  ensureDirectory (cfg.Output </> "calendar" </> year)
-  File.Copy(path, cfg.Output </> "calendar" </> name)
+let readManifest (cfg:SiteConfig) : Map<int, Set<string>> =
+  let f = manifestFile cfg
+  if not (File.Exists f) then Map.empty
+  else
+    // One "<year>: <month>,<month>,..." line per year
+    File.ReadAllLines f
+    |> Seq.choose (fun line ->
+        match line.Split(':') with
+        | [| y; months |] when not (String.IsNullOrWhiteSpace y) ->
+            Some(int (y.Trim()),
+                 months.Split(',') |> Seq.map (fun m -> m.Trim())
+                                   |> Seq.filter (fun m -> m <> "") |> Set.ofSeq)
+        | _ -> None)
+    |> Map.ofSeq
 
-/// Write file (bytes) to Azure container
-let private writeCalendarBytes (cfg:SiteConfig) name bytes = 
-  let year = Path.GetDirectoryName(name)
-  ensureDirectory (cfg.Output </> "calendar")
-  ensureDirectory (cfg.Output </> "calendar" </> year)
-  File.WriteAllBytes(cfg.Output </> "calendar" </> name, bytes)
-  
+let private writeManifest (cfg:SiteConfig) (m:Map<int, Set<string>>) =
+  m
+  |> Map.toSeq
+  |> Seq.map (fun (y, months) -> sprintf "%d: %s" y (String.concat "," (Set.toSeq months)))
+  |> fun lines -> File.WriteAllLines(manifestFile cfg, lines)
+
 /// Resize file so that both width & height are smaller than 'maxSize'
-let private resizeFile maxSize source (target:string) = 
+let private resizeFile maxSize source (target:string) =
   use bmp = Bitmap.FromFile(source)
   let scale = max ((float bmp.Width) / (float maxSize)) ((float bmp.Height) / (float maxSize))
   use nbmp = new Bitmap(int (float bmp.Width / scale), int (float bmp.Height / scale))
   ( use gr = Graphics.FromImage(nbmp)
     gr.DrawImage(bmp, 0, 0, nbmp.Width, nbmp.Height) )
-  nbmp.Save(target, jpegCodec, qualityParam)
+  nbmp.Save(target, jpegCodec.Value, qualityParam.Value)
 
-
-/// Make sure all local files are uploaded to Azure storage
-/// (creates files named '2016/august.jpg', '2016/august-orig.jpg', '2016/august-preview.jpg'
-/// with various sizes of image and also '2016/august.non-na' if the source was not NA file)
-let uploadCalendarFiles (cfg:SiteConfig) = 
+/// Upload every photo not yet in the manifest, then record it. Months with no photo get
+/// the 'na' placeholder and stay out of the manifest, so they are retried later.
+let uploadCalendarFiles (cfg:SiteConfig) =
+  let cred = R2.credentialsFromEnvironment ()
+  let mutable manifest = readManifest cfg
   for dir in Directory.GetDirectories(cfg.Calendar) do
     let year = int (Path.GetFileNameWithoutExtension(dir))
     printfn "Checking calendar files for: %d" year
-    for month in 1 .. 12 do 
+    for month in 1 .. 12 do
       let monthName = enGb.DateTimeFormat.GetMonthName(month).ToLower()
-      let blob suffix = string year + "/" + monthName + suffix
-      if not (calendarFileExists cfg (blob ".non-na")) then 
-        let source = cfg.Calendar </> (blob ".jpg")
+      // Re-read per month - the manifest grows as we go
+      let known = defaultArg (Map.tryFind year manifest) Set.empty
+      if not (known.Contains monthName) then
+        let source = cfg.Calendar </> string year </> (monthName + ".jpg")
         let source, na = if File.Exists(source) then source, false else cfg.Calendar </> "na.png", true
-        let writeFile size suffix = 
-          printfn "Uploading calendar: %s" (blob suffix)
-          use target = DisposableFile.CreateTemp()
-          let file =
-            if size = -1 then source 
-            else resizeFile size source target.FileName; target.FileName
-          writeCalendarImage cfg (blob suffix) file          
-        //writeFile -1 "-original.jpg"
-        writeFile 700 ".jpg"
-        writeFile 240 "-preview.jpg"
-        if not na then writeCalendarBytes cfg (blob ".non-na") [||]
-
+        let uploadFile suffix file =
+          let key = sprintf "calendar/%d/%s%s" year monthName suffix
+          printfn "Uploading calendar: %s" key
+          R2.putFile cred key "image/jpeg" file
+        let uploadResized size suffix =
+          use target = DisposableFile.CreateTemp(".jpg")
+          resizeFile size source target.FileName
+          uploadFile suffix target.FileName
+        // Full-size photo goes up untouched; a placeholder month has none, so the 700px
+        // version stands in rather than leaving a dead link.
+        if na then uploadResized 700 "-original.jpg"
+        else uploadFile "-original.jpg" source
+        uploadResized 700 ".jpg"
+        uploadResized 240 "-preview.jpg"
+        if not na then
+          manifest <- Map.add year (known.Add monthName) manifest
+          writeManifest cfg manifest
 
 /// Generate page for a given calendar year
-let private generateCalendarIndex archives (cfg:SiteConfig) year file =
+let private generateCalendarIndex archives (cfg:SiteConfig) year (file:string) =
   ensureDirectory (Path.GetDirectoryName(file))
   let months = 
     [ for m in 1 .. 12 ->
         let name = enGb.DateTimeFormat.GetMonthName(m)
         { Name = name; Link = name.ToLower() } ]
-  let model = { Archives = archives; Year = string year; Months = months }
+  let model = { Archives = archives; Year = string year; Months = months; ImageRoot = cfg.CalendarRoot }
   File.WriteAllText(file, DotLiquid.render (cfg.Layouts </> "calendar.html") model)
 
 
@@ -90,9 +104,8 @@ let generateCalendarSite archives (cfg:SiteConfig) =
   let calendarFile = cfg.Output </> "calendar" </> "index.html"
   generateCalendarIndex archives cfg DateTime.Now.Year calendarFile
 
-  for dir in Directory.GetDirectories(cfg.Calendar) do
-    // Year index page
-    let year = int (Path.GetFileNameWithoutExtension(dir))
+  // Years come from the manifest, so this works without the photo library
+  for year in readManifest cfg |> Map.toSeq |> Seq.map fst do
     printfn "Generating calendar pages for: %d" year
     let yearFile = cfg.Output </> "calendar" </> string year </> "index.html"
     generateCalendarIndex archives cfg year yearFile
