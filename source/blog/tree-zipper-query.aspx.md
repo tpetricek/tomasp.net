@@ -1,0 +1,574 @@
+Processing trees with F# zipper computation
+===========================================
+
+ - date: 2012-12-19T14:22:47.0000000
+ - description: One of the less frequently advertised new features in F# 3.0 is the query syntax. It allows adding custom operations to a computation expression block. This article shows how to define a custom computation for processing trees using zippers. We'll add navigation over a tree as custom operations to get a simple syntax.
+ - layout: article
+ - tags: f#,haskell,research,monads,linq
+ - title: Processing trees with F# zipper computation
+ - url: tree-zipper-query.aspx
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<p>One of the less frequently advertised new features in F# 3.0 is the <em>query syntax</em>.
+It is an extension that makes it possible to add custom operations in an F#
+computation expression. The standard <code>query { .. }</code> computation uses this to define
+operations such as sorting (<code>sortBy</code> and <code>sortByDescending</code>) or operations for taking
+and skipping elements (<code>take</code>, <code>takeWhile</code>, ...). For example, you can write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="k">query</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">x</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">10</span> <span class="k">do</span>
+        <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="k">take</span> <span class="n">3</span>
+        <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="k">sortByDescending</span> <span onmouseout="hideTip(event, 'fs2', 5)" onmouseover="showTip(event, 'fs2', 5)" class="id">x</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>In this article I'll use the same notation for processing trees using the <em>zipper</em>
+pattern. I'll show how to define a computation that allows you to traverse a tree
+and perform transformations on (parts) of the tree. For example, we'll be able to
+say "Go to the left sub-tree, multiply all values by 2. Then go back and to the
+right sub-tree and divide all values by 2" as follows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs45', 172)" onmouseover="showTip(event, 'fs45', 172)" class="k">tree</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 173)" onmouseover="showTip(event, 'fs2', 173)" class="id">x</span> <span class="k">in</span> <span class="id">sample</span> <span class="k">do</span>
+       <span onmouseout="hideTip(event, 'fs49', 174)" onmouseover="showTip(event, 'fs49', 174)" class="k">left</span> 
+       <span onmouseout="hideTip(event, 'fs50', 175)" onmouseover="showTip(event, 'fs50', 175)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 176)" onmouseover="showTip(event, 'fs2', 176)" class="id">x</span> <span class="o">*</span> <span class="n">2</span><span class="pn">)</span> 
+       <span onmouseout="hideTip(event, 'fs51', 177)" onmouseover="showTip(event, 'fs51', 177)" class="k">up</span>
+       <span onmouseout="hideTip(event, 'fs52', 178)" onmouseover="showTip(event, 'fs52', 178)" class="k">right</span>
+       <span onmouseout="hideTip(event, 'fs50', 179)" onmouseover="showTip(event, 'fs50', 179)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 180)" onmouseover="showTip(event, 'fs2', 180)" class="id">x</span> <span class="o">/</span> <span class="n">2</span><span class="pn">)</span> 
+       <span onmouseout="hideTip(event, 'fs53', 181)" onmouseover="showTip(event, 'fs53', 181)" class="k">top</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This example behaves quite differently to the usual <code>query</code> computation. It mostly
+relies on custom operations like <code>left</code>, <code>right</code> and <code>up</code> that allow us to navigate
+through a tree (descend along the left or right sub-tree, go back to the parent node).
+The only operation that <em>does something</em> is the <code>map</code> operation which transforms the
+current sub-tree.</p>
+<p>This was just a brief introduction to what is possible, so let's take a detailed look
+at how this works...</p>
+<div class="tip" id="fs1">val query : Linq.QueryBuilder</div>
+<div class="tip" id="fs2">val x : int</div>
+<div class="tip" id="fs3">custom operation: take (int)<br /><br />Calls Linq.QueryBuilder.Take</div>
+<div class="tip" id="fs4">custom operation: sortByDescending (&#39;Key)<br /><br />Calls Linq.QueryBuilder.SortByDescending</div>
+<div class="tip" id="fs5">union case Tree.Node: Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="fs6">type Tree&lt;&#39;T&gt; =<br />&#160;&#160;| Node of Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;| Leaf of &#39;T<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs7">union case Tree.Leaf: &#39;T -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="fs8">val x : Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="fs9">match x with<br />&#160;&#160;&#160;&#160;| Node(l, r) -&gt; sprintf &quot;(%O, %O)&quot; l r<br />&#160;&#160;&#160;&#160;| Leaf v -&gt; sprintf &quot;%O&quot; v</div>
+<div class="tip" id="fs10">union case Path.Top: Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs11">union case Path.Left: Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs12">type Path&lt;&#39;T&gt; =<br />&#160;&#160;| Top<br />&#160;&#160;| Left of Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;| Right of Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs13">union case Path.Right: Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs14">val x : Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs15">match x with<br />&#160;&#160;&#160;&#160;| Top -&gt; &quot;T&quot;<br />&#160;&#160;&#160;&#160;| Left(p, t) -&gt; sprintf &quot;L(%O, %O)&quot; p t<br />&#160;&#160;&#160;&#160;| Right(p, t) -&gt; sprintf &quot;R(%O, %O)&quot; p t</div>
+<div class="tip" id="fs16">union case TreeZipper.TZ: Tree&lt;&#39;T&gt; * Path&lt;&#39;T&gt; -&gt; TreeZipper&lt;&#39;T&gt;</div>
+<div class="tip" id="fs17">val x : TreeZipper&lt;&#39;T&gt;</div>
+<div class="tip" id="fs18">let (TZ(t, p)) = x in sprintf &quot;%O [%O]&quot; t p</div>
+<div class="tip" id="fs19">val left : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Navigates to the left sub-tree</em></div>
+<div class="tip" id="fs20">val failwith : message:string -&gt; &#39;T</div>
+<div class="tip" id="fs21">val l : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs22">val r : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs23">val p : Path&lt;&#39;a&gt;</div>
+<div class="tip" id="fs24">val right : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Navigates to the right sub-tree</em></div>
+<div class="tip" id="fs25">val current : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br /><em><br /><br />&#160;Gets the value at the current position</em></div>
+<div class="tip" id="fs26">val x : &#39;a</div>
+<div class="tip" id="fs27">val up : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs28">val top : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs29">val t : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs30">val tz : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs31">Multiple items<br />val unit : v:&#39;a -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Build tree zipper with singleton tree</em><br /><br />--------------------<br />type unit = Unit</div>
+<div class="tip" id="fs32">val v : &#39;a</div>
+<div class="tip" id="fs33">val bindSub : f:(&#39;a -&gt; TreeZipper&lt;&#39;a&gt;) -&gt; treeZip:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Transform leaves in the current sub-tree of &#39;treeZip&#39;<br />&#160;into other trees using the provided function &#39;f&#39;</em></div>
+<div class="tip" id="fs34">val f : (&#39;a -&gt; TreeZipper&lt;&#39;a&gt;)</div>
+<div class="tip" id="fs35">val treeZip : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs36">val bindT : (Tree&lt;&#39;a&gt; -&gt; Tree&lt;&#39;a&gt;)</div>
+<div class="tip" id="fs37">val t : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs38">val current : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs39">val path : Path&lt;&#39;a&gt;</div>
+<div class="tip" id="fs40">Multiple items<br />type TreeZipperBuilder =<br />&#160;&#160;new : unit -&gt; TreeZipperBuilder<br />&#160;&#160;member Current : tz:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br />&#160;&#160;member Current : tz:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br />&#160;&#160;member For : tz:TreeZipper&lt;&#39;T&gt; * f:(&#39;T -&gt; TreeZipper&lt;&#39;T&gt;) -&gt; TreeZipper&lt;&#39;T&gt;<br />&#160;&#160;member Left : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Left : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Right : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Right : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Select : tz:TreeZipper&lt;&#39;a&gt; * f:(&#39;a -&gt; &#39;a) -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Select : tz:TreeZipper&lt;&#39;a&gt; * f:(&#39;a -&gt; &#39;a) -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;...<br /><br />--------------------<br />new : unit -&gt; TreeZipperBuilder</div>
+<div class="tip" id="fs41">val x : TreeZipperBuilder</div>
+<div class="tip" id="fs42">val tz : TreeZipper&lt;&#39;T&gt;</div>
+<div class="tip" id="fs43">type TreeZipper&lt;&#39;T&gt; =<br />&#160;&#160;| TZ of Tree&lt;&#39;T&gt; * Path&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs44">val f : (&#39;T -&gt; TreeZipper&lt;&#39;T&gt;)</div>
+<div class="tip" id="fs45">val tree : TreeZipperBuilder<br /><em><br /><br />&#160;Global instance of the computation builder</em></div>
+<div class="tip" id="fs46">Multiple items<br />type CustomOperationAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : name:string -&gt; CustomOperationAttribute<br />&#160;&#160;member AllowIntoPattern : bool<br />&#160;&#160;member IsLikeGroupJoin : bool<br />&#160;&#160;member IsLikeJoin : bool<br />&#160;&#160;member IsLikeZip : bool<br />&#160;&#160;member JoinConditionWord : string<br />&#160;&#160;member MaintainsVariableSpace : bool<br />&#160;&#160;member MaintainsVariableSpaceUsingBind : bool<br />&#160;&#160;member Name : string<br />&#160;&#160;...<br /><br />--------------------<br />new : name:string -&gt; CustomOperationAttribute</div>
+<div class="tip" id="fs47">Multiple items<br />type ProjectionParameterAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ProjectionParameterAttribute<br /><br />--------------------<br />new : unit -&gt; ProjectionParameterAttribute</div>
+<div class="tip" id="fs48">val f : (&#39;a -&gt; &#39;a)</div>
+<div class="tip" id="fs49">custom operation: left<br /><br />Calls TreeZipperBuilder.Left</div>
+<div class="tip" id="fs50">custom operation: map (&#39;a)<br /><br />Calls TreeZipperBuilder.Select<br /><em><br /><br />&#160;Transform the current sub-tree using &#39;f&#39;</em></div>
+<div class="tip" id="fs51">custom operation: up<br /><br />Calls TreeZipperBuilder.Up</div>
+<div class="tip" id="fs52">custom operation: right<br /><br />Calls TreeZipperBuilder.Right</div>
+<div class="tip" id="fs53">custom operation: top<br /><br />Calls TreeZipperBuilder.Top</div>
+--------------------------------------------------------------------------------
+<h1>Processing trees with F# zipper computation</h1>
+<p>One of the less frequently advertised new features in F# 3.0 is the <em>query syntax</em>.
+It is an extension that makes it possible to add custom operations in an F#
+computation expression. The standard <code>query { .. }</code> computation uses this to define
+operations such as sorting (<code>sortBy</code> and <code>sortByDescending</code>) or operations for taking
+and skipping elements (<code>take</code>, <code>takeWhile</code>, ...). For example, you can write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="k">query</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">x</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">10</span> <span class="k">do</span>
+        <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="k">take</span> <span class="n">3</span>
+        <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="k">sortByDescending</span> <span onmouseout="hideTip(event, 'fs2', 5)" onmouseover="showTip(event, 'fs2', 5)" class="id">x</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>In this article I'll use the same notation for processing trees using the <em>zipper</em>
+pattern. I'll show how to define a computation that allows you to traverse a tree
+and perform transformations on (parts) of the tree. For example, we'll be able to
+say "Go to the left sub-tree, multiply all values by 2. Then go back and to the
+right sub-tree and divide all values by 2" as follows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs42', 207)" onmouseover="showTip(event, 'fs42', 207)" class="k">tree</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 208)" onmouseover="showTip(event, 'fs2', 208)" class="id">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs26', 209)" onmouseover="showTip(event, 'fs26', 209)" class="id">sample</span> <span class="k">do</span>
+       <span onmouseout="hideTip(event, 'fs48', 210)" onmouseover="showTip(event, 'fs48', 210)" class="k">left</span> 
+       <span onmouseout="hideTip(event, 'fs50', 211)" onmouseover="showTip(event, 'fs50', 211)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 212)" onmouseover="showTip(event, 'fs2', 212)" class="id">x</span> <span class="o">*</span> <span class="n">2</span><span class="pn">)</span> 
+       <span onmouseout="hideTip(event, 'fs51', 213)" onmouseover="showTip(event, 'fs51', 213)" class="k">up</span>
+       <span onmouseout="hideTip(event, 'fs47', 214)" onmouseover="showTip(event, 'fs47', 214)" class="k">right</span>
+       <span onmouseout="hideTip(event, 'fs50', 215)" onmouseover="showTip(event, 'fs50', 215)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 216)" onmouseover="showTip(event, 'fs2', 216)" class="id">x</span> <span class="o">/</span> <span class="n">2</span><span class="pn">)</span> 
+       <span onmouseout="hideTip(event, 'fs52', 217)" onmouseover="showTip(event, 'fs52', 217)" class="k">top</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This example behaves quite differently to the usual <code>query</code> computation. It mostly
+relies on custom operations like <code>left</code>, <code>right</code> and <code>up</code> that allow us to navigate
+through a tree (descend along the left or right sub-tree, go back to the parent node).
+The only operation that <em>does something</em> is the <code>map</code> operation which transforms the
+current sub-tree.</p>
+<p>This was just a brief introduction to what is possible, so let's take a detailed look
+at how this works...</p>
+<h2>Trees and zippers</h2>
+<p>First of all, we need to define a data type that represents the tree. This is going
+to be a standard binary tree with values in leafs (but you could do the similar
+thing for other kinds of trees or structures):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="id">Tree</span><span class="pn">&lt;</span><span class="ta">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="o">=</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="id">Node</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs5', 8)" onmouseover="showTip(event, 'fs5', 8)" class="id">Tree</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="id">Tree</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs7', 10)" onmouseover="showTip(event, 'fs7', 10)" class="id">Leaf</span> <span class="k">of</span> <span class="id">&#39;</span><span class="id">T</span>
+  <span class="k">override</span> <span class="id">x</span><span class="pn">.</span><span class="id">ToString</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span id="fst8" onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11, document.getElementById('fst8'))" class="omitted">(...)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Next, we need to look at the concept of a <em>zipper</em>. Intuitively, a zipper is something
+that allows you to navigate through the tree. When you go the left sub-tree, we want
+to get a value that contains this sub-tree together with the path that describes how
+we got there (and contains remaining branches that are needed to reconstruct the original
+tree when we go back up).</p>
+<p>The <a href="http://www.st.cs.uni-saarland.de/edu/seminare/2005/advanced-fp/docs/huet-zipper.pdf" title="G. Huet: The Zipper (Journal of Functional Programming)">paper that introduced Zippers</a> is very readable and introduces the idea
+in more details. As a fun fact, you can also read about how zippers can be derived
+<a href="http://strictlypositive.org/diff.pdf" title="C. McBride: The Derivative of a Regular Type is its Type of One-Hole Contexts">automatically using <em>differentiation</em></a>.
+In our case, the zipper data type for the tree is defined as follows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="id">Path</span><span class="pn">&lt;</span><span class="ta">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="o">=</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="id">Top</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs11', 14)" onmouseover="showTip(event, 'fs11', 14)" class="id">Left</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs9', 15)" onmouseover="showTip(event, 'fs9', 15)" class="id">Path</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs5', 16)" onmouseover="showTip(event, 'fs5', 16)" class="id">Tree</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="id">Right</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs9', 18)" onmouseover="showTip(event, 'fs9', 18)" class="id">Path</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs5', 19)" onmouseover="showTip(event, 'fs5', 19)" class="id">Tree</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span>
+  <span class="k">override</span> <span class="id">x</span><span class="pn">.</span><span class="id">ToString</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span id="fst13" onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20, document.getElementById('fst13'))" class="omitted">(...)</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="id">TreeZipper</span><span class="pn">&lt;</span><span class="ta">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="o">=</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="id">TZ</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs5', 23)" onmouseover="showTip(event, 'fs5', 23)" class="id">Tree</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs9', 24)" onmouseover="showTip(event, 'fs9', 24)" class="id">Path</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span>
+  <span class="k">override</span> <span class="id">x</span><span class="pn">.</span><span class="id">ToString</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span id="fst16" onmouseout="hideTip(event, 'fs16', 25)" onmouseover="showTip(event, 'fs16', 25, document.getElementById('fst16'))" class="omitted">(...)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>TreeZipper&lt;'T&gt;</code> type pairs a tree (the current sub-tree that we are focused at)
+with a path which describes "how we got there". If we are at the root, then the path
+is <code>Top</code>. If we descend to the left-sub tree, then the path is represented using
+<code>Left(path, tree)</code> where <code>path</code> is the previous path and <code>tree</code> is the tree on the
+right (that we just skipped over).</p>
+<h2>Working with zippers</h2>
+<p>Let's look at three simple functions that operate on the tree zipper and then
+we'll navigate through a simple tree using them:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Navigates to the left sub-tree</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs17', 26)" onmouseover="showTip(event, 'fs17', 26)" class="fn">left</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 27)" onmouseover="showTip(event, 'fs15', 27)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 28)" onmouseover="showTip(event, 'fs7', 28)" class="uc">Leaf</span> <span class="id">_</span><span class="pn">,</span> <span class="id">_</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 29)" onmouseover="showTip(event, 'fs18', 29)" class="fn">failwith</span> <span class="s">&quot;cannot go left&quot;</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 30)" onmouseover="showTip(event, 'fs15', 30)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs6', 31)" onmouseover="showTip(event, 'fs6', 31)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 32)" onmouseover="showTip(event, 'fs19', 32)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 33)" onmouseover="showTip(event, 'fs20', 33)" class="id">r</span><span class="pn">)</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs21', 34)" onmouseover="showTip(event, 'fs21', 34)" class="id">p</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 35)" onmouseover="showTip(event, 'fs15', 35)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 36)" onmouseover="showTip(event, 'fs19', 36)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs11', 37)" onmouseover="showTip(event, 'fs11', 37)" class="uc">Left</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs21', 38)" onmouseover="showTip(event, 'fs21', 38)" class="id">p</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 39)" onmouseover="showTip(event, 'fs20', 39)" class="id">r</span><span class="pn">)</span><span class="pn">)</span>
+
+<span class="c">/// Navigates to the right sub-tree</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs22', 40)" onmouseover="showTip(event, 'fs22', 40)" class="fn">right</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 41)" onmouseover="showTip(event, 'fs15', 41)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 42)" onmouseover="showTip(event, 'fs7', 42)" class="uc">Leaf</span> <span class="id">_</span><span class="pn">,</span> <span class="id">_</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 43)" onmouseover="showTip(event, 'fs18', 43)" class="fn">failwith</span> <span class="s">&quot;cannot go right&quot;</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 44)" onmouseover="showTip(event, 'fs15', 44)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs6', 45)" onmouseover="showTip(event, 'fs6', 45)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 46)" onmouseover="showTip(event, 'fs19', 46)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 47)" onmouseover="showTip(event, 'fs20', 47)" class="id">r</span><span class="pn">)</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs21', 48)" onmouseover="showTip(event, 'fs21', 48)" class="id">p</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 49)" onmouseover="showTip(event, 'fs15', 49)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs20', 50)" onmouseover="showTip(event, 'fs20', 50)" class="id">r</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs12', 51)" onmouseover="showTip(event, 'fs12', 51)" class="uc">Right</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs21', 52)" onmouseover="showTip(event, 'fs21', 52)" class="id">p</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs19', 53)" onmouseover="showTip(event, 'fs19', 53)" class="id">l</span><span class="pn">)</span><span class="pn">)</span>
+
+<span class="c">/// Gets the value at the current position</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 54)" onmouseover="showTip(event, 'fs23', 54)" class="fn">current</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 55)" onmouseover="showTip(event, 'fs15', 55)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 56)" onmouseover="showTip(event, 'fs7', 56)" class="uc">Leaf</span> <span onmouseout="hideTip(event, 'fs24', 57)" onmouseover="showTip(event, 'fs24', 57)" class="id">x</span><span class="pn">,</span> <span class="id">_</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs24', 58)" onmouseover="showTip(event, 'fs24', 58)" class="id">x</span>
+  <span class="pn">|</span> <span class="id">_</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 59)" onmouseover="showTip(event, 'fs18', 59)" class="fn">failwith</span> <span class="s">&quot;cannot get current&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>left</code> and <code>right</code> functions are symmetric. If the <code>TreeZipper&lt;'T&gt;</code> represents a
+position where the current tree is <code>Leaf</code> then they fail, because we cannot descend to
+a sub-tree of a leaf. If the tree is a <code>Node</code> then they pick the left (or right) sub-tree
+and make it a current tree by using it as the first argument of <code>TZ</code>. The path is
+constructed by appending the other tree (<code>r</code> or <code>l</code>, respectively) to the previous
+path using <code>Left</code> or <code>Right</code>.</p>
+<p>On the other hand, the <code>current</code> operation only works when the zipper points at
+a leaf node. In that case, it simply returns the value from the leaf.
+The following example defines a simple tree and then uses zipper operations to
+get to one of the leaves in the tree:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Create a sample tree</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs25', 60)" onmouseover="showTip(event, 'fs25', 60)" class="id">branches</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs6', 61)" onmouseover="showTip(event, 'fs6', 61)" class="uc">Node</span><span class="pn">(</span> <span onmouseout="hideTip(event, 'fs6', 62)" onmouseover="showTip(event, 'fs6', 62)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 63)" onmouseover="showTip(event, 'fs7', 63)" class="uc">Leaf</span> <span class="n">1</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs7', 64)" onmouseover="showTip(event, 'fs7', 64)" class="uc">Leaf</span> <span class="n">3</span><span class="pn">)</span><span class="pn">,</span> 
+        <span onmouseout="hideTip(event, 'fs6', 65)" onmouseover="showTip(event, 'fs6', 65)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 66)" onmouseover="showTip(event, 'fs7', 66)" class="uc">Leaf</span> <span class="n">7</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs6', 67)" onmouseover="showTip(event, 'fs6', 67)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 68)" onmouseover="showTip(event, 'fs7', 68)" class="uc">Leaf</span> <span class="n">12</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs7', 69)" onmouseover="showTip(event, 'fs7', 69)" class="uc">Leaf</span> <span class="n">20</span><span class="pn">)</span><span class="pn">)</span> <span class="pn">)</span>
+
+<span class="c">// Wrap it as a zipper &amp; print</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs26', 70)" onmouseover="showTip(event, 'fs26', 70)" class="id">sample</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs15', 71)" onmouseover="showTip(event, 'fs15', 71)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs25', 72)" onmouseover="showTip(event, 'fs25', 72)" class="id">branches</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs10', 73)" onmouseover="showTip(event, 'fs10', 73)" class="uc">Top</span><span class="pn">)</span>
+<span onmouseout="hideTip(event, 'fs27', 74)" onmouseover="showTip(event, 'fs27', 74)" class="fn">printfn</span> <span class="s">&quot;</span><span class="pf">%O</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs26', 75)" onmouseover="showTip(event, 'fs26', 75)" class="id">sample</span> 
+
+<span class="c">// Get one of the tree leaves</span>
+<span onmouseout="hideTip(event, 'fs26', 76)" onmouseover="showTip(event, 'fs26', 76)" class="id">sample</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs22', 77)" onmouseover="showTip(event, 'fs22', 77)" class="fn">right</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs22', 78)" onmouseover="showTip(event, 'fs22', 78)" class="fn">right</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs17', 79)" onmouseover="showTip(event, 'fs17', 79)" class="fn">left</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs23', 80)" onmouseover="showTip(event, 'fs23', 80)" class="fn">current</span>
+</code></pre></td>
+</tr>
+</table>
+<p>To make this example complete, we also need to add operation <code>up</code> that goes to the
+parent. We will also need an operation that (recursively) goes back to the top of the tree:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Navigate to the parent node</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 81)" onmouseover="showTip(event, 'fs28', 81)" class="fn">up</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 82)" onmouseover="showTip(event, 'fs15', 82)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 83)" onmouseover="showTip(event, 'fs19', 83)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs11', 84)" onmouseover="showTip(event, 'fs11', 84)" class="uc">Left</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs21', 85)" onmouseover="showTip(event, 'fs21', 85)" class="id">p</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 86)" onmouseover="showTip(event, 'fs20', 86)" class="id">r</span><span class="pn">)</span><span class="pn">)</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 87)" onmouseover="showTip(event, 'fs15', 87)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs20', 88)" onmouseover="showTip(event, 'fs20', 88)" class="id">r</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs12', 89)" onmouseover="showTip(event, 'fs12', 89)" class="uc">Right</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs21', 90)" onmouseover="showTip(event, 'fs21', 90)" class="id">p</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs19', 91)" onmouseover="showTip(event, 'fs19', 91)" class="id">l</span><span class="pn">)</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 92)" onmouseover="showTip(event, 'fs15', 92)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs6', 93)" onmouseover="showTip(event, 'fs6', 93)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 94)" onmouseover="showTip(event, 'fs19', 94)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 95)" onmouseover="showTip(event, 'fs20', 95)" class="id">r</span><span class="pn">)</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs21', 96)" onmouseover="showTip(event, 'fs21', 96)" class="id">p</span><span class="pn">)</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 97)" onmouseover="showTip(event, 'fs15', 97)" class="uc">TZ</span><span class="pn">(</span><span class="id">_</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs10', 98)" onmouseover="showTip(event, 'fs10', 98)" class="uc">Top</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 99)" onmouseover="showTip(event, 'fs18', 99)" class="fn">failwith</span> <span class="s">&quot;cannot go up&quot;</span>
+
+<span class="c">// Navigate to the root of the tree</span>
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs29', 100)" onmouseover="showTip(event, 'fs29', 100)" class="fn">top</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs15', 101)" onmouseover="showTip(event, 'fs15', 101)" class="uc">TZ</span><span class="pn">(</span><span class="id">_</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs10', 102)" onmouseover="showTip(event, 'fs10', 102)" class="uc">Top</span><span class="pn">)</span> <span class="k">as</span> <span onmouseout="hideTip(event, 'fs30', 103)" onmouseover="showTip(event, 'fs30', 103)" class="id">t</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs30', 104)" onmouseover="showTip(event, 'fs30', 104)" class="id">t</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs31', 105)" onmouseover="showTip(event, 'fs31', 105)" class="id">tz</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs29', 106)" onmouseover="showTip(event, 'fs29', 106)" class="fn">top</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs28', 107)" onmouseover="showTip(event, 'fs28', 107)" class="fn">up</span> <span onmouseout="hideTip(event, 'fs31', 108)" onmouseover="showTip(event, 'fs31', 108)" class="id">tz</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>up</code> operation fails when we are already in the root and the path is just <code>Top</code>.
+Otherwise, it gets the current tree and takes the other branch from the path value.
+These two trees are combined into a new <code>Node</code> which is then returned as the current
+tree.</p>
+<h3>Adding computational operations</h3>
+<p>In order to define an F# computation expression, we need to define the meaning of
+<code>for</code> and <code>yield</code>. Most often, these operations are implemented by monadic <em>bind</em>
+and <em>unit</em>. We will not follow this pattern exactly. If we did that, we wouldn't be
+able to implement the motivating example as nicely.</p>
+<p>The operations that we need to define are <code>unit</code>, which
+simply creates a tree containing just a leaf, and <code>bindSub</code> which transforms
+all leaves in the current sub-tree using a specified function:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Build tree zipper with singleton tree</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 109)" onmouseover="showTip(event, 'fs32', 109)" class="fn">unit</span> <span onmouseout="hideTip(event, 'fs33', 110)" onmouseover="showTip(event, 'fs33', 110)" class="id">v</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs15', 111)" onmouseover="showTip(event, 'fs15', 111)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs7', 112)" onmouseover="showTip(event, 'fs7', 112)" class="uc">Leaf</span> <span onmouseout="hideTip(event, 'fs33', 113)" onmouseover="showTip(event, 'fs33', 113)" class="id">v</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs10', 114)" onmouseover="showTip(event, 'fs10', 114)" class="uc">Top</span><span class="pn">)</span>
+
+<span class="c">/// Transform leaves in the current sub-tree of &#39;treeZip&#39;</span>
+<span class="c">/// into other trees using the provided function &#39;f&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs34', 115)" onmouseover="showTip(event, 'fs34', 115)" class="fn">bindSub</span> <span onmouseout="hideTip(event, 'fs35', 116)" onmouseover="showTip(event, 'fs35', 116)" class="fn">f</span> <span onmouseout="hideTip(event, 'fs36', 117)" onmouseover="showTip(event, 'fs36', 117)" class="id">treeZip</span> <span class="o">=</span> 
+  <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs37', 118)" onmouseover="showTip(event, 'fs37', 118)" class="fn">bindT</span> <span class="o">=</span> <span class="k">function</span>
+    <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs7', 119)" onmouseover="showTip(event, 'fs7', 119)" class="uc">Leaf</span> <span onmouseout="hideTip(event, 'fs24', 120)" onmouseover="showTip(event, 'fs24', 120)" class="id">x</span> <span class="k">-&gt;</span> <span class="k">let</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs15', 121)" onmouseover="showTip(event, 'fs15', 121)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs38', 122)" onmouseover="showTip(event, 'fs38', 122)" class="id">t</span><span class="pn">,</span> <span class="id">_</span><span class="pn">)</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs29', 123)" onmouseover="showTip(event, 'fs29', 123)" class="fn">top</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs35', 124)" onmouseover="showTip(event, 'fs35', 124)" class="fn">f</span> <span onmouseout="hideTip(event, 'fs24', 125)" onmouseover="showTip(event, 'fs24', 125)" class="id">x</span><span class="pn">)</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs38', 126)" onmouseover="showTip(event, 'fs38', 126)" class="id">t</span>
+    <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 127)" onmouseover="showTip(event, 'fs6', 127)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs19', 128)" onmouseover="showTip(event, 'fs19', 128)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs20', 129)" onmouseover="showTip(event, 'fs20', 129)" class="id">r</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs6', 130)" onmouseover="showTip(event, 'fs6', 130)" class="uc">Node</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs37', 131)" onmouseover="showTip(event, 'fs37', 131)" class="fn">bindT</span> <span onmouseout="hideTip(event, 'fs19', 132)" onmouseover="showTip(event, 'fs19', 132)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs37', 133)" onmouseover="showTip(event, 'fs37', 133)" class="fn">bindT</span> <span onmouseout="hideTip(event, 'fs20', 134)" onmouseover="showTip(event, 'fs20', 134)" class="id">r</span><span class="pn">)</span>
+  <span class="k">let</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs15', 135)" onmouseover="showTip(event, 'fs15', 135)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs39', 136)" onmouseover="showTip(event, 'fs39', 136)" class="id">current</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs40', 137)" onmouseover="showTip(event, 'fs40', 137)" class="id">path</span><span class="pn">)</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs36', 138)" onmouseover="showTip(event, 'fs36', 138)" class="id">treeZip</span>
+  <span onmouseout="hideTip(event, 'fs15', 139)" onmouseover="showTip(event, 'fs15', 139)" class="uc">TZ</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs37', 140)" onmouseover="showTip(event, 'fs37', 140)" class="fn">bindT</span> <span onmouseout="hideTip(event, 'fs39', 141)" onmouseover="showTip(event, 'fs39', 141)" class="id">current</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs40', 142)" onmouseover="showTip(event, 'fs40', 142)" class="id">path</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The type of <code>bindSub</code> is <code>('T -&gt; TreeZipper&lt;'T&gt;) -&gt; TreeZipper&lt;'T&gt; -&gt; TreeZipper&lt;'T&gt;</code>,
+which is almost like monadic <em>bind</em> with the exception that the transformation function
+needs to transform elements of type <code>'T</code> into trees containing leaves of <em>the same</em> type.</p>
+<p>This requiremenet follows from the fact that we run the transformation only on the
+current tree (<code>bindT current</code>) while the <code>path</code> is left unchanged (and since path contains
+other trees of the same type, the type needs to stay the same). You could implement
+<code>bind</code> that applies <code>f</code> to trees in the path, but that would not be as interesting
+(because all transformations like <code>map</code> would happen on the whole tree - not just
+the current sub-tree).</p>
+<h2>Defining the Computation builder</h2>
+<h3>Providing monadic operations</h3>
+<p>Now we have everything we need to define an F# computation builder for working with
+tree zippers. We start with a simple definition that allows just <code>for</code> and <code>yield</code>
+and then add all the (interesting) custom operators. Our <code>yield</code> is defined as <code>unit</code>
+and <code>for</code> corresponds to <code>bindSub</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs41', 143)" onmouseover="showTip(event, 'fs41', 143)" class="id">TreeZipperBuilder</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="c">/// Enables the &#39;for x in xs do ..&#39; syntax</span>
+  <span class="k">member</span> <span class="id">x</span><span class="pn">.</span><span class="id">For</span><span class="pn">(</span><span class="id">tz</span><span class="pn">:</span><span onmouseout="hideTip(event, 'fs14', 144)" onmouseover="showTip(event, 'fs14', 144)" class="id">TreeZipper</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span><span class="pn">,</span> <span class="id">f</span><span class="pn">)</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs14', 145)" onmouseover="showTip(event, 'fs14', 145)" class="id">TreeZipper</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 146)" onmouseover="showTip(event, 'fs34', 146)" class="id">bindSub</span> <span class="id">f</span> <span class="id">tz</span>
+  <span class="c">/// Enables the &#39;yield x&#39; syntax</span>
+  <span class="k">member</span> <span class="id">x</span><span class="pn">.</span><span class="id">Yield</span><span class="pn">(</span><span class="id">v</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 147)" onmouseover="showTip(event, 'fs32', 147)" class="id">unit</span> <span class="id">v</span>
+
+<span class="c">/// Global instance of the computation builder</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs42', 148)" onmouseover="showTip(event, 'fs42', 148)" class="id">tree</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs41', 149)" onmouseover="showTip(event, 'fs41', 149)" class="rt">TreeZipperBuilder</span><span class="pn">(</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Equipped with the above definition, we can write computations that transform the
+entire tree. For example, to multiply all values of the tree by 2, we can write
+the following computation (you can pass the result to <code>printfn "%O"</code> to get a nicer
+output)</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs42', 150)" onmouseover="showTip(event, 'fs42', 150)" class="k">tree</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 151)" onmouseover="showTip(event, 'fs2', 151)" class="id">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs26', 152)" onmouseover="showTip(event, 'fs26', 152)" class="id">sample</span> <span class="k">do</span>
+       <span class="k">yield</span> <span onmouseout="hideTip(event, 'fs2', 153)" onmouseover="showTip(event, 'fs2', 153)" class="id">x</span> <span class="o">*</span> <span class="n">2</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>As discussed earlier, the <code>bindSub</code> operation (and thus our <code>for</code>) only allows the
+result to have the same type as the input. Writing, for example, <code>x.ToString()</code>, would
+be invalid. In this case, it does not seem very logical, but that's because we have not
+added operations for navigating through the tree - the <code>for</code> and <code>yield</code> can be
+only used to transform the entire tree.</p>
+<h3>Adding custom operations</h3>
+<p>Now we're getting to the most interesting bit of the article. How do we add custom
+operations to the computation expression? To do that, we need to annotate the method
+with <code>CustomOperation</code> attribute. The attribute defines the name of the operation
+and can specify additional parameters.</p>
+<p>The fact that makes custom operations interesting is that they can have types such
+as <code>TreeZipper&lt;'T&gt; -&gt; TreeZipper&lt;'T&gt;</code> which is exactly the type of our navigational
+operations. The syntax allows other operations - such as zipping, grouping and
+joining - but we will not need these in this article.</p>
+<p>To add navigational operations, transformations and getter for the current element,
+we can write the following code:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs41', 154)" onmouseover="showTip(event, 'fs41', 154)" class="rt">TreeZipperBuilder</span> <span class="k">with</span>
+  <span class="c">// Operations for navigation through the tree</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 155)" onmouseover="showTip(event, 'fs43', 155)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;left&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 156)" onmouseover="showTip(event, 'fs44', 156)" class="id">x</span><span class="pn">.</span><span class="fn">Left</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 157)" onmouseover="showTip(event, 'fs31', 157)" class="id">tz</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs17', 158)" onmouseover="showTip(event, 'fs17', 158)" class="fn">left</span> <span onmouseout="hideTip(event, 'fs31', 159)" onmouseover="showTip(event, 'fs31', 159)" class="id">tz</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 160)" onmouseover="showTip(event, 'fs43', 160)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;right&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 161)" onmouseover="showTip(event, 'fs44', 161)" class="id">x</span><span class="pn">.</span><span class="fn">Right</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 162)" onmouseover="showTip(event, 'fs31', 162)" class="id">tz</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs22', 163)" onmouseover="showTip(event, 'fs22', 163)" class="fn">right</span> <span onmouseout="hideTip(event, 'fs31', 164)" onmouseover="showTip(event, 'fs31', 164)" class="id">tz</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 165)" onmouseover="showTip(event, 'fs43', 165)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;up&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 166)" onmouseover="showTip(event, 'fs44', 166)" class="id">x</span><span class="pn">.</span><span class="fn">Up</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 167)" onmouseover="showTip(event, 'fs31', 167)" class="id">tz</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs28', 168)" onmouseover="showTip(event, 'fs28', 168)" class="fn">up</span> <span onmouseout="hideTip(event, 'fs31', 169)" onmouseover="showTip(event, 'fs31', 169)" class="id">tz</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 170)" onmouseover="showTip(event, 'fs43', 170)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;top&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 171)" onmouseover="showTip(event, 'fs44', 171)" class="id">x</span><span class="pn">.</span><span class="fn">Top</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 172)" onmouseover="showTip(event, 'fs31', 172)" class="id">tz</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs29', 173)" onmouseover="showTip(event, 'fs29', 173)" class="fn">top</span> <span onmouseout="hideTip(event, 'fs31', 174)" onmouseover="showTip(event, 'fs31', 174)" class="id">tz</span>
+
+  <span class="c">/// Extracts the current value and returns it</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 175)" onmouseover="showTip(event, 'fs43', 175)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;current&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">false</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 176)" onmouseover="showTip(event, 'fs44', 176)" class="id">x</span><span class="pn">.</span><span class="fn">Current</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 177)" onmouseover="showTip(event, 'fs31', 177)" class="id">tz</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs23', 178)" onmouseover="showTip(event, 'fs23', 178)" class="fn">current</span> <span onmouseout="hideTip(event, 'fs31', 179)" onmouseover="showTip(event, 'fs31', 179)" class="id">tz</span>
+
+  <span class="c">/// Transform the current sub-tree using &#39;f&#39;</span>
+  <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs43', 180)" onmouseover="showTip(event, 'fs43', 180)" class="rt">CustomOperation</span><span class="pn">(</span><span class="s">&quot;map&quot;</span><span class="pn">,</span> <span class="id">MaintainsVariableSpace</span><span class="o">=</span><span class="k">true</span><span class="pn">)</span><span class="pn">&gt;]</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs44', 181)" onmouseover="showTip(event, 'fs44', 181)" class="id">x</span><span class="pn">.</span><span class="fn">Select</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs31', 182)" onmouseover="showTip(event, 'fs31', 182)" class="id">tz</span><span class="pn">,</span> <span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs45', 183)" onmouseover="showTip(event, 'fs45', 183)" class="rt">ProjectionParameter</span><span class="pn">&gt;]</span> <span onmouseout="hideTip(event, 'fs46', 184)" onmouseover="showTip(event, 'fs46', 184)" class="fn">f</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 185)" onmouseover="showTip(event, 'fs34', 185)" class="fn">bindSub</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs46', 186)" onmouseover="showTip(event, 'fs46', 186)" class="fn">f</span> <span class="o">&gt;</span><span class="pn">&gt;</span> <span onmouseout="hideTip(event, 'fs32', 187)" onmouseover="showTip(event, 'fs32', 187)" class="fn">unit</span><span class="pn">)</span> <span onmouseout="hideTip(event, 'fs31', 188)" onmouseover="showTip(event, 'fs31', 188)" class="id">tz</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>MaintainsVariableSpace</code> parameter allows us to specify that an operation transforms
+values in the abstract data type without touching them. If you have an operation
+<code>M&lt;'T&gt; -&gt; M&lt;'T&gt;</code> then it is generally <code>true</code>, but if you have an operation such as
+<code>M&lt;'T&gt; -&gt; M&lt;int&gt;</code> then the variable space would not be preserved (because variables
+are stored in a tuple used in place of <code>'T</code>, so turning that to <code>int</code> loses the
+values in the tuple). In our case, navigation and transformation maintains the
+variable space, but <code>current</code> operation does not.</p>
+<p>The <code>map</code> operation uses another interesting attribute. If we annotate a function
+argument with <code>ProjectionParameter</code> then we can write <code>map (x * 2)</code> and the argument
+expression <code>x * 2</code> is implicitly turned into a function that takes all the variables
+and returns the result. Something like <code>fun vars -&gt; vars.x * 2</code>.</p>
+<h3>Sample tree computations</h3>
+<p>Let's finish the article with two examples that process the <code>sample</code> tree defined
+earlier. The first one corresponds to our earlier computation (written using
+pipelines) that picks a specific leaf:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs42', 189)" onmouseover="showTip(event, 'fs42', 189)" class="k">tree</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 190)" onmouseover="showTip(event, 'fs2', 190)" class="id">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs26', 191)" onmouseover="showTip(event, 'fs26', 191)" class="id">sample</span> <span class="k">do</span>
+       <span onmouseout="hideTip(event, 'fs47', 192)" onmouseover="showTip(event, 'fs47', 192)" class="k">right</span>
+       <span onmouseout="hideTip(event, 'fs47', 193)" onmouseover="showTip(event, 'fs47', 193)" class="k">right</span>
+       <span onmouseout="hideTip(event, 'fs48', 194)" onmouseover="showTip(event, 'fs48', 194)" class="k">left</span>
+       <span onmouseout="hideTip(event, 'fs49', 195)" onmouseover="showTip(event, 'fs49', 195)" class="k">current</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The computation expression syntax always has to start with <code>for .. in .. do</code>, so we
+write that even if we do not actually access the value assigned to <code>x</code>. This is
+simply translated to <code>For</code> followed by <code>Yield</code> (which does not change the tree).</p>
+<p>The <code>for</code> can then be followed by custom operations. In this example, we move
+right, right, left and then get the current value from the tree. Note that adding
+<code>left</code> after <code>current</code> gives a type error, because <code>current</code> extracts a value
+(which is not a tree zipper that can be transformed).</p>
+<p>We can now also write the sample from the introduction of the article:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs42', 196)" onmouseover="showTip(event, 'fs42', 196)" class="k">tree</span> <span class="pn">{</span> <span class="k">for</span> <span onmouseout="hideTip(event, 'fs2', 197)" onmouseover="showTip(event, 'fs2', 197)" class="id">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs26', 198)" onmouseover="showTip(event, 'fs26', 198)" class="id">sample</span> <span class="k">do</span>
+       <span onmouseout="hideTip(event, 'fs48', 199)" onmouseover="showTip(event, 'fs48', 199)" class="k">left</span>
+       <span onmouseout="hideTip(event, 'fs50', 200)" onmouseover="showTip(event, 'fs50', 200)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 201)" onmouseover="showTip(event, 'fs2', 201)" class="id">x</span> <span class="o">*</span> <span class="n">2</span><span class="pn">)</span>
+       <span onmouseout="hideTip(event, 'fs51', 202)" onmouseover="showTip(event, 'fs51', 202)" class="k">up</span>
+       <span onmouseout="hideTip(event, 'fs47', 203)" onmouseover="showTip(event, 'fs47', 203)" class="k">right</span>
+       <span onmouseout="hideTip(event, 'fs50', 204)" onmouseover="showTip(event, 'fs50', 204)" class="k">map</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs2', 205)" onmouseover="showTip(event, 'fs2', 205)" class="id">x</span> <span class="o">/</span> <span class="n">2</span><span class="pn">)</span> 
+       <span onmouseout="hideTip(event, 'fs52', 206)" onmouseover="showTip(event, 'fs52', 206)" class="k">top</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Here, we write <code>for</code> followed by <code>left</code> to navigate to a left sub-tree. Then
+we perform a transformation using <code>map</code>. Because this is implemented using the
+<code>bindSub</code> operation, the transformation only affects the current sub-tree, but
+not the parents (the root node and its right sub-tree).</p>
+<p>This example is more interesting, because it actually uses the variable <code>x</code> in
+the transformations (written using <code>map</code>). The computation expression notation
+actually gives us some benefits over a simple pipeline, because we do not need
+to create an explicit lambda each time we write <code>map</code>. Thanks to <code>ProjectionParameter</code>
+attribute, this is done automatically.</p>
+<h2>Summary</h2>
+<p>The main goal of this article is to demonstrate how you can define simple
+<em>computation expressions</em> with <em>custom operations</em> which is a new (and pretty powerful)
+feature in F# 3.0. In the example discussed in this article, I used the <em>tree zipper</em>.</p>
+<p>The custom operations make it possible to navigate through the tree using
+a conventient syntax and perform transformations on current sub-tree just by
+writing commands like <code>left</code> and <code>right</code>. When writing the transformations using
+<code>map (x / 2)</code> we also do not need to write explicit lambda functions.</p>
+<p>This article is really just an introduction - there are many topics that I did
+not talk about, because the custom constructs can also implement operations that
+resemble grouping or joining. But I'll leave that for another article!</p>
+<div class="tip" id="fs1">val query : Linq.QueryBuilder</div>
+<div class="tip" id="fs2">val x : int</div>
+<div class="tip" id="fs3">custom operation: take (int)<br /><br />Calls Linq.QueryBuilder.Take</div>
+<div class="tip" id="fs4">custom operation: sortByDescending (&#39;Key)<br /><br />Calls Linq.QueryBuilder.SortByDescending</div>
+<div class="tip" id="fs5">type Tree&lt;&#39;T&gt; =<br />&#160;&#160;| Node of Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;| Leaf of &#39;T<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs6">union case Tree.Node: Tree&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="fs7">union case Tree.Leaf: &#39;T -&gt; Tree&lt;&#39;T&gt;</div>
+<div class="tip" id="fs8">match x with<br />&#160;&#160;&#160;&#160;| Node(l, r) -&gt; sprintf &quot;(%O, %O)&quot; l r<br />&#160;&#160;&#160;&#160;| Leaf v -&gt; sprintf &quot;%O&quot; v</div>
+<div class="tip" id="fs9">type Path&lt;&#39;T&gt; =<br />&#160;&#160;| Top<br />&#160;&#160;| Left of Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;| Right of Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs10">union case Path.Top: Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs11">union case Path.Left: Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs12">union case Path.Right: Path&lt;&#39;T&gt; * Tree&lt;&#39;T&gt; -&gt; Path&lt;&#39;T&gt;</div>
+<div class="tip" id="fs13">match x with<br />&#160;&#160;&#160;&#160;| Top -&gt; &quot;T&quot;<br />&#160;&#160;&#160;&#160;| Left(p, t) -&gt; sprintf &quot;L(%O, %O)&quot; p t<br />&#160;&#160;&#160;&#160;| Right(p, t) -&gt; sprintf &quot;R(%O, %O)&quot; p t</div>
+<div class="tip" id="fs14">type TreeZipper&lt;&#39;T&gt; =<br />&#160;&#160;| TZ of Tree&lt;&#39;T&gt; * Path&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;override ToString : unit -&gt; string</div>
+<div class="tip" id="fs15">union case TreeZipper.TZ: Tree&lt;&#39;T&gt; * Path&lt;&#39;T&gt; -&gt; TreeZipper&lt;&#39;T&gt;</div>
+<div class="tip" id="fs16">let (TZ(t, p)) = x in sprintf &quot;%O [%O]&quot; t p</div>
+<div class="tip" id="fs17">val left : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Navigates to the left sub-tree</em></div>
+<div class="tip" id="fs18">val failwith : message:string -&gt; &#39;T</div>
+<div class="tip" id="fs19">val l : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs20">val r : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs21">val p : Path&lt;&#39;a&gt;</div>
+<div class="tip" id="fs22">val right : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Navigates to the right sub-tree</em></div>
+<div class="tip" id="fs23">val current : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br /><em><br /><br />&#160;Gets the value at the current position</em></div>
+<div class="tip" id="fs24">val x : &#39;a</div>
+<div class="tip" id="fs25">val branches : Tree&lt;int&gt;</div>
+<div class="tip" id="fs26">val sample : TreeZipper&lt;int&gt;</div>
+<div class="tip" id="fs27">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T</div>
+<div class="tip" id="fs28">val up : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs29">val top : _arg1:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs30">val t : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs31">val tz : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs32">Multiple items<br />val unit : v:&#39;a -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Build tree zipper with singleton tree</em><br /><br />--------------------<br />type unit = Unit</div>
+<div class="tip" id="fs33">val v : &#39;a</div>
+<div class="tip" id="fs34">val bindSub : f:(&#39;a -&gt; TreeZipper&lt;&#39;a&gt;) -&gt; treeZip:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br /><em><br /><br />&#160;Transform leaves in the current sub-tree of &#39;treeZip&#39;<br />&#160;into other trees using the provided function &#39;f&#39;</em></div>
+<div class="tip" id="fs35">val f : (&#39;a -&gt; TreeZipper&lt;&#39;a&gt;)</div>
+<div class="tip" id="fs36">val treeZip : TreeZipper&lt;&#39;a&gt;</div>
+<div class="tip" id="fs37">val bindT : (Tree&lt;&#39;a&gt; -&gt; Tree&lt;&#39;a&gt;)</div>
+<div class="tip" id="fs38">val t : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs39">val current : Tree&lt;&#39;a&gt;</div>
+<div class="tip" id="fs40">val path : Path&lt;&#39;a&gt;</div>
+<div class="tip" id="fs41">Multiple items<br />type TreeZipperBuilder =<br />&#160;&#160;new : unit -&gt; TreeZipperBuilder<br />&#160;&#160;member Current : tz:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br />&#160;&#160;member Current : tz:TreeZipper&lt;&#39;a&gt; -&gt; &#39;a<br />&#160;&#160;member For : tz:TreeZipper&lt;&#39;T&gt; * f:(&#39;T -&gt; TreeZipper&lt;&#39;T&gt;) -&gt; TreeZipper&lt;&#39;T&gt;<br />&#160;&#160;member Left : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Left : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Right : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Right : tz:TreeZipper&lt;&#39;a&gt; -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Select : tz:TreeZipper&lt;&#39;a&gt; * f:(&#39;a -&gt; &#39;a) -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;member Select : tz:TreeZipper&lt;&#39;a&gt; * f:(&#39;a -&gt; &#39;a) -&gt; TreeZipper&lt;&#39;a&gt;<br />&#160;&#160;...<br /><br />--------------------<br />new : unit -&gt; TreeZipperBuilder</div>
+<div class="tip" id="fs42">val tree : TreeZipperBuilder<br /><em><br /><br />&#160;Global instance of the computation builder</em></div>
+<div class="tip" id="fs43">Multiple items<br />type CustomOperationAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : name:string -&gt; CustomOperationAttribute<br />&#160;&#160;member AllowIntoPattern : bool<br />&#160;&#160;member IsLikeGroupJoin : bool<br />&#160;&#160;member IsLikeJoin : bool<br />&#160;&#160;member IsLikeZip : bool<br />&#160;&#160;member JoinConditionWord : string<br />&#160;&#160;member MaintainsVariableSpace : bool<br />&#160;&#160;member MaintainsVariableSpaceUsingBind : bool<br />&#160;&#160;member Name : string<br />&#160;&#160;...<br /><br />--------------------<br />new : name:string -&gt; CustomOperationAttribute</div>
+<div class="tip" id="fs44">val x : TreeZipperBuilder</div>
+<div class="tip" id="fs45">Multiple items<br />type ProjectionParameterAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ProjectionParameterAttribute<br /><br />--------------------<br />new : unit -&gt; ProjectionParameterAttribute</div>
+<div class="tip" id="fs46">val f : (&#39;a -&gt; &#39;a)</div>
+<div class="tip" id="fs47">custom operation: right<br /><br />Calls TreeZipperBuilder.Right</div>
+<div class="tip" id="fs48">custom operation: left<br /><br />Calls TreeZipperBuilder.Left</div>
+<div class="tip" id="fs49">custom operation: current<br /><br />Calls TreeZipperBuilder.Current<br /><em><br /><br />&#160;Extracts the current value and returns it</em></div>
+<div class="tip" id="fs50">custom operation: map (&#39;a)<br /><br />Calls TreeZipperBuilder.Select<br /><em><br /><br />&#160;Transform the current sub-tree using &#39;f&#39;</em></div>
+<div class="tip" id="fs51">custom operation: up<br /><br />Calls TreeZipperBuilder.Up</div>
+<div class="tip" id="fs52">custom operation: top<br /><br />Calls TreeZipperBuilder.Top</div>

@@ -1,0 +1,457 @@
+Async in C# and F#: Asynchronous gotchas in C#
+==============================================
+
+ - date: 2013-04-15T04:00:03.0000000
+ - description: This article is inspired by an MVP summit talk about common pitfalls in the C# asynchronous programming model. I look at a number of easy to make mistakes when writing asynchronous code in C# and demonstrate that most of them would not easily happen when using F#.
+ - layout: article
+ - tags: async,c#,f#
+ - title: Async in C# and F#: Asynchronous gotchas in C#
+ - url: csharp-async-gotchas.aspx
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<p>Back in February, I attended the annual MVP summit - an <a href="http://www.2013mvpsummit.com/about">event organized by Microsoft
+for MVPs</a>. I used that opportunity to also visit
+Boston and New York and do two F# talks and to record a <a href="http://channel9.msdn.com/posts/Tomas-Petricek-How-F-Learned-to-Stop-Worrying-and-Love-the-Data" title="Tomas Petricek (Channel 9): How F# Learned to Stop Worrying and Love the Data">Channel9 lecutre about type
+providers</a>.
+Despite all the <em>other activities</em> (often involving pubs, other F# people and long
+sleeping in the mornings), I also managed to come to some talks!</p>
+<div style="margin-left:auto;margin-right:auto;width:379px;margin-top:10px;margin-bottom:20px;">
+<img src="http://tomasp.net/articles/csharp-async-gotchas/async-clinic.png" style="width:379px;" />
+</div>
+<p>One (non-NDA) talk was the <a href="http://blogs.msdn.com/b/pfxteam/archive/2013/02/20/mvp-summit-presentation-on-async.aspx" title="Lucian Wischik, Stephen Toub: Async Clinic">Async Clinic</a> talk about the new <code>async</code> and <code>await</code> keywords
+in C# 5.0. Lucian and Stephen talked about common problems that C# developers face when
+writing asynchronous programs. In this blog post, I'll look at some of the problems from
+the F# perspective. The talk was quite lively, and someone recorded the reaction of the
+F# part of the audience as follows...</p>
+--------------------------------------------------------------------------------
+<h1><span class="hm">Async in C# and F#</span><span class="hs"> Asynchronous gotchas in C#</span></h1>
+<p>Back in February, I attended the annual MVP summit - an <a href="http://www.2013mvpsummit.com/about">event organized by Microsoft
+for MVPs</a>. I used that opportunity to also visit
+Boston and New York and do two F# talks and to record a <a href="http://channel9.msdn.com/posts/Tomas-Petricek-How-F-Learned-to-Stop-Worrying-and-Love-the-Data" title="Tomas Petricek (Channel 9): How F# Learned to Stop Worrying and Love the Data">Channel9 lecutre about type
+providers</a>.
+Despite all the <em>other activities</em> (often involving pubs, other F# people and long
+sleeping in the mornings), I also managed to come to some talks!</p>
+<div style="margin-left:auto;margin-right:auto;width:379px;margin-top:10px;margin-bottom:20px;">
+<img src="http://tomasp.net/articles/csharp-async-gotchas/async-clinic.png" style="width:379px;" />
+</div>
+<p>One (non-NDA) talk was the <a href="http://blogs.msdn.com/b/pfxteam/archive/2013/02/20/mvp-summit-presentation-on-async.aspx" title="Lucian Wischik, Stephen Toub: Async Clinic">Async Clinic</a> talk about the new <code>async</code> and <code>await</code> keywords
+in C# 5.0. Lucian and Stephen talked about common problems that C# developers face when
+writing asynchronous programs. In this blog post, I'll look at some of the problems from
+the F# perspective. The talk was quite lively, and someone recorded the reaction of the
+F# part of the audience as follows:</p>
+<div style="margin-left:auto;margin-right:auto;width:379px;margin-top:10px;margin-bottom:20px;">
+<a href="https://twitter.com/josefajardo/status/303998917027192832"><img src="http://tomasp.net/articles/csharp-async-gotchas/tweet.png" style="border-style:none" /></a>
+</div>
+<p>Why is that? It turns out that many of the common errors are not possible (or much less
+likely) when using the F# asynchronous model (which has been around <a href="http://blogs.msdn.com/b/dsyme/archive/2007/07/27/f-1-9-2-7-released.aspx">since F# 1.9.2.7, which
+was released in 2007</a>
+and have been shipped with Visual Studio 2008).</p>
+<h2>Gotcha #1: Async does not run asynchronously</h2>
+<p>Let's go straight to the first tricky aspect of the C# asynchronous programming model. Take
+a look at the following example and figure out in what order will the strings be printed
+(I could not find the exact code shown at the talk, but I remember Lucian showing something
+similar):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">async</span> Task WorkThenWait() {
+  Thread.Sleep(<span class="n">1000</span>);
+  Console.WriteLine(<span class="s">"work"</span>);
+  await Task.Delay(<span class="n">1000</span>);
+}
+
+<span class="k">void</span> Demo() {
+  <span class="k">var</span> child <span class="o">=</span> WorkThenWait();
+  Console.WriteLine(<span class="s">"started"</span>);
+  child.Wait();
+  Console.WriteLine(<span class="s">"completed"</span>);
+}
+</code></pre></td></tr></table>
+<p>If you guessed that it prints "started", "work" and "completed" then you're wrong. The code
+prints "work", "started" and "completed", try it! What the author intended was to start
+the work (by calling <code>WorkThenWait</code>) and then await for the task later. The problem is that
+<code>WorkThenWait</code> starts by doing some heavy computations (here, <code>Thread.Sleep</code>) and only after
+that uses <code>await</code>.</p>
+<p>In C#, the first part of the code in <code>async</code> method is executed synchronously (on the
+thread of the caller). You could fix that, for example, by adding <code>await Task.Yield()</code> at the
+beginning.</p>
+<h3>Corresponding F# code</h3>
+<p>This is not a problem in F#. When writing async code in F#, the entire code inside
+<code>async { ... }</code> block is all delayed and only started later (when you explicitly start it).
+The above C# code corresponds to the following F#:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 7)" onmouseover="showTip(event, 'fs4', 7)" class="fn">workThenWait</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs5', 8)" onmouseover="showTip(event, 'fs5', 8)" class="rt">Thread</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs6', 9)" onmouseover="showTip(event, 'fs6', 9)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span>
+  <span onmouseout="hideTip(event, 'fs7', 10)" onmouseover="showTip(event, 'fs7', 10)" class="fn">printfn</span> <span class="s">&quot;work done&quot;</span>
+  <span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="k">async</span> <span class="pn">{</span> <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> <span class="pn">}</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 14)" onmouseover="showTip(event, 'fs11', 14)" class="fn">demo</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 15)" onmouseover="showTip(event, 'fs12', 15)" class="id">work</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 16)" onmouseover="showTip(event, 'fs4', 16)" class="fn">workThenWait</span><span class="pn">(</span><span class="pn">)</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs13', 18)" onmouseover="showTip(event, 'fs13', 18)" class="id">StartAsTask</span>
+  <span onmouseout="hideTip(event, 'fs7', 19)" onmouseover="showTip(event, 'fs7', 19)" class="fn">printfn</span> <span class="s">&quot;started&quot;</span>
+  <span onmouseout="hideTip(event, 'fs12', 20)" onmouseover="showTip(event, 'fs12', 20)" class="fn">work</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="id">Wait</span><span class="pn">(</span><span class="pn">)</span>
+  <span onmouseout="hideTip(event, 'fs7', 22)" onmouseover="showTip(event, 'fs7', 22)" class="fn">printfn</span> <span class="s">&quot;completed&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>It is quite clear that the <code>workThenWait</code> function is not doing the work (<code>Thread.Sleep</code>)
+as part of the asynchronous computation and that it will be executed when the function
+is called (and not when the async workflow is started).
+The usual F# pattern is to wrap the entire function body in <code>async</code>. In F#, you
+would write the following, which works as expected:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 23)" onmouseover="showTip(event, 'fs4', 23)" class="fn">workThenWait</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 24)" onmouseover="showTip(event, 'fs8', 24)" class="k">async</span> <span class="pn">{</span> 
+  <span onmouseout="hideTip(event, 'fs5', 25)" onmouseover="showTip(event, 'fs5', 25)" class="rt">Thread</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs6', 26)" onmouseover="showTip(event, 'fs6', 26)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span>
+  <span onmouseout="hideTip(event, 'fs7', 27)" onmouseover="showTip(event, 'fs7', 27)" class="fn">printfn</span> <span class="s">&quot;work done&quot;</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 28)" onmouseover="showTip(event, 'fs9', 28)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 29)" onmouseover="showTip(event, 'fs10', 29)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Gotcha #2: Ignoring results</h2>
+<p>Here is another gotcha in the C# asynchronous programming model (this one is taken directly
+from Lucian's slides). Guess what happens when you run the following asynchronous method:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">async</span> Task Handler() {
+  Console.WriteLine(<span class="s">"Before"</span>);
+  Task.Delay(<span class="n">1000</span>);
+  Console.WriteLine(<span class="s">"After"</span>);
+}
+</code></pre></td></tr></table>
+<p>Were you expecting that it prints "Before", waits 1 second and then prints "After"? Wrong!
+It prints both messages immediately without any waiting in between. The problem is that
+<code>Task.Delay</code> <em>returns</em> a <code>Task</code> and we forgot to await until it completes using <code>await</code>.</p>
+<h3>Corresponding F# code</h3>
+<p>Again, you would probably not hit this issue in F#. You can surely write code that calls
+<code>Async.Sleep</code> and ignores the returned <code>Async&lt;unit&gt;</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 30)" onmouseover="showTip(event, 'fs15', 30)" class="fn">handler</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 31)" onmouseover="showTip(event, 'fs8', 31)" class="k">async</span> <span class="pn">{</span>
+  <span onmouseout="hideTip(event, 'fs7', 32)" onmouseover="showTip(event, 'fs7', 32)" class="fn">printfn</span> <span class="s">&quot;Before&quot;</span>
+  <span onmouseout="hideTip(event, 'fs9', 33)" onmouseover="showTip(event, 'fs9', 33)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 34)" onmouseover="showTip(event, 'fs10', 34)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span>
+  <span onmouseout="hideTip(event, 'fs7', 35)" onmouseover="showTip(event, 'fs7', 35)" class="fn">printfn</span> <span class="s">&quot;After&quot;</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>If you paste the code in Visual Studio, MonoDevelop or Try F#, you get an immediate
+feedback with a warning saying that:</p>
+<blockquote>
+<p>warning FS0020: This expression should have type <code>unit</code>, but has type
+<code>Async&lt;unit&gt;</code>. Use <code>ignore</code> to discard the result of the expression, or
+<code>let</code> to bind the result to a name.</p>
+</blockquote>
+<p>You can still compile the code and run it, but if you read the warning, you'll see
+that the expression returns <code>Async&lt;unit&gt;</code> and you need to await it using <code>do!</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 36)" onmouseover="showTip(event, 'fs15', 36)" class="fn">handler</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 37)" onmouseover="showTip(event, 'fs8', 37)" class="k">async</span> <span class="pn">{</span>
+  <span onmouseout="hideTip(event, 'fs7', 38)" onmouseover="showTip(event, 'fs7', 38)" class="fn">printfn</span> <span class="s">&quot;Before&quot;</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 39)" onmouseover="showTip(event, 'fs9', 39)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 40)" onmouseover="showTip(event, 'fs10', 40)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span>
+  <span onmouseout="hideTip(event, 'fs7', 41)" onmouseover="showTip(event, 'fs7', 41)" class="fn">printfn</span> <span class="s">&quot;After&quot;</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Gotcha #3: Async void methods</h2>
+<p>Quite a lot of time in the talk was dedicated to <em>async void</em> methods. If you write
+<code>async void Foo() { ... }</code>, then the C# compiler generates a method that returns
+<code>void</code>. Under the cover, it creates and starts a task. This means that you have no way
+of telling when the work has actually happened.</p>
+<p>Here is a recommendation on the <em>async void</em> pattern from the talk:</p>
+<div style="margin-left:auto;margin-right:auto;width:379px;margin-top:10px;margin-bottom:20px;">
+<img src="http://tomasp.net/articles/csharp-async-gotchas/async-void.png" style="width:379px;" />
+</div>
+<p>To be fair - async void methods <em>can</em> be useful when you're writing an event handler.
+Event handlers should return <code>void</code> and they often start some work that continues in
+background. But I do not think this is really useful in the world of MVVM - but it
+surely makes nice demos at conference talks.</p>
+<p>Let me demonstrate the problem using a snippet from <a href="http://msdn.microsoft.com/en-us/magazine/jj991977.aspx" title="Stephen Cleary: Best Practices in Asynchronous Programming">MSDN Magazine article</a>
+on asynchronous programming in C#:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">async</span> <span class="k">void</span> ThrowExceptionAsync() {
+  <span class="k">throw</span> <span class="k">new</span> InvalidOperationException();
+}
+
+<span class="k">public</span> <span class="k">void</span> CallThrowExceptionAsync() {
+  <span class="k">try</span> {
+    ThrowExceptionAsync();
+  } <span class="k">catch</span> (Exception) {
+    Console.WriteLine(<span class="s">"Failed"</span>);
+  }
+}
+</code></pre></td></tr></table>
+<p>Do you think that the code prints "Failed"? I suppose you already understood the style
+of this blog post... Indeed, the exception is not handled because <code>ThrowExceptionAsync</code>
+starts the work and returns immediately (and the exception happens somewhere on a background
+thread).</p>
+<h3>Corresponding F# code</h3>
+<p>So, if you should not be using a programming language feature, then it is probably
+better not to include the feature in the first place. F# does not let you write
+<em>async void</em> functions - when you wrap function body in the <code>async { ... }</code> block,
+its return type will be <code>Async&lt;T&gt;</code>. If you used type annotations and demanded <code>unit</code>,
+you would get a type mismatch.</p>
+<p>You can still write code that corresponds to the above C# using <code>Async.Start</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs16', 42)" onmouseover="showTip(event, 'fs16', 42)" class="fn">throwExceptionAsync</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 43)" onmouseover="showTip(event, 'fs8', 43)" class="k">async</span> <span class="pn">{</span>
+  <span onmouseout="hideTip(event, 'fs17', 44)" onmouseover="showTip(event, 'fs17', 44)" class="k">raise</span> <span class="o">&lt;|</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs18', 45)" onmouseover="showTip(event, 'fs18', 45)" class="rt">InvalidOperationException</span><span class="pn">(</span><span class="pn">)</span> <span class="pn">}</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 46)" onmouseover="showTip(event, 'fs19', 46)" class="fn">callThrowExceptionAsync</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="k">try</span>
+    <span onmouseout="hideTip(event, 'fs16', 47)" onmouseover="showTip(event, 'fs16', 47)" class="fn">throwExceptionAsync</span><span class="pn">(</span><span class="pn">)</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs9', 48)" onmouseover="showTip(event, 'fs9', 48)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs20', 49)" onmouseover="showTip(event, 'fs20', 49)" class="id">Start</span>
+  <span class="k">with</span> <span onmouseout="hideTip(event, 'fs21', 50)" onmouseover="showTip(event, 'fs21', 50)" class="id">e</span> <span class="k">-&gt;</span>
+    <span onmouseout="hideTip(event, 'fs7', 51)" onmouseover="showTip(event, 'fs7', 51)" class="fn">printfn</span> <span class="s">&quot;Failed&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This will also not handle the exception. But it is more obvious what is going on because
+we had to write <code>Async.Start</code> explicitly. If we did not write it, we would get a
+warning saying that the function returns <code>Async&lt;void&gt;</code> and we are ignoring the result
+(the same as in the earlier section "Ignoring results").</p>
+<h2>Gotcha #4: Async void lambda functions</h2>
+<p>Even trickier case is when you pass asynchronous lambda function to some method as a
+delegate. In this case, the C# compiler infers the type of method from the delegate type.
+If you use the <code>Action</code> delegate (or similar), then the compiler produces async void
+function (which starts the work and returns <code>void</code>). If you use the <code>Func&lt;Task&gt;</code> delegate,
+the compiler generates a function that returns <code>Task</code>.</p>
+<p>Here is a sample from Lucian's slides. Does the following (perfectly valid) code finish
+in 1 second (after all the tasks finish sleeping), or does it finish immediately?</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">Parallel.For(<span class="n">0</span>, <span class="n">10</span>, <span class="k">async</span> i <span class="o">=</span><span class="o">&gt;</span> {
+  await Task.Delay(<span class="n">1000</span>);
+});
+</code></pre></td></tr></table>
+<p>You cannot know that, unless you know that <code>For</code> only has overloads that take <code>Action</code>
+delegates - and thus the lambda function will always be compiled as async void. This
+also means that adding such (maybe useful?) overload would be a breaking change.</p>
+<h3>Corresponding F# code</h3>
+<p>The F# language does not have special "async lambda functions", but you can surely
+write a lambda function that returns asynchronous computation. The return type of such
+function will be <code>Async&lt;T&gt;</code> and so it cannot be passed as an argument to methods that
+expect void-returning delegate. The following F# code does not compile:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs22', 52)" onmouseover="showTip(event, 'fs22', 52)" class="rt">Parallel</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs23', 53)" onmouseover="showTip(event, 'fs23', 53)" class="id">For</span><span class="pn">(</span><span class="n">0</span><span class="pn">,</span> <span class="n">10</span><span class="pn">,</span> <span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 54)" onmouseover="showTip(event, 'fs24', 54)" class="id">i</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs8', 55)" onmouseover="showTip(event, 'fs8', 55)" class="k">async</span> <span class="pn">{</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 56)" onmouseover="showTip(event, 'fs9', 56)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 57)" onmouseover="showTip(event, 'fs10', 57)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> 
+<span class="pn">}</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The error message simply says that a function type <code>int -&gt; Async&lt;unit&gt;</code> is not
+compatible with the <code>Action&lt;int&gt;</code> delegate (which would be <code>int -&gt; unit</code> in F#):</p>
+<blockquote>
+<p>error FS0041: No overloads match for method <code>For</code>. The available overloads
+are shown below (or in the Error List window).</p>
+</blockquote>
+<p>To get the same behaviour as the above C# code, we need to explicitly start the
+work. If you want to start asynchronous workflow in the background, then you can
+easily do that using <code>Async.Start</code> (which takes a unit-returning asynchronous
+computation, schedules it and returns <code>unit</code>):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs22', 58)" onmouseover="showTip(event, 'fs22', 58)" class="rt">Parallel</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs23', 59)" onmouseover="showTip(event, 'fs23', 59)" class="id">For</span><span class="pn">(</span><span class="n">0</span><span class="pn">,</span> <span class="n">10</span><span class="pn">,</span> <span class="k">fun</span> <span onmouseout="hideTip(event, 'fs25', 60)" onmouseover="showTip(event, 'fs25', 60)" class="id">i</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs9', 61)" onmouseover="showTip(event, 'fs9', 61)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs20', 62)" onmouseover="showTip(event, 'fs20', 62)" class="id">Start</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs8', 63)" onmouseover="showTip(event, 'fs8', 63)" class="k">async</span> <span class="pn">{</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 64)" onmouseover="showTip(event, 'fs9', 64)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 65)" onmouseover="showTip(event, 'fs10', 65)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> 
+<span class="pn">}</span><span class="pn">)</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>You can certainly write this, but it is quite easy to see what is going on.
+It is also not difficult to see that we are wasting resources, because the point
+of <code>Parallel.For</code> is that it runs <em>CPU-intensive</em> computations (which are typically
+synchronous functions) in parallel.</p>
+<h2>Gotcha #5: Nesting of tasks</h2>
+<p>I think that Lucian included the next one just to test the mental-compilation
+skills of the people in the audience, but here it is. The question is, does the
+following code wait 1 second between the two prints?</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">Console.WriteLine(<span class="s">"Before"</span>);
+await Task.Factory.StartNew(
+  <span class="k">async</span> () <span class="o">=</span><span class="o">&gt;</span> { await Task.Delay(<span class="n">1000</span>); });
+Console.WriteLine(<span class="s">"After"</span>);
+</code></pre></td></tr></table>
+<p>Again, quite unexpectedly, this does not actually wait between the two writes.
+How is that possible? The <code>StartNew</code> method takes a delegate and returns a <code>Task&lt;T&gt;</code>
+where <code>T</code> is the type returned by the delegate. In the above case, the delegate
+returns <code>Task</code>, so we get <code>Task&lt;Task&gt;</code> as the result. Using <code>await</code> waits only
+for the completion of the outer task (which immediately returns the inner task)
+and the inner task is then ignored.</p>
+<p>In C#, you can fix this by using <code>Task.Run</code> instead of <code>StartNew</code> (or by dropping
+the <code>async</code> and <code>await</code> in the lambda function).</p>
+<p>Can we write something similar in F#? We can create a task that will return
+<code>Async&lt;unit&gt;</code> using <code>Task.Factory.StartNew</code> and lambda function that returns an
+async block. To await the task, we will need to convert it to asynchronous workflo
+using <code>Async.AwaitTask</code>. This means we will get <code>Async&lt;Async&lt;unit&gt;&gt;</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs8', 66)" onmouseover="showTip(event, 'fs8', 66)" class="k">async</span> <span class="pn">{</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs26', 67)" onmouseover="showTip(event, 'fs26', 67)" class="d">Task</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs27', 68)" onmouseover="showTip(event, 'fs27', 68)" class="id">Factory</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs28', 69)" onmouseover="showTip(event, 'fs28', 69)" class="id">StartNew</span><span class="pn">(</span><span class="k">fun</span> <span class="pn">(</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs8', 70)" onmouseover="showTip(event, 'fs8', 70)" class="k">async</span> <span class="pn">{</span> 
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 71)" onmouseover="showTip(event, 'fs9', 71)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 72)" onmouseover="showTip(event, 'fs10', 72)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> <span class="pn">}</span><span class="pn">)</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs9', 73)" onmouseover="showTip(event, 'fs9', 73)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs29', 74)" onmouseover="showTip(event, 'fs29', 74)" class="id">AwaitTask</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Again, this code does not compile. The problem is that the <code>do!</code> keyword requires
+<code>Async&lt;unit&gt;</code> on the right-hand side, but it actually gets <code>Async&lt;Async&lt;unit&gt;&gt;</code>. In
+other words, we cannot simply ignore the result. We need to explicitly do something
+with it (we could use <code>Async.Ignore</code> to replicate the C# behaviour). The error
+message might not be as clear as the earlier messages, but you can get the idea:</p>
+<blockquote>
+<p>error FS0001: This expression was expected to have type <code>Async&lt;unit&gt;</code>
+but here has type <code>unit</code></p>
+</blockquote>
+<h2>Gotcha #6: Not running asynchronously</h2>
+<p>Here is another problematic code snippet from Lucian's slide. This time, the problem
+is quite simple. The following snippet defines an asynchronous method <code>FooAsync</code> and
+calls it from a <code>Handler</code>, but the code does not run asynchronously:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">async</span> Task FooAsync() {
+  await Task.Delay(<span class="n">1000</span>);
+}
+<span class="k">void</span> Handler() {
+  FooAsync().Wait();
+}
+</code></pre></td></tr></table>
+<p>It is not too difficult to spot the issue - we are calling <code>FooAsync().Wait()</code>. This
+means that we create a task and then, using <code>Wait</code>, block until it completes. Simply
+removing <code>Wait</code> fixes the problem, because we just want to start the task.</p>
+<p>You can write the same code in F#, but asynchronous workflows do not use .NET Tasks
+(which were originally designed for CPU-bound computations) and instead uses F#
+<code>Async&lt;T&gt;</code> which does not come with <code>Wait</code>. This means you have to write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 75)" onmouseover="showTip(event, 'fs30', 75)" class="fn">fooAsync</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 76)" onmouseover="showTip(event, 'fs8', 76)" class="k">async</span> <span class="pn">{</span>
+  <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs9', 77)" onmouseover="showTip(event, 'fs9', 77)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 78)" onmouseover="showTip(event, 'fs10', 78)" class="id">Sleep</span><span class="pn">(</span><span class="n">1000</span><span class="pn">)</span> <span class="pn">}</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs31', 79)" onmouseover="showTip(event, 'fs31', 79)" class="fn">handler</span><span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs30', 80)" onmouseover="showTip(event, 'fs30', 80)" class="fn">fooAsync</span><span class="pn">(</span><span class="pn">)</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs9', 81)" onmouseover="showTip(event, 'fs9', 81)" class="rt">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs32', 82)" onmouseover="showTip(event, 'fs32', 82)" class="id">RunSynchronously</span>
+</code></pre></td>
+</tr>
+</table>
+<p>You could certainly write such code by accident, but if you face a problem that it does
+not run <em>asynchronously</em>, you can easily spot that the code calls
+<code>RunSynchronously</code> and so the work is done - as the name suggests - <em>synchronously</em>.</p>
+<h2>Summary</h2>
+<p>In this article, I looked at six cases where the C# asynchronous programming model
+behaves in an unexpected way. Most of them were based on a talk by Lucian and Stephen
+at the MVP summit, so thanks to both of them for sharing an interesting list of common
+pitfalls!</p>
+<p>I tried to find the closest corresponding code snippet in F#, using asynchronous workflows.
+In most of the cases, the F# compiler reports a warning or an error - or the programming
+model does not have a (direct) way to express the same code. I think this supports the
+claim that I made <a href="http://tomasp.net/blog/csharp-fsharp-async-intro.aspx" title="Tomas Petricek: Asynchronous C# and F# (I.): Simultaneous introduction">in an earlier blog post</a> that <em>"The F# programming model definitely
+feels more suitable for functional (declarative) programming languages. I also think that it
+makes it easier to reason about what is going on"</em>.</p>
+<p>Finally, this article should not be understood as a devastating criticism of C# async :-). I can
+fully understand why the C# design follows the principles it follows - for C#, it makes
+sense to use <code>Task&lt;T&gt;</code> (instead of separate <code>Async&lt;T&gt;</code>), which has a number of implications.
+And I can understand the reasoning behind other decisions too - it is likely the best way
+to integrate asynchronous programming in C#. But at the same time, I think F# does a better
+job - partly because of the composability, but more importantly because of greate additions
+like the <a href="http://www.developerfusion.com/article/139804/an-introduction-to-f-agents" title="Tomas Petricek: An Introduction To F# Agents">F# agents</a>. Also, F# async has its problems too (the most common gotcha
+is that tail-recursive functions must use <code>return!</code> instead of <code>do!</code> to avoid leaks), but
+that is a topic for a separate blog post.</p>
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.Threading</div>
+<div class="tip" id="fs3">namespace System.Threading.Tasks</div>
+<div class="tip" id="fs4">val workThenWait : unit -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs5">Multiple items<br />type Thread =<br />&#160;&#160;inherit CriticalFinalizerObject<br />&#160;&#160;new : start:ThreadStart -&gt; Thread + 3 overloads<br />&#160;&#160;member Abort : unit -&gt; unit + 1 overload<br />&#160;&#160;member ApartmentState : ApartmentState with get, set<br />&#160;&#160;member CurrentCulture : CultureInfo with get, set<br />&#160;&#160;member CurrentUICulture : CultureInfo with get, set<br />&#160;&#160;member DisableComObjectEagerCleanup : unit -&gt; unit<br />&#160;&#160;member ExecutionContext : ExecutionContext<br />&#160;&#160;member GetApartmentState : unit -&gt; ApartmentState<br />&#160;&#160;member GetCompressedStack : unit -&gt; CompressedStack<br />&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;...<br /><br />--------------------<br />Thread(start: ThreadStart) : Thread<br />Thread(start: ParameterizedThreadStart) : Thread<br />Thread(start: ThreadStart, maxStackSize: int) : Thread<br />Thread(start: ParameterizedThreadStart, maxStackSize: int) : Thread</div>
+<div class="tip" id="fs6">Thread.Sleep(timeout: TimeSpan) : unit<br />Thread.Sleep(millisecondsTimeout: int) : unit</div>
+<div class="tip" id="fs7">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T</div>
+<div class="tip" id="fs8">val async : AsyncBuilder</div>
+<div class="tip" id="fs9">Multiple items<br />type Async =<br />&#160;&#160;static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)<br />&#160;&#160;static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)<br />&#160;&#160;static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />&#160;&#160;static member AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />&#160;&#160;static member CancelDefaultToken : unit -&gt; unit<br />&#160;&#160;static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />&#160;&#160;static member Choice : computations:seq&lt;Async&lt;&#39;T option&gt;&gt; -&gt; Async&lt;&#39;T option&gt;<br />&#160;&#160;static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;...<br /><br />--------------------<br />type Async&lt;&#39;T&gt; =</div>
+<div class="tip" id="fs10">static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs11">val demo : unit -&gt; unit</div>
+<div class="tip" id="fs12">val work : Task&lt;unit&gt;</div>
+<div class="tip" id="fs13">static member Async.StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;&#39;T&gt;</div>
+<div class="tip" id="fs14">Task.Wait() : unit<br />Task.Wait(millisecondsTimeout: int) : bool<br />Task.Wait(cancellationToken: CancellationToken) : unit<br />Task.Wait(timeout: TimeSpan) : bool<br />Task.Wait(millisecondsTimeout: int, cancellationToken: CancellationToken) : bool</div>
+<div class="tip" id="fs15">val handler : unit -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs16">val throwExceptionAsync : unit -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs17">val raise : exn:Exception -&gt; &#39;T</div>
+<div class="tip" id="fs18">Multiple items<br />type InvalidOperationException =<br />&#160;&#160;inherit SystemException<br />&#160;&#160;new : unit -&gt; InvalidOperationException + 2 overloads<br /><br />--------------------<br />InvalidOperationException() : InvalidOperationException<br />InvalidOperationException(message: string) : InvalidOperationException<br />InvalidOperationException(message: string, innerException: exn) : InvalidOperationException</div>
+<div class="tip" id="fs19">val callThrowExceptionAsync : unit -&gt; unit</div>
+<div class="tip" id="fs20">static member Async.Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit</div>
+<div class="tip" id="fs21">val e : exn</div>
+<div class="tip" id="fs22">type Parallel =<br />&#160;&#160;static member For : fromInclusive:int * toExclusive:int * body:Action&lt;int&gt; -&gt; ParallelLoopResult + 11 overloads<br />&#160;&#160;static member ForEach&lt;&#39;TSource&gt; : source:IEnumerable&lt;&#39;TSource&gt; * body:Action&lt;&#39;TSource&gt; -&gt; ParallelLoopResult + 19 overloads<br />&#160;&#160;static member Invoke : [&lt;ParamArray&gt;] actions:Action[] -&gt; unit + 1 overload</div>
+<div class="tip" id="fs23">Parallel.For(fromInclusive: int64, toExclusive: int64, body: Action&lt;int64,ParallelLoopState&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int, toExclusive: int, body: Action&lt;int,ParallelLoopState&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int64, toExclusive: int64, body: Action&lt;int64&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int, toExclusive: int, body: Action&lt;int&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int64, toExclusive: int64, parallelOptions: ParallelOptions, body: Action&lt;int64,ParallelLoopState&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int, toExclusive: int, parallelOptions: ParallelOptions, body: Action&lt;int,ParallelLoopState&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int64, toExclusive: int64, parallelOptions: ParallelOptions, body: Action&lt;int64&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For(fromInclusive: int, toExclusive: int, parallelOptions: ParallelOptions, body: Action&lt;int&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For&lt;&#39;TLocal&gt;(fromInclusive: int64, toExclusive: int64, localInit: Func&lt;&#39;TLocal&gt;, body: Func&lt;int64,ParallelLoopState,&#39;TLocal,&#39;TLocal&gt;, localFinally: Action&lt;&#39;TLocal&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />Parallel.For&lt;&#39;TLocal&gt;(fromInclusive: int, toExclusive: int, localInit: Func&lt;&#39;TLocal&gt;, body: Func&lt;int,ParallelLoopState,&#39;TLocal,&#39;TLocal&gt;, localFinally: Action&lt;&#39;TLocal&gt;) : ParallelLoopResult<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs24">val i : &#39;a</div>
+<div class="tip" id="fs25">val i : int</div>
+<div class="tip" id="fs26">Multiple items<br />type Task =<br />&#160;&#160;new : action:Action -&gt; Task + 7 overloads<br />&#160;&#160;member AsyncState : obj<br />&#160;&#160;member ConfigureAwait : continueOnCapturedContext:bool -&gt; ConfiguredTaskAwaitable<br />&#160;&#160;member ContinueWith : continuationAction:Action&lt;Task&gt; -&gt; Task + 19 overloads<br />&#160;&#160;member CreationOptions : TaskCreationOptions<br />&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;member Exception : AggregateException<br />&#160;&#160;member GetAwaiter : unit -&gt; TaskAwaiter<br />&#160;&#160;member Id : int<br />&#160;&#160;member IsCanceled : bool<br />&#160;&#160;...<br /><br />--------------------<br />type Task&lt;&#39;TResult&gt; =<br />&#160;&#160;inherit Task<br />&#160;&#160;new : function:Func&lt;&#39;TResult&gt; -&gt; Task&lt;&#39;TResult&gt; + 7 overloads<br />&#160;&#160;member ConfigureAwait : continueOnCapturedContext:bool -&gt; ConfiguredTaskAwaitable&lt;&#39;TResult&gt;<br />&#160;&#160;member ContinueWith : continuationAction:Action&lt;Task&lt;&#39;TResult&gt;&gt; -&gt; Task + 19 overloads<br />&#160;&#160;member GetAwaiter : unit -&gt; TaskAwaiter&lt;&#39;TResult&gt;<br />&#160;&#160;member Result : &#39;TResult<br />&#160;&#160;static member Factory : TaskFactory&lt;&#39;TResult&gt;<br /><br />--------------------<br />Task(action: Action) : Task<br />Task(action: Action, cancellationToken: CancellationToken) : Task<br />Task(action: Action, creationOptions: TaskCreationOptions) : Task<br />Task(action: Action&lt;obj&gt;, state: obj) : Task<br />Task(action: Action, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions) : Task<br />Task(action: Action&lt;obj&gt;, state: obj, cancellationToken: CancellationToken) : Task<br />Task(action: Action&lt;obj&gt;, state: obj, creationOptions: TaskCreationOptions) : Task<br />Task(action: Action&lt;obj&gt;, state: obj, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions) : Task<br /><br />--------------------<br />Task(function: Func&lt;&#39;TResult&gt;) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;&#39;TResult&gt;, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;&#39;TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;obj,&#39;TResult&gt;, state: obj) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;&#39;TResult&gt;, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;obj,&#39;TResult&gt;, state: obj, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;obj,&#39;TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />Task(function: Func&lt;obj,&#39;TResult&gt;, state: obj, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;</div>
+<div class="tip" id="fs27">Multiple items<br />property Task.Factory: TaskFactory&lt;&#39;TResult&gt;<br /><br />--------------------<br />property Task.Factory: TaskFactory</div>
+<div class="tip" id="fs28">Multiple items<br />TaskFactory.StartNew(function: Func&lt;&#39;TResult&gt;) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;obj,&#39;TResult&gt;, state: obj) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;&#39;TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;&#39;TResult&gt;, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;obj,&#39;TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;obj,&#39;TResult&gt;, state: obj, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;&#39;TResult&gt;, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;&#39;TResult&gt;<br />TaskFactory.StartNew(function: Func&lt;obj,&#39;TResult&gt;, state: obj, cancellationToken: CancellationToken, creationOptions: TaskCreationOptions, scheduler: TaskScheduler) : Task&lt;&#39;TResult&gt;<br /><br />--------------------<br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;&#39;TResult&gt;) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew(action: Action) : Task<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;obj,&#39;TResult&gt;, state: obj) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;&#39;TResult&gt;, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;&#39;TResult&gt;, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew(action: Action&lt;obj&gt;, state: obj) : Task<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew(action: Action, creationOptions: TaskCreationOptions) : Task<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew(action: Action, cancellationToken: CancellationToken) : Task<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;obj,&#39;TResult&gt;, state: obj, creationOptions: TaskCreationOptions) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />TaskFactory.StartNew&lt;&#39;TResult&gt;(function: Func&lt;obj,&#39;TResult&gt;, state: obj, cancellationToken: CancellationToken) : Task&lt;&#39;TResult&gt;<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs29">static member Async.AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />static member Async.AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;</div>
+<div class="tip" id="fs30">val fooAsync : unit -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs31">val handler : unit -&gt; unit</div>
+<div class="tip" id="fs32">static member Async.RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T</div>

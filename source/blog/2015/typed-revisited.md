@@ -1,0 +1,634 @@
+In the age of the web: Typed functional-first programming revisited
+===================================================================
+
+ - date: 2015-09-09T17:14:07.1022415+01:00
+ - description: Most programming languages were designed before the age of web. This matters because the web changes many assumptions that typed functional language designers tak for granted. In this blog post, I discuss how can statically-typed programming languages adapt for the new age.
+ - layout: article
+ - image: http://tomasp.net/blog/2015/typed-revisited/tp.png
+ - tags: f#,type providers,web,functional programming,research
+ - title: In the age of the web: Typed functional-first programming revisited
+ - url: 2015/typed-revisited
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<p>Most programming languages were designed before the age of web.
+This matters because the web changes many assumptions that typed functional
+language designers tak for granted. For example, programs do not run in a
+<em>closed world</em>, but must instead interact with (changing and likely unreliable)
+services and data sources, communication is often asynchronous or event-driven,
+and programs need to interoperate with untyped environments like JavaScript
+libraries.</p>
+<p>How can statically-typed programming languages adapt to the modern world?
+In this article, I look at one possible answer that is inspired by the F#
+language and various F# libraries. In F#, we use <em>type providers</em> for
+integration with external information sources and for integration with untyped
+programming environments. We use <em>lightweight meta-programming</em> for targeting
+JavaScript and <em>computation expressions</em> for writing asynchronous code.</p>
+<p>This blog post is a shorter version of a <a href="http://tomasp.net/academic/papers/age-of-web/">ML workshop paper</a>
+that I co-authored earlier this year and you should see this more as a position
+statement. I'm not sure if F# and the solutions shown here are the best ones,
+but I think they highlight very important questions in programming language
+design that I very much see as unsolved.</p>
+<p>The article has two sections. First, I'll go through a simple case study showing
+how F# can be used to build a client-side web widget. Then, I'll discuss some
+of the implications for programming language design based on the example.</p>
+
+
+--------------------------------------------------------------------------------
+<h1><span class="hm">In the age of the web</span><span class="hs"> Typed functional-first programming revisited</span></h1>
+<p>Most programming languages were designed before the age of web.
+This matters because the web changes many assumptions that typed functional
+language designers tak for granted. For example, programs do not run in a
+<em>closed world</em>, but must instead interact with (changing and likely unreliable)
+services and data sources, communication is often asynchronous or event-driven,
+and programs need to interoperate with untyped environments like JavaScript
+libraries.</p>
+<p>For dynamically-typed languages, the changing assumptions are not such a big
+issue (and e.g. Clojure with ClojureScript adapt extremely well), but how
+should statically-typed programming languages adapt to the modern world?
+In this article, I look at one possible answer that is inspired by the F#
+language and various F# libraries. In F#, we use <em>type providers</em> for
+integration with external information sources and for integration with untyped
+programming environments. We use <em>lightweight meta-programming</em> for targeting
+JavaScript and <em>computation expressions</em> for writing asynchronous code.</p>
+<p>This blog post is a shorter version of a <a href="http://tomasp.net/academic/papers/age-of-web/">ML workshop paper</a>
+that I co-authored earlier this year and you should read this more as a position
+statement. I'm not sure if F# and the solutions shown here are the best ones,
+but I think they highlight very important questions in programming language
+design that I very much see as unsolved.</p>
+<p>The article has two sections. First, I'll go through a simple case study showing
+how F# can be used to build a client-side web app. Then, I'll discuss some
+of the implications for programming language design based on the example.</p>
+<h2>Case Study: Web-based data analytics</h2>
+<p>We write a web application, which lets the user compare university enrollment in
+a number of selected countries and regions around the world. The result runs as
+JavaScript and fetches data dynamically from the <a href="http://data.worldbank.org">World
+Bank</a>. The demo is simple and works with just a
+single data source, but it is a realistic app that could be built in context
+like <a href="http://datajournalismhandbook.org/">data journalism</a> to accompany an
+article. You can run the demo live <a href="http://funscript.info/samples/worldbank/">on the FunScript web site</a>.
+Here, I'll use a slightly modified version to better illustrate the issues.
+It builds a dashboard like this one:</p>
+<img src="worldbank.png" />
+<h3>Accessing World Bank data with type providers</h3>
+<p>The dashboard shows university enrollment and lets the user choose among a number
+of pre-defined countries. The list of countries is generated from a list in the
+source code that accesses countries using the WorldBank type provider from the
+<a href="http://fsharp.github.io/FSharp.Data/">F# Data library</a>. The type provider exposes
+the individual countries as members of an object:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">WorldBank</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="t">WorldBankDataProvider</span><span class="o">&lt;</span><span class="i">Asynchronous</span><span class="o">=</span><span class="k">true</span><span class="o">&gt;</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="t">WorldBank</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 10)" onmouseover="showTip(event, 'fs8', 10)" class="f">GetDataContext</span>() 
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs9', 11)" onmouseover="showTip(event, 'fs9', 11)" class="i">countries</span> <span class="o">=</span> 
+  [ <span onmouseout="hideTip(event, 'fs7', 12)" onmouseover="showTip(event, 'fs7', 12)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="i">Countries</span><span class="o">.</span><span class="i">``European Union``</span>
+    <span onmouseout="hideTip(event, 'fs7', 14)" onmouseover="showTip(event, 'fs7', 14)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 15)" onmouseover="showTip(event, 'fs10', 15)" class="i">Countries</span><span class="o">.</span><span class="i">``Czech Republic``</span> 
+    <span onmouseout="hideTip(event, 'fs7', 16)" onmouseover="showTip(event, 'fs7', 16)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 17)" onmouseover="showTip(event, 'fs10', 17)" class="i">Countries</span><span class="o">.</span><span class="i">``United Kingdom``</span> 
+    <span onmouseout="hideTip(event, 'fs7', 18)" onmouseover="showTip(event, 'fs7', 18)" class="i">data</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 19)" onmouseover="showTip(event, 'fs10', 19)" class="i">Countries</span><span class="o">.</span><span class="i">``United States``</span> ]
+</code></pre></td>
+</tr>
+</table>
+<p>The type provider connects to the World Bank and obtains a list of countries at
+<em>compile-time</em> and at <em>edit-time</em> (when using auto-completion in an editor).
+This means that the list is always up-to-date and we get a compile time error when accessing
+a country that no longer exists.</p>
+<p>On the first line, we provide a static parameter <code>Asynchronous</code> to instruct the
+type provider to generate only non-blocking operations. This is necessary for a
+web-based application, because JavaScript only supports non-blocking calls (using
+AJAX callbacks) to fetch the data.</p>
+<h3>Interoperating with JavaScript libraries</h3>
+<p>To run the sample application on the client-side we use <a href="http://funscript.info">FunScript</a>,
+which is a library that translates F# code to JavaScript. Aside from
+running as JavaScript, we also want to use standard JavaScript libraries, including jQuery for DOM
+manipulation and Highcharts for charting. FunScript comes with a type provider that imports
+<a href="http://www.typescriptlang.org/">TypeScript</a> definitions for JavaScript libraries
+(the latest version of FunScript uses code generation rather than type providers
+for technical reasons):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs11', 20)" onmouseover="showTip(event, 'fs11', 20)" class="t">j</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 21)" onmouseover="showTip(event, 'fs4', 21)" class="t">TypeScript</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs12', 22)" onmouseover="showTip(event, 'fs12', 22)" class="t">Api</span><span class="o">&lt;</span><span class="s">&quot;../files/jquery.d.ts&quot;</span><span class="o">&gt;</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs13', 23)" onmouseover="showTip(event, 'fs13', 23)" class="t">h</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 24)" onmouseover="showTip(event, 'fs4', 24)" class="t">TypeScript</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs12', 25)" onmouseover="showTip(event, 'fs12', 25)" class="t">Api</span><span class="o">&lt;</span><span class="s">&quot;../files/highcharts.d.ts&quot;</span><span class="o">&gt;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>d.ts</code> files are type annotations created for the TypeScript language.
+Here, the type provider mechanism lets us leverage an existing effort for annotating common JavaScript
+libraries. The type provider analyses those definitions and maps them into F# types named <code>j</code> and
+<code>h</code> that contain statically typed functions for calling the JavaScript libraries.
+We use these to generate checkboxes that appear on the right.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 26)" onmouseover="showTip(event, 'fs14', 26)" class="f">jQuery</span> (<span onmouseout="hideTip(event, 'fs15', 27)" onmouseover="showTip(event, 'fs15', 27)" class="i">command</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs16', 28)" onmouseover="showTip(event, 'fs16', 28)" class="t">string</span>) <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs11', 29)" onmouseover="showTip(event, 'fs11', 29)" class="t">j</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 30)" onmouseover="showTip(event, 'fs17', 30)" class="i">jQuery</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs18', 31)" onmouseover="showTip(event, 'fs18', 31)" class="f">Invoke</span>(<span onmouseout="hideTip(event, 'fs15', 32)" onmouseover="showTip(event, 'fs15', 32)" class="i">command</span>) 
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 33)" onmouseover="showTip(event, 'fs19', 33)" class="i">infos</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs9', 34)" onmouseover="showTip(event, 'fs9', 34)" class="i">countries</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs20', 35)" onmouseover="showTip(event, 'fs20', 35)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs21', 36)" onmouseover="showTip(event, 'fs21', 36)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs22', 37)" onmouseover="showTip(event, 'fs22', 37)" class="i">country</span> <span class="k">-&gt;</span> 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 38)" onmouseover="showTip(event, 'fs23', 38)" class="i">inp</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 39)" onmouseover="showTip(event, 'fs14', 39)" class="f">jQuery</span>(<span class="s">&quot;&lt;input&gt;&quot;</span>)<span class="o">.</span><span class="f">attr</span>(<span class="s">&quot;type&quot;</span>,<span class="s">&quot;checkbox&quot;</span>) 
+    <span onmouseout="hideTip(event, 'fs14', 40)" onmouseover="showTip(event, 'fs14', 40)" class="f">jQuery</span>(<span class="s">&quot;#panel&quot;</span>)<span class="o">.</span><span class="f">append</span>([| <span onmouseout="hideTip(event, 'fs23', 41)" onmouseover="showTip(event, 'fs23', 41)" class="i">inp</span> |])
+    <span onmouseout="hideTip(event, 'fs14', 42)" onmouseover="showTip(event, 'fs14', 42)" class="f">jQuery</span>(<span class="s">&quot;#panel&quot;</span>)<span class="o">.</span><span class="f">append</span>([| <span onmouseout="hideTip(event, 'fs24', 43)" onmouseover="showTip(event, 'fs24', 43)" class="f">box</span> <span onmouseout="hideTip(event, 'fs22', 44)" onmouseover="showTip(event, 'fs22', 44)" class="i">country</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 45)" onmouseover="showTip(event, 'fs25', 45)" class="i">Name</span> |]) 
+    <span onmouseout="hideTip(event, 'fs22', 46)" onmouseover="showTip(event, 'fs22', 46)" class="i">country</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 47)" onmouseover="showTip(event, 'fs25', 47)" class="i">Name</span>, <span onmouseout="hideTip(event, 'fs22', 48)" onmouseover="showTip(event, 'fs22', 48)" class="i">country</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 49)" onmouseover="showTip(event, 'fs26', 49)" class="i">Indicators</span>, <span onmouseout="hideTip(event, 'fs23', 50)" onmouseover="showTip(event, 'fs23', 50)" class="i">inp</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>To manipulate the DOM, we are using the jQuery library in a way that is
+very similar to code that one would write in JavaScript.
+Note that members like \ident{append} and \ident{attr} are standard
+jQuery methods and the compiler sees them as ordinary object members
+(this blog is using <a href="http://fsharp.github.io/FSharp.Compiler.Service">F# Compiler Service</a>
+and so you can hover over the identifiers and see the same tooltip that you would
+see in any F# editor).</p>
+<p>Although the jQuery library is not perfect, it is a de facto standard in web development. The
+FunScript type provider makes it possible to integrate with it painlessly without explicitly
+specifying any FFI interface and without manual wrapping.</p>
+<p>Note that we use a standard F# function \ident{List.map} to iterate over the countries. The
+function passed as an argument has a side-effect of creating the HTML elements, but it also returns
+a new list. The result is a list of `string <em> Indicators </em> jQuery$ values representing
+the country name, its indicators (for accessing the World Bank data) and the created
+DOM object representing the checkbox.</p>
+<h3>Loading data and updating the user interface</h3>
+<p>The main part of the sample program is a function <code>render</code> that asynchronously fetches
+data for selected countries and generates a chart. To keep the code simple, we iterate over the
+`infos list from the previous section and load data for countries one by one:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs27', 51)" onmouseover="showTip(event, 'fs27', 51)" class="f">render</span> () <span class="o">=</span> <span onmouseout="hideTip(event, 'fs28', 52)" onmouseover="showTip(event, 'fs28', 52)" class="i">async</span> { 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 53)" onmouseover="showTip(event, 'fs29', 53)" class="i">head</span> <span class="o">=</span> <span class="s">&quot;School enrollment, tertiary (% gross)&quot;</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 54)" onmouseover="showTip(event, 'fs30', 54)" class="i">o</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 55)" onmouseover="showTip(event, 'fs13', 55)" class="t">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 56)" onmouseover="showTip(event, 'fs31', 56)" class="t">HighchartsOptions</span>() 
+  <span onmouseout="hideTip(event, 'fs30', 57)" onmouseover="showTip(event, 'fs30', 57)" class="i">o</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs32', 58)" onmouseover="showTip(event, 'fs32', 58)" class="i">chart</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs13', 59)" onmouseover="showTip(event, 'fs13', 59)" class="t">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs33', 60)" onmouseover="showTip(event, 'fs33', 60)" class="t">HighchartsChartOptions</span>(<span class="i">renderTo</span> <span class="o">=</span> <span class="s">&quot;plc&quot;</span>) 
+  <span onmouseout="hideTip(event, 'fs30', 61)" onmouseover="showTip(event, 'fs30', 61)" class="i">o</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 62)" onmouseover="showTip(event, 'fs34', 62)" class="i">title</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs13', 63)" onmouseover="showTip(event, 'fs13', 63)" class="t">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 64)" onmouseover="showTip(event, 'fs35', 64)" class="t">HighchartsTitleOptions</span>(<span class="i">text</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs29', 65)" onmouseover="showTip(event, 'fs29', 65)" class="i">head</span>) 
+  <span onmouseout="hideTip(event, 'fs30', 66)" onmouseover="showTip(event, 'fs30', 66)" class="i">o</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 67)" onmouseover="showTip(event, 'fs36', 67)" class="i">series</span> <span class="o">&lt;-</span> [| |] 
+
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'fs37', 68)" onmouseover="showTip(event, 'fs37', 68)" class="i">name</span>, <span onmouseout="hideTip(event, 'fs38', 69)" onmouseover="showTip(event, 'fs38', 69)" class="i">ind</span>, <span onmouseout="hideTip(event, 'fs39', 70)" onmouseover="showTip(event, 'fs39', 70)" class="i">check</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs19', 71)" onmouseover="showTip(event, 'fs19', 71)" class="i">infos</span> <span class="k">do</span> 
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs40', 72)" onmouseover="showTip(event, 'fs40', 72)" class="f">unbox</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs41', 73)" onmouseover="showTip(event, 'fs41', 73)" class="t">bool</span><span class="o">&gt;</span> (<span onmouseout="hideTip(event, 'fs39', 74)" onmouseover="showTip(event, 'fs39', 74)" class="i">check</span><span class="o">.</span><span class="i">is</span>(<span class="s">&quot;:checked&quot;</span>)) <span class="k">then</span> 
+      <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs42', 75)" onmouseover="showTip(event, 'fs42', 75)" class="i">vals</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs38', 76)" onmouseover="showTip(event, 'fs38', 76)" class="i">ind</span><span class="o">.</span><span class="i">``School enrollment, tertiary (% gross)``</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs43', 77)" onmouseover="showTip(event, 'fs43', 77)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs42', 78)" onmouseover="showTip(event, 'fs42', 78)" class="i">vals</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs44', 79)" onmouseover="showTip(event, 'fs44', 79)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 80)" onmouseover="showTip(event, 'fs45', 80)" class="f">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs46', 81)" onmouseover="showTip(event, 'fs46', 81)" class="i">k</span>,<span onmouseout="hideTip(event, 'fs47', 82)" onmouseover="showTip(event, 'fs47', 82)" class="i">v</span>) <span class="k">-&gt;</span> 
+        [| <span class="i">number</span> <span onmouseout="hideTip(event, 'fs46', 83)" onmouseover="showTip(event, 'fs46', 83)" class="i">k</span>; <span class="i">number</span> <span onmouseout="hideTip(event, 'fs47', 84)" onmouseover="showTip(event, 'fs47', 84)" class="i">v</span> |]) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 85)" onmouseover="showTip(event, 'fs48', 85)" class="t">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 86)" onmouseover="showTip(event, 'fs49', 86)" class="f">ofSeq</span> 
+      <span onmouseout="hideTip(event, 'fs30', 87)" onmouseover="showTip(event, 'fs30', 87)" class="i">o</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 88)" onmouseover="showTip(event, 'fs36', 88)" class="i">series</span><span class="o">.</span><span class="i">push</span>(<span onmouseout="hideTip(event, 'fs13', 89)" onmouseover="showTip(event, 'fs13', 89)" class="i">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs50', 90)" onmouseover="showTip(event, 'fs50', 90)" class="i">HighchartsSeriesOptions</span>(<span onmouseout="hideTip(event, 'fs43', 91)" onmouseover="showTip(event, 'fs43', 91)" class="i">data</span>,<span onmouseout="hideTip(event, 'fs37', 92)" onmouseover="showTip(event, 'fs37', 92)" class="i">name</span>)) } 
+</code></pre></td>
+</tr>
+</table>
+<p>We're using F# asynchronous workflows to fetch the data without blocking - when
+accessing the value of the <code>School enrollment, tertiary (\% gross)</code> indicator,
+we use the <code>let!</code> keyword. The indicator is a member exposed by the WorldBank type
+provider as an asynchronous computation (as requested by the static parameter).
+The rest of the code is mostly dealing with the DOM and the Highcharts library using the API
+imported by FunScript -- we iterate over all checkboxes and generate a new chart series for each
+checked country.</p>
+<p>Two notable points here are that <code>async</code> translated to JavaScript is restricted to a single
+thread, which is not the case for ordinary F# code and that the <code>HighchartOption</code>
+object preserves some of the underlying JavaScript semantics - we create an empty
+array <code>o.series</code> and then add elements to it using <code>o.series.push</code> which would
+not be possible in ordinary F# code.</p>
+<p>Finally, the last part of the example code registers event handlers that
+redraw the chart when the checkbox is clicked:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">for</span> _, _, <span onmouseout="hideTip(event, 'fs39', 93)" onmouseover="showTip(event, 'fs39', 93)" class="i">check</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs19', 94)" onmouseover="showTip(event, 'fs19', 94)" class="i">infos</span> <span class="k">do</span> 
+  <span onmouseout="hideTip(event, 'fs39', 95)" onmouseover="showTip(event, 'fs39', 95)" class="i">check</span><span class="o">.</span><span class="i">click</span>(<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs51', 96)" onmouseover="showTip(event, 'fs51', 96)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs52', 97)" onmouseover="showTip(event, 'fs52', 97)" class="i">StartImmediate</span>(<span onmouseout="hideTip(event, 'fs27', 98)" onmouseover="showTip(event, 'fs27', 98)" class="i">render</span>()))
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>click</code> operation (exposed by jQuery) takes a function that should be called when the
+event occurs. Calling it is a side-effectful operation that registers the handler. As <code>render</code>
+is an asynchronous operation, we invoke it using the <code>StartImmediate</code> primitive from the
+F# library, which starts the computation without waiting for the result (the only way to start
+a non-blocking operation in JavaScript).</p>
+<h2>Analysis: Learning from the case study</h2>
+<p>The case study is quite simple, but it shows that you can build a simple
+interactive visualization in just 30 lines of F#. It also illustrates many of
+the important issues that we face when working with the web. There are a
+number of good things that we get to keep from statically-typed functional-first
+programming style:</p>
+<style type="text/css">
+.good li:before {
+  content: '\2714';   
+  margin-left: -1.7em;
+  margin-right: .5em;
+}
+.bad li:before {
+  content: '\2718';   
+  margin-left: -1.7em;
+  margin-right: .5em;
+}
+.good li, .bad li {
+  margin-bottom:10px;
+}
+.good ul, .bad ul {
+  text-indent: 2px;
+  list-style: none;
+  list-style-position: outside;
+}
+</style>
+<div class="good">
+<ul>
+<li>
+Type inference and static typing can be extended from <em>closed-world</em> data types
+to <em>open-world</em> types. The sample is statically checked (including data from the
+World Bank) without explicit type annotations and the type information is also
+available in the editor for exploration.
+</li>
+<li>
+Nice functional constructs (lists, higher-order functions like <code>map</code>) from F#
+can be used for client-side web development - they get translated to JavaScript
+and run in the browser.
+</li>
+<li>
+We can also use F# features like <em>asynchronous workflows</em> for writing 
+non-blocking code (for requesting data from the World Bank) without error-prone
+explicit callbacks.
+</li>
+<li>
+We are able to (relatively) painlessly call Highcharts and jQuery. No explicit 
+wrapping or importing of individual functions and types was necessary. Despite
+the differences between the F# and JavaScript object model, the code is close
+to idiomatic F#.
+</li>
+</ul>
+</div>
+<p>There are also a few things that are a bit unexpected when you look at the
+example through the perspective of traditional statically-typed languages:</p>
+<div class="bad">
+<ul>
+<li>
+The World Bank type provider lifts information about countries to the type level.
+If Czech Republic disappears from the world, the code will no longer compile.
+</li>
+<li>
+The TypeScript language is unsound and so importing types from TypeScript 
+could introduce an unsoundness into the F# code.
+</li>
+<li>
+When compiling F# to JavaScript, the FunScript library does not fully preserve the
+semantics of F#. For example, numerical types behave as in JavaScript
+and asynchronous workflows run on a single thread.
+</li>
+</ul>
+</div>
+<p>The approach that you can use with F# often has both positive and negative side.
+For example, we can easily access data from World Bank, but it means that we have
+to give up some of the safety properties. The approach highlighted here is just
+<em>one possible</em> and the case study shows that it <em>works in practice</em>, but there
+might be other options.</p>
+<p>I want to spend the rest of this section discussing some of the important
+implications for the design of statically-typed programming languages of the
+future. If languages want to provide the user experience showed in the above
+case study, what do they need to look like?</p>
+<h3>Integrating with external data sources</h3>
+<p>Statically-typed programming languages are designed with the assumption that
+the program runs in a world that is closed - all we can call and access comes
+from a library that is defined <em>within</em> the world of the language. This is not
+the case. Even before the web, applications need to perform I/O, but the web
+makes this even more obvious. In terms of programming language theory, the
+starting point of a programming language needs to change as follows:</p>
+<div style="margin-bottom:20px">
+<img src="typ-blank.png" style="margin-right:50px;margin-left:60px;width:120px;"/> (<em>Empty world</em>)<br />
+<img src="typ-tp.png" style="margin-right:50px;margin-left:60px;width:120px;" /> (<em>Type providers</em>)
+</div>
+<p>The syntax <span class="math">\(\Gamma \vdash e : \tau\)</span> denotes that a program <span class="math">\(e\)</span> has a type
+<span class="math">\(\tau\)</span> in a <em>context</em> defined by <span class="math">\(\Gamma\)</span>. The context typically contains
+variables, library functions and so on. With type providers, the context is
+much richer - a type provider is like a projection <span class="math">\(\pi\)</span> that can import anything
+from the outside world into the programming language context.</p>
+<p>The <a href="http://fsharp.github.io/FSharp.Data/library/WorldBank.html">World Bank provider</a> is
+an interesting example - it is designed for one specific data source (in contrast to the
+XML, JSON and CSV type providers). The projection it implements generates a type <code>Countries</code>
+with individual countries as members. Each country returns a value of <code>Indicators</code> that
+is also generated and it contains all World Bank indicators as members. The type provider
+is <em>erased</em> during compilation and replaced with runtime implementation as follows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">〚 data.``Czech Republic`` 〛<span class="o">=</span>
+    data.GetCountries().GetCountry(<span class="s">"CZE"</span>)
+  
+〚 cz.``School enrollment, tertiary (<span class="o">%</span> gross)`` 〛<span class="o">=</span>
+    cz.AsyncGetIndicator(<span class="s">"SE.TER.ENRR"</span>)
+</code></pre></td></tr></table>
+<p>The underlying operations (<code>GetCountry</code>, <code>AsyncGetIndicator</code>) are normal functions
+of an underlying runtime library. The type provider generates a light layer on top
+of this runtime library. An important thing is that the type provider generates code
+that refers to the country and indicator using a <em>code</em> (even though the type we see
+uses a more friendly <em>name</em>). Knowing this helps us understand the properties of the
+type povider:</p>
+<ul>
+<li>
+<p>If you are editing or compiling code that uses the type provider <em>offline</em>, the
+type provider will not be able to obtain the list of countries and indicators and
+so the projection <span class="math">\(\pi\)</span> will fail (although the World Bank provider caches the
+schema on the first use).</p>
+</li>
+<li>
+<p>When a country or indicator is renamed, the compiled code will continue to work,
+because the <em>code</em> still exists. However, recompilation will fail as the member
+name will be different.</p>
+</li>
+<li>
+<p>If a country or indicator disappears, we will get a <em>runtime failure</em> when running
+existing compiled code. However, we will also get a <em>type-checking error</em> when
+recompiling the code - this is useful, because it prevents us from compiling code
+that would not work at runtime.</p>
+</li>
+</ul>
+<p>Using type providers to access external data certainly relaxes traditional type
+safety conditions. However, rather than introducing new unsafety, this just makes
+existing issues more apparent - if we wrote <code>data.GetCountries().GetCountry("CZE")</code>,
+we would get the same runtime error if Czech Republic disappeared. With type
+providers, this is now reflected in the type system, but with a twist that the
+<em>type safety</em> depends on the external data source.</p>
+<h3>Integrating with external environments</h3>
+<p>The case study uses type providers not just for <em>external data sources</em>, but also
+for integration with <em>external execution environments</em> - in particular, for importing
+definitions of JavaScript libraries. Another example of this kind of use is the
+<a href="http://bluemountaincapital.github.io/FSharpRProvider">R type provider</a> that allows
+F# programs to call R functions.</p>
+<p>The TypeScript type provider makes it possible to use jQuery and Highcharts almost
+as if they were native F# libraries, but the word <em>almost</em> is important here, because
+there is always going to be some mismatch between F# and any other external environment.
+Let's look at a part of the <code>jquery.d.ts</code> file that defines TypeScript types for jQuery:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code><span class="k">declare var</span> jQuery <span class="o">:</span> JQueryStatic;
+<span class="k">interface</span> JQueryStatic { 
+  (selector <span class="o">:</span> <span class="k">string</span>, context? <span class="o">:</span> any) <span class="o">:</span> JQuery; 
+} 
+<span class="k">interface</span> JQuery { 
+  attr(attributeName <span class="o">:</span> <span class="k">string</span>) <span class="o">:</span> <span class="k">string</span>; 
+  attr(attributeName <span class="o">:</span> <span class="k">string</span>, value <span class="o">:</span> <span class="k">any</span>) <span class="o">:</span> JQuery; 
+}  
+</code></pre></td></tr></table>
+<p>The snippet defines a global variable <code>jQuery</code> which is an <em>invokable</em> object
+that returns <code>JQuery</code> value with an overloaded <code>attr</code> method. When mapping this
+to F#, we have to solve the following issues:</p>
+<ul>
+<li>
+Type providers cannot provide global variables and so TypeScript type provider
+exposes global variables as static members
+</li>
+<li>
+F# does not support <em>invokable</em> objects and so the type provider generates an
+explicit <code>Invoke</code> method which is mapped to object invocation.
+</li>
+<li>
+F# does support optional parameters and overloads, so those are mapped to the
+F# equivalent (but if we were in, say, Haskell, we would have to do something else here).
+</li>
+</ul>
+<p>With F# used as the host language, we are quite fortunate, because we get many
+functional language features but also many object-oriented features. This means
+that when mapping external environments into F#, there is often a corresponding
+construct in F#. However, there are still things that cannot be expressed in F#
+and for those, we have to find alternative encoding.</p>
+<h3>Alternatives for environment integration</h3>
+<p>There are two alternatives for interoperating external worlds that you can find
+in other X-to-JavaScript compilers:</p>
+<ul>
+<li>
+<p><strong>Explicit mapping.</strong> If we want to call some JavaScript function, we have to
+provide an explicit mapping for it. We define an F# stub (it could be a
+function with no body or an interface) that is then mapped to JavaScript.
+This could use annotations (.NET attributes) or follow some convention.
+In FunScript, you get this with the <code>JSEmit</code> attribute and it is useful for
+small snippets, but it hardly scales for anything as large as jQuery.</p>
+</li>
+<li>
+<p><strong>Minimal mapping.</strong> An interesting option that some X-to-JavaScript compilers
+use is to mostly ignore the target environment. Instead, they map many source
+X libraries into JavaScript and would rely only on core DOM (with a wrapper
+written in X on top of it) rather than on JQuery which would not be idiomatic
+X library.</p>
+</li>
+</ul>
+<p>I believe that modern programming languages will increasingly need to be able to
+access external environments and so the F# approach with type providers is an
+important direction. After all, we <em>need</em> to access rich visualization libraries
+built in the JavaScript environment or rich statistical functionality available
+in R.</p>
+<h3>Mixing stronger and weaker type systems</h3>
+<p>Another interesting issue that becomes apparent in the case study is that we are
+mixing the F# type system with a type system of TypeScript. Now, the <a href="http://www.typescriptlang.org/Handbook">TypeScript
+type system</a> is deliberately unsound.
+Does this mean that we are breaking the soundness of F# too? This is not really
+happening directly in this case, because we are just importing TypeScript library
+definitions - but a JavaScript library we are calling can certainly return an
+unexpected value.</p>
+<p>In a heterogeneous environment, we will always be mixing type systems that have
+different strength or expressivity.</p>
+<ul>
+<li>
+<p><strong>Weaker target type systems.</strong> When interoperating with a weaker type system,
+a type provider may need to map more types to a general type like <code>obj</code> in
+F#. This makes the provided operations harder to use because the target language
+allows more flexibility. In our example, TypeScript has a type <code>any</code> that can
+be used in any context - F# does not allow this and so we had to explicitly use the
+unsafe <code>unbox&lt;bool&gt;</code> to treat <code>obj</code> as <code>bool</code>.</p>
+</li>
+<li>
+<p><strong>Stronger target type sytems.</strong> If the imported language has stronger type
+system than F#, the type provider will have to drop some information. This
+can be done safely when <em>reading</em> information, but not when passing values
+to the target language (in that case, the type provider would have to generate
+additional runtime checks).</p>
+</li>
+</ul>
+<p>When interoperating with another environment, there will always be some mismatch.
+We either need to reconstruct some information (e.g. using <code>jquery.d.ts</code> annotation
+file), or through some other mechanism (R provider uses runtime reflection).
+With F#, we have the <code>obj</code> type and unsafe features like <code>unbox</code>, so this gives
+us at least some way of encoding unsafe operations, but arguably, having
+something akin to C# <code>dynamic</code> would sometimes be useful.</p>
+<h3>Heterogeneous execution</h3>
+<p>Finally, the last interesting aspect of the case study is that we were able to
+use a large number of standard F# language features and libraries even though
+the code was translated and executed as JavaScript and the JavaScript semantics
+differ in a number of ways. For example, we used ordinary F# <code>async</code> workflows
+and wrote:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs27', 99)" onmouseover="showTip(event, 'fs27', 99)" class="f">render</span> () <span class="o">=</span> <span onmouseout="hideTip(event, 'fs28', 100)" onmouseover="showTip(event, 'fs28', 100)" class="i">async</span> { 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs53', 101)" onmouseover="showTip(event, 'fs53', 101)" class="i">o</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 102)" onmouseover="showTip(event, 'fs13', 102)" class="t">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 103)" onmouseover="showTip(event, 'fs54', 103)" class="t">HighchartsOptions</span>() 
+  <span id="fst55" onmouseout="hideTip(event, 'fs55', 104)" onmouseover="showTip(event, 'fs55', 104, document.getElementById('fst55'))" class="omitted">(Initialize Highcharts options)</span>
+  
+  <span class="k">for</span> <span onmouseout="hideTip(event, 'fs37', 105)" onmouseover="showTip(event, 'fs37', 105)" class="i">name</span>, <span onmouseout="hideTip(event, 'fs38', 106)" onmouseover="showTip(event, 'fs38', 106)" class="i">ind</span>, <span onmouseout="hideTip(event, 'fs39', 107)" onmouseover="showTip(event, 'fs39', 107)" class="i">check</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs19', 108)" onmouseover="showTip(event, 'fs19', 108)" class="i">infos</span> <span class="k">do</span> 
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs40', 109)" onmouseover="showTip(event, 'fs40', 109)" class="f">unbox</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs41', 110)" onmouseover="showTip(event, 'fs41', 110)" class="t">bool</span><span class="o">&gt;</span> (<span onmouseout="hideTip(event, 'fs39', 111)" onmouseover="showTip(event, 'fs39', 111)" class="i">check</span><span class="o">.</span><span class="i">is</span>(<span class="s">&quot;:checked&quot;</span>)) <span class="k">then</span> 
+      <span class="k">let!</span> <span class="i">vals</span> <span class="o">=</span> <span class="i">ind</span><span class="o">.</span><span class="i">``School enrollment, tertiary (% gross)``</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 112)" onmouseover="showTip(event, 'fs7', 112)" class="i">data</span> <span class="o">=</span> <span id="fst56" onmouseout="hideTip(event, 'fs56', 113)" onmouseover="showTip(event, 'fs56', 113, document.getElementById('fst56'))" class="omitted">(Convert values to array)</span>
+      <span onmouseout="hideTip(event, 'fs53', 114)" onmouseover="showTip(event, 'fs53', 114)" class="i">o</span><span class="o">.</span><span class="i">series</span><span class="o">.</span><span class="i">push</span>(<span onmouseout="hideTip(event, 'fs13', 115)" onmouseover="showTip(event, 'fs13', 115)" class="i">h</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs50', 116)" onmouseover="showTip(event, 'fs50', 116)" class="i">HighchartsSeriesOptions</span>(<span onmouseout="hideTip(event, 'fs7', 117)" onmouseover="showTip(event, 'fs7', 117)" class="i">data</span>,<span class="i">name</span>)) } 
+</code></pre></td>
+</tr>
+</table>
+<p>Strictly speaking, F# asynchronous workflows cannot be translated to JavaScript.
+They run in parallel and are scheduled using thread pool, which is not available
+when running code as JavaScript and they have other properties (they can capture
+<code>SynchronizationContext</code> of the thread, etc.)</p>
+<p>The alternative would be to define a JavaScript-based version of asynchronous
+workflows, say <code>jsasync { .. }</code> and require the developer to write code using this
+semantically correct version instead. This makes the code <em>clumsier</em>, but arguably
+<em>more correct</em>. However, the semantic differences with JavaScript go much further.
+JavaScript has different exceptions and even different numerical type. To be fully
+correct, we'd have to use <code>jsfloat</code>, <code>jsexception</code> and so on!</p>
+<p>The example in the case study follows the less correct path - it maps ordinary
+F# <code>async</code> workflows to the closest thing that can be done in JavaScript. It
+provides mapping for <code>Async.StartImmediate</code> (which has close equivalent in the
+browser) but not for <code>Async.Start</code> (which would require a background thread).</p>
+<p>F# numerical types are mapped to native JS numerical types with all the potential
+issues this brings (floating point numbers use JavaScript semantics). Also, F#
+arrays are mapped to JavaScript arrays, which allows us to use some of the JavaScript
+semantics and use <code>o.series.push</code> to append element to an array (which cannot be
+done in pure F#).</p>
+<h2>Conclusions: Languages for the modern age</h2>
+<p>This article uses the "age of the web" phrase, because it nicely illustrates many
+of the important problems that modern languages face. More than before, we need
+to access data and call services from the outside world (that cannot be fully
+trusted) and we need to interoperate with other execution environments (which
+have different features and different levels of safety).</p>
+<p>Programming languages that we use today were not designed with these constraints
+in mind. They assume that programs live in a closed world (where everything has
+been created in the same language or comes from the same runtime).</p>
+<p>Integrating with the open world is much easier for dynamically-typed languages
+like Clojure with ClojureScript. In the world of statically-typed languages,
+the situation is much harder - and I think that the F# <em>type provider</em> mechanism
+is the first step towards languages that give the useful benefits of (smart)
+static type systems while being a good fit for solving problems that come with
+modern kinds of applications.</p>
+<p>Going over the case study and the analysis, I think there are two key points.</p>
+<h3>Flexibility with escape options</h3>
+<p>First, when we want to interoperate with outside environments, the host language
+needs to provide a lot of flexibility. In case of F#, you get support for both
+functional and object-oriented style. This means that more of the outside world
+can be mapped to a close construct in the F# world. I believe that this is
+crucial - a language can practically interoperate with the outside world if the
+mapping is not too cumbersome.</p>
+<p>The other aspect is that if the host language is strict in some way, it needs to
+provide some escaping mechanism. F# does this with the <code>obj</code> type and <code>unbox</code>.
+This works, but there is probably more that could be done here. (And there are
+also other situations where an escape mechanism would help.)</p>
+<h3>Relativized safety and semantics</h3>
+<p>Does the flexibility and the escaping hurt the nice safety properties of the host
+language? If you are a strict theoretician, then the answer is of course yes. But
+I think there is a useful middle ground here. Using F# as we did in the case study
+here, we get a nice property:</p>
+<blockquote>
+<p>When you use the core subset of F#, the program will behave according to the
+usual core F# semantics and you are guaranteed the usual core F# properties.
+Using non-core features in other environments may have different semantics and
+different properties.</p>
+</blockquote>
+<p>To an extent, you can already see this with F# when working with .NET. F# types
+do not allow the <code>null</code> value, but .NET types do. When you use functional style
+with F#, you do not need type annotations, but when you use objects, you do.
+So for F#, even .NET is an <em>outside environment</em> that breaks some of the language
+properties.</p>
+<h3>Summary</h3>
+<p>I think we need to give up on the idea that programming languages
+should be designed for one controlled execution environment. There should be a
+core with certain core properties (like the ML core of F#) with additional layers
+that are more flexible and adaptable to allow running in the heterogenous modern world.
+How exactly this should be done, that's an interesting open question, but I think
+F# with type providers shows one important component of the solution.</p>
+
+
+<div class="tip" id="fs1">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs2">Multiple items<br />namespace FSharp.Data<br /><br />--------------------<br />namespace Microsoft.FSharp.Data</div>
+<div class="tip" id="fs3">namespace FunScript</div>
+<div class="tip" id="fs4">namespace FunScript.TypeScript</div>
+<div class="tip" id="fs5">type WorldBank = WorldBankDataProvider&lt;...&gt;<br /><br />Full name: Typed-revisited.WorldBank</div>
+<div class="tip" id="fs6">type WorldBankDataProvider<br /><br />Full name: FSharp.Data.WorldBankDataProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of WorldBank data with additional configuration parameters. See http://www.worldbank.org for terms and conditions.&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sources&#39;&gt;The World Bank data sources to include, separated by semicolons. Defaults to `World Development Indicators;Global Financial Development`.<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;If an empty string is specified, includes all data sources.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Asynchronous&#39;&gt;Generate asynchronous calls. Defaults to false.&lt;/param&gt;</em></div>
+<div class="tip" id="fs7">val data : WorldBankDataProvider&lt;...&gt;.ServiceTypes.WorldBankDataService<br /><br />Full name: Typed-revisited.data</div>
+<div class="tip" id="fs8">WorldBankDataProvider&lt;...&gt;.GetDataContext() : WorldBankDataProvider&lt;...&gt;.ServiceTypes.WorldBankDataService</div>
+<div class="tip" id="fs9">val countries : WorldBankDataProvider&lt;...&gt;.ServiceTypes.Country list<br /><br />Full name: Typed-revisited.countries</div>
+<div class="tip" id="fs10">property WorldBankDataProvider&lt;...&gt;.ServiceTypes.WorldBankDataService.Countries: WorldBankDataProvider&lt;...&gt;.ServiceTypes.Countries</div>
+<div class="tip" id="fs11">type j = Api&lt;...&gt;<br /><br />Full name: Typed-revisited.j</div>
+<div class="tip" id="fs12">type Api<br /><br />Full name: FunScript.TypeScript.Api</div>
+<div class="tip" id="fs13">type h = Api&lt;...&gt;<br /><br />Full name: Typed-revisited.h</div>
+<div class="tip" id="fs14">val jQuery : command:string -&gt; Api&lt;...&gt;.JQuery<br /><br />Full name: Typed-revisited.jQuery</div>
+<div class="tip" id="fs15">val command : string</div>
+<div class="tip" id="fs16">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs17">property Api&lt;...&gt;.jQuery: Api&lt;...&gt;.JQueryStatic</div>
+<div class="tip" id="fs18">Api&lt;...&gt;.JQueryStatic.Invoke() : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(selector: string) : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(element: Api&lt;...&gt;.Element) : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(elementArray: Api&lt;...&gt;.Element []) : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(object: Api&lt;...&gt;.JQuery) : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(func: Api&lt;...&gt;.Function) : Api&lt;...&gt;.JQuery<br />Api&lt;...&gt;.JQueryStatic.Invoke(selector: string, context: obj) : Api&lt;...&gt;.JQuery</div>
+<div class="tip" id="fs19">val infos : (string * WorldBankDataProvider&lt;...&gt;.ServiceTypes.Indicators * obj) list<br /><br />Full name: Typed-revisited.infos</div>
+<div class="tip" id="fs20">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs21">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; list:&#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="fs22">val country : WorldBankDataProvider&lt;...&gt;.ServiceTypes.Country</div>
+<div class="tip" id="fs23">val inp : obj</div>
+<div class="tip" id="fs24">val box : value:&#39;T -&gt; obj<br /><br />Full name: Microsoft.FSharp.Core.Operators.box</div>
+<div class="tip" id="fs25">property Runtime.WorldBank.Country.Name: string</div>
+<div class="tip" id="fs26">property WorldBankDataProvider&lt;...&gt;.ServiceTypes.Country.Indicators: WorldBankDataProvider&lt;...&gt;.ServiceTypes.Indicators<br /><em><br /><br />&lt;summary&gt;The indicators for the country&lt;/summary&gt;</em></div>
+<div class="tip" id="fs27">val render : unit -&gt; Async&lt;unit&gt;<br /><br />Full name: Typed-revisited.render</div>
+<div class="tip" id="fs28">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="fs29">val head : string</div>
+<div class="tip" id="fs30">val o : Api&lt;...&gt;.HighchartsOptions</div>
+<div class="tip" id="fs31"></div>
+<div class="tip" id="fs32">property Api&lt;...&gt;.HighchartsOptions.chart: Api&lt;...&gt;.HighchartsChartOptions</div>
+<div class="tip" id="fs33">type HighchartsChartOptions =<br />&#160;&#160;new : unit -&gt; HighchartsChartOptions<br />&#160;&#160;member alignTicks : bool with get, set<br />&#160;&#160;member animation : HighchartsBoolOrAnimation with get, set<br />&#160;&#160;member backgroundColor : HighchartsColorOrGradient with get, set<br />&#160;&#160;member borderColor : string with get, set<br />&#160;&#160;member borderRadius : float with get, set<br />&#160;&#160;member borderWidth : float with get, set<br />&#160;&#160;member className : string with get, set<br />&#160;&#160;member defaultSeriesType : string with get, set<br />&#160;&#160;member events : HighchartsChartEvents with get, set<br />&#160;&#160;...<br /><br />Full name: FunScript.TypeScript.Api,files=&quot;../files/highcharts.d.ts&quot;.HighchartsChartOptions</div>
+<div class="tip" id="fs34">property Api&lt;...&gt;.HighchartsOptions.title: Api&lt;...&gt;.HighchartsTitleOptions</div>
+<div class="tip" id="fs35">type HighchartsTitleOptions =<br />&#160;&#160;new : unit -&gt; HighchartsTitleOptions<br />&#160;&#160;member align : string with get, set<br />&#160;&#160;member floating : bool with get, set<br />&#160;&#160;member margin : float with get, set<br />&#160;&#160;member style : HighchartsCSSObject with get, set<br />&#160;&#160;member text : string with get, set<br />&#160;&#160;member useHTML : bool with get, set<br />&#160;&#160;member verticalAlign : string with get, set<br />&#160;&#160;member x : float with get, set<br />&#160;&#160;member y : float with get, set<br /><br />Full name: FunScript.TypeScript.Api,files=&quot;../files/highcharts.d.ts&quot;.HighchartsTitleOptions</div>
+<div class="tip" id="fs36">property Api&lt;...&gt;.HighchartsOptions.series: Api&lt;...&gt;.HighchartsSeriesOptions []</div>
+<div class="tip" id="fs37">val name : string</div>
+<div class="tip" id="fs38">val ind : WorldBankDataProvider&lt;...&gt;.ServiceTypes.Indicators</div>
+<div class="tip" id="fs39">val check : obj</div>
+<div class="tip" id="fs40">val unbox : value:obj -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.unbox</div>
+<div class="tip" id="fs41">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs42">val vals : seq&lt;obj * obj&gt;</div>
+<div class="tip" id="fs43">val data : obj [] []</div>
+<div class="tip" id="fs44">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs45">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map</div>
+<div class="tip" id="fs46">val k : obj</div>
+<div class="tip" id="fs47">val v : obj</div>
+<div class="tip" id="fs48">module Array<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs49">val ofSeq : source:seq&lt;&#39;T&gt; -&gt; &#39;T []<br /><br />Full name: Microsoft.FSharp.Collections.Array.ofSeq</div>
+<div class="tip" id="fs50">type HighchartsSeriesOptions =<br />&#160;&#160;new : unit -&gt; HighchartsSeriesOptions<br />&#160;&#160;member data : obj with get, set<br />&#160;&#160;member index : float with get, set<br />&#160;&#160;member legendIndex : float with get, set<br />&#160;&#160;member name : string with get, set<br />&#160;&#160;member stack : obj with get, set<br />&#160;&#160;member ``type`` : string with get, set<br />&#160;&#160;member xAxis : float with get, set<br />&#160;&#160;member yAxis : float with get, set<br /><br />Full name: FunScript.TypeScript.Api,files=&quot;../files/highcharts.d.ts&quot;.HighchartsSeriesOptions</div>
+<div class="tip" id="fs51">Multiple items<br />type Async<br />static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)<br />static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)<br />static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />static member AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member CancelDefaultToken : unit -&gt; unit<br />static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg:&#39;Arg1 * beginAction:(&#39;Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * beginAction:(&#39;Arg1 * &#39;Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * arg3:&#39;Arg3 * beginAction:(&#39;Arg1 * &#39;Arg2 * &#39;Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromContinuations : callback:((&#39;T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member Ignore : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;unit&gt;<br />static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />static member Parallel : computations:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;&#39;T []&gt;<br />static member RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T<br />static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;&#39;T&gt;<br />static member StartChild : computation:Async&lt;&#39;T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;<br />static member StartChildAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions -&gt; Async&lt;Task&lt;&#39;T&gt;&gt;<br />static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartWithContinuations : computation:Async&lt;&#39;T&gt; * continuation:(&#39;T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />static member TryCancelled : computation:Async&lt;&#39;T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member CancellationToken : Async&lt;CancellationToken&gt;<br />static member DefaultCancellationToken : CancellationToken<br /><br />Full name: Microsoft.FSharp.Control.Async<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;</div>
+<div class="tip" id="fs52">static member Async.StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:System.Threading.CancellationToken -&gt; unit</div>
+<div class="tip" id="fs53">val o : obj</div>
+<div class="tip" id="fs54">type HighchartsOptions =<br />&#160;&#160;new : unit -&gt; HighchartsOptions<br />&#160;&#160;member chart : HighchartsChartOptions with get, set<br />&#160;&#160;member colors : string [] with get, set<br />&#160;&#160;member credits : HighchartsCreditsOptions with get, set<br />&#160;&#160;member exporting : HighchartsExportingOptions with get, set<br />&#160;&#160;member ``global`` : HighchartsGlobalOptions with get, set<br />&#160;&#160;member labels : HighchartsLabelsOptions with get, set<br />&#160;&#160;member lang : HighchartsLangOptions with get, set<br />&#160;&#160;member legend : HighchartsLegendOptions with get, set<br />&#160;&#160;member loading : HighchartsLoadingOptions with get, set<br />&#160;&#160;...<br /><br />Full name: FunScript.TypeScript.Api,files=&quot;../files/highcharts.d.ts&quot;.HighchartsOptions</div>
+<div class="tip" id="fs55">o.chart &lt;- h.HighchartsChartOptions(renderTo = &quot;plc&quot;) <br />&#160;&#160;o.title &lt;- h.HighchartsTitleOptions(text = head) <br />&#160;&#160;o.series &lt;- [| |]</div>
+<div class="tip" id="fs56">vals |&gt; Seq.map (fun (k,v) -&gt; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[| number k; number v |]) |&gt; Array.ofSeq</div>

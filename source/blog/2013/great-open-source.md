@@ -1,0 +1,314 @@
+Building great open-source libraries
+====================================
+
+ - date: 2013-10-31T13:29:06.2249127+00:00
+ - description: The hard part about open-source development is not putting the source code on the internet. The hard part is keeping the source, releases and documentation up-to-date. I'm still amazed how nicely FAKE solves this problem for F#.
+ - layout: article
+ - tags: open source,f#,fake,f# formatting
+ - title: Building great open-source libraries
+ - url: 2013/great-open-source
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<a href="http://tpetricek.github.io/FSharp.Formatting/">
+<img src="http://tpetricek.github.io/FSharp.Formatting/misc/logo.png" alt="F# documentation tools" class="rdecor" style="width:150px;height:150px" />
+</a>
+<p>The hard part about successful open-source development is not putting the first
+version of your source code on GitHub. The hard part is what comes next. First
+of all, there are <em>community aspects</em> - making sure that the project fits well with
+other work in the area, engaging the community and contributors, planing future
+directions for the project and so on. Secondly, there is an <em>infrastructural side</em> -
+making sure that there is a package (on <a href="http://www.nuget.org/packages?q=fsharp">NuGet in the F# world</a>),
+easy to run and useful tests and also up-to-date documentation and tutorials.</p>
+<p>In this article, I want to talk about the <em>infrastructural side</em>, which is
+easier of the two, but nevertheless, difficult to get right!
+Fortunately, the F# community made an amazing progress in this direction, so let's
+have a look at some of the tools that make this possible...</p>
+
+
+--------------------------------------------------------------------------------
+<h1>Building great open-source libraries</h1>
+<a href="http://tpetricek.github.io/FSharp.Formatting/">
+<img src="http://tpetricek.github.io/FSharp.Formatting/misc/logo.png" alt="F# documentation tools" class="rdecor" style="width:150px;height:150px" />
+</a>
+<p>The hard part about successful open-source development is not putting the first
+version of your source code on GitHub. The hard part is what comes next. First
+of all, there are <em>community aspects</em> - making sure that the project fits well with
+other work in the area, engaging the community and contributors, planing future
+directions for the project and so on. Secondly, there is an <em>infrastructural side</em> -
+making sure that there is a package (on <a href="http://www.nuget.org/packages?q=fsharp">NuGet in the F# world</a>),
+easy to run and useful tests and also up-to-date documentation and tutorials.</p>
+<p>In this article, I want to talk about the <em>infrastructural side</em>, which is
+easier of the two, but nevertheless, difficult to get right!</p>
+<p>On the technical side, I think that every good open-source library needs to have:</p>
+<ul>
+<li><strong>Unit tests</strong> - at least for non-trivial parts of code and to prevent regressions</li>
+<li><strong>Random testing</strong> - for tricky parts of code, it is useful and helps checking unexpected cases</li>
+<li>
+<strong>NuGet package</strong> - or other up-to-date and easy to use release; for F# projects, we 
+might also want to have an easy to download ZIP file for simple interactive scripts
+</li>
+<li><strong>Documentation</strong> - for public API, at least when the API is not super simple</li>
+<li><strong>Tutorials &amp; walkthroughs</strong> - showing how to call the API in a larger-scale scenarios</li>
+<li>
+<strong>Automation</strong> - when releasing a new version, all of the above should happen with "one click"
+and documentation with tutorials must be up-to-date and correct.
+</li>
+</ul>
+<p>Ticking all the points is a lot of work, but it is crucial - if you do not have these,
+your project will be difficult to use, making a new release will take time and documentation
+with tutorials will become useless. Fortunately for me, the F# community made an amazing progress
+in this direction, so let's have a look at some of the tools that make this possible...</p>
+<p>Before going further, let me say big thanks to <a href="https://twitter.com/sforkmann">Steffen Forkmann</a>,
+the author of FAKE, and <a href="https://twitter.com/ovatsus">Gustavo Guerra</a>, who wrote most of the
+automation for <a href="https://github.com/fsharp/FSharp.Data/">F# Data</a> that I'll use as an example.</p>
+<h2>Automate everything with FAKE</h2>
+<p>Let me start from the end of the list. <a href="http://fsharp.github.io/FAKE/">FAKE</a> is a F# build
+automation system that does a lot more than just building. In fact, FAKE can easily call
+MSBUILD scripts (and build F# projects just using an existing <code>fsproj</code> file). I think the
+real value is in all the additional tools that it provides.</p>
+<p>For example, here is what happens when you run the <a href="https://github.com/fsharp/FSharp.Data/blob/master/build.fsx">build script</a>
+from the <a href="https://github.com/fsharp/FSharp.Data">F# Data library</a>. It:</p>
+<ul>
+<li>
+Parses <code>RELEASE_NOTES.md</code> to get the information about the last version number
+and release notes (that will be used later to build NuGet package)
+</li>
+<li>Generates <code>AssemblyInfo.fs</code> with the right version and project information</li>
+<li>Builds the project and tests by calling MSBUILD (or xbuild) on <code>sln</code> files</li>
+<li>Runs the NUnit tests (and stops if there is a failure), but more about testing later...</li>
+<li>
+While running tests, it also checks that your documentation does not contain errors -
+if you do not believe, continue reading :-)
+</li>
+<li>Builds a NuGet package and optionally pushes it to <a href="http://nuget.org">nuget.org</a></li>
+<li>Automatically builds documentation using F# Formatting tool that is discussed next</li>
+<li>
+As a bonus, it also pushes the <a href="http://fsharp.github.io/FSharp.Data/">documentation to the gh-pages branch</a>
+and builds a ZIP with the binaries for easy download.
+</li>
+</ul>
+<p>All this means that it is really easy to maintain a project. When you get a pull request
+(and point the contributor to the right place to add tests and documentation), you can
+then update everything with just a single command.</p>
+<p>And you have a guarantee that your documentation is up-to-date and correct too, which
+is done using another F# project that I'll discuss next...</p>
+<h2>Documenting libraries with F# Formatting</h2>
+<p><a href="http://tpetricek.github.io/FSharp.Formatting/">F# Formatting</a> is not your good old
+regular-expression based syntax highlighter. It calls the F# compiler (which is fully
+<a href="https://github.com/fsharp/fsharp">open-source</a>, in case you did not know) and uses
+the actual compiler to colorize code. Aside from that, it also type-checks the code
+and extracts tooltip information that you'd see in MonoDevelop or Visual Studio.
+It is used on this blog too, so here is an example (hover over identifiers with
+mouse pointer to see tool tips):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Say hello to the specified person</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 17)" onmouseover="showTip(event, 'fs15', 17)" class="f">hello</span> <span onmouseout="hideTip(event, 'fs16', 18)" onmouseover="showTip(event, 'fs16', 18)" class="i">person</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs17', 19)" onmouseover="showTip(event, 'fs17', 19)" class="f">printfn</span> <span class="s">&quot;Hello </span><span class="pf">%s</span><span class="s">!&quot;</span> <span onmouseout="hideTip(event, 'fs16', 20)" onmouseover="showTip(event, 'fs16', 20)" class="i">person</span>
+
+<span onmouseout="hideTip(event, 'fs15', 21)" onmouseover="showTip(event, 'fs15', 21)" class="f">hello</span> <span class="s">&quot;Tomas&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>For statically typed languages with type inference, this is extremely useful. Just
+remember when you were last looking at C# snippet using <code>var</code> and wondered what
+the type of a variable is...</p>
+<p>To build a great documentation for a project using F# Formatting, you can use two
+features. I'll use the <a href="http://bluemountaincapital.github.io/Deedle/">Deedle data manipulation library</a>
+as an example:</p>
+<ul>
+<li>
+<p><strong>Write tutorials</strong> - these can be standard <a href="https://github.com/BlueMountainCapital/Deedle/blob/master/docs/content/tutorial.fsx">F# script files</a>
+that you can run, with special comments written using <code>(** .. *)</code> that contain Markdown. F#
+Formatting turns them into <a href="http://bluemountaincapital.github.io/Deedle/tutorial.html">nicely formatted tutorials</a></p>
+</li>
+<li>
+<p><strong>Generate API reference</strong> - if you include <code>///</code> comments for public functions (written
+in a <a href="https://github.com/fsharp/FAKE/blob/develop/src/app/FakeLib/DocuHelper.fs#L27">simple Markdown style</a>),
+you can automatically generate API reference from them, for example, like the
+<a href="http://fsharp.github.io/FAKE/apidocs/index.html">FakeLib reference</a>.</p>
+</li>
+</ul>
+<h2>Does your documentation type-check?</h2>
+<p>The last thing I mentioned is that the build process checks if your documentation is correct.
+Obviously, it does not check that your documentation makes sense :-) but it does make sure
+that code samples your documentation type check. This is done, for example, in the
+<a href="https://github.com/fsharp/FSharp.Data/tree/master/tests/FSharp.Data.Tests.Documentation">F# Data documentation tests</a>.</p>
+<div style="text-align:center">
+<img src="testdoc.png" alt="Failing documentation tests, after API change"  />
+</div>
+<p>What does this mean? When you change your API (add or remove parameters, change type,
+or rename function or types) without making corresponding changes to your documentation,
+you'll get a unit test failure!</p>
+<p>This is only possible because F# Formatting can call
+the compiler to do the actual formatting and checking work - and it does not only
+work in <code>fsx</code> files. The same is done on <code>md</code> files that contain F# code snippets
+(using 4 spaces before the snippet).</p>
+<h2>Testing with FsUnit and FsCheck</h2>
+<p>Speaking of unit tests, there are a few more things to be written.
+I'm not an expert when it comes to testing (the chapter by Phil Trelford in
+our <a href="http://www.manning.com/petricek2/">upcoming F# book</a> is a better source!), but
+tests are clearly important - especially for open-source projects with multiple
+contributors that need to collaborate on the code base.</p>
+<h3>Less painful writing and running</h3>
+<p>There are three things that make writing tests less painful. First, <a href="https://github.com/fsharp/fsunit">FsUnit</a>
+is a nice DSL for writing tests in a more readable way. Second, the F# <code>``backtick``</code>
+notation lets you use full description as a test name. And third, you can setup your
+environment to make tests runnable really quickly from REPL.</p>
+<p>Let's look at a sample test for the XML type provider from <a href="https://github.com/fsharp/FSharp.Data">F# Data</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#if</span> <span class="i">INTERACTIVE</span>
+<span class="inactive">#r</span><span class="inactive"> </span><span class="inactive">&quot;../../../bin/FSharp.Data.dll&quot;</span>
+<span class="inactive">(*[omit:(other</span><span class="inactive"> </span><span class="inactive">references</span><span class="inactive"> </span><span class="inactive">omitted)]*)</span>
+<span class="inactive">#r</span><span class="inactive"> </span><span class="inactive">&quot;../../../packages/NUnit.2.6.3/lib/nunit.framework.dll&quot;</span>
+<span class="inactive">#r</span><span class="inactive"> </span><span class="inactive">&quot;../../../packages/FsCheck.0.9.1.0/lib/net40-Client/FsCheck.dll&quot;</span>
+<span class="inactive">#load</span><span class="inactive"> </span><span class="inactive">&quot;../../Common/FsUnit.fs&quot;(*[/omit]*)</span>
+<span class="prep">#else</span>
+<span class="k">module</span> <span onmouseout="hideTip(event, 'fs2', 22)" onmouseover="showTip(event, 'fs2', 22)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs3', 23)" onmouseover="showTip(event, 'fs3', 23)" class="i">Data</span><span class="o">.</span><span class="i">XmlTests</span>
+<span class="prep">#endif</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs18', 24)" onmouseover="showTip(event, 'fs18', 24)" class="t">PersonXml</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs19', 25)" onmouseover="showTip(event, 'fs19', 25)" class="t">XmlProvider</span><span class="o">&lt;</span><span id="fst20" onmouseout="hideTip(event, 'fs20', 26)" onmouseover="showTip(event, 'fs20', 26, document.getElementById('fst20'))" class="omitted">(...)</span><span class="o">&gt;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 27)" onmouseover="showTip(event, 'fs21', 27)" class="i">newXml</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  &lt;authors&gt;</span>
+<span class="s">    &lt;author name=&quot;Jane&quot; surname=&quot;Doe&quot; age=&quot;23&quot; /&gt;</span>
+<span class="s">  &lt;/authors&gt;&quot;&quot;&quot;</span>
+
+[&lt;<span onmouseout="hideTip(event, 'fs22', 28)" onmouseover="showTip(event, 'fs22', 28)" class="t">Test</span>&gt;]
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 29)" onmouseover="showTip(event, 'fs23', 29)" class="f">``Jane should have first name of Jane``</span>() <span class="o">=</span> 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 30)" onmouseover="showTip(event, 'fs24', 30)" class="i">firstPerson</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs18', 31)" onmouseover="showTip(event, 'fs18', 31)" class="t">PersonXml</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 32)" onmouseover="showTip(event, 'fs25', 32)" class="f">Parse</span>(<span onmouseout="hideTip(event, 'fs21', 33)" onmouseover="showTip(event, 'fs21', 33)" class="i">newXml</span>)<span class="o">.</span><span class="i">Author</span>
+    <span onmouseout="hideTip(event, 'fs24', 34)" onmouseover="showTip(event, 'fs24', 34)" class="i">firstPerson</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 35)" onmouseover="showTip(event, 'fs26', 35)" class="i">Name</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 36)" onmouseover="showTip(event, 'fs27', 36)" class="f">should</span> <span onmouseout="hideTip(event, 'fs28', 37)" onmouseover="showTip(event, 'fs28', 37)" class="f">equal</span> <span class="s">&quot;Jane&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The test is included in an <code>fs</code> file in a project that is compiled into a <code>dll</code> that can
+be tested with standard NUnit test runners. However, the first 9 lines make the test also
+runnable in F# Interactive - you can select the entire source code and hit <code>Alt+Enter</code> to
+load the tests in F# Interactive and run them line-by-line, testing different inputs
+interactively. When writing tests, this is much easier then changing your code and re-compiling
+tests to run them.</p>
+<p>The test itself uses the backtic notation to include the whole test description in its
+name <code>SoYouDoNotNeedToDecipherThis</code>! The FsUnit library that is also used here defines a
+simple readable DSL so that you can write your test in the form <code>&lt;value&gt; |&gt; should &lt;property&gt;</code>.
+For example, you can say <code>"Hello" |&gt; should startWith "H"</code>.</p>
+<h3>Testing complex logic</h3>
+<p>Finally, the last great tool that I want to mention in this article is a random <a href="https://github.com/fsharp/FsCheck">testing
+framework FsCheck</a>. This is particularly useful if you
+need to test some algorithm or more complex function that has some (mathematical) properties.</p>
+<p>For example, I wrote a function <code>binarySearchNearestGreater</code> that performs binary search
+on a sorted array and returns the index of a specified element, or index of an element
+that is the nearest greater in the array. The function has a property that the value
+at the returned index is equal, or greater than the specified key (or, if the function
+does not find any element, it means that all are smaller).</p>
+<p>FsCheck can easily verify that the property holds for randomly generated inputs (and it
+also generates inputs that cover corner cases):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[&lt;<span onmouseout="hideTip(event, 'fs22', 38)" onmouseover="showTip(event, 'fs22', 38)" class="t">Test</span>&gt;]
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 39)" onmouseover="showTip(event, 'fs29', 39)" class="f">``Binary searching for nearest greater value satisfies laws``</span> () <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs30', 40)" onmouseover="showTip(event, 'fs30', 40)" class="t">Check</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 41)" onmouseover="showTip(event, 'fs31', 41)" class="f">QuickThrowOnFailure</span>(<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs32', 42)" onmouseover="showTip(event, 'fs32', 42)" class="i">input</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs14', 43)" onmouseover="showTip(event, 'fs14', 43)" class="t">int</span>[]) (<span onmouseout="hideTip(event, 'fs33', 44)" onmouseover="showTip(event, 'fs33', 44)" class="i">key</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs14', 45)" onmouseover="showTip(event, 'fs14', 45)" class="t">int</span>) <span class="k">-&gt;</span> 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 46)" onmouseover="showTip(event, 'fs32', 46)" class="i">input</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 47)" onmouseover="showTip(event, 'fs34', 47)" class="t">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 48)" onmouseover="showTip(event, 'fs35', 48)" class="f">sort</span> <span onmouseout="hideTip(event, 'fs32', 49)" onmouseover="showTip(event, 'fs32', 49)" class="i">input</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs34', 50)" onmouseover="showTip(event, 'fs34', 50)" class="t">Array</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 51)" onmouseover="showTip(event, 'fs36', 51)" class="f">binarySearchNearestGreater</span> <span onmouseout="hideTip(event, 'fs33', 52)" onmouseover="showTip(event, 'fs33', 52)" class="i">key</span> <span onmouseout="hideTip(event, 'fs10', 53)" onmouseover="showTip(event, 'fs10', 53)" class="i">comparer</span> <span onmouseout="hideTip(event, 'fs32', 54)" onmouseover="showTip(event, 'fs32', 54)" class="i">input</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs37', 55)" onmouseover="showTip(event, 'fs37', 55)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs38', 56)" onmouseover="showTip(event, 'fs38', 56)" class="i">idx</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs32', 57)" onmouseover="showTip(event, 'fs32', 57)" class="i">input</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'fs38', 58)" onmouseover="showTip(event, 'fs38', 58)" class="i">idx</span>] <span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs33', 59)" onmouseover="showTip(event, 'fs33', 59)" class="i">key</span>
+    | <span onmouseout="hideTip(event, 'fs39', 60)" onmouseover="showTip(event, 'fs39', 60)" class="p">None</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs40', 61)" onmouseover="showTip(event, 'fs40', 61)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs41', 62)" onmouseover="showTip(event, 'fs41', 62)" class="f">forall</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs42', 63)" onmouseover="showTip(event, 'fs42', 63)" class="i">v</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs42', 64)" onmouseover="showTip(event, 'fs42', 64)" class="i">v</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs33', 65)" onmouseover="showTip(event, 'fs33', 65)" class="i">key</span>) <span onmouseout="hideTip(event, 'fs32', 66)" onmouseover="showTip(event, 'fs32', 66)" class="i">input</span> )
+</code></pre></td>
+</tr>
+</table>
+<p>The operation <code>Check.QuickThrowOnFailure</code> takes a function that specifies the predicate
+and automatically generates 100 (or more) random inputs for <code>input</code> and <code>key</code>.
+The above sample uses NUnit, but FsCheck also comes with xUnit integration that makes the
+testing code even simpler (just write a function with the <code>Property</code> attribute).</p>
+<p>Random testing is certainly not useful for all tests, but it is great when you have
+some property that should hold. This is often the case for algorithms, or when you
+have a pair of functions for converting "there and back again" (then you can just say
+that the conversion there and back should return the original thing).</p>
+<h2>Summary</h2>
+<p>Building a great open-source library is a difficult thing and I certainly do not claim
+that I have a recipe for that. But I'm contributing to <a href="https://github.com/tpetricek/FSharp.Formatting">a</a>
+<a href="https://github.com/fsharp/FSharp.Data">few</a> <a href="https://github.com/fsharp/FSharp.Charting">F#</a>
+<a href="https://github.com/BlueMountainCapital/Deedle">libraries</a> and I think I have learned
+a thing or two from my mistakes.</p>
+<p>For me, one of the most difficult things (technically) is keeping libraries up-to-date
+even when I don't have time for it. The best way to solve this is to automate everything
+so that you can accept a pull request and run a single command that runs the whole build
+process, including NuGet release, documentation update and as many sanity checks as possible,
+both for the code itself and for the documentation.</p>
+<p>This article gave a quick overview of the tools that make this amazingly easy with F# -
+including the awesome <a href="http://fsharp.github.io/FAKE/">FAKE build tool</a>, unit testing
+tools like <a href="https://github.com/fsharp/fsunit">FsUnit</a>  and <a href="https://github.com/fsharp/FsCheck/blob/master/Docs/Documentation.md">FsCheck</a>
+and documentation tools in <a href="http://tpetricek.github.io/FSharp.Formatting/index.html">F# Formatting</a>
+that can even be integrated with unit tests to make sure your documentation is correct.</p>
+
+
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs3">Multiple items<br />namespace FSharp.Data<br /><br />--------------------<br />namespace Microsoft.FSharp.Data</div>
+<div class="tip" id="fs4">namespace NUnit</div>
+<div class="tip" id="fs5">namespace NUnit.Framework</div>
+<div class="tip" id="fs6">namespace FsCheck</div>
+<div class="tip" id="fs7">namespace FsUnit</div>
+<div class="tip" id="fs8">namespace FSharp.DataFrame</div>
+<div class="tip" id="fs9">namespace FSharp.DataFrame.Internal</div>
+<div class="tip" id="fs10">val comparer : Collections.Generic.Comparer&lt;int&gt;<br /><br />Full name: Great-open-source.comparer</div>
+<div class="tip" id="fs11">namespace System.Collections</div>
+<div class="tip" id="fs12">namespace System.Collections.Generic</div>
+<div class="tip" id="fs13">type Comparer&lt;&#39;T&gt; =<br />&#160;&#160;member Compare : x:&#39;T * y:&#39;T -&gt; int<br />&#160;&#160;static member Default : Comparer&lt;&#39;T&gt;<br /><br />Full name: System.Collections.Generic.Comparer&lt;_&gt;</div>
+<div class="tip" id="fs14">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs15">val hello : person:string -&gt; unit<br /><br />Full name: Great-open-source.hello<br /><em><br /><br />&#160;Say hello to the specified person</em></div>
+<div class="tip" id="fs16">val person : string</div>
+<div class="tip" id="fs17">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs18">type PersonXml = XmlProvider&lt;...&gt;<br /><br />Full name: Great-open-source.PersonXml</div>
+<div class="tip" id="fs19">type XmlProvider<br /><br />Full name: FSharp.Data.XmlProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of a XML file&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of a XML sample file or a string containing a sample XML document&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Global&#39;&gt;If true, the inference unifies all XML elements with the same name&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates.&lt;/param&gt;                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;SampleList&#39;&gt;If true, the children of the root in the sample document represent individual samples for the inference.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution)&lt;/param&gt;</em></div>
+<div class="tip" id="fs20">&quot;&quot;&quot;&lt;authors&gt;&lt;author name=&quot;Ludwig&quot; surname=&quot;Wittgenstein&quot; age=&quot;29&quot; /&gt;&lt;/authors&gt;&quot;&quot;&quot;</div>
+<div class="tip" id="fs21">val newXml : string<br /><br />Full name: Great-open-source.newXml</div>
+<div class="tip" id="fs22">Multiple items<br />type TestAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; TestAttribute<br />&#160;&#160;member Description : string with get, set<br /><br />Full name: NUnit.Framework.TestAttribute<br /><br />--------------------<br />TestAttribute() : unit</div>
+<div class="tip" id="fs23">val ( Jane should have first name of Jane ) : unit -&gt; unit<br /><br />Full name: Great-open-source.( Jane should have first name of Jane )</div>
+<div class="tip" id="fs24">val firstPerson : XmlProvider&lt;...&gt;.DomainTypes.Author</div>
+<div class="tip" id="fs25">XmlProvider&lt;...&gt;.Parse(text: string) : XmlProvider&lt;...&gt;.DomainTypes.Authors</div>
+<div class="tip" id="fs26">property XmlProvider&lt;...&gt;.DomainTypes.Author.Name: string</div>
+<div class="tip" id="fs27">val should : f:(&#39;a -&gt; #Constraints.Constraint) -&gt; x:&#39;a -&gt; y:obj -&gt; unit<br /><br />Full name: FsUnit.TopLevelOperators.should</div>
+<div class="tip" id="fs28">val equal : x:&#39;a -&gt; Constraints.EqualConstraint<br /><br />Full name: FsUnit.TopLevelOperators.equal</div>
+<div class="tip" id="fs29">val ( Binary searching for nearest greater value satisfies laws ) : unit -&gt; unit<br /><br />Full name: Great-open-source.( Binary searching for nearest greater value satisfies laws )</div>
+<div class="tip" id="fs30">type Check =<br />&#160;&#160;static member All : config:Config -&gt; unit<br />&#160;&#160;static member All : config:Config * test:Type -&gt; unit<br />&#160;&#160;static member Method : config:Config * methodInfo:MethodInfo * ?target:obj -&gt; unit<br />&#160;&#160;static member One : config:Config * property:&#39;Testable -&gt; unit<br />&#160;&#160;static member One : name:string * config:Config * property:&#39;Testable -&gt; unit<br />&#160;&#160;static member Quick : property:&#39;Testable -&gt; unit<br />&#160;&#160;static member Quick : name:string * property:&#39;Testable -&gt; unit<br />&#160;&#160;static member QuickAll : unit -&gt; unit<br />&#160;&#160;static member QuickAll : test:Type -&gt; unit<br />&#160;&#160;static member QuickThrowOnFailure : property:&#39;Testable -&gt; unit<br />&#160;&#160;...<br /><br />Full name: FsCheck.Check</div>
+<div class="tip" id="fs31">static member Check.QuickThrowOnFailure : property:&#39;Testable -&gt; unit</div>
+<div class="tip" id="fs32">val input : int []</div>
+<div class="tip" id="fs33">val key : int</div>
+<div class="tip" id="fs34">type Array =<br />&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;member CopyTo : array:Array * index:int -&gt; unit + 1 overload<br />&#160;&#160;member GetEnumerator : unit -&gt; IEnumerator<br />&#160;&#160;member GetLength : dimension:int -&gt; int<br />&#160;&#160;member GetLongLength : dimension:int -&gt; int64<br />&#160;&#160;member GetLowerBound : dimension:int -&gt; int<br />&#160;&#160;member GetUpperBound : dimension:int -&gt; int<br />&#160;&#160;member GetValue : [&lt;ParamArray&gt;] indices:int[] -&gt; obj + 7 overloads<br />&#160;&#160;member Initialize : unit -&gt; unit<br />&#160;&#160;member IsFixedSize : bool<br />&#160;&#160;...<br /><br />Full name: System.Array</div>
+<div class="tip" id="fs35">val sort : array:&#39;T [] -&gt; &#39;T [] (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Array.sort</div>
+<div class="tip" id="fs36">val binarySearchNearestGreater : key:&#39;T -&gt; comparer:Collections.Generic.IComparer&lt;&#39;T&gt; -&gt; array:&#39;T [] -&gt; int option<br /><br />Full name: FSharp.DataFrame.Internal.Array.binarySearchNearestGreater<br /><em><br /><br />&#160;Returns the index of &#39;key&#39; or the index of immediately following value.<br />&#160;If the specified key is greater than all keys in the array, None is returned.</em></div>
+<div class="tip" id="fs37">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs38">val idx : int</div>
+<div class="tip" id="fs39">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs40">Multiple items<br />module Seq<br /><br />from FSharp.DataFrame.Internal<br /><em><br /><br />&#160;This module contains additional functions for working with sequences. <br />&#160;`FSharp.DataFrame.Internals` is opened, it extends the standard `Seq` module.</em><br /><br />--------------------<br />module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs41">val forall : predicate:(&#39;T -&gt; bool) -&gt; source:seq&lt;&#39;T&gt; -&gt; bool<br /><br />Full name: Microsoft.FSharp.Collections.Seq.forall</div>
+<div class="tip" id="fs42">val v : int</div>

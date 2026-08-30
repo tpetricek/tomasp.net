@@ -1,0 +1,827 @@
+Write your own Excel in 100 lines of F#
+==============================================
+
+ - date: 2018-11-12T12:58:50.3238452+00:00
+ - description: Use Fable, Elmish architecture, parser combinators and the magic of functional-first 
+     programming with F# to build a simple browser-based spreadsheet application! I have been teaching
+     F# for 7 years now and while the libraries and examples change, the core ideas remain the same.
+     In this blog post, I'll cover my latest favorite example. You will see how the pragmatic F# design
+     makes it easy to integrate with the external world (such as the JavaScript ecosystem and the React
+     library) and how the core functional features make your code elegant and composable.
+ - layout: article
+ - image: http://tomasp.net/blog/2018/write-your-own-excel/logo.png
+ - tags: f#, functional, training, fable
+ - title: Write your own Excel in 100 lines of F#
+ - icon: fa fa-table
+ - url: 2018/write-your-own-excel
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<p>I've been teaching F# for over seven years now, both in the public F# FastTrack course that we run
+at SkillsMatter in London and in various custom trainings for private companies. Every time I teach
+the F# FastTrack course, I modify the material in one way or another. I wrote about some of this
+interesting history <a href="#">last year in an fsharpWorks article</a>. The course now has a stable half-day
+introduction to the language and a stable focus on the ideas behind functional-first programming,
+but there are always new examples and applications that illustrate this style of programming.</p>
+<img src="http://tomasp.net/blog/2018/write-your-own-excel/logo.png" class="rdecor" />
+<p>When we started, we mostly focused on teaching functional programming concepts that might be useful
+even if you use C# and on building analytical components that your could integrate into a larger
+.NET solution. Since then, the F# community has matured, established the <a href="http://fsharp.org">F# Software Foundation</a>,
+but also built a number of mature end-to-end ecosystems that you can rely on such as <a href="http://fable.io">Fable</a>,
+the F# to JavaScript compiler, and <a href="https://safe-stack.github.io">SAFE Stack</a> for full-stack web development.</p>
+<p>For the upcoming December course in London, I added a number of demos and hands-on tasks built
+using Fable, partly because running F# in a browser is an easy way to illustrate many concepts
+and partly because Fable has some amazing functional-first libraries.</p>
+<blockquote>
+<p><em><i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i></em>
+If you are interested in learning F# and attending our course, the next <a href="https://skillsmatter.com/courses/473-tomas-petricek-phil-trelford-fast-track-to-fsharp">F# FastTrack</a>
+takes place on <strong>6-7 December</strong> in London at SkillsMatter. We also offer custom
+on-site trainings. Get in touch at <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a>
+or email <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> for a 10% discount for the course.</p>
+</blockquote>
+<p>One of the new samples I want to show, which I also <a href="https://vimeo.com/281241807">live coded at NDC 2018</a>,
+is building a simple web-based Excel-like spreadsheet application. The spreadsheet demonstrates
+all the great F# features such as domain modeling with types, the power of compositionality
+and also how functional-first approach can be amazingly powerful for building user interfaces.</p>
+--------------------------------------------------------------------------------
+<h1>Write your own Excel in 100 lines of F#</h1>
+<p>I've been teaching F# for over seven years now, both in the public F# FastTrack course that we run
+at SkillsMatter in London and in various custom trainings for private companies. Every time I teach
+the F# FastTrack course, I modify the material in one way or another. I wrote about some of this
+interesting history <a href="#">last year in an fsharpWorks article</a>. The course now has a stable half-day
+introduction to the language and a stable focus on the ideas behind functional-first programming,
+but there are always new examples and applications that illustrate this style of programming.</p>
+<img src="http://tomasp.net/blog/2018/write-your-own-excel/logo.png" class="rdecor" />
+<p>When we started, we mostly focused on teaching functional programming concepts that might be useful
+even if you use C# and on building analytical components that your could integrate into a larger
+.NET solution. Since then, the F# community has matured, established the <a href="http://fsharp.org">F# Software Foundation</a>,
+but also built a number of mature end-to-end ecosystems that you can rely on such as <a href="http://fable.io">Fable</a>,
+the F# to JavaScript compiler, and <a href="https://safe-stack.github.io">SAFE Stack</a> for full-stack web development.</p>
+<p>For the upcoming December course in London, I added a number of demos and hands-on tasks built
+using Fable, partly because running F# in a browser is an easy way to illustrate many concepts
+and partly because Fable has some amazing functional-first libraries.</p>
+<blockquote>
+<p><em><i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i></em>
+If you are interested in learning F# and attending our course, the next <a href="https://skillsmatter.com/courses/473-tomas-petricek-phil-trelford-fast-track-to-fsharp">F# FastTrack</a>
+takes place on <strong>6-7 December</strong> in London at SkillsMatter. We also offer custom
+on-site trainings. Get in touch at <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a>
+or email <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> for a 10% discount for the course.</p>
+</blockquote>
+<p>One of the new samples I want to show, which I also <a href="https://vimeo.com/281241807">live coded at NDC 2018</a>,
+is building a simple web-based Excel-like spreadsheet application. The spreadsheet demonstrates
+all the great F# features such as domain modeling with types, the power of compositionality
+and also how functional-first approach can be amazingly powerful for building user interfaces.</p>
+<style>
+  .excel { margin:0px auto 0px auto; font-family:sans-serif; display:inline-block }
+  .excel table { border-spacing: 0px; border-bottom:1px solid #e0e0e0; border-right:1px solid #e0e0e0; }
+  .excel td, .excel th { text-align:left; height:22px; width:65px; border-left:1px solid #e0e0e0; border-top:1px solid #e0e0e0; padding:5px; }    
+  .excel td.selected { padding:0px; }
+  .excel td input { width:65px; height:30px; }
+</style>
+<script>
+  var spreadsheetConfig = 
+    { "columns":"H",
+      "rows":8,
+      "cells": [
+        ["B1", "1"], ["B2", "1"], ["B3", "=B1+B2"], ["B4", "=B2+B3"], ["B5", "=B3+B4"], ["B6", "=B4+B5"], ["B7", "=B5+B6"], ["B8", "=B6+B7"],
+        ["D1", "1"], ["D2", "=D1*2"], ["D3", "=D2*3"], ["D4", "=D3*4"], ["D5", "=D4*5"], ["D6", "=D5*6"], ["D7", "=D6*7"], ["D8", "=D7*8"]
+      ] }
+</script>
+<h2>What is a spreadsheet?</h2>
+<p>The sample compiles to JavaScript, so the best way of explaining what we want to build is
+to give you a live demo you can play with! Since this is a blog post about functional programming,
+I already implemented both Fibonacci numbers (column B) and factorial (column D) in the spreadsheet for you!</p>
+<script src="bundle.js"></script>
+<div style="width:100%;padding-right:20px;text-align:center;"><div class="excel" id="main"></div></div>
+<p>You can click on any cell to edit the cells. To confirm your edit, just click on any other cell.
+You can enter numbers such as <code>1</code> (in cell B1) or formulas such as <code>=B1+B2</code> in cell B3. Formulas
+support parentheses and four standard numerical operators. When you make an edit, the spreadsheet
+automatically updates. If you make a syntax error, reference empty cell or create a recursive
+reference, the spreadsheet will show <code>#ERR</code>.</p>
+<blockquote>
+<p><em><i class="fa fa-hand-point-right" style="font-size:110%;margin:0px 5px 0px 0px"></i></em>
+Full source code is available in my <a href="https://github.com/tpetricek/elmish-spreadsheet/">elmish-spreadsheet repository on GitHub</a>
+(as a hands-on exercise in <code>master</code> branch and fully working in the <code>completed</code> branch), but you
+can also play with it in the <a href="https://fable.io/repl/">Fable REPL</a> (see Samples, Elmish, Spreadsheet),
+which lets you edit and run F# in the browser.</p>
+</blockquote>
+<h3>Defining the domain model</h3>
+<p>Following the typical F# type-driven development style, the first thing we need to think about
+is the domain model. Our types should capture what we work with in a spreadsheet application.
+In our case, we have positions such as <code>A5</code> or <code>C10</code>, expressions such as <code>=A1+3</code> and the sheet
+itself which has user input in some of the cells. To model these, we define types for <code>Position</code>,
+<code>Expr</code> and <code>Sheet</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="rt">Position</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="vt">char</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="vt">int</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="rt">Expr</span> <span class="o">=</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="uc">Number</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs3', 6)" onmouseover="showTip(event, 'fs3', 6)" class="vt">int</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="uc">Reference</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs1', 8)" onmouseover="showTip(event, 'fs1', 8)" class="rt">Position</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="uc">Binary</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs4', 10)" onmouseover="showTip(event, 'fs4', 10)" class="rt">Expr</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs2', 11)" onmouseover="showTip(event, 'fs2', 11)" class="vt">char</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs4', 12)" onmouseover="showTip(event, 'fs4', 12)" class="rt">Expr</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs8', 13)" onmouseover="showTip(event, 'fs8', 13)" class="rt">Sheet</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 14)" onmouseover="showTip(event, 'fs9', 14)" class="rt">Map</span><span class="pn">&lt;</span><span onmouseout="hideTip(event, 'fs1', 15)" onmouseover="showTip(event, 'fs1', 15)" class="rt">Position</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="rt">string</span><span class="pn">&gt;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>A <code>Position</code> is simply a pair of column name and a number. An expression is more interesting,
+because it is recursive. For example, <code>A1+3</code> is an application of a binary operator on sub-expressions
+<code>A1</code>, which is a reference and <code>3</code> which is a numerical constant. In F#, we capture this nicely
+using a discriminated union. In the <code>Binary</code> case, the left and right sub-expressions are themselves
+values of the <code>Expr</code> type, so our <code>Expr</code> type is recursive.</p>
+<p>The type <code>Sheet</code> is a map from positions to raw user inputs. We could also store parsed expressions or
+even evaluated results, but we always need the original input so that the user can edit it. To make
+things simple, we'll just store the original input and parse it each time we need to evaluate the
+value of a cell. To do the parsing and evaluation, we'll later define two functions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">val</span> <span class="id">parse</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs10', 17)" onmouseover="showTip(event, 'fs10', 17)" class="id">string</span> <span class="k">-&gt;</span> <span class="id">Expr</span> <span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="id">option</span>
+<span class="k">val</span> <span class="id">evaluate</span> <span class="pn">:</span> <span class="id">Expr</span> <span class="pn">*</span> <span class="id">Sheet</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs3', 19)" onmouseover="showTip(event, 'fs3', 19)" class="id">int</span> <span onmouseout="hideTip(event, 'fs11', 20)" onmouseover="showTip(event, 'fs11', 20)" class="id">option</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We will talk about these later when we discuss the logic behind our spreadsheet, but writing the
+type down early is useful. Given these types, we can already see how everything fits together.
+Given a position, we can do a lookup into <code>Sheet</code> to find the entered text, then we can parse it
+using <code>parse</code> to get <code>Expr</code> and, finally, pass the expression to <code>evaluate</code> to get the resulting
+value. We also see that both <code>parse</code> and <code>evaluate</code> might fail. The first one will fail if the
+input is not a valid formula and the second might fail if you reference an empty cell.</p>
+<p>Now, all we have to do is to keep writing the rest of Excel until the type checker is happy!</p>
+<h2>Creating user interface using Elmish</h2>
+<p>I'm going to start by discussing the user interface and then get back to implementing the parsing
+and evaluation logic. For creating user interfaces, Fable comes with a great library called
+<a href="https://elmish.github.io/elmish">Elmish</a>. Elmish implements a functional-first user interface
+architecture popularized by the Elm language, which is also known as <em>model view update</em>.</p>
+<p>The idea of the architecture is extremely simple. You just need the following two types and
+two functions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="id">State</span> <span class="o">=</span> <span id="fst71" onmouseout="hideTip(event, 'fs71', 196)" onmouseover="showTip(event, 'fs71', 196, document.getElementById('fst71'))" class="omitted">(Record capturing the state)</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs72', 197)" onmouseover="showTip(event, 'fs72', 197)" class="id">Event</span> <span class="o">=</span> <span id="fst73" onmouseout="hideTip(event, 'fs73', 198)" onmouseover="showTip(event, 'fs73', 198, document.getElementById('fst73'))" class="omitted">(Union listing possible events)</span>
+
+<span class="k">val</span> <span class="id">update</span> <span class="pn">:</span> <span class="id">State</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs72', 199)" onmouseover="showTip(event, 'fs72', 199)" class="id">Event</span> <span class="k">-&gt;</span> <span class="id">State</span>
+<span class="k">val</span> <span class="id">view</span> <span class="pn">:</span> <span class="id">State</span> <span class="k">-&gt;</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs72', 200)" onmouseover="showTip(event, 'fs72', 200)" class="id">Event</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs74', 201)" onmouseover="showTip(event, 'fs74', 201)" class="id">unit</span><span class="pn">)</span> <span class="k">-&gt;</span> <span class="id">Html</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The two types and two functions define the user interface as follows:</p>
+<ul>
+<li><code>State</code> stores all the user interface state that you need in order to render it.</li>
+<li><code>Event</code> is a union of different events that can happen when the user interacts with the UI.</li>
+<li><code>update</code> is a function that takes an original state and an event and produces a new modified state.</li>
+<li>
+<code>view</code> takes the state and generates a HTML document; it also takes a function <code>Event -&gt; unit</code>
+which can be used in event handlers of the HTML document to trigger an event.
+</li>
+</ul>
+<p>Conceptually, you can think that the application starts with an initial state, renders a page and,
+when some action happens and event is triggered, updates the state using <code>update</code> and re-renders
+the page using <code>view</code>. The key trick that makes this work is that Elmish does not replace the
+whole DOM, but diffs the new document with the last one and only updates DOM elements that have
+changed.</p>
+<p>What state and events are there in our spreadsheet? As with the whole spreadsheet application,
+the first step in implementing the user interface is to define a few types:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs75', 202)" onmouseover="showTip(event, 'fs75', 202)" class="rt">Event</span> <span class="o">=</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs76', 203)" onmouseover="showTip(event, 'fs76', 203)" class="uc">UpdateValue</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs77', 204)" onmouseover="showTip(event, 'fs77', 204)" class="rt">Position</span> <span class="pn">*</span> <span onmouseout="hideTip(event, 'fs10', 205)" onmouseover="showTip(event, 'fs10', 205)" class="rt">string</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs78', 206)" onmouseover="showTip(event, 'fs78', 206)" class="uc">StartEdit</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs77', 207)" onmouseover="showTip(event, 'fs77', 207)" class="rt">Position</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs79', 208)" onmouseover="showTip(event, 'fs79', 208)" class="rt">State</span> <span class="o">=</span>
+  <span class="pn">{</span> <span onmouseout="hideTip(event, 'fs80', 209)" onmouseover="showTip(event, 'fs80', 209)" class="id">Rows</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs3', 210)" onmouseover="showTip(event, 'fs3', 210)" class="vt">int</span> <span onmouseout="hideTip(event, 'fs81', 211)" onmouseover="showTip(event, 'fs81', 211)" class="rt">list</span>
+    <span onmouseout="hideTip(event, 'fs82', 212)" onmouseover="showTip(event, 'fs82', 212)" class="id">Cols</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs14', 213)" onmouseover="showTip(event, 'fs14', 213)" class="vt">char</span> <span onmouseout="hideTip(event, 'fs81', 214)" onmouseover="showTip(event, 'fs81', 214)" class="rt">list</span>
+    <span onmouseout="hideTip(event, 'fs83', 215)" onmouseover="showTip(event, 'fs83', 215)" class="id">Active</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs77', 216)" onmouseover="showTip(event, 'fs77', 216)" class="rt">Position</span> <span onmouseout="hideTip(event, 'fs84', 217)" onmouseover="showTip(event, 'fs84', 217)" class="rt">option</span>
+    <span onmouseout="hideTip(event, 'fs85', 218)" onmouseover="showTip(event, 'fs85', 218)" class="id">Cells</span> <span class="pn">:</span> <span onmouseout="hideTip(event, 'fs8', 219)" onmouseover="showTip(event, 'fs8', 219)" class="rt">Sheet</span> <span class="pn">}</span>
+</code></pre></td>
+</tr>
+</table>
+<p>In the state, we keep a list of row and column keys (this typically starts from <code>A1</code>, but
+we do not require that), currently selected cell (this can be <code>None</code> if no cell is selected)
+and, finally, the cells of the spreadsheet. There are two events that can happen.
+The <code>UpdateValue</code> event happens when you change the text in the current cell; the <code>StartEdit</code>
+event happens when you click on some other cell to start editing it.</p>
+<h3>Updating the spreadsheet after event</h3>
+<p>Writing the <code>update</code> function is quite easy - as with the main spreadsheet logic, we just need
+to write code until the type checker is happy!</p>
+<p>In Elmish, the <code>update</code> function is a little bit more complicated than I said above. In
+addition to returning new state, we can also return a list of <em>commands</em>. The commands are
+used to tell the system that it should start some action after updating the state. This can
+be things such as starting a HTTP web request to fetch some information from the server.
+In our case, we do not need any commands, so we just return <code>Cmd.none</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs86', 220)" onmouseover="showTip(event, 'fs86', 220)" class="fn">update</span> <span onmouseout="hideTip(event, 'fs87', 221)" onmouseover="showTip(event, 'fs87', 221)" class="id">msg</span> <span onmouseout="hideTip(event, 'fs88', 222)" onmouseover="showTip(event, 'fs88', 222)" class="id">state</span> <span class="o">=</span> 
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs87', 223)" onmouseover="showTip(event, 'fs87', 223)" class="id">msg</span> <span class="k">with</span> 
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs78', 224)" onmouseover="showTip(event, 'fs78', 224)" class="uc">StartEdit</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs45', 225)" onmouseover="showTip(event, 'fs45', 225)" class="id">pos</span><span class="pn">)</span> <span class="k">-&gt;</span>
+      <span class="pn">{</span> <span onmouseout="hideTip(event, 'fs88', 226)" onmouseover="showTip(event, 'fs88', 226)" class="id">state</span> <span class="k">with</span> <span class="id">Active</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs52', 227)" onmouseover="showTip(event, 'fs52', 227)" class="uc">Some</span> <span onmouseout="hideTip(event, 'fs45', 228)" onmouseover="showTip(event, 'fs45', 228)" class="id">pos</span> <span class="pn">}</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs89', 229)" onmouseover="showTip(event, 'fs89', 229)" class="m">Cmd</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs90', 230)" onmouseover="showTip(event, 'fs90', 230)" class="id">none</span>
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs76', 231)" onmouseover="showTip(event, 'fs76', 231)" class="uc">UpdateValue</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs45', 232)" onmouseover="showTip(event, 'fs45', 232)" class="id">pos</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs91', 233)" onmouseover="showTip(event, 'fs91', 233)" class="id">value</span><span class="pn">)</span> <span class="k">-&gt;</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs92', 234)" onmouseover="showTip(event, 'fs92', 234)" class="id">newCells</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 235)" onmouseover="showTip(event, 'fs9', 235)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs93', 236)" onmouseover="showTip(event, 'fs93', 236)" class="id">add</span> <span onmouseout="hideTip(event, 'fs45', 237)" onmouseover="showTip(event, 'fs45', 237)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs91', 238)" onmouseover="showTip(event, 'fs91', 238)" class="id">value</span> <span onmouseout="hideTip(event, 'fs88', 239)" onmouseover="showTip(event, 'fs88', 239)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs85', 240)" onmouseover="showTip(event, 'fs85', 240)" class="id">Cells</span>
+      <span class="pn">{</span> <span onmouseout="hideTip(event, 'fs88', 241)" onmouseover="showTip(event, 'fs88', 241)" class="id">state</span> <span class="k">with</span> <span class="id">Cells</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs92', 242)" onmouseover="showTip(event, 'fs92', 242)" class="id">newCells</span> <span class="pn">}</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs89', 243)" onmouseover="showTip(event, 'fs89', 243)" class="m">Cmd</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs90', 244)" onmouseover="showTip(event, 'fs90', 244)" class="id">none</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The implementation uses the <code>with</code> construct, which creates a clone of the <code>state</code> record
+and updates some of its fields. In the case of <code>StartEdit</code>, we set the active cell to the
+newly selected one. In the case of <code>UpdateValue</code>, we first add the new value to the sheet
+(the <code>Map.add</code> function replaces existing value if there is one already) and then set the
+<code>Cells</code> of the spreadsheet.</p>
+<h3>Rendering the spreadsheet</h3>
+<p>To construct the HTML document, Elmish comes with a lightweight wrapper built on top of
+React (although you can use other virtual DOM libraries too). The wrapper defines typed
+functions for creating HTML elements and specifying their attributes.</p>
+<p>We'll first implement the main <code>view</code> function which generates the spreadsheet grid and
+then discuss the <code>renderCell</code> helper which renders an individual cell.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs118', 329)" onmouseover="showTip(event, 'fs118', 329)" class="fn">view</span> <span onmouseout="hideTip(event, 'fs88', 330)" onmouseover="showTip(event, 'fs88', 330)" class="id">state</span> <span onmouseout="hideTip(event, 'fs95', 331)" onmouseover="showTip(event, 'fs95', 331)" class="fn">trigger</span> <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs119', 332)" onmouseover="showTip(event, 'fs119', 332)" class="fn">table</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span>
+    <span onmouseout="hideTip(event, 'fs120', 333)" onmouseover="showTip(event, 'fs120', 333)" class="fn">thead</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span> 
+      <span onmouseout="hideTip(event, 'fs121', 334)" onmouseover="showTip(event, 'fs121', 334)" class="fn">tr</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span>
+        <span class="k">yield</span> <span onmouseout="hideTip(event, 'fs122', 335)" onmouseover="showTip(event, 'fs122', 335)" class="fn">th</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span><span class="pn">]</span>
+        <span class="k">for</span> <span onmouseout="hideTip(event, 'fs123', 336)" onmouseover="showTip(event, 'fs123', 336)" class="id">col</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs88', 337)" onmouseover="showTip(event, 'fs88', 337)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs82', 338)" onmouseover="showTip(event, 'fs82', 338)" class="id">Cols</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs122', 339)" onmouseover="showTip(event, 'fs122', 339)" class="fn">th</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span> <span onmouseout="hideTip(event, 'fs103', 340)" onmouseover="showTip(event, 'fs103', 340)" class="fn">str</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs10', 341)" onmouseover="showTip(event, 'fs10', 341)" class="fn">string</span> <span onmouseout="hideTip(event, 'fs123', 342)" onmouseover="showTip(event, 'fs123', 342)" class="id">col</span><span class="pn">)</span> <span class="pn">]</span>
+      <span class="pn">]</span> 
+    <span class="pn">]</span>
+    <span onmouseout="hideTip(event, 'fs124', 343)" onmouseover="showTip(event, 'fs124', 343)" class="fn">tbody</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span>
+      <span class="k">for</span> <span onmouseout="hideTip(event, 'fs125', 344)" onmouseover="showTip(event, 'fs125', 344)" class="id">row</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs88', 345)" onmouseover="showTip(event, 'fs88', 345)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs80', 346)" onmouseover="showTip(event, 'fs80', 346)" class="id">Rows</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs121', 347)" onmouseover="showTip(event, 'fs121', 347)" class="fn">tr</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span>
+        <span class="k">yield</span> <span onmouseout="hideTip(event, 'fs122', 348)" onmouseover="showTip(event, 'fs122', 348)" class="fn">th</span> <span class="pn">[</span><span class="pn">]</span> <span class="pn">[</span> <span onmouseout="hideTip(event, 'fs103', 349)" onmouseover="showTip(event, 'fs103', 349)" class="fn">str</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs10', 350)" onmouseover="showTip(event, 'fs10', 350)" class="fn">string</span> <span onmouseout="hideTip(event, 'fs125', 351)" onmouseover="showTip(event, 'fs125', 351)" class="id">row</span><span class="pn">)</span> <span class="pn">]</span>
+        <span class="k">for</span> <span onmouseout="hideTip(event, 'fs123', 352)" onmouseover="showTip(event, 'fs123', 352)" class="id">col</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs88', 353)" onmouseover="showTip(event, 'fs88', 353)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs82', 354)" onmouseover="showTip(event, 'fs82', 354)" class="id">Cols</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs113', 355)" onmouseover="showTip(event, 'fs113', 355)" class="fn">renderCell</span> <span onmouseout="hideTip(event, 'fs95', 356)" onmouseover="showTip(event, 'fs95', 356)" class="fn">trigger</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs123', 357)" onmouseover="showTip(event, 'fs123', 357)" class="id">col</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs125', 358)" onmouseover="showTip(event, 'fs125', 358)" class="id">row</span><span class="pn">)</span> <span onmouseout="hideTip(event, 'fs88', 359)" onmouseover="showTip(event, 'fs88', 359)" class="id">state</span>
+      <span class="pn">]</span>
+    <span class="pn">]</span>
+  <span class="pn">]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Here, we're using F# list comprehensions to generate the HTML document. For example, the
+lines 4-7 generate the header of the table. We create a <code>tr</code> element with no attributes
+(the first argument) containing a couple of <code>th</code> elements (the second argument). We're
+using <code>yield</code> to generate the elements - first, we create the empty <code>th</code> element in the
+left top corner and then we iterate over all the columns and produce a header for each of
+the columns. The <code>col</code> variable is a character, so we first turn it into a string using
+<code>string</code> before turning it into HTML content using <code>str</code> function provided by Elmish.</p>
+<p>The nice thing about writing your HTML rendering in this way is that it is composable.
+We do not have to put everything inside one massive function. Here, we call <code>renderCell</code>
+(line 12) to render the contents of a cell.</p>
+<h3>Rendering spreadsheet cell</h3>
+<p>There are two different ways in which we render a cell. For the selected cell, we need
+to render an editor with an input box containing the original entered text. For all other
+cells, we need to parse the formula, evaluate it and display the result. The <code>renderCell</code>
+function chooses the branch and, in the latter case, handles the evaluation:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs113', 282)" onmouseover="showTip(event, 'fs113', 282)" class="fn">renderCell</span> <span onmouseout="hideTip(event, 'fs95', 283)" onmouseover="showTip(event, 'fs95', 283)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 284)" onmouseover="showTip(event, 'fs45', 284)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs88', 285)" onmouseover="showTip(event, 'fs88', 285)" class="id">state</span> <span class="o">=</span>
+  <span class="k">if</span> <span onmouseout="hideTip(event, 'fs88', 286)" onmouseover="showTip(event, 'fs88', 286)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs83', 287)" onmouseover="showTip(event, 'fs83', 287)" class="id">Active</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs52', 288)" onmouseover="showTip(event, 'fs52', 288)" class="uc">Some</span> <span onmouseout="hideTip(event, 'fs45', 289)" onmouseover="showTip(event, 'fs45', 289)" class="id">pos</span> <span class="k">then</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs114', 290)" onmouseover="showTip(event, 'fs114', 290)" class="id">text</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 291)" onmouseover="showTip(event, 'fs9', 291)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs58', 292)" onmouseover="showTip(event, 'fs58', 292)" class="id">tryFind</span> <span onmouseout="hideTip(event, 'fs45', 293)" onmouseover="showTip(event, 'fs45', 293)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs88', 294)" onmouseover="showTip(event, 'fs88', 294)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs85', 295)" onmouseover="showTip(event, 'fs85', 295)" class="id">Cells</span> 
+    <span onmouseout="hideTip(event, 'fs105', 296)" onmouseover="showTip(event, 'fs105', 296)" class="fn">renderEditor</span> <span onmouseout="hideTip(event, 'fs95', 297)" onmouseover="showTip(event, 'fs95', 297)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 298)" onmouseover="showTip(event, 'fs45', 298)" class="id">pos</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs104', 299)" onmouseover="showTip(event, 'fs104', 299)" class="fn">defaultArg</span> <span onmouseout="hideTip(event, 'fs114', 300)" onmouseover="showTip(event, 'fs114', 300)" class="id">text</span> <span class="s">&quot;&quot;</span><span class="pn">)</span>
+  <span class="k">else</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs9', 301)" onmouseover="showTip(event, 'fs9', 301)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs58', 302)" onmouseover="showTip(event, 'fs58', 302)" class="id">tryFind</span> <span onmouseout="hideTip(event, 'fs45', 303)" onmouseover="showTip(event, 'fs45', 303)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs88', 304)" onmouseover="showTip(event, 'fs88', 304)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs85', 305)" onmouseover="showTip(event, 'fs85', 305)" class="id">Cells</span> <span class="k">with</span> 
+    <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs52', 306)" onmouseover="showTip(event, 'fs52', 306)" class="uc">Some</span> <span onmouseout="hideTip(event, 'fs115', 307)" onmouseover="showTip(event, 'fs115', 307)" class="id">input</span> <span class="k">-&gt;</span> 
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs116', 308)" onmouseover="showTip(event, 'fs116', 308)" class="id">result</span> <span class="o">=</span> 
+          <span onmouseout="hideTip(event, 'fs34', 309)" onmouseover="showTip(event, 'fs34', 309)" class="fn">parse</span> <span onmouseout="hideTip(event, 'fs115', 310)" onmouseover="showTip(event, 'fs115', 310)" class="id">input</span>
+          <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 311)" onmouseover="showTip(event, 'fs48', 311)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs53', 312)" onmouseover="showTip(event, 'fs53', 312)" class="id">bind</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs50', 313)" onmouseover="showTip(event, 'fs50', 313)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs55', 314)" onmouseover="showTip(event, 'fs55', 314)" class="m">Set</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs117', 315)" onmouseover="showTip(event, 'fs117', 315)" class="id">empty</span> <span onmouseout="hideTip(event, 'fs88', 316)" onmouseover="showTip(event, 'fs88', 316)" class="id">state</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs85', 317)" onmouseover="showTip(event, 'fs85', 317)" class="id">Cells</span><span class="pn">)</span> 
+          <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 318)" onmouseover="showTip(event, 'fs48', 318)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs54', 319)" onmouseover="showTip(event, 'fs54', 319)" class="id">map</span> <span onmouseout="hideTip(event, 'fs10', 320)" onmouseover="showTip(event, 'fs10', 320)" class="fn">string</span>
+        <span onmouseout="hideTip(event, 'fs94', 321)" onmouseover="showTip(event, 'fs94', 321)" class="fn">renderView</span> <span onmouseout="hideTip(event, 'fs95', 322)" onmouseover="showTip(event, 'fs95', 322)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 323)" onmouseover="showTip(event, 'fs45', 323)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs116', 324)" onmouseover="showTip(event, 'fs116', 324)" class="id">result</span>
+    <span class="pn">|</span> <span class="id">_</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs94', 325)" onmouseover="showTip(event, 'fs94', 325)" class="fn">renderView</span> <span onmouseout="hideTip(event, 'fs95', 326)" onmouseover="showTip(event, 'fs95', 326)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 327)" onmouseover="showTip(event, 'fs45', 327)" class="id">pos</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs52', 328)" onmouseover="showTip(event, 'fs52', 328)" class="uc">Some</span> <span class="s">&quot;&quot;</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We test whether the cell that is being rendered is the active one using the
+<code>state.Active = Some pos</code> condition. Rather than comparing two <code>Position</code> values,
+we compare <code>Position option</code> values and do not have to worry about the case when
+<code>state.Active</code> is <code>None</code>.</p>
+<p>If the current cell is active, we take the entered value or empty string and pass
+it to <code>renderEditor</code> (defined next). If no, then we try to get the input - if there is
+no input, we call <code>renderView</code> with <code>Some ""</code> to render valid but empty cell. Otherwise, we
+use a sequence of <code>parse</code> and <code>evaluate</code> to get the result. We will look at both of these
+functions below, when discussing how the spreadsheet logic is implemented. Both
+<code>parse</code> and <code>evaluate</code> may fail, so we use the option type to compose them. <code>Option.bind</code>
+runs <code>evaluate</code> only when <code>parse</code> succeeds; otherwise it propagates the <code>None</code> result.
+We also use <code>Option.map</code> to transform the optional result of type <code>int</code> into an
+optional string which we then pass to <code>renderView</code>.</p>
+<p>So far, we have not created any handlers that would trigger events when something
+happens in the user interface. We're finally going to do this in <code>renderEditor</code> and
+<code>renderView</code>, which are both otherwise quite straightforward:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs94', 245)" onmouseover="showTip(event, 'fs94', 245)" class="fn">renderView</span> <span onmouseout="hideTip(event, 'fs95', 246)" onmouseover="showTip(event, 'fs95', 246)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 247)" onmouseover="showTip(event, 'fs45', 247)" class="id">pos</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs96', 248)" onmouseover="showTip(event, 'fs96', 248)" class="id">value</span><span class="pn">:</span><span onmouseout="hideTip(event, 'fs84', 249)" onmouseover="showTip(event, 'fs84', 249)" class="rt">option</span><span class="pn">&lt;</span><span class="id">_</span><span class="pn">&gt;</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs97', 250)" onmouseover="showTip(event, 'fs97', 250)" class="id">color</span> <span class="o">=</span> <span class="k">if</span> <span onmouseout="hideTip(event, 'fs96', 251)" onmouseover="showTip(event, 'fs96', 251)" class="id">value</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs98', 252)" onmouseover="showTip(event, 'fs98', 252)" class="id">IsNone</span> <span class="k">then</span> <span class="s">&quot;#ffb0b0&quot;</span> <span class="k">else</span> <span class="s">&quot;white&quot;</span>
+  <span onmouseout="hideTip(event, 'fs99', 253)" onmouseover="showTip(event, 'fs99', 253)" class="fn">td</span> 
+    <span class="pn">[</span> <span onmouseout="hideTip(event, 'fs100', 254)" onmouseover="showTip(event, 'fs100', 254)" class="uc">Style</span> <span class="pn">[</span><span onmouseout="hideTip(event, 'fs101', 255)" onmouseover="showTip(event, 'fs101', 255)" class="uc">Background</span> <span onmouseout="hideTip(event, 'fs97', 256)" onmouseover="showTip(event, 'fs97', 256)" class="id">color</span><span class="pn">]</span> 
+      <span onmouseout="hideTip(event, 'fs102', 257)" onmouseover="showTip(event, 'fs102', 257)" class="uc">OnClick</span> <span class="pn">(</span><span class="k">fun</span> <span class="id">_</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs95', 258)" onmouseover="showTip(event, 'fs95', 258)" class="fn">trigger</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs78', 259)" onmouseover="showTip(event, 'fs78', 259)" class="uc">StartEdit</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs45', 260)" onmouseover="showTip(event, 'fs45', 260)" class="id">pos</span><span class="pn">)</span><span class="pn">)</span> <span class="pn">)</span> <span class="pn">]</span> 
+    <span class="pn">[</span> <span onmouseout="hideTip(event, 'fs103', 261)" onmouseover="showTip(event, 'fs103', 261)" class="fn">str</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs104', 262)" onmouseover="showTip(event, 'fs104', 262)" class="fn">defaultArg</span> <span onmouseout="hideTip(event, 'fs96', 263)" onmouseover="showTip(event, 'fs96', 263)" class="id">value</span> <span class="s">&quot;#ERR&quot;</span><span class="pn">)</span> <span class="pn">]</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs105', 264)" onmouseover="showTip(event, 'fs105', 264)" class="fn">renderEditor</span> <span onmouseout="hideTip(event, 'fs95', 265)" onmouseover="showTip(event, 'fs95', 265)" class="fn">trigger</span> <span onmouseout="hideTip(event, 'fs45', 266)" onmouseover="showTip(event, 'fs45', 266)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs91', 267)" onmouseover="showTip(event, 'fs91', 267)" class="id">value</span> <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs99', 268)" onmouseover="showTip(event, 'fs99', 268)" class="fn">td</span> <span class="pn">[</span> <span onmouseout="hideTip(event, 'fs106', 269)" onmouseover="showTip(event, 'fs106', 269)" class="uc">Class</span> <span class="s">&quot;selected&quot;</span><span class="pn">]</span> <span class="pn">[</span> 
+    <span onmouseout="hideTip(event, 'fs107', 270)" onmouseover="showTip(event, 'fs107', 270)" class="fn">input</span> <span class="pn">[</span>
+      <span onmouseout="hideTip(event, 'fs108', 271)" onmouseover="showTip(event, 'fs108', 271)" class="uc">AutoFocus</span> <span class="k">true</span>
+      <span onmouseout="hideTip(event, 'fs109', 272)" onmouseover="showTip(event, 'fs109', 272)" class="uc">OnInput</span> <span class="pn">(</span><span class="k">fun</span> <span onmouseout="hideTip(event, 'fs110', 273)" onmouseover="showTip(event, 'fs110', 273)" class="id">e</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs95', 274)" onmouseover="showTip(event, 'fs95', 274)" class="fn">trigger</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs76', 275)" onmouseover="showTip(event, 'fs76', 275)" class="uc">UpdateValue</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs45', 276)" onmouseover="showTip(event, 'fs45', 276)" class="id">pos</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs110', 277)" onmouseover="showTip(event, 'fs110', 277)" class="id">e</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs111', 278)" onmouseover="showTip(event, 'fs111', 278)" class="id">target</span><span class="o">?</span><span onmouseout="hideTip(event, 'fs91', 279)" onmouseover="showTip(event, 'fs91', 279)" class="id">value</span><span class="pn">)</span><span class="pn">)</span><span class="pn">)</span>
+      <span onmouseout="hideTip(event, 'fs112', 280)" onmouseover="showTip(event, 'fs112', 280)" class="uc">Value</span> <span onmouseout="hideTip(event, 'fs91', 281)" onmouseover="showTip(event, 'fs91', 281)" class="id">value</span> <span class="pn">]</span>
+  <span class="pn">]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>In <code>renderView</code>, we create red background and use the <code>#ERR</code> string if the value to display
+is empty (indicating an error). We also add an <code>OnClick</code> handler. When you click on the cell,
+we want to trigger the <code>StartEdit</code> event in order to move the editor to the current cell. To
+do this, we specify the <code>OnClick</code> attribute and, when a click happens, trigger the event using
+the <code>trigger</code> function which we got as an input argument for the <code>view</code> function (and which
+we first passed to <code>renderCell</code> and then to <code>renderView</code>).</p>
+<p>The <code>renderEditor</code> function is similar. We specify the <code>OnInput</code> handler and, whenever the text
+in the input changes, trigger the <code>UpdateValue</code> event to update the value and recalculate
+everything in the spreadsheet. We also specify <code>AutoFocus</code> attribute which ensures that the
+element is active immediately after it is created (when you click on a cell).</p>
+<h3>Putting it all together</h3>
+<p>Now we have all the four components we need to run our user interface. We have the <code>State</code> and
+<code>Event</code> type definitions and we have the <code>update</code> and <code>view</code> functions. To put everything together,
+we need to define the initial state, specify the ID of the HTML element in which the application
+should be rendered and start it.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs126', 360)" onmouseover="showTip(event, 'fs126', 360)" class="fn">initial</span> <span class="pn">(</span><span class="pn">)</span> <span class="o">=</span> 
+  <span class="pn">{</span> <span onmouseout="hideTip(event, 'fs127', 361)" onmouseover="showTip(event, 'fs127', 361)" class="id">Cols</span> <span class="o">=</span> <span class="pn">[</span><span class="s">&#39;A&#39;</span> <span class="o">..</span> <span class="s">&#39;K&#39;</span><span class="pn">]</span>
+    <span onmouseout="hideTip(event, 'fs128', 362)" onmouseover="showTip(event, 'fs128', 362)" class="id">Rows</span> <span class="o">=</span> <span class="pn">[</span><span class="n">1</span> <span class="o">..</span> <span class="n">15</span><span class="pn">]</span>
+    <span class="id">Active</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs57', 363)" onmouseover="showTip(event, 'fs57', 363)" class="uc">None</span>
+    <span class="id">Cells</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 364)" onmouseover="showTip(event, 'fs9', 364)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs129', 365)" onmouseover="showTip(event, 'fs129', 365)" class="id">empty</span> <span class="pn">}</span><span class="pn">,</span>
+  <span onmouseout="hideTip(event, 'fs89', 366)" onmouseover="showTip(event, 'fs89', 366)" class="m">Cmd</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs130', 367)" onmouseover="showTip(event, 'fs130', 367)" class="id">Empty</span>    
+ 
+<span onmouseout="hideTip(event, 'fs131', 368)" onmouseover="showTip(event, 'fs131', 368)" class="m">Program</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs132', 369)" onmouseover="showTip(event, 'fs132', 369)" class="id">mkProgram</span> <span onmouseout="hideTip(event, 'fs126', 370)" onmouseover="showTip(event, 'fs126', 370)" class="fn">initial</span> <span onmouseout="hideTip(event, 'fs86', 371)" onmouseover="showTip(event, 'fs86', 371)" class="fn">update</span> <span onmouseout="hideTip(event, 'fs118', 372)" onmouseover="showTip(event, 'fs118', 372)" class="fn">view</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs131', 373)" onmouseover="showTip(event, 'fs131', 373)" class="m">Program</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs133', 374)" onmouseover="showTip(event, 'fs133', 374)" class="id">withReact</span> <span class="s">&quot;main&quot;</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs131', 375)" onmouseover="showTip(event, 'fs131', 375)" class="m">Program</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs134', 376)" onmouseover="showTip(event, 'fs134', 376)" class="id">run</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The initial state defines the ranges of available rows and columns and specifies that there
+are no values in any of the cells (the demo embedded above specifies the initial cells for
+computing factorial and Fibonacci here). Then we use <code>mkProgram</code> to compose all the
+components together, we specify React as our execution engine and we start the Elmish application!</p>
+<h2>Implementing spreadsheet logic</h2>
+<p>So far, we defined the domain model which specifies what a spreadsheet is using F# types and
+we implemented the user interface using Elmish. The only thing we skipped so far is the
+spreadsheet logic - that is, parsing of formulas and evaluation. Completing these two is going to
+be easier than you might expect!</p>
+<h3>Evaluating spreadsheet formulas</h3>
+<p>First, let's have a look at how to evaluate formulas. In the beginning, we defined the <code>Expr</code>
+type as a discriminated union with three cases: <code>Number</code>, <code>Binary</code> and <code>Reference</code>. To
+evaluate an expression, we need to write a recursive function that uses pattern matching and
+appropriately handles each case. We'll start with a simple version that does not handle errors
+and does not check for recursive formulas:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs37', 82)" onmouseover="showTip(event, 'fs37', 82)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs38', 83)" onmouseover="showTip(event, 'fs38', 83)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs39', 84)" onmouseover="showTip(event, 'fs39', 84)" class="id">expr</span> <span class="o">=</span> 
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs39', 85)" onmouseover="showTip(event, 'fs39', 85)" class="id">expr</span> <span class="k">with</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs5', 86)" onmouseover="showTip(event, 'fs5', 86)" class="uc">Number</span> <span onmouseout="hideTip(event, 'fs40', 87)" onmouseover="showTip(event, 'fs40', 87)" class="id">num</span> <span class="k">-&gt;</span> 
+      <span onmouseout="hideTip(event, 'fs40', 88)" onmouseover="showTip(event, 'fs40', 88)" class="id">num</span> 
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs7', 89)" onmouseover="showTip(event, 'fs7', 89)" class="uc">Binary</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs27', 90)" onmouseover="showTip(event, 'fs27', 90)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs28', 91)" onmouseover="showTip(event, 'fs28', 91)" class="id">op</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs29', 92)" onmouseover="showTip(event, 'fs29', 92)" class="id">r</span><span class="pn">)</span> <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs41', 93)" onmouseover="showTip(event, 'fs41', 93)" class="id">ops</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs42', 94)" onmouseover="showTip(event, 'fs42', 94)" class="fn">dict</span> <span class="pn">[</span> <span class="s">&#39;+&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">+</span><span class="pn">)</span><span class="pn">;</span> <span class="s">&#39;-&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">-</span><span class="pn">)</span><span class="pn">;</span> <span class="s">&#39;*&#39;</span><span class="pn">,</span> <span class="o">(*)</span><span class="pn">;</span> <span class="s">&#39;/&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">/</span><span class="pn">)</span> <span class="pn">]</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs43', 95)" onmouseover="showTip(event, 'fs43', 95)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs44', 96)" onmouseover="showTip(event, 'fs44', 96)" class="id">r</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs37', 97)" onmouseover="showTip(event, 'fs37', 97)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs38', 98)" onmouseover="showTip(event, 'fs38', 98)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs27', 99)" onmouseover="showTip(event, 'fs27', 99)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs37', 100)" onmouseover="showTip(event, 'fs37', 100)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs38', 101)" onmouseover="showTip(event, 'fs38', 101)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs29', 102)" onmouseover="showTip(event, 'fs29', 102)" class="id">r</span>
+      <span onmouseout="hideTip(event, 'fs41', 103)" onmouseover="showTip(event, 'fs41', 103)" class="id">ops</span><span class="pn">.</span><span class="pn">[</span><span onmouseout="hideTip(event, 'fs28', 104)" onmouseover="showTip(event, 'fs28', 104)" class="id">op</span><span class="pn">]</span> <span onmouseout="hideTip(event, 'fs43', 105)" onmouseover="showTip(event, 'fs43', 105)" class="id">l</span> <span onmouseout="hideTip(event, 'fs44', 106)" onmouseover="showTip(event, 'fs44', 106)" class="id">r</span>
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 107)" onmouseover="showTip(event, 'fs6', 107)" class="uc">Reference</span> <span onmouseout="hideTip(event, 'fs45', 108)" onmouseover="showTip(event, 'fs45', 108)" class="id">pos</span> <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs46', 109)" onmouseover="showTip(event, 'fs46', 109)" class="id">parsed</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 110)" onmouseover="showTip(event, 'fs34', 110)" class="fn">parse</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs9', 111)" onmouseover="showTip(event, 'fs9', 111)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs47', 112)" onmouseover="showTip(event, 'fs47', 112)" class="id">find</span> <span onmouseout="hideTip(event, 'fs45', 113)" onmouseover="showTip(event, 'fs45', 113)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs38', 114)" onmouseover="showTip(event, 'fs38', 114)" class="id">cells</span><span class="pn">)</span>
+      <span onmouseout="hideTip(event, 'fs37', 115)" onmouseover="showTip(event, 'fs37', 115)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs38', 116)" onmouseover="showTip(event, 'fs38', 116)" class="id">cells</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs48', 117)" onmouseover="showTip(event, 'fs48', 117)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs49', 118)" onmouseover="showTip(event, 'fs49', 118)" class="id">get</span> <span onmouseout="hideTip(event, 'fs46', 119)" onmouseover="showTip(event, 'fs46', 119)" class="id">parsed</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The function takes the spreadsheet <code>cells</code> as a first argument, because it may need to lookup
+values of cells referenced by the current expression. It also takes the expression <code>expr</code> and
+pattern matches on it. Handling <code>Number</code> is easy - we just return the number.</p>
+<p>Handling <code>Binary</code> is a bit more interesting, because we need to call <code>evaluate</code> recursively
+to evaluate the value of the left and right sub-expressions. Once we have them, we use a simple
+dictionary to map the operator to a function (written using standard F# operators) and run the
+function.</p>
+<p>Finally, when handling a <code>Reference</code>, we first get the input at the given cell, parse it and
+then (again) recursively call <code>evaluate</code>. This can fail in many ways - the cell might be empty
+or the parser could fail. We improve this in the next version of our evaluator where the
+function returns <code>int option</code> rather than <code>int</code>. The missing value <code>None</code> indicates that
+something went wrong.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs50', 120)" onmouseover="showTip(event, 'fs50', 120)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs51', 121)" onmouseover="showTip(event, 'fs51', 121)" class="id">visited</span> <span onmouseout="hideTip(event, 'fs38', 122)" onmouseover="showTip(event, 'fs38', 122)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs39', 123)" onmouseover="showTip(event, 'fs39', 123)" class="id">expr</span> <span class="o">=</span> 
+  <span class="k">match</span> <span onmouseout="hideTip(event, 'fs39', 124)" onmouseover="showTip(event, 'fs39', 124)" class="id">expr</span> <span class="k">with</span>
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs5', 125)" onmouseover="showTip(event, 'fs5', 125)" class="uc">Number</span> <span onmouseout="hideTip(event, 'fs40', 126)" onmouseover="showTip(event, 'fs40', 126)" class="id">num</span> <span class="k">-&gt;</span> 
+      <span onmouseout="hideTip(event, 'fs52', 127)" onmouseover="showTip(event, 'fs52', 127)" class="uc">Some</span> <span onmouseout="hideTip(event, 'fs40', 128)" onmouseover="showTip(event, 'fs40', 128)" class="id">num</span>
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs7', 129)" onmouseover="showTip(event, 'fs7', 129)" class="uc">Binary</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs27', 130)" onmouseover="showTip(event, 'fs27', 130)" class="id">l</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs28', 131)" onmouseover="showTip(event, 'fs28', 131)" class="id">op</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs29', 132)" onmouseover="showTip(event, 'fs29', 132)" class="id">r</span><span class="pn">)</span> <span class="k">-&gt;</span> 
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs41', 133)" onmouseover="showTip(event, 'fs41', 133)" class="id">ops</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs42', 134)" onmouseover="showTip(event, 'fs42', 134)" class="fn">dict</span> <span class="pn">[</span> <span class="s">&#39;+&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">+</span><span class="pn">)</span><span class="pn">;</span> <span class="s">&#39;-&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">-</span><span class="pn">)</span><span class="pn">;</span> <span class="s">&#39;*&#39;</span><span class="pn">,</span> <span class="o">(*)</span><span class="pn">;</span> <span class="s">&#39;/&#39;</span><span class="pn">,</span> <span class="pn">(</span><span class="o">/</span><span class="pn">)</span> <span class="pn">]</span>
+      <span onmouseout="hideTip(event, 'fs50', 135)" onmouseover="showTip(event, 'fs50', 135)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs51', 136)" onmouseover="showTip(event, 'fs51', 136)" class="id">visited</span> <span onmouseout="hideTip(event, 'fs38', 137)" onmouseover="showTip(event, 'fs38', 137)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs27', 138)" onmouseover="showTip(event, 'fs27', 138)" class="id">l</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 139)" onmouseover="showTip(event, 'fs48', 139)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs53', 140)" onmouseover="showTip(event, 'fs53', 140)" class="id">bind</span> <span class="pn">(</span><span class="k">fun</span> <span onmouseout="hideTip(event, 'fs43', 141)" onmouseover="showTip(event, 'fs43', 141)" class="id">l</span> <span class="k">-&gt;</span>
+        <span onmouseout="hideTip(event, 'fs50', 142)" onmouseover="showTip(event, 'fs50', 142)" class="fn">evaluate</span> <span onmouseout="hideTip(event, 'fs51', 143)" onmouseover="showTip(event, 'fs51', 143)" class="id">visited</span> <span onmouseout="hideTip(event, 'fs38', 144)" onmouseover="showTip(event, 'fs38', 144)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs29', 145)" onmouseover="showTip(event, 'fs29', 145)" class="id">r</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 146)" onmouseover="showTip(event, 'fs48', 146)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs54', 147)" onmouseover="showTip(event, 'fs54', 147)" class="id">map</span> <span class="pn">(</span><span class="k">fun</span> <span onmouseout="hideTip(event, 'fs44', 148)" onmouseover="showTip(event, 'fs44', 148)" class="id">r</span> <span class="k">-&gt;</span>
+          <span onmouseout="hideTip(event, 'fs41', 149)" onmouseover="showTip(event, 'fs41', 149)" class="id">ops</span><span class="pn">.</span><span class="pn">[</span><span onmouseout="hideTip(event, 'fs28', 150)" onmouseover="showTip(event, 'fs28', 150)" class="id">op</span><span class="pn">]</span> <span onmouseout="hideTip(event, 'fs43', 151)" onmouseover="showTip(event, 'fs43', 151)" class="id">l</span> <span onmouseout="hideTip(event, 'fs44', 152)" onmouseover="showTip(event, 'fs44', 152)" class="id">r</span> <span class="pn">)</span><span class="pn">)</span>
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 153)" onmouseover="showTip(event, 'fs6', 153)" class="uc">Reference</span> <span onmouseout="hideTip(event, 'fs45', 154)" onmouseover="showTip(event, 'fs45', 154)" class="id">pos</span> <span class="k">when</span> <span onmouseout="hideTip(event, 'fs55', 155)" onmouseover="showTip(event, 'fs55', 155)" class="m">Set</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs56', 156)" onmouseover="showTip(event, 'fs56', 156)" class="id">contains</span> <span onmouseout="hideTip(event, 'fs45', 157)" onmouseover="showTip(event, 'fs45', 157)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs51', 158)" onmouseover="showTip(event, 'fs51', 158)" class="id">visited</span> <span class="k">-&gt;</span>
+      <span onmouseout="hideTip(event, 'fs57', 159)" onmouseover="showTip(event, 'fs57', 159)" class="uc">None</span>
+
+  <span class="pn">|</span> <span onmouseout="hideTip(event, 'fs6', 160)" onmouseover="showTip(event, 'fs6', 160)" class="uc">Reference</span> <span onmouseout="hideTip(event, 'fs45', 161)" onmouseover="showTip(event, 'fs45', 161)" class="id">pos</span> <span class="k">-&gt;</span> 
+      <span onmouseout="hideTip(event, 'fs9', 162)" onmouseover="showTip(event, 'fs9', 162)" class="m">Map</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs58', 163)" onmouseover="showTip(event, 'fs58', 163)" class="id">tryFind</span> <span onmouseout="hideTip(event, 'fs45', 164)" onmouseover="showTip(event, 'fs45', 164)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs38', 165)" onmouseover="showTip(event, 'fs38', 165)" class="id">cells</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 166)" onmouseover="showTip(event, 'fs48', 166)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs53', 167)" onmouseover="showTip(event, 'fs53', 167)" class="id">bind</span> <span class="pn">(</span><span class="k">fun</span> <span onmouseout="hideTip(event, 'fs59', 168)" onmouseover="showTip(event, 'fs59', 168)" class="id">value</span> <span class="k">-&gt;</span>
+        <span onmouseout="hideTip(event, 'fs34', 169)" onmouseover="showTip(event, 'fs34', 169)" class="fn">parse</span> <span onmouseout="hideTip(event, 'fs59', 170)" onmouseover="showTip(event, 'fs59', 170)" class="id">value</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs48', 171)" onmouseover="showTip(event, 'fs48', 171)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs53', 172)" onmouseover="showTip(event, 'fs53', 172)" class="id">bind</span> <span class="pn">(</span><span class="k">fun</span> <span onmouseout="hideTip(event, 'fs60', 173)" onmouseover="showTip(event, 'fs60', 173)" class="id">parsed</span> <span class="k">-&gt;</span>
+          <span onmouseout="hideTip(event, 'fs50', 174)" onmouseover="showTip(event, 'fs50', 174)" class="fn">evaluate</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs55', 175)" onmouseover="showTip(event, 'fs55', 175)" class="m">Set</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs61', 176)" onmouseover="showTip(event, 'fs61', 176)" class="id">add</span> <span onmouseout="hideTip(event, 'fs45', 177)" onmouseover="showTip(event, 'fs45', 177)" class="id">pos</span> <span onmouseout="hideTip(event, 'fs51', 178)" onmouseover="showTip(event, 'fs51', 178)" class="id">visited</span><span class="pn">)</span> <span onmouseout="hideTip(event, 'fs38', 179)" onmouseover="showTip(event, 'fs38', 179)" class="id">cells</span> <span onmouseout="hideTip(event, 'fs60', 180)" onmouseover="showTip(event, 'fs60', 180)" class="id">parsed</span><span class="pn">)</span><span class="pn">)</span>
+</code></pre></td>
+</tr>
+</table>
+<p>In case of <code>Number</code>, we now return <code>Some num</code>. In this case, evaluation cannot fail.
+In case of <code>Binary</code>, both recursive calls can fail and we get two option values. To handle this,
+we use <code>Option.bind</code> and <code>Option.map</code> - both of these will call the specified function only when
+the previous operation succeeded, otherwise, they immediately return <code>None</code> indicating a failure.
+If both the left and the right sub-expressions can be evaluated, we can then apply binary numerical
+operator to their results. Handling of <code>Reference</code> is similar - we sequence a number of operations
+that may fail using <code>Option.bind</code>.</p>
+<p>Another interesting feature we added in this version is checking for recursive references. To
+do this, the <code>evaluate</code> function now takes the <code>visited</code> parameter which is a set of cells that
+were accessed during the evaluation. We add cells to the set using <code>Set.add pos visited</code> on
+line 18. When we find a reference to a cell that we already visited (line 12), then we immediately
+return <code>None</code>, because this would lead to an infinite loop.</p>
+<h3>Parsing formulas</h3>
+<p>Finally, the last part of logic that we need to implement is the parsing of formulas entered by
+the user into values of our <code>Expr</code> type. For this, we're going to use a very simple parser combinator
+library (which you can find in the <a href="https://github.com/tpetricek/elmish-spreadsheet/blob/master/src/helpers/parsec.fs">full source code</a>).
+There are four key concepts in the library:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">TChar</span><span class="pn">,</span> <span class="id">&#39;</span><span class="id">TResult</span><span class="pn">&gt;</span> <span class="o">=</span> <span class="id">&#39;</span><span class="id">TChar</span> <span onmouseout="hideTip(event, 'fs81', 377)" onmouseover="showTip(event, 'fs81', 377)" class="id">list</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs11', 378)" onmouseover="showTip(event, 'fs11', 378)" class="id">option</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">TResult</span> <span class="pn">*</span> <span class="id">&#39;</span><span class="id">TChar</span> <span onmouseout="hideTip(event, 'fs81', 379)" onmouseover="showTip(event, 'fs81', 379)" class="id">list</span><span class="pn">&gt;</span>
+
+<span class="k">val</span> <span class="pn">(</span> <span class="o">&lt;*&gt;</span> <span class="pn">)</span> <span class="pn">:</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T1</span><span class="pn">&gt;</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T2</span><span class="pn">&gt;</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T1</span> <span class="pn">*</span> <span class="id">&#39;</span><span class="id">T2</span><span class="pn">&gt;</span>
+<span class="k">val</span> <span class="pn">(</span> <span class="o">&lt;|&gt;</span> <span class="pn">)</span> <span class="pn">:</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span>
+<span class="k">val</span> <span class="id">map</span> <span class="pn">:</span> <span class="pn">(</span><span class="id">&#39;</span><span class="id">T</span> <span class="k">-&gt;</span> <span class="id">&#39;</span><span class="id">R</span><span class="pn">)</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">T</span><span class="pn">&gt;</span> <span class="k">-&gt;</span> <span class="id">Parser</span><span class="pn">&lt;</span><span class="id">&#39;</span><span class="id">R</span><span class="pn">&gt;</span>
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li>
+<p><code>Parser&lt;char, 'T&gt;</code> represents a parser that takes a list of characters as the input. It
+returns <code>None</code> if the parser cannot parse the input. Otherwise, the parser parses a value and
+returns it together with the rest of the input. The fact that parsers do not have to consume the
+entire input makes it easy to compose them.</p>
+</li>
+<li>
+<p><code>&lt;*&gt;</code> is a binary operator that takes two parsers; it runs the first parser first, getting a
+value of type <code>'T1</code> and then runs the second parser on the rest of the input, getting a value of
+type <code>'T2</code>. It succeeds only if both parsers succeed and then it returns a pair with both values.</p>
+</li>
+<li>
+<p><code>&lt;|&gt;</code> is a binary operator that also takes two parsers, but they both have to recognise values of
+the same type. It tries to run the first parser and, if that fails, tries to run the second one.
+It succeeds if either of the parsers succeed and returns whatever the successful parser returned.</p>
+</li>
+<li>
+<p>Finally, <code>map</code> is a function that transforms the value that a parser produces. Given a parser of
+type <code>Parser&lt;'T&gt;</code> and a function <code>'T -&gt; 'R</code>, it returns a parser that runs the original parser and,
+if that is successful, applies the function to the result.</p>
+</li>
+</ul>
+<p>The following snippet shows how we use these three ideas to create simple parsers to recognise
+operators, references and numbers:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 22)" onmouseover="showTip(event, 'fs13', 22)" class="id">operator</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 23)" onmouseover="showTip(event, 'fs14', 23)" class="fn">char</span> <span class="s">&#39;+&#39;</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs14', 24)" onmouseover="showTip(event, 'fs14', 24)" class="fn">char</span> <span class="s">&#39;-&#39;</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs14', 25)" onmouseover="showTip(event, 'fs14', 25)" class="fn">char</span> <span class="s">&#39;*&#39;</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs14', 26)" onmouseover="showTip(event, 'fs14', 26)" class="fn">char</span> <span class="s">&#39;/&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 27)" onmouseover="showTip(event, 'fs15', 27)" class="id">reference</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs16', 28)" onmouseover="showTip(event, 'fs16', 28)" class="id">letter</span> <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs17', 29)" onmouseover="showTip(event, 'fs17', 29)" class="id">integer</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs18', 30)" onmouseover="showTip(event, 'fs18', 30)" class="fn">map</span> <span onmouseout="hideTip(event, 'fs6', 31)" onmouseover="showTip(event, 'fs6', 31)" class="uc">Reference</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 32)" onmouseover="showTip(event, 'fs19', 32)" class="id">number</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs17', 33)" onmouseover="showTip(event, 'fs17', 33)" class="id">integer</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs18', 34)" onmouseover="showTip(event, 'fs18', 34)" class="fn">map</span> <span onmouseout="hideTip(event, 'fs5', 35)" onmouseover="showTip(event, 'fs5', 35)" class="uc">Number</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>char</code> function creates a parser that recognises only the given character (and then returns it as the
+result). Thus, the <code>operator</code> parser recognises the four standard numerical binary operators and accepts
+no other characters. The <code>reference</code> parser recognises a letter followed by a number. This returns
+a <code>char * int</code> pair which we turn into the <code>Reference</code> value of <code>Expr</code> using the <code>map</code> function.
+Parsing a number is even easier - we just run the built-in <code>integer</code> parser and wrap it in <code>Number</code>.
+Note that the type of <code>reference</code> and <code>number</code> is now the same - <code>Parser&lt;char, Expr&gt;</code>. This means that
+we can compose them using <code>&lt;|&gt;</code> to create parser that recognises either of the two expression types.</p>
+<p>Finishing the rest of the parsing is a bit more work, because we need to handle parentheses as
+<code>(1+2)*3</code> and also ignore whitespace, but the concepts are the same:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 36)" onmouseover="showTip(event, 'fs20', 36)" class="id">exprSetter</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs21', 37)" onmouseover="showTip(event, 'fs21', 37)" class="id">expr</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs22', 38)" onmouseover="showTip(event, 'fs22', 38)" class="fn">slot</span> <span class="pn">(</span><span class="pn">)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 39)" onmouseover="showTip(event, 'fs23', 39)" class="id">brack</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs14', 40)" onmouseover="showTip(event, 'fs14', 40)" class="fn">char</span> <span class="s">&#39;(&#39;</span> <span class="o">&lt;*&gt;&gt;</span> <span onmouseout="hideTip(event, 'fs24', 41)" onmouseover="showTip(event, 'fs24', 41)" class="id">anySpace</span> <span class="o">&lt;*&gt;&gt;</span> <span onmouseout="hideTip(event, 'fs21', 42)" onmouseover="showTip(event, 'fs21', 42)" class="id">expr</span> <span class="o">&lt;&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs24', 43)" onmouseover="showTip(event, 'fs24', 43)" class="id">anySpace</span> <span class="o">&lt;&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs14', 44)" onmouseover="showTip(event, 'fs14', 44)" class="fn">char</span> <span class="s">&#39;)&#39;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs25', 45)" onmouseover="showTip(event, 'fs25', 45)" class="id">term</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs19', 46)" onmouseover="showTip(event, 'fs19', 46)" class="id">number</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 47)" onmouseover="showTip(event, 'fs15', 47)" class="id">reference</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs23', 48)" onmouseover="showTip(event, 'fs23', 48)" class="id">brack</span> 
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs26', 49)" onmouseover="showTip(event, 'fs26', 49)" class="id">binary</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs25', 50)" onmouseover="showTip(event, 'fs25', 50)" class="id">term</span> <span class="o">&lt;&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs24', 51)" onmouseover="showTip(event, 'fs24', 51)" class="id">anySpace</span> <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs13', 52)" onmouseover="showTip(event, 'fs13', 52)" class="id">operator</span> <span class="o">&lt;&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs24', 53)" onmouseover="showTip(event, 'fs24', 53)" class="id">anySpace</span> <span class="o">&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs25', 54)" onmouseover="showTip(event, 'fs25', 54)" class="id">term</span> 
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs18', 55)" onmouseover="showTip(event, 'fs18', 55)" class="fn">map</span> <span class="pn">(</span><span class="k">fun</span> <span class="pn">(</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs27', 56)" onmouseover="showTip(event, 'fs27', 56)" class="id">l</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs28', 57)" onmouseover="showTip(event, 'fs28', 57)" class="id">op</span><span class="pn">)</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs29', 58)" onmouseover="showTip(event, 'fs29', 58)" class="id">r</span><span class="pn">)</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs7', 59)" onmouseover="showTip(event, 'fs7', 59)" class="uc">Binary</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs27', 60)" onmouseover="showTip(event, 'fs27', 60)" class="id">l</span><span class="pn">,</span> <span class="id">op</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs29', 61)" onmouseover="showTip(event, 'fs29', 61)" class="id">r</span><span class="pn">)</span><span class="pn">)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 62)" onmouseover="showTip(event, 'fs30', 62)" class="id">exprAux</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs26', 63)" onmouseover="showTip(event, 'fs26', 63)" class="id">binary</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs25', 64)" onmouseover="showTip(event, 'fs25', 64)" class="id">term</span>
+<span onmouseout="hideTip(event, 'fs20', 65)" onmouseover="showTip(event, 'fs20', 65)" class="fn">exprSetter</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs31', 66)" onmouseover="showTip(event, 'fs31', 66)" class="id">Set</span> <span onmouseout="hideTip(event, 'fs30', 67)" onmouseover="showTip(event, 'fs30', 67)" class="id">exprAux</span>
+</code></pre></td>
+</tr>
+</table>
+<p>To deal with recursion, the library allows us to create a parser using <code>slot</code>, use it, and then define
+what it is later using <code>exprSetter</code>. In our case, we define <code>expr</code> on line 1, use it when defining
+<code>brack</code> (line 3) and then define it on line 9. This is a recursive reference;  <code>exprAux</code> can
+be <code>binary</code>, which contains <code>term</code>, which can be <code>brack</code> and that, in turn, contains <code>expr</code>.</p>
+<p>The only other clever thing in the snippet are the <code>&lt;&lt;*&gt;</code> and <code>&lt;*&gt;&gt;</code> operators. Those behave like
+<code>&lt;*&gt;</code>, but return only the result from the parser on the left or right (wherever the double arrow points).
+This is useful, because we can write <code>anySpace &lt;*&gt;&gt; expr &lt;&lt;*&gt; anySpace</code> to parser expression surrounded
+by whitespace, but get a parser that returns just the result of <code>expr</code> (we do not care what the whitespace
+was).</p>
+<p>Finally, we define a formula which is <code>=</code> followed by an expression and an equation - that is, the thing
+that you can type in the spreadsheet - which is either a formula or a number.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 68)" onmouseover="showTip(event, 'fs32', 68)" class="id">formula</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 69)" onmouseover="showTip(event, 'fs14', 69)" class="fn">char</span> <span class="s">&#39;=&#39;</span> <span class="o">&lt;*&gt;&gt;</span> <span onmouseout="hideTip(event, 'fs24', 70)" onmouseover="showTip(event, 'fs24', 70)" class="id">anySpace</span> <span class="o">&lt;*&gt;&gt;</span> <span onmouseout="hideTip(event, 'fs21', 71)" onmouseover="showTip(event, 'fs21', 71)" class="id">expr</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 72)" onmouseover="showTip(event, 'fs33', 72)" class="id">equation</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs24', 73)" onmouseover="showTip(event, 'fs24', 73)" class="id">anySpace</span> <span class="o">&lt;*&gt;&gt;</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs32', 74)" onmouseover="showTip(event, 'fs32', 74)" class="id">formula</span> <span class="o">&lt;|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 75)" onmouseover="showTip(event, 'fs19', 75)" class="id">number</span><span class="pn">)</span> <span class="o">&lt;&lt;*&gt;</span> <span onmouseout="hideTip(event, 'fs24', 76)" onmouseover="showTip(event, 'fs24', 76)" class="id">anySpace</span> 
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs34', 77)" onmouseover="showTip(event, 'fs34', 77)" class="fn">parse</span> <span onmouseout="hideTip(event, 'fs35', 78)" onmouseover="showTip(event, 'fs35', 78)" class="id">input</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs36', 79)" onmouseover="showTip(event, 'fs36', 79)" class="fn">run</span> <span onmouseout="hideTip(event, 'fs33', 80)" onmouseover="showTip(event, 'fs33', 80)" class="id">equation</span> <span onmouseout="hideTip(event, 'fs35', 81)" onmouseover="showTip(event, 'fs35', 81)" class="id">input</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>parse</code> function defined on the last line lets us run the main <code>equation</code> parser on a given input.
+It takes a sequence of characters and produces <code>option&lt;Expr&gt;</code>, which is exactly what we've used earlier
+in the article.</p>
+<h2>Conclusions</h2>
+<p>In total, this article showed you some 125 lines of code. If we did not worry about nice formatting
+and skipped all the blank lines, we could have written a simple spreadsheet application in some 100
+lines of code! Aside from standard Fable libraries, the only thing I did not count is the parser combinator
+library. I wrote that on my own, but there are similar existing libraries that you could use (though
+you'd need to find one that works with Fable).</p>
+<p>The final spreadsheet application is quite simple, but it does a number of interesting things. It
+runs in a web browser and you can scroll back to the start of the article to play with it again!
+On the technical side, it has a user interface where you can select and edit cells, it parses the
+formulas you enter and it also evaluates them, handling errors and recursive references.</p>
+<blockquote>
+<p><em><i class="fa fa-hand-o-right" style="font-size:110%;margin:0px 5px 0px 0px"></i></em>
+If you enjoyed this post and want to learn more about F# and also Fable, join
+our <a href="https://skillsmatter.com/courses/473-tomas-petricek-phil-trelford-fast-track-to-fsharp">F# FastTrack</a>
+course on <strong>6-7 December</strong> in <strong>London</strong> at SkillsMatter. We'll cover Fable, Elmish, but
+also many other F# examples. Get in touch at <a href="http://twitter.com/tomaspetricek">@tomaspetricek</a>
+or email <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> for a 10% discount for the course,
+or if you are interested in custom on-site training.</p>
+</blockquote>
+<p>I like this example, because it shows how a number of nice aspects of the F# language and also the
+F# community can come together to provide a fantastic overall experience. In case of our spreadsheet,
+this includes:</p>
+<ul>
+<li>
+<p><a href="https://fable.io/">Fable</a> makes it possible to compile F# to JavaScript, but more importantly,
+it also gives us access to the JavaScript ecosystem. Fable follows the pragmatic style of
+functional-first F# programming. This makes it possible to integrate with libraries such as React
+and build different architectures on top of them.</p>
+</li>
+<li>
+<p>The Elm architecture, as implemented by <a href="https://elmish.github.io/elmish/">the Elmish library</a>,
+is a fantastic way to write functional-first user interfaces. All we had to do to implement the
+spreadsheet user interface was to define types for the state and events and then implement the
+<code>update</code> and <code>view</code> functions.</p>
+</li>
+<li>
+<p>Finally, the example also used compositionality of functional programming in two ways. First, an
+expression is elegantly expressed by a recursive type <code>Expr</code> which can consist of other <code>Expr</code>
+values. Second, we composed a parser for spreadsheet formulas from just a few primitives using
+just two operators, <code>&lt;|&gt;</code> and <code>&lt;*&gt;</code>.</p>
+</li>
+</ul>
+<p>If you want to have a look at the complete source code, you can find it <a href="https://github.com/tpetricek/elmish-spreadsheet/">in my elmish-spreadsheet
+repository on GitHub</a>. The repository is designed
+as a hands-on exercise where you can start with a template, complete a number of tasks and end
+up with a spreadsheet, but there is also <code>completed</code> branch where you find the finished source code.
+You can also edit and run the code in your browser using the <a href="https://fable.io/repl/">Fable REPL</a>
+(you'll find it under Samples, Elmish, Spreadsheet),</p>
+<div class="tip" id="fs1">type Position = char * int</div>
+<div class="tip" id="fs2">Multiple items<br />val char : value:&#39;T -&gt; char (requires member op_Explicit)<br /><br />--------------------<br />type char = System.Char</div>
+<div class="tip" id="fs3">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />--------------------<br />type int = int32<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int</div>
+<div class="tip" id="fs4">type Expr =<br />&#160;&#160;| Number of int<br />&#160;&#160;| Reference of Position<br />&#160;&#160;| Binary of Expr * char * Expr</div>
+<div class="tip" id="fs5">union case Expr.Number: int -&gt; Expr</div>
+<div class="tip" id="fs6">union case Expr.Reference: Position -&gt; Expr</div>
+<div class="tip" id="fs7">union case Expr.Binary: Expr * char * Expr -&gt; Expr</div>
+<div class="tip" id="fs8">type Sheet = Map&lt;Position,string&gt;</div>
+<div class="tip" id="fs9">Multiple items<br />module Map<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Map&lt;&#39;Key,&#39;Value (requires comparison)&gt; =<br />&#160;&#160;interface IReadOnlyDictionary&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;interface IReadOnlyCollection&lt;KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable&lt;KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;interface ICollection&lt;KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;interface IDictionary&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;Key * &#39;Value&gt; -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;member Add : key:&#39;Key * value:&#39;Value -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;member ContainsKey : key:&#39;Key -&gt; bool<br />&#160;&#160;...<br /><br />--------------------<br />new : elements:seq&lt;&#39;Key * &#39;Value&gt; -&gt; Map&lt;&#39;Key,&#39;Value&gt;</div>
+<div class="tip" id="fs10">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />--------------------<br />type string = System.String</div>
+<div class="tip" id="fs11">type &#39;T option = Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs12">module Parsec</div>
+<div class="tip" id="fs13">val operator : Parser&lt;char,char&gt;</div>
+<div class="tip" id="fs14">Multiple items<br />val char : tok:&#39;a -&gt; Parser&lt;&#39;a,&#39;a&gt; (requires equality)<br /><br />--------------------<br />type char = System.Char</div>
+<div class="tip" id="fs15">val reference : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs16">val letter : Parser&lt;char,char&gt;</div>
+<div class="tip" id="fs17">val integer : Parser&lt;char,int&gt;</div>
+<div class="tip" id="fs18">val map : f:(&#39;a -&gt; &#39;b) -&gt; Parser&lt;&#39;c,&#39;a&gt; -&gt; Parser&lt;&#39;c,&#39;b&gt;<br /><em><br /><br />&#160;Transforms the result of the parser using the specified function</em></div>
+<div class="tip" id="fs19">val number : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs20">val exprSetter : ParserSetter&lt;char,Expr&gt;</div>
+<div class="tip" id="fs21">val expr : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs22">val slot : unit -&gt; ParserSetter&lt;&#39;a,&#39;b&gt; * Parser&lt;&#39;a,&#39;b&gt;<br /><em><br /><br />&#160;Creates a delayed parser whose actual parser is set later</em></div>
+<div class="tip" id="fs23">val brack : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs24">val anySpace : Parser&lt;char,char list&gt;</div>
+<div class="tip" id="fs25">val term : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs26">val binary : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs27">val l : Expr</div>
+<div class="tip" id="fs28">val op : char</div>
+<div class="tip" id="fs29">val r : Expr</div>
+<div class="tip" id="fs30">val exprAux : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs31">ParserSetter.Set: Parser&lt;char,Expr&gt; -&gt; unit</div>
+<div class="tip" id="fs32">val formula : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs33">val equation : Parser&lt;char,Expr&gt;</div>
+<div class="tip" id="fs34">val parse : input:seq&lt;char&gt; -&gt; Expr option</div>
+<div class="tip" id="fs35">val input : seq&lt;char&gt;</div>
+<div class="tip" id="fs36">val run : Parser&lt;&#39;a,&#39;b&gt; -&gt; input:seq&lt;&#39;a&gt; -&gt; &#39;b option</div>
+<div class="tip" id="fs37">val evaluate : cells:Map&lt;Position,#seq&lt;char&gt;&gt; -&gt; expr:Expr -&gt; int</div>
+<div class="tip" id="fs38">val cells : Map&lt;Position,#seq&lt;char&gt;&gt;</div>
+<div class="tip" id="fs39">val expr : Expr</div>
+<div class="tip" id="fs40">val num : int</div>
+<div class="tip" id="fs41">val ops : System.Collections.Generic.IDictionary&lt;char,(int -&gt; int -&gt; int)&gt;</div>
+<div class="tip" id="fs42">val dict : keyValuePairs:seq&lt;&#39;Key * &#39;Value&gt; -&gt; System.Collections.Generic.IDictionary&lt;&#39;Key,&#39;Value&gt; (requires equality)</div>
+<div class="tip" id="fs43">val l : int</div>
+<div class="tip" id="fs44">val r : int</div>
+<div class="tip" id="fs45">val pos : Position</div>
+<div class="tip" id="fs46">val parsed : Expr option</div>
+<div class="tip" id="fs47">val find : key:&#39;Key -&gt; table:Map&lt;&#39;Key,&#39;T&gt; -&gt; &#39;T (requires comparison)</div>
+<div class="tip" id="fs48">module Option<br /><br />from Microsoft.FSharp.Core</div>
+<div class="tip" id="fs49">val get : option:&#39;T option -&gt; &#39;T</div>
+<div class="tip" id="fs50">val evaluate : visited:Set&lt;Position&gt; -&gt; cells:Map&lt;Position,#seq&lt;char&gt;&gt; -&gt; expr:Expr -&gt; int option</div>
+<div class="tip" id="fs51">val visited : Set&lt;Position&gt;</div>
+<div class="tip" id="fs52">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs53">val bind : binder:(&#39;T -&gt; &#39;U option) -&gt; option:&#39;T option -&gt; &#39;U option</div>
+<div class="tip" id="fs54">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; option:&#39;T option -&gt; &#39;U option</div>
+<div class="tip" id="fs55">Multiple items<br />module Set<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Set&lt;&#39;T (requires comparison)&gt; =<br />&#160;&#160;interface IReadOnlyCollection&lt;&#39;T&gt;<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;interface ICollection&lt;&#39;T&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Add : value:&#39;T -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Contains : value:&#39;T -&gt; bool<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member IsProperSubsetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;...<br /><br />--------------------<br />new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;</div>
+<div class="tip" id="fs56">val contains : element:&#39;T -&gt; set:Set&lt;&#39;T&gt; -&gt; bool (requires comparison)</div>
+<div class="tip" id="fs57">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs58">val tryFind : key:&#39;Key -&gt; table:Map&lt;&#39;Key,&#39;T&gt; -&gt; &#39;T option (requires comparison)</div>
+<div class="tip" id="fs59">val value : #seq&lt;char&gt;</div>
+<div class="tip" id="fs60">val parsed : Expr</div>
+<div class="tip" id="fs61">val add : value:&#39;T -&gt; set:Set&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)</div>
+<div class="tip" id="fs62">namespace Elmish</div>
+<div class="tip" id="fs63">namespace Elmish.React</div>
+<div class="tip" id="fs64">namespace Fable</div>
+<div class="tip" id="fs65">namespace Fable.Helpers</div>
+<div class="tip" id="fs66">module React<br /><br />from Fable.Helpers</div>
+<div class="tip" id="fs67">module Props<br /><br />from Fable.Helpers.React</div>
+<div class="tip" id="fs68">namespace Fable.Core</div>
+<div class="tip" id="fs69">module JsInterop<br /><br />from Fable.Core</div>
+<div class="tip" id="fs70">namespace Fable.Import</div>
+<div class="tip" id="fs71">{ State : string }</div>
+<div class="tip" id="fs72">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;T&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs73">EventOne | EventTwo</div>
+<div class="tip" id="fs74">type unit = Unit</div>
+<div class="tip" id="fs75">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event =<br />&#160;&#160;| UpdateValue of Position * string<br />&#160;&#160;| StartEdit of Position<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;T&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs76">union case Event.UpdateValue: Position * string -&gt; Event</div>
+<div class="tip" id="fs77">Multiple items<br />union case CSSProp.Position: obj -&gt; CSSProp<br /><br />--------------------<br />type Position = char * int</div>
+<div class="tip" id="fs78">union case Event.StartEdit: Position -&gt; Event</div>
+<div class="tip" id="fs79">type State =<br />&#160;&#160;{Rows: int list;<br />&#160;&#160;&#160;Cols: char list;<br />&#160;&#160;&#160;Active: Position option;<br />&#160;&#160;&#160;Cells: Sheet;}</div>
+<div class="tip" id="fs80">State.Rows: int list</div>
+<div class="tip" id="fs81">type &#39;T list = List&lt;&#39;T&gt;</div>
+<div class="tip" id="fs82">State.Cols: char list</div>
+<div class="tip" id="fs83">State.Active: Position option</div>
+<div class="tip" id="fs84">Multiple items<br />val option : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement<br /><br />--------------------<br />type &#39;T option = Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs85">State.Cells: Sheet</div>
+<div class="tip" id="fs86">val update : msg:Event -&gt; state:State -&gt; State * Cmd&lt;&#39;a&gt;</div>
+<div class="tip" id="fs87">val msg : Event</div>
+<div class="tip" id="fs88">val state : State</div>
+<div class="tip" id="fs89">Multiple items<br />module Cmd<br /><br />from Elmish<br /><br />--------------------<br />type Cmd&lt;&#39;msg&gt; = Sub&lt;&#39;msg&gt; list</div>
+<div class="tip" id="fs90">val none : Cmd&lt;&#39;msg&gt;</div>
+<div class="tip" id="fs91">val value : string</div>
+<div class="tip" id="fs92">val newCells : Map&lt;Position,string&gt;</div>
+<div class="tip" id="fs93">val add : key:&#39;Key -&gt; value:&#39;T -&gt; table:Map&lt;&#39;Key,&#39;T&gt; -&gt; Map&lt;&#39;Key,&#39;T&gt; (requires comparison)</div>
+<div class="tip" id="fs94">val renderView : trigger:(Event -&gt; unit) -&gt; char * int -&gt; value:string option -&gt; React.ReactElement</div>
+<div class="tip" id="fs95">val trigger : (Event -&gt; unit)</div>
+<div class="tip" id="fs96">val value : string option</div>
+<div class="tip" id="fs97">val color : string</div>
+<div class="tip" id="fs98">property Option.IsNone: bool</div>
+<div class="tip" id="fs99">val td : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs100">union case HTMLAttr.Style: CSSProp list -&gt; HTMLAttr</div>
+<div class="tip" id="fs101">union case CSSProp.Background: obj -&gt; CSSProp</div>
+<div class="tip" id="fs102">union case DOMAttr.OnClick: (React.MouseEvent -&gt; unit) -&gt; DOMAttr</div>
+<div class="tip" id="fs103">val str : s:string -&gt; React.ReactElement</div>
+<div class="tip" id="fs104">val defaultArg : arg:&#39;T option -&gt; defaultValue:&#39;T -&gt; &#39;T</div>
+<div class="tip" id="fs105">val renderEditor : trigger:(Event -&gt; unit) -&gt; char * int -&gt; value:string -&gt; React.ReactElement</div>
+<div class="tip" id="fs106">Multiple items<br />union case HTMLAttr.Class: string -&gt; HTMLAttr<br /><br />--------------------<br />type ClassAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; ClassAttribute<br /><br />--------------------<br />new : unit -&gt; ClassAttribute</div>
+<div class="tip" id="fs107">val input : b:seq&lt;IHTMLProp&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs108">union case HTMLAttr.AutoFocus: bool -&gt; HTMLAttr</div>
+<div class="tip" id="fs109">union case DOMAttr.OnInput: (React.FormEvent -&gt; unit) -&gt; DOMAttr</div>
+<div class="tip" id="fs110">val e : React.FormEvent</div>
+<div class="tip" id="fs111">property React.SyntheticEvent.target: Browser.EventTarget</div>
+<div class="tip" id="fs112">union case HTMLAttr.Value: string -&gt; HTMLAttr</div>
+<div class="tip" id="fs113">val renderCell : trigger:(Event -&gt; unit) -&gt; char * int -&gt; state:State -&gt; React.ReactElement</div>
+<div class="tip" id="fs114">val text : string option</div>
+<div class="tip" id="fs115">val input : string</div>
+<div class="tip" id="fs116">val result : string option</div>
+<div class="tip" id="fs117">val empty&lt;&#39;T (requires comparison)&gt; : Set&lt;&#39;T&gt; (requires comparison)</div>
+<div class="tip" id="fs118">val view : state:State -&gt; trigger:(Event -&gt; unit) -&gt; React.ReactElement</div>
+<div class="tip" id="fs119">val table : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs120">val thead : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs121">val tr : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs122">val th : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs123">val col : char</div>
+<div class="tip" id="fs124">val tbody : b:seq&lt;IHTMLProp&gt; -&gt; c:seq&lt;React.ReactElement&gt; -&gt; React.ReactElement</div>
+<div class="tip" id="fs125">val row : int</div>
+<div class="tip" id="fs126">val initial : unit -&gt; State * Sub&lt;&#39;a&gt; list</div>
+<div class="tip" id="fs127">union case HTMLAttr.Cols: float -&gt; HTMLAttr</div>
+<div class="tip" id="fs128">union case HTMLAttr.Rows: float -&gt; HTMLAttr</div>
+<div class="tip" id="fs129">val empty&lt;&#39;Key,&#39;T (requires comparison)&gt; : Map&lt;&#39;Key,&#39;T&gt; (requires comparison)</div>
+<div class="tip" id="fs130">property List.Empty: Sub&lt;&#39;msg&gt; list</div>
+<div class="tip" id="fs131">Multiple items<br />module Program<br /><br />from Elmish.React<br /><br />--------------------<br />module Program<br /><br />from Elmish<br /><br />--------------------<br />type Program&lt;&#39;arg,&#39;model,&#39;msg,&#39;view&gt; =<br />&#160;&#160;{init: &#39;arg -&gt; &#39;model * Cmd&lt;&#39;msg&gt;;<br />&#160;&#160;&#160;update: &#39;msg -&gt; &#39;model -&gt; &#39;model * Cmd&lt;&#39;msg&gt;;<br />&#160;&#160;&#160;subscribe: &#39;model -&gt; Cmd&lt;&#39;msg&gt;;<br />&#160;&#160;&#160;view: &#39;model -&gt; Dispatch&lt;&#39;msg&gt; -&gt; &#39;view;<br />&#160;&#160;&#160;setState: &#39;model -&gt; Dispatch&lt;&#39;msg&gt; -&gt; unit;<br />&#160;&#160;&#160;onError: string * exn -&gt; unit;}</div>
+<div class="tip" id="fs132">val mkProgram : init:(&#39;arg -&gt; &#39;model * Cmd&lt;&#39;msg&gt;) -&gt; update:(&#39;msg -&gt; &#39;model -&gt; &#39;model * Cmd&lt;&#39;msg&gt;) -&gt; view:(&#39;model -&gt; Dispatch&lt;&#39;msg&gt; -&gt; &#39;view) -&gt; Program&lt;&#39;arg,&#39;model,&#39;msg,&#39;view&gt;</div>
+<div class="tip" id="fs133">val withReact : placeholderId:string -&gt; program:Program&lt;&#39;a,&#39;b,&#39;c,React.ReactElement&gt; -&gt; Program&lt;&#39;a,&#39;b,&#39;c,React.ReactElement&gt;</div>
+<div class="tip" id="fs134">val run : program:Program&lt;unit,&#39;model,&#39;msg,&#39;view&gt; -&gt; unit</div>

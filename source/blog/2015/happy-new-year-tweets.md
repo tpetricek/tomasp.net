@@ -1,0 +1,607 @@
+Happy New Year 2016 around the World: Behind the scenes of my #FsAdvent project
+===============================================================================
+
+ - date: 2015-12-30T18:09:34.5852095+00:00
+ - description: This year, my #FsAdvent contribution ended up on December 31.To celebrate the beginning of the New Year 2016, I built an interactive web application that visualizes 'Happy New Year' tweets across the globe. It uses a range of interesting F# libraries including F# Data Toolbox for calling Twitter, Suave.io web server and F# agents.
+ - layout: article
+ - image: http://tomasp.net/blog/2015/happy-new-year-tweets/thumb.png
+ - tags: f#,data journalism,thegamma,data science,visualization
+ - title: Happy New Year 2016 around the World
+ - url: 2015/happy-new-year-tweets
+ - rawbody: true
+
+--------------------------------------------------------------------------------
+<p>Just like <a href="http://tomasp.net/blog/2014/composing-christmas/">last year</a> and the
+<a href="http://tomasp.net/blog/2013/japan-advent-art/index.html">year</a>
+<a href="http://tomasp.net/blog/2014/japan-advent-art-en/">before</a>, I wanted to participate in the
+<a href="https://sergeytihon.wordpress.com/2015/10/25/f-advent-calendar-in-english-2015/">#FsAdvent</a>
+event, where someone writes a blog post about something they did with F# during December.
+Thanks to <a href="https://sergeytihon.wordpress.com/">Sergey Tihon</a> for the organization of the English
+version and the <a href="http://connpass.com/event/22056/">Japanese F# community</a> for coming up with the
+idea a few years ago!</p>
+<p>As my blog post ended up on 31 December, I wanted to do something that would fit well with the
+theme of ending of 2015 and starting of the new year 2016 and so I decided to write a little
+interactive web site that tracks the "Happy New Year" tweets live across the globe. This is
+partly inspired by <a href="http://twitter.github.io/interactive/newyear2014/">Happy New Year Tweets</a>
+from Twitter in 2014, but rather than analyzing data in retrospect, you can watch 2016 come live!</p>
+
+
+--------------------------------------------------------------------------------
+<h1><span class="hm">Happy New Year 2016 around the World</span><span class="hs"> Behind the scenes of my #FsAdvent project</span></h1>
+<p>Just like <a href="http://tomasp.net/blog/2014/composing-christmas/">last year</a> and the
+<a href="http://tomasp.net/blog/2013/japan-advent-art/index.html">year</a>
+<a href="http://tomasp.net/blog/2014/japan-advent-art-en/">before</a>, I wanted to participate in the
+<a href="https://sergeytihon.wordpress.com/2015/10/25/f-advent-calendar-in-english-2015/">#FsAdvent</a>
+event, where someone writes a blog post about something they did with F# during December.
+Thanks to <a href="https://sergeytihon.wordpress.com/">Sergey Tihon</a> for the organization of the English
+version and the <a href="http://connpass.com/event/22056/">Japanese F# community</a> for coming up with the
+idea a few years ago!</p>
+<p>As my blog post ended up on 31 December, I wanted to do something that would fit well with the
+theme of ending of 2015 and starting of the new year 2016 and so I decided to write a little
+interactive web site that tracks the "Happy New Year" tweets live across the globe. This is
+partly inspired by <a href="http://twitter.github.io/interactive/newyear2014/">Happy New Year Tweets</a>
+from Twitter in 2014, but rather than analyzing data in retrospect, you can watch 2016 come live!</p>
+<p>Without further ado, here are the important links:</p>
+<ul>
+<li>
+<a href="http://newyear-tweets.cloudapp.net/">Happy New Year 2016 around the World</a> live web site!<br />
+(It will stay alive for a few days around 31 December 2015, but not forever.)
+</li>
+<li>
+<a href="https://github.com/tpetricek/new-year-tweets-2016">F# source code for the project</a> on GitHub<br />
+(Feel free to modify it and use it for other events!)
+</li>
+<li><a href="#continue">Continute reading</a> if you want to learn about how it works!</li>
+</ul>
+<p>Before we get to the technical details, here is a brief screenshot showing the project live:</p>
+<a href="http://newyear-tweets.cloudapp.net/">
+<img src="http://tomasp.net/blog/2015/happy-new-year-tweets/screen.gif" />
+</a>
+<br />
+<a name="continue"></a>
+<h2>Overview</h2>
+<p>On the front-end side, the web site displays three different things - it shows live tweets on a
+map, it shows live tweets in a feed (below on the right) and it shows a word cloud with most
+common phrases. Everything is updated live using a three web socket connections with the server.</p>
+<p>On the back-end side, the server uses Twitter Streaming API to receive "Happy New Year" tweets as
+they happen. It then uses various techniques for getting locations of some tweets so that they
+can appear on the map and it calculates statistics (e.g. for the word cloud) on the fly.</p>
+<p>If you look at the source code, pretty much all back-end is implemented in
+<a href="https://github.com/tpetricek/new-year-tweets-2016/blob/master/app.fsx">a single F# script file</a>.
+For the front-end, I didn't do anything fancy and <a href="https://github.com/tpetricek/new-year-tweets-2016/blob/master/web/index.html">hacked together some
+JavaScript</a>
+using the great D3-based <a href="http://datamaps.github.io/">Datamaps</a> library for the map.</p>
+<p>There are a couple of nice things in the code including the connection to Twitter,
+F# type providers (as always), agents for reactive programming and Suave web server
+for implementing web sockets.</p>
+<h2>Getting a stream of tweets</h2>
+<p>To get the tweets, I'm using the <a href="http://fsprojects.github.io/FSharp.Data.Toolbox/TwitterProvider.html">F# Data Toolbox library</a>,
+which comes with a nice Twitter API wrapper built using F# type providers. As a single-user
+application (all is happening on the server), we can directly provider the application
+access token &amp; secret and connect to the Twitter directly. Then we can use the
+<code>twitter.Streaming.FilterTweets</code> method to search for tweets that contain any of the known
+"Happy New Year" phrases:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs44', 73)" onmouseover="showTip(event, 'fs44', 73)" class="i">phrases</span> <span class="o">=</span> 
+ [<span class="s">&quot;새해 복 많이 받으세요&quot;</span>; <span class="s">&quot;สวัสดีปีใหม่&quot;</span>;
+  <span class="s">&quot;šťastn&#253; nov&#253; rok&quot;</span>; <span class="s">&quot;عام سعيد&quot;</span>; <span id="fst45" onmouseout="hideTip(event, 'fs45', 74)" onmouseover="showTip(event, 'fs45', 74, document.getElementById('fst45'))" class="omitted">(...)</span> ]
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs46', 75)" onmouseover="showTip(event, 'fs46', 75)" class="i">ctx</span> <span class="o">=</span> <span id="fst47" onmouseout="hideTip(event, 'fs47', 76)" onmouseover="showTip(event, 'fs47', 76, document.getElementById('fst47'))" class="omitted">(Provide key and secrets)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs48', 77)" onmouseover="showTip(event, 'fs48', 77)" class="i">twitter</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs49', 78)" onmouseover="showTip(event, 'fs49', 78)" class="t">Twitter</span>(<span onmouseout="hideTip(event, 'fs50', 79)" onmouseover="showTip(event, 'fs50', 79)" class="p">UserContext</span>(<span onmouseout="hideTip(event, 'fs46', 80)" onmouseover="showTip(event, 'fs46', 80)" class="i">ctx</span>))
+
+<span class="c">// Search for the phrases and start the stream</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs51', 81)" onmouseover="showTip(event, 'fs51', 81)" class="i">search</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs48', 82)" onmouseover="showTip(event, 'fs48', 82)" class="i">twitter</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs52', 83)" onmouseover="showTip(event, 'fs52', 83)" class="i">Streaming</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs53', 84)" onmouseover="showTip(event, 'fs53', 84)" class="f">FilterTweets</span> <span onmouseout="hideTip(event, 'fs44', 85)" onmouseover="showTip(event, 'fs44', 85)" class="i">phrases</span> 
+<span onmouseout="hideTip(event, 'fs51', 86)" onmouseover="showTip(event, 'fs51', 86)" class="i">search</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 87)" onmouseover="showTip(event, 'fs54', 87)" class="f">Start</span>()
+</code></pre></td>
+</tr>
+</table>
+<p>The <code>search.TweetReceived</code> event will be triggered when a new tweet happens. The <code>status</code> object
+has a bunch of properties (inferred by a type provider). It turns out that event <code>status.Text</code> is
+optional and so parsing the tweets involves a lot of pattern matching:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs55', 88)" onmouseover="showTip(event, 'fs55', 88)" class="i">liveTweets</span> <span class="o">=</span> 
+  <span onmouseout="hideTip(event, 'fs51', 89)" onmouseover="showTip(event, 'fs51', 89)" class="i">search</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs56', 90)" onmouseover="showTip(event, 'fs56', 90)" class="i">TweetReceived</span>
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 91)" onmouseover="showTip(event, 'fs57', 91)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 92)" onmouseover="showTip(event, 'fs58', 92)" class="f">choose</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs59', 93)" onmouseover="showTip(event, 'fs59', 93)" class="i">status</span> <span class="k">-&gt;</span> 
+      <span class="c">// Parse the location, if the tweet has it</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs60', 94)" onmouseover="showTip(event, 'fs60', 94)" class="i">origLocation</span> <span class="o">=</span> <span class="i">parseLocation</span> <span onmouseout="hideTip(event, 'fs59', 95)" onmouseover="showTip(event, 'fs59', 95)" class="i">status</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs61', 96)" onmouseover="showTip(event, 'fs61', 96)" class="i">Geo</span>
+
+      <span class="c">// Get user name, text of the tweet and location</span>
+      <span class="k">match</span> <span onmouseout="hideTip(event, 'fs59', 97)" onmouseover="showTip(event, 'fs59', 97)" class="i">status</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 98)" onmouseover="showTip(event, 'fs62', 98)" class="i">User</span>, <span onmouseout="hideTip(event, 'fs59', 99)" onmouseover="showTip(event, 'fs59', 99)" class="i">status</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs63', 100)" onmouseover="showTip(event, 'fs63', 100)" class="i">Text</span> <span class="k">with</span>
+      | <span onmouseout="hideTip(event, 'fs64', 101)" onmouseover="showTip(event, 'fs64', 101)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs65', 102)" onmouseover="showTip(event, 'fs65', 102)" class="i">user</span>, <span onmouseout="hideTip(event, 'fs64', 103)" onmouseover="showTip(event, 'fs64', 103)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs66', 104)" onmouseover="showTip(event, 'fs66', 104)" class="i">text</span> <span class="k">-&gt;</span>
+        { <span class="i">Tweeted</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs23', 105)" onmouseover="showTip(event, 'fs23', 105)" class="t">DateTime</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs67', 106)" onmouseover="showTip(event, 'fs67', 106)" class="i">UtcNow</span>; <span class="i">OriginalArea</span> <span class="o">=</span> <span class="i">user</span><span class="o">.</span><span class="i">Location</span>
+          <span onmouseout="hideTip(event, 'fs68', 107)" onmouseover="showTip(event, 'fs68', 107)" class="i">Text</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs66', 108)" onmouseover="showTip(event, 'fs66', 108)" class="i">text</span>;<span class="i">PictureUrl</span> <span class="o">=</span> <span class="i">user</span><span class="o">.</span><span class="i">ProfileImageUrl</span>; 
+          <span id="fst69" onmouseout="hideTip(event, 'fs69', 109)" onmouseover="showTip(event, 'fs69', 109, document.getElementById('fst69'))" class="omitted">(Populate other properties)</span> } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs64', 110)" onmouseover="showTip(event, 'fs64', 110)" class="i">Some</span>
+      | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs70', 111)" onmouseover="showTip(event, 'fs70', 111)" class="p">None</span> )
+</code></pre></td>
+</tr>
+</table>
+<p>The code is slightly simplified, but it is pretty representative. Now we have a value
+<code>liveTweets</code> of type <code>IObservable&lt;Tweet&gt;</code> which is an event that is triggered every time
+we get a new (not completely silly) tweet.</p>
+<h2>Geolocating tweets and users</h2>
+<p>The hardest bit turns out to be getting good tweets for the map. Not a lot of tweets come
+with GPS coordinates and so I had to do a couple of tricks. When more people start tweeting
+around the New Year, we should be able to use mostly tweets with GPS coordinates, but there
+are some backup strategies:</p>
+<ol>
+<li>If a tweet has GPS coordinates, use this as the location</li>
+<li>
+Every now and then use <a href="http://www.mapquestapi.com/geocoding/">MapQuest</a> or <a href="https://www.bingmapsportal.com/">Bing</a>
+to geolocate the user based on their location in the profile
+</li>
+<li>
+If we didn't produce enough tweets using (1) or (2), locate tweet based on 
+the language of the phrase and put it in some place where a previous tweet
+with the same phrase appeared.
+</li>
+</ol>
+<p>In priciple, geolocating users based on their profile would work good enough, but all the
+geolocation services have rate limits that are easy to hit when the site is running live and
+so I added (3) as the last resort. If I had more time, I would probably try to build an index
+with country and city names, which would likely cover enough tweets (at least from users with
+a reasonable text in their "location").</p>
+<h3>Tweets with GPS coordinates</h3>
+<p>All of the methods report tweets to a "replay" agent (see below) that replays the tweets with
+a specified delay. This is done using <code>replay.AddEvent</code> at the end of the pipeline. For
+tweets with GPS coordinates, we simply copy the already provided data to <code>InferredLocation</code>
+(coordinates) and <code>InferredArea</code> (text):</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs55', 112)" onmouseover="showTip(event, 'fs55', 112)" class="i">liveTweets</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 113)" onmouseover="showTip(event, 'fs57', 113)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 114)" onmouseover="showTip(event, 'fs58', 114)" class="f">choose</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs71', 115)" onmouseover="showTip(event, 'fs71', 115)" class="i">tw</span> <span class="k">-&gt;</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs71', 116)" onmouseover="showTip(event, 'fs71', 116)" class="i">tw</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs30', 117)" onmouseover="showTip(event, 'fs30', 117)" class="i">OriginalLocation</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs64', 118)" onmouseover="showTip(event, 'fs64', 118)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs72', 119)" onmouseover="showTip(event, 'fs72', 119)" class="i">loc</span> <span class="k">-&gt;</span> 
+       (<span onmouseout="hideTip(event, 'fs71', 120)" onmouseover="showTip(event, 'fs71', 120)" class="i">tw</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs22', 121)" onmouseover="showTip(event, 'fs22', 121)" class="i">Tweeted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 122)" onmouseover="showTip(event, 'fs73', 122)" class="f">AddSeconds</span>(<span class="n">5.0</span>),
+        { <span onmouseout="hideTip(event, 'fs71', 123)" onmouseover="showTip(event, 'fs71', 123)" class="i">tw</span> <span class="k">with</span> 
+           <span class="i">InferredArea</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs64', 124)" onmouseover="showTip(event, 'fs64', 124)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs71', 125)" onmouseover="showTip(event, 'fs71', 125)" class="i">tw</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 126)" onmouseover="showTip(event, 'fs26', 126)" class="i">OriginalArea</span> 
+           <span class="i">InferredLocation</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs64', 127)" onmouseover="showTip(event, 'fs64', 127)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs72', 128)" onmouseover="showTip(event, 'fs72', 128)" class="i">loc</span> }) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs64', 129)" onmouseover="showTip(event, 'fs64', 129)" class="p">Some</span>
+    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs70', 130)" onmouseover="showTip(event, 'fs70', 130)" class="p">None</span>)
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 131)" onmouseover="showTip(event, 'fs57', 131)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 132)" onmouseover="showTip(event, 'fs74', 132)" class="f">add</span> <span class="i">replay</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs75', 133)" onmouseover="showTip(event, 'fs75', 133)" class="i">AddEvent</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Geolocating tweets using Bing and MapQuest</h3>
+<p>For locating tweets based on the user's location, we will be calling Bing and MapQuest APIs.
+This is done using type providers (see below) and wrapped in a nice <code>MapQuest.locate</code> and
+<code>Bing.locate</code> functions. We also need to limit rate at which we use these - the following
+geolocates one tweet per 5 seconds using MapQuest:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs55', 134)" onmouseover="showTip(event, 'fs55', 134)" class="i">liveTweets</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 135)" onmouseover="showTip(event, 'fs57', 135)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 136)" onmouseover="showTip(event, 'fs76', 136)" class="f">limitRate</span> <span class="n">5000</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 137)" onmouseover="showTip(event, 'fs57', 137)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 138)" onmouseover="showTip(event, 'fs77', 138)" class="f">mapAsyncIgnoreErrors</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs71', 139)" onmouseover="showTip(event, 'fs71', 139)" class="i">tw</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs78', 140)" onmouseover="showTip(event, 'fs78', 140)" class="i">async</span> {
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs79', 141)" onmouseover="showTip(event, 'fs79', 141)" class="i">located</span> <span class="o">=</span> <span class="i">MapQuest</span><span class="o">.</span><span class="i">locate</span> <span onmouseout="hideTip(event, 'fs71', 142)" onmouseover="showTip(event, 'fs71', 142)" class="i">tw</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 143)" onmouseover="showTip(event, 'fs26', 143)" class="i">OriginalArea</span>
+    <span class="k">return</span> <span onmouseout="hideTip(event, 'fs79', 144)" onmouseover="showTip(event, 'fs79', 144)" class="i">located</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs80', 145)" onmouseover="showTip(event, 'fs80', 145)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs81', 146)" onmouseover="showTip(event, 'fs81', 146)" class="f">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs82', 147)" onmouseover="showTip(event, 'fs82', 147)" class="i">area</span>, <span onmouseout="hideTip(event, 'fs72', 148)" onmouseover="showTip(event, 'fs72', 148)" class="i">loc</span>) <span class="k">-&gt;</span>
+      <span onmouseout="hideTip(event, 'fs71', 149)" onmouseover="showTip(event, 'fs71', 149)" class="i">tw</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs22', 150)" onmouseover="showTip(event, 'fs22', 150)" class="i">Tweeted</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 151)" onmouseover="showTip(event, 'fs73', 151)" class="f">AddSeconds</span>(<span class="n">10.0</span>),
+      { <span onmouseout="hideTip(event, 'fs71', 152)" onmouseover="showTip(event, 'fs71', 152)" class="i">tw</span> <span class="k">with</span> 
+         <span class="i">InferredLocation</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs64', 153)" onmouseover="showTip(event, 'fs64', 153)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs72', 154)" onmouseover="showTip(event, 'fs72', 154)" class="i">loc</span>; 
+         <span class="i">InferredArea</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs64', 155)" onmouseover="showTip(event, 'fs64', 155)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs82', 156)" onmouseover="showTip(event, 'fs82', 156)" class="i">area</span> }) })
+<span class="o">|&gt;</span> <span class="i">Observble</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs83', 157)" onmouseover="showTip(event, 'fs83', 157)" class="i">choose</span> <span onmouseout="hideTip(event, 'fs84', 158)" onmouseover="showTip(event, 'fs84', 158)" class="i">id</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 159)" onmouseover="showTip(event, 'fs57', 159)" class="t">Observable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 160)" onmouseover="showTip(event, 'fs74', 160)" class="f">add</span> <span class="i">replay</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs75', 161)" onmouseover="showTip(event, 'fs75', 161)" class="i">AddEvent</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Time zones and geolocating with type providers</h2>
+<p>As in every F# project, I'm making a heavy use of <a href="http://fsharp.github.io/FSharp.Data/">F# Data type providers</a>
+when calling REST-based geolocation services. As a bonus, I also needed to find time zones of countries of the
+world, which can be done by extracting the information from
+<a href="https://en.wikipedia.org/wiki/List_of_time_zones_by_country">List of time zones by country</a> Wikipedia page
+using the HTML type provider.</p>
+<h3>Extracting time zone information</h3>
+<p>The HTML type provider gives us access to the tables on the Wikipedia page and so we can get the country
+and time zones just by writing <code>r.Country</code> and <code>r.''Time Zone''</code> (using backticks to wrap the space).
+As far as I know, Datamaps does not easily let me display multiple time zones per country and so I just
+pick the middle time zone:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs85', 162)" onmouseover="showTip(event, 'fs85', 162)" class="t">TimeZones</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs86', 163)" onmouseover="showTip(event, 'fs86', 163)" class="t">HtmlProvider</span><span class="o">&lt;</span><span id="fst87" onmouseout="hideTip(event, 'fs87', 164)" onmouseover="showTip(event, 'fs87', 164, document.getElementById('fst87'))" class="omitted">"http://.../List_of_time_zones_by_country"</span><span class="o">&gt;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs88', 165)" onmouseover="showTip(event, 'fs88', 165)" class="i">reg</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs89', 166)" onmouseover="showTip(event, 'fs89', 166)" class="t">Regex</span>(<span class="s">&quot;&quot;&quot;UTC([\+\-][0-9][0-9]\:[0-9][0-9])?&quot;&quot;&quot;</span>)
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs90', 167)" onmouseover="showTip(event, 'fs90', 167)" class="i">timeZones</span> <span class="o">=</span> 
+ [ <span class="k">for</span> <span onmouseout="hideTip(event, 'fs91', 168)" onmouseover="showTip(event, 'fs91', 168)" class="i">r</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs85', 169)" onmouseover="showTip(event, 'fs85', 169)" class="t">TimeZones</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs92', 170)" onmouseover="showTip(event, 'fs92', 170)" class="f">GetSample</span>()<span class="o">.</span><span class="i">Tables</span><span class="o">.</span><span class="i">Table1</span><span class="o">.</span><span class="i">Rows</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs93', 171)" onmouseover="showTip(event, 'fs93', 171)" class="i">tz</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs91', 172)" onmouseover="showTip(event, 'fs91', 172)" class="i">r</span><span class="o">.</span><span class="i">``Time Zone``</span><span class="o">.</span><span class="f">Replace</span>(<span class="s">&quot;−&quot;</span>, <span class="s">&quot;-&quot;</span>)
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs94', 173)" onmouseover="showTip(event, 'fs94', 173)" class="i">matches</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs88', 174)" onmouseover="showTip(event, 'fs88', 174)" class="i">reg</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs95', 175)" onmouseover="showTip(event, 'fs95', 175)" class="f">Matches</span>(<span onmouseout="hideTip(event, 'fs93', 176)" onmouseover="showTip(event, 'fs93', 176)" class="i">tz</span>)
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs94', 177)" onmouseover="showTip(event, 'fs94', 177)" class="i">matches</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs96', 178)" onmouseover="showTip(event, 'fs96', 178)" class="i">Count</span> <span class="o">&gt;</span> <span class="n">0</span> <span class="k">then</span>
+      <span class="k">yield</span> <span onmouseout="hideTip(event, 'fs91', 179)" onmouseover="showTip(event, 'fs91', 179)" class="i">r</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs97', 180)" onmouseover="showTip(event, 'fs97', 180)" class="i">Country</span>, <span onmouseout="hideTip(event, 'fs94', 181)" onmouseover="showTip(event, 'fs94', 181)" class="i">matches</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'fs94', 182)" onmouseover="showTip(event, 'fs94', 182)" class="i">matches</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs96', 183)" onmouseover="showTip(event, 'fs96', 183)" class="i">Count</span><span class="o">/</span><span class="n">2</span>]<span class="o">.</span><span class="i">Value</span> ]
+</code></pre></td>
+</tr>
+</table>
+<p>There are a few explicitly defined countries in the actual source code for countries where the middle time
+zone is very wrong and for countries that are named differently on Wikipedia.</p>
+<h3>Geolocating using MapQuest</h3>
+<p>Both Bing and MapQuest provide a nice REST end-point that we can call using the JSON type provider.
+To compose the sample URL, we need to use the <code>Literal</code> attribute and append a key (which is stored in
+a separate config file). The JSON type provider infers the type from the response and gives us nice typed
+access to the results:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Use JSON provider to get a type for calling the API</span>
+<span class="k">let</span> [&lt;<span onmouseout="hideTip(event, 'fs98', 184)" onmouseover="showTip(event, 'fs98', 184)" class="t">Literal</span>&gt;] <span onmouseout="hideTip(event, 'fs99', 185)" onmouseover="showTip(event, 'fs99', 185)" class="i">MapQuestSample</span> <span class="o">=</span> 
+  <span id="fst100" onmouseout="hideTip(event, 'fs100', 186)" onmouseover="showTip(event, 'fs100', 186, document.getElementById('fst100'))" class="omitted">"http://mapquestapi.com/geocoding/v1/address?location=Prague"</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs101', 187)" onmouseover="showTip(event, 'fs101', 187)" class="t">MapQuest</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs102', 188)" onmouseover="showTip(event, 'fs102', 188)" class="t">JsonProvider</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs99', 189)" onmouseover="showTip(event, 'fs99', 189)" class="i">MapQuestSample</span><span class="o">&gt;</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs103', 190)" onmouseover="showTip(event, 'fs103', 190)" class="f">locate</span> (<span onmouseout="hideTip(event, 'fs104', 191)" onmouseover="showTip(event, 'fs104', 191)" class="i">place</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs25', 192)" onmouseover="showTip(event, 'fs25', 192)" class="t">string</span>) <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs105', 193)" onmouseover="showTip(event, 'fs105', 193)" class="i">url</span> <span class="o">=</span> 
+    <span class="s">&quot;http://www.mapquestapi.com/geocoding/v1/address?key=&quot;</span> <span class="o">+</span>
+      <span onmouseout="hideTip(event, 'fs106', 194)" onmouseover="showTip(event, 'fs106', 194)" class="t">Config</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs107', 195)" onmouseover="showTip(event, 'fs107', 195)" class="i">MapQuestKey</span> <span class="o">+</span> <span class="s">&quot;&amp;location=&quot;</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'fs108', 196)" onmouseover="showTip(event, 'fs108', 196)" class="t">HttpUtility</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs109', 197)" onmouseover="showTip(event, 'fs109', 197)" class="f">UrlEncode</span> <span onmouseout="hideTip(event, 'fs104', 198)" onmouseover="showTip(event, 'fs104', 198)" class="i">place</span>)
+  <span onmouseout="hideTip(event, 'fs101', 199)" onmouseover="showTip(event, 'fs101', 199)" class="t">MapQuest</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs110', 200)" onmouseover="showTip(event, 'fs110', 200)" class="f">Load</span>(<span onmouseout="hideTip(event, 'fs105', 201)" onmouseover="showTip(event, 'fs105', 201)" class="i">url</span>)<span class="o">.</span><span class="i">Results</span>
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs111', 202)" onmouseover="showTip(event, 'fs111', 202)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs112', 203)" onmouseover="showTip(event, 'fs112', 203)" class="f">choose</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs113', 204)" onmouseover="showTip(event, 'fs113', 204)" class="i">loc</span> <span class="k">-&gt;</span>
+      <span class="c">// Pick the first returned location if there were any</span>
+      <span class="k">if</span> <span onmouseout="hideTip(event, 'fs113', 205)" onmouseover="showTip(event, 'fs113', 205)" class="i">loc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs114', 206)" onmouseover="showTip(event, 'fs114', 206)" class="i">Locations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs115', 207)" onmouseover="showTip(event, 'fs115', 207)" class="i">Length</span> <span class="o">=</span> <span class="n">0</span> <span class="k">then</span> <span onmouseout="hideTip(event, 'fs70', 208)" onmouseover="showTip(event, 'fs70', 208)" class="p">None</span>
+      <span class="k">else</span> <span onmouseout="hideTip(event, 'fs64', 209)" onmouseover="showTip(event, 'fs64', 209)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs113', 210)" onmouseover="showTip(event, 'fs113', 210)" class="i">loc</span>, <span onmouseout="hideTip(event, 'fs113', 211)" onmouseover="showTip(event, 'fs113', 211)" class="i">loc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs114', 212)" onmouseover="showTip(event, 'fs114', 212)" class="i">Locations</span><span class="o">.</span>[<span class="n">0</span>]) )
+  <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs111', 213)" onmouseover="showTip(event, 'fs111', 213)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs116', 214)" onmouseover="showTip(event, 'fs116', 214)" class="f">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs117', 215)" onmouseover="showTip(event, 'fs117', 215)" class="i">info</span>, <span onmouseout="hideTip(event, 'fs118', 216)" onmouseover="showTip(event, 'fs118', 216)" class="i">loc</span>) <span class="k">-&gt;</span>
+      <span class="c">// Return the location with lattitude and longitude</span>
+      <span onmouseout="hideTip(event, 'fs117', 217)" onmouseover="showTip(event, 'fs117', 217)" class="i">info</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs119', 218)" onmouseover="showTip(event, 'fs119', 218)" class="i">ProvidedLocation</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs120', 219)" onmouseover="showTip(event, 'fs120', 219)" class="i">Location</span>, 
+        (<span onmouseout="hideTip(event, 'fs118', 220)" onmouseover="showTip(event, 'fs118', 220)" class="i">loc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs121', 221)" onmouseover="showTip(event, 'fs121', 221)" class="i">LatLng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs122', 222)" onmouseover="showTip(event, 'fs122', 222)" class="i">Lat</span>, <span onmouseout="hideTip(event, 'fs118', 223)" onmouseover="showTip(event, 'fs118', 223)" class="i">loc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs121', 224)" onmouseover="showTip(event, 'fs121', 224)" class="i">LatLng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs123', 225)" onmouseover="showTip(event, 'fs123', 225)" class="i">Lng</span>) )
+</code></pre></td>
+</tr>
+</table>
+<p>As usual, using the JSON type provider for calling REST APIs makes things very easy.
+The <code>Results</code> property is inferred to be an array of records and information such as
+<code>loc.LatLng.Lat</code> is also statically typed.</p>
+<h2>Reactive programming with F# agents</h2>
+<p>The project does quite a lot of interesting reactive event processing. In F#, you can,
+of course, use <a href="http://reactivex.io/">Reactive Extensions (Rx)</a>, but I always found Rx
+a bit hard to use because they lack simple underlying primitives (more about this in
+<a href="http://tomasp.net/blog/2015/library-layers/">my rant on library design</a>). F# comes with
+a simple set of primitives in the <code>Observable</code> module which covers some 80% of what you
+need and you can easily implement additional primitives using F# agents.</p>
+<p>For example, the following is a simple agent that I wrote to limit the rate of requests.
+The idea is that the agent will emit an event it receives and then it will ignore all
+other events for the specified number of milliseconds:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">/// Limits the rate of emitted messages to at most </span>
+<span class="c">/// one per the specified number of milliseconds</span>
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs124', 226)" onmouseover="showTip(event, 'fs124', 226)" class="t">RateLimitAgent</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>(<span onmouseout="hideTip(event, 'fs125', 227)" onmouseover="showTip(event, 'fs125', 227)" class="i">timeout</span>) <span class="o">=</span> 
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs126', 228)" onmouseover="showTip(event, 'fs126', 228)" class="i">event</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs127', 229)" onmouseover="showTip(event, 'fs127', 229)" class="t">Event</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">T</span><span class="o">&gt;</span>()
+  <span class="k">let</span> <span onmouseout="hideTip(event, 'fs128', 230)" onmouseover="showTip(event, 'fs128', 230)" class="i">agent</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs129', 231)" onmouseover="showTip(event, 'fs129', 231)" class="t">MailboxProcessor</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs130', 232)" onmouseover="showTip(event, 'fs130', 232)" class="f">Start</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs131', 233)" onmouseover="showTip(event, 'fs131', 233)" class="i">inbox</span> <span class="k">-&gt;</span> 
+    <span class="c">// We remember the last time we emitted a message</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs132', 234)" onmouseover="showTip(event, 'fs132', 234)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs133', 235)" onmouseover="showTip(event, 'fs133', 235)" class="i">lastMessageTime</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs23', 236)" onmouseover="showTip(event, 'fs23', 236)" class="t">DateTime</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs78', 237)" onmouseover="showTip(event, 'fs78', 237)" class="i">async</span> {
+      <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs134', 238)" onmouseover="showTip(event, 'fs134', 238)" class="i">e</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs131', 239)" onmouseover="showTip(event, 'fs131', 239)" class="i">inbox</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs135', 240)" onmouseover="showTip(event, 'fs135', 240)" class="f">Receive</span>()
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs136', 241)" onmouseover="showTip(event, 'fs136', 241)" class="i">now</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs23', 242)" onmouseover="showTip(event, 'fs23', 242)" class="t">DateTime</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs67', 243)" onmouseover="showTip(event, 'fs67', 243)" class="i">UtcNow</span>
+      <span class="c">// If we waited long enough, report the event</span>
+      <span class="c">// otherwise ignore it and wait some more</span>
+      <span class="k">let</span> <span onmouseout="hideTip(event, 'fs137', 244)" onmouseover="showTip(event, 'fs137', 244)" class="i">ms</span> <span class="o">=</span> (<span onmouseout="hideTip(event, 'fs136', 245)" onmouseover="showTip(event, 'fs136', 245)" class="i">now</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs133', 246)" onmouseover="showTip(event, 'fs133', 246)" class="i">lastMessageTime</span>)<span class="o">.</span><span class="i">TotalMilliseconds</span>
+      <span class="k">if</span> <span onmouseout="hideTip(event, 'fs137', 247)" onmouseover="showTip(event, 'fs137', 247)" class="i">ms</span> <span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs125', 248)" onmouseover="showTip(event, 'fs125', 248)" class="i">timeout</span> <span class="k">then</span>
+        <span onmouseout="hideTip(event, 'fs126', 249)" onmouseover="showTip(event, 'fs126', 249)" class="i">event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs138', 250)" onmouseover="showTip(event, 'fs138', 250)" class="f">Trigger</span>(<span onmouseout="hideTip(event, 'fs134', 251)" onmouseover="showTip(event, 'fs134', 251)" class="i">e</span>)
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs132', 252)" onmouseover="showTip(event, 'fs132', 252)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs136', 253)" onmouseover="showTip(event, 'fs136', 253)" class="i">now</span>
+      <span class="k">else</span> 
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs132', 254)" onmouseover="showTip(event, 'fs132', 254)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs133', 255)" onmouseover="showTip(event, 'fs133', 255)" class="i">lastMessageTime</span> }
+    <span onmouseout="hideTip(event, 'fs132', 256)" onmouseover="showTip(event, 'fs132', 256)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs23', 257)" onmouseover="showTip(event, 'fs23', 257)" class="t">DateTime</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs139', 258)" onmouseover="showTip(event, 'fs139', 258)" class="i">MinValue</span> )
+
+  <span class="c">/// Triggered when an event happens</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs140', 259)" onmouseover="showTip(event, 'fs140', 259)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs141', 260)" onmouseover="showTip(event, 'fs141', 260)" class="i">EventOccurred</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs126', 261)" onmouseover="showTip(event, 'fs126', 261)" class="i">event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs142', 262)" onmouseover="showTip(event, 'fs142', 262)" class="i">Publish</span>
+  <span class="c">/// Send an event to the agent</span>
+  <span class="k">member</span> <span onmouseout="hideTip(event, 'fs140', 263)" onmouseover="showTip(event, 'fs140', 263)" class="i">x</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs143', 264)" onmouseover="showTip(event, 'fs143', 264)" class="f">AddEvent</span>(<span onmouseout="hideTip(event, 'fs144', 265)" onmouseover="showTip(event, 'fs144', 265)" class="i">event</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs128', 266)" onmouseover="showTip(event, 'fs128', 266)" class="i">agent</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs145', 267)" onmouseover="showTip(event, 'fs145', 267)" class="f">Post</span>(<span onmouseout="hideTip(event, 'fs144', 268)" onmouseover="showTip(event, 'fs144', 268)" class="i">event</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Agents are the much needed <em>lower level primitive</em> of the Reactive Extensions. You can
+quite easily express any logic you need using just a state machine encoded as a recursive
+asynchronous loop. The implementation then wraps the agent in a higher-level primitive
+<code>Observable.limitRate</code> that was used in the earlier snippet.</p>
+<h2>Handling websockets with Suave</h2>
+<p>One more nice thing in the project is the handling of web sockets. The server serves
+static files from the <code>web</code> sub-directory, but it also communicates with the front-end
+via three web sockets (for the map, feed and wordcloud). When a client connects, we
+simply want to start sending updates to it from one of the <code>IObservable&lt;T&gt;</code> events that
+we defined earlier (e.g. by serializing tweets from <code>liveTweets</code> as JSON).</p>
+<p>To do this, I first defined a helper <code>socketOfObservable</code>, which uses Suave's <code>socket { .. }</code>
+computation builder and repeatedly awaits an update from the specified <code>updates</code> and
+reports it to via the socket:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs146', 269)" onmouseover="showTip(event, 'fs146', 269)" class="f">socketOfObservable</span> 
+    <span onmouseout="hideTip(event, 'fs147', 270)" onmouseover="showTip(event, 'fs147', 270)" class="i">updates</span> (<span onmouseout="hideTip(event, 'fs148', 271)" onmouseover="showTip(event, 'fs148', 271)" class="i">webSocket</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs149', 272)" onmouseover="showTip(event, 'fs149', 272)" class="t">WebSocket</span>) <span onmouseout="hideTip(event, 'fs150', 273)" onmouseover="showTip(event, 'fs150', 273)" class="i">ctx</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs151', 274)" onmouseover="showTip(event, 'fs151', 274)" class="i">socket</span> {
+  <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="c">// Wait for the next update from the source</span>
+    <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs152', 275)" onmouseover="showTip(event, 'fs152', 275)" class="i">update</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs147', 276)" onmouseover="showTip(event, 'fs147', 276)" class="i">updates</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs153', 277)" onmouseover="showTip(event, 'fs153', 277)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs154', 278)" onmouseover="showTip(event, 'fs154', 278)" class="f">AwaitObservable</span> 
+                          <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs155', 279)" onmouseover="showTip(event, 'fs155', 279)" class="t">SocketOp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs156', 280)" onmouseover="showTip(event, 'fs156', 280)" class="f">ofAsync</span>
+    <span class="c">// Report it to the front-end over the wire!</span>
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs148', 281)" onmouseover="showTip(event, 'fs148', 281)" class="i">webSocket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs157', 282)" onmouseover="showTip(event, 'fs157', 282)" class="f">send</span> <span onmouseout="hideTip(event, 'fs68', 283)" onmouseover="showTip(event, 'fs68', 283)" class="p">Text</span> (<span onmouseout="hideTip(event, 'fs158', 284)" onmouseover="showTip(event, 'fs158', 284)" class="t">UTF8</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs159', 285)" onmouseover="showTip(event, 'fs159', 285)" class="f">bytes</span> <span onmouseout="hideTip(event, 'fs152', 286)" onmouseover="showTip(event, 'fs152', 286)" class="i">update</span>) <span class="k">true</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>The main server is then composed from a number of web parts - the first three handle the
+communication via web sockets, the fourth one returns information about time zones that we
+downloaded from Wikipedia and the last two serve static files:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs160', 287)" onmouseover="showTip(event, 'fs160', 287)" class="f">part</span> <span class="o">=</span>
+  <span onmouseout="hideTip(event, 'fs83', 288)" onmouseover="showTip(event, 'fs83', 288)" class="f">choose</span> 
+    [ <span onmouseout="hideTip(event, 'fs161', 289)" onmouseover="showTip(event, 'fs161', 289)" class="f">path</span> <span class="s">&quot;/maptweets&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs162', 290)" onmouseover="showTip(event, 'fs162', 290)" class="f">handShake</span> (<span onmouseout="hideTip(event, 'fs146', 291)" onmouseover="showTip(event, 'fs146', 291)" class="f">socketOfObservable</span> <span class="i">mapTweets</span>)
+      <span onmouseout="hideTip(event, 'fs161', 292)" onmouseover="showTip(event, 'fs161', 292)" class="f">path</span> <span class="s">&quot;/feedtweets&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs162', 293)" onmouseover="showTip(event, 'fs162', 293)" class="f">handShake</span> (<span onmouseout="hideTip(event, 'fs146', 294)" onmouseover="showTip(event, 'fs146', 294)" class="f">socketOfObservable</span> <span class="i">feedTweets</span>)
+      <span onmouseout="hideTip(event, 'fs161', 295)" onmouseover="showTip(event, 'fs161', 295)" class="f">path</span> <span class="s">&quot;/frequencies&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs162', 296)" onmouseover="showTip(event, 'fs162', 296)" class="f">handShake</span> (<span onmouseout="hideTip(event, 'fs146', 297)" onmouseover="showTip(event, 'fs146', 297)" class="f">socketOfObservable</span> <span class="i">phraseUpdates</span>)
+      <span onmouseout="hideTip(event, 'fs161', 298)" onmouseover="showTip(event, 'fs161', 298)" class="f">path</span> <span class="s">&quot;/zones&quot;</span> <span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs163', 299)" onmouseover="showTip(event, 'fs163', 299)" class="t">Successful</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs164', 300)" onmouseover="showTip(event, 'fs164', 300)" class="f">OK</span> <span class="i">timeZonesJson</span>
+      <span onmouseout="hideTip(event, 'fs161', 301)" onmouseover="showTip(event, 'fs161', 301)" class="f">path</span> <span class="s">&quot;/&quot;</span><span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span> <span onmouseout="hideTip(event, 'fs165', 302)" onmouseover="showTip(event, 'fs165', 302)" class="t">Files</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs166', 303)" onmouseover="showTip(event, 'fs166', 303)" class="f">browseFile</span> <span onmouseout="hideTip(event, 'fs40', 304)" onmouseover="showTip(event, 'fs40', 304)" class="i">root</span> <span class="s">&quot;index.html&quot;</span> 
+      <span onmouseout="hideTip(event, 'fs165', 305)" onmouseover="showTip(event, 'fs165', 305)" class="t">Files</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs167', 306)" onmouseover="showTip(event, 'fs167', 306)" class="f">browse</span> <span onmouseout="hideTip(event, 'fs40', 307)" onmouseover="showTip(event, 'fs40', 307)" class="i">root</span> ]
+</code></pre></td>
+</tr>
+</table>
+<h2>Summary</h2>
+<p>The main part of the project in <code>app.fsx</code> is some 350 lines long and I find it pretty amazing
+how much you can do in this small number of lines. If you're writing a project like this in F#,
+you get to use a number of nice libraries including <a href="http://fsprojects.github.io/FSharp.Data.Toolbox/TwitterProvider.html">F# Data Toolbox</a>
+for the Twitter API, <a href="https://suave.io/">Suave.io</a> for the web server and <a href="http://fsharp.github.io/FSharp.Data/">F# Data type
+providers</a> for calling REST APIs. Finally, I deployed the
+service using Azure VM, but you could also use <a href="http://mbrace.io/">MBrace</a> which can host
+<a href="http://mbrace.io/starterkit/HandsOnTutorial/examples/200-starting-a-web-server-example.html">web servers in a cluster</a>,
+or any other hosting - all the libraries I'm using are cross-platform.</p>
+<p>If you're reading this around December 31, 2015 then definitely check out the
+<a href="http://newyear-tweets.cloudapp.net/">project running live</a>. I didn't plan to turn this into
+a reusable application, but who knows! :-) If you want to use it for tracking tweets related
+to some other events you can <a href="https://github.com/tpetricek/new-year-tweets-2016">find the full source on GitHub</a>
+under the Apache license - and also get in touch if you have some interesting use for this work!</p>
+
+
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.Web</div>
+<div class="tip" id="fs3">namespace System.Collections</div>
+<div class="tip" id="fs4">namespace System.Collections.Generic</div>
+<div class="tip" id="fs5">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="tip" id="fs6">Multiple items<br />namespace FSharp.Data<br /><br />--------------------<br />namespace Microsoft.FSharp.Data</div>
+<div class="tip" id="fs7">namespace FSharp.Data.Toolbox</div>
+<div class="tip" id="fs8">namespace FSharp.Data.Toolbox.Twitter</div>
+<div class="tip" id="fs9">module AsyncHelpers</div>
+<div class="tip" id="fs10">namespace System.Text</div>
+<div class="tip" id="fs11">namespace System.Text.RegularExpressions</div>
+<div class="tip" id="fs12">namespace Suave</div>
+<div class="tip" id="fs13">module Web<br /><br />from Suave</div>
+<div class="tip" id="fs14">module Http<br /><br />from Suave</div>
+<div class="tip" id="fs15">module Applicatives<br /><br />from Suave.Http</div>
+<div class="tip" id="fs16">namespace Suave.Sockets</div>
+<div class="tip" id="fs17">namespace Suave.Sockets.Control</div>
+<div class="tip" id="fs18">module AsyncSocket<br /><br />from Suave.Sockets</div>
+<div class="tip" id="fs19">module WebSocket<br /><br />from Suave</div>
+<div class="tip" id="fs20">namespace Suave.Utils</div>
+<div class="tip" id="fs21">type Tweet =<br />&#160;&#160;{Tweeted: DateTime;<br />&#160;&#160;&#160;Text: string;<br />&#160;&#160;&#160;OriginalArea: string;<br />&#160;&#160;&#160;UserName: string;<br />&#160;&#160;&#160;UserScreenName: string;<br />&#160;&#160;&#160;PictureUrl: string;<br />&#160;&#160;&#160;OriginalLocation: (decimal * decimal) option;<br />&#160;&#160;&#160;Phrase: int;<br />&#160;&#160;&#160;IsRetweet: bool;<br />&#160;&#160;&#160;GeoLocationSource: string;<br />&#160;&#160;&#160;...}<br /><br />Full name: Happy-new-year-tweets.Tweet<br /><em><br /><br />&#160;Information we collect about tweets. The `Inferred` fields are calculated later <br />&#160;by geolocating the user, all other information is filled when tweet is received</em></div>
+<div class="tip" id="fs22">Tweet.Tweeted: DateTime</div>
+<div class="tip" id="fs23">Multiple items<br />type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : ticks:int64 -&gt; DateTime + 10 overloads<br />&#160;&#160;&#160;&#160;member Add : value:TimeSpan -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddDays : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddHours : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : months:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : value:int64 -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddYears : value:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />--------------------<br />DateTime()<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs24">Multiple items<br />Tweet.Text: string<br /><br />--------------------<br />namespace System.Text</div>
+<div class="tip" id="fs25">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs26">Tweet.OriginalArea: string</div>
+<div class="tip" id="fs27">Tweet.UserName: string</div>
+<div class="tip" id="fs28">Tweet.UserScreenName: string</div>
+<div class="tip" id="fs29">Tweet.PictureUrl: string</div>
+<div class="tip" id="fs30">Tweet.OriginalLocation: (decimal * decimal) option</div>
+<div class="tip" id="fs31">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs32">Multiple items<br />val decimal : value:&#39;T -&gt; decimal (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.decimal<br /><br />--------------------<br />type decimal = Decimal<br /><br />Full name: Microsoft.FSharp.Core.decimal<br /><br />--------------------<br />type decimal&lt;&#39;Measure&gt; = decimal<br /><br />Full name: Microsoft.FSharp.Core.decimal&lt;_&gt;</div>
+<div class="tip" id="fs33">Tweet.Phrase: int</div>
+<div class="tip" id="fs34">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs35">Tweet.IsRetweet: bool</div>
+<div class="tip" id="fs36">type bool = Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs37">Tweet.GeoLocationSource: string</div>
+<div class="tip" id="fs38">Tweet.InferredArea: string option</div>
+<div class="tip" id="fs39">Tweet.InferredLocation: (decimal * decimal) option</div>
+<div class="tip" id="fs40">val root : string<br /><br />Full name: Happy-new-year-tweets.root</div>
+<div class="tip" id="fs41">namespace System.IO</div>
+<div class="tip" id="fs42">type Path =<br />&#160;&#160;static val DirectorySeparatorChar : char<br />&#160;&#160;static val AltDirectorySeparatorChar : char<br />&#160;&#160;static val VolumeSeparatorChar : char<br />&#160;&#160;static val InvalidPathChars : char[]<br />&#160;&#160;static val PathSeparator : char<br />&#160;&#160;static member ChangeExtension : path:string * extension:string -&gt; string<br />&#160;&#160;static member Combine : [&lt;ParamArray&gt;] paths:string[] -&gt; string + 3 overloads<br />&#160;&#160;static member GetDirectoryName : path:string -&gt; string<br />&#160;&#160;static member GetExtension : path:string -&gt; string<br />&#160;&#160;static member GetFileName : path:string -&gt; string<br />&#160;&#160;...<br /><br />Full name: System.IO.Path</div>
+<div class="tip" id="fs43">IO.Path.Combine([&lt;ParamArray&gt;] paths: string []) : string<br />IO.Path.Combine(path1: string, path2: string) : string<br />IO.Path.Combine(path1: string, path2: string, path3: string) : string<br />IO.Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
+<div class="tip" id="fs44">val phrases : string list<br /><br />Full name: Happy-new-year-tweets.phrases</div>
+<div class="tip" id="fs45">&quot;manigong bagong taon&quot;; &quot;Срећна Нова година&quot;; &quot;честита нова година&quot;; &quot;selamat tahun baru&quot;;  <br />&#160;&#160;&quot;С Новым Годом&quot;; &quot;あけまして　おめでとう　ございます&quot;; &quot;新年快乐&quot;;  &quot;Щасливого Нового Року&quot;; &quot;שנה טובה&quot;<br />&#160;&#160;&quot;yeni yılınız kutlu olsun&quot;; &quot;feliz a&#241;o nuevo&quot;; &quot;happy new year&quot;; &quot;Καλή Χρονιά&quot;;&quot;godt nytt&#229;r&quot;<br />&#160;&#160;&quot;bon any nou&quot;; &quot;felice anno nuovo&quot;; &quot;sretna nova godina&quot;; &quot;godt nyt&#229;r&quot;; &quot;gelukkig nieuwjaar&quot;<br />&#160;&#160;&quot;Frohes neues Jahr&quot;; &quot;urte berri on&quot;; &quot;bonne ann&#233;e&quot;; &quot;boldog &#250;j &#233;vet&quot;; &quot;gott nytt &#229;r&quot;<br />&#160;&#160;&quot;szczęśliwego nowego roku&quot;; &quot;blwyddyn newydd dda&quot;; &quot;feliz ano novo&quot;; &quot;sugeng warsa enggal&quot;</div>
+<div class="tip" id="fs46">val ctx : TwitterUserContext<br /><br />Full name: Happy-new-year-tweets.ctx</div>
+<div class="tip" id="fs47">{ ConsumerKey = Config.TwitterKey; ConsumerSecret = Config.TwitterSecret; <br />&#160;&#160;&#160;&#160;&#160;AccessToken = Config.TwitterAccessToken; AccessSecret = Config.TwitterAccessSecret }</div>
+<div class="tip" id="fs48">val twitter : Twitter<br /><br />Full name: Happy-new-year-tweets.twitter</div>
+<div class="tip" id="fs49">Multiple items<br />type Twitter =<br />&#160;&#160;new : context:TwitterContext -&gt; Twitter<br />&#160;&#160;member RequestRawData : url:string * query:(string * string) list -&gt; string<br />&#160;&#160;member Connections : Connections<br />&#160;&#160;member Search : Search<br />&#160;&#160;member Streaming : Streaming<br />&#160;&#160;member Timelines : Timelines<br />&#160;&#160;member Users : Users<br />&#160;&#160;static member Authenticate : consumer_key:string * consumer_secret:string -&gt; TwitterConnector<br />&#160;&#160;static member AuthenticateAppOnly : consumer_key:string * consumer_secret:string -&gt; Twitter<br />&#160;&#160;static member TwitterWeb : unit -&gt; WebBrowser<br /><br />Full name: FSharp.Data.Toolbox.Twitter.Twitter<br /><br />--------------------<br />new : context:TwitterContext -&gt; Twitter</div>
+<div class="tip" id="fs50">union case TwitterContext.UserContext: TwitterUserContext -&gt; TwitterContext</div>
+<div class="tip" id="fs51">val search : TwitterStream&lt;JsonProvider&lt;...&gt;.Root&gt;<br /><br />Full name: Happy-new-year-tweets.search</div>
+<div class="tip" id="fs52">property Twitter.Streaming: Streaming</div>
+<div class="tip" id="fs53">member Streaming.FilterTweets : keywords:seq&lt;string&gt; -&gt; TwitterStream&lt;JsonProvider&lt;...&gt;.Root&gt;</div>
+<div class="tip" id="fs54">abstract member TwitterStream.Start : unit -&gt; unit</div>
+<div class="tip" id="fs55">val liveTweets : IObservable&lt;Tweet&gt;<br /><br />Full name: Happy-new-year-tweets.liveTweets</div>
+<div class="tip" id="fs56">property TwitterStream.TweetReceived: IEvent&lt;JsonProvider&lt;...&gt;.Root&gt;</div>
+<div class="tip" id="fs57">Multiple items<br />module Observable<br /><br />from AsyncHelpers<br /><br />--------------------<br />module Observable<br /><br />from Microsoft.FSharp.Control</div>
+<div class="tip" id="fs58">val choose : chooser:(&#39;T -&gt; &#39;U option) -&gt; source:IObservable&lt;&#39;T&gt; -&gt; IObservable&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Control.Observable.choose</div>
+<div class="tip" id="fs59">val status : JsonProvider&lt;...&gt;.Root</div>
+<div class="tip" id="fs60">val origLocation : (decimal * decimal) option</div>
+<div class="tip" id="fs61">property JsonProvider&lt;...&gt;.Root.Geo: Option&lt;JsonProvider&lt;...&gt;.Geo&gt;</div>
+<div class="tip" id="fs62">property JsonProvider&lt;...&gt;.Root.User: Option&lt;JsonProvider&lt;...&gt;.User&gt;</div>
+<div class="tip" id="fs63">property JsonProvider&lt;...&gt;.Root.Text: Option&lt;string&gt;</div>
+<div class="tip" id="fs64">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs65">val user : JsonProvider&lt;...&gt;.User</div>
+<div class="tip" id="fs66">val text : string</div>
+<div class="tip" id="fs67">property DateTime.UtcNow: DateTime</div>
+<div class="tip" id="fs68">Multiple items<br />union case Opcode.Text: Opcode<br /><br />--------------------<br />namespace System.Text</div>
+<div class="tip" id="fs69">UserName = user.Name; UserScreenName = user.ScreenName; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;OriginalLocation = origLocation; Phrase = getPhrase text<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;InferredArea = None; InferredLocation = None; <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;IsRetweet = isRT status; GeoLocationSource = &quot;NA&quot;</div>
+<div class="tip" id="fs70">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs71">val tw : Tweet</div>
+<div class="tip" id="fs72">val loc : decimal * decimal</div>
+<div class="tip" id="fs73">DateTime.AddSeconds(value: float) : DateTime</div>
+<div class="tip" id="fs74">val add : callback:(&#39;T -&gt; unit) -&gt; source:IObservable&lt;&#39;T&gt; -&gt; unit<br /><br />Full name: Microsoft.FSharp.Control.Observable.add</div>
+<div class="tip" id="fs75">union case AlternativeSourceAgentMessage.AddEvent: &#39;T -&gt; AlternativeSourceAgentMessage&lt;&#39;T&gt;</div>
+<div class="tip" id="fs76">val limitRate : milliseconds:int -&gt; source:IObservable&lt;&#39;a&gt; -&gt; IObservable&lt;&#39;a&gt;<br /><br />Full name: AsyncHelpers.Observable.limitRate<br /><em><br /><br />&#160;Limits the rate of emitted messages to at most one per the specified number of milliseconds</em></div>
+<div class="tip" id="fs77">val mapAsyncIgnoreErrors : f:(&#39;a -&gt; Async&lt;&#39;b&gt;) -&gt; source:IObservable&lt;&#39;a&gt; -&gt; IObservable&lt;&#39;b&gt;<br /><br />Full name: AsyncHelpers.Observable.mapAsyncIgnoreErrors<br /><em><br /><br />&#160;Behaves like `Observable.map`, but does not stop when error happens</em></div>
+<div class="tip" id="fs78">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="fs79">val located : (string * (decimal * decimal)) option</div>
+<div class="tip" id="fs80">Multiple items<br />module Option<br /><br />from Suave.Utils<br /><br />--------------------<br />module Option<br /><br />from Microsoft.FSharp.Core</div>
+<div class="tip" id="fs81">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; option:&#39;T option -&gt; &#39;U option<br /><br />Full name: Microsoft.FSharp.Core.Option.map</div>
+<div class="tip" id="fs82">val area : string</div>
+<div class="tip" id="fs83">val choose : options:Types.WebPart list -&gt; Types.WebPart<br /><br />Full name: Suave.Http.choose</div>
+<div class="tip" id="fs84">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
+<div class="tip" id="fs85">type TimeZones = HtmlProvider&lt;...&gt;<br /><br />Full name: Happy-new-year-tweets.TimeZones</div>
+<div class="tip" id="fs86">type HtmlProvider<br /><br />Full name: FSharp.Data.HtmlProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of an HTML file.&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of an HTML sample file or a string containing a sample HTML document.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;PreferOptionals&#39;&gt;When set to true, inference will prefer to use the option type instead of nullable types, `double.NaN` or `&quot;&quot;` for missing values. Defaults to false.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;IncludeLayoutTables&#39;&gt;Includes tables that are potentially layout tables (with cellpadding=0 and cellspacing=0 attributes)&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;MissingValues&#39;&gt;The set of strings recogized as missing values. Defaults to `NaN,NA,#N/A,:,-,TBA,TBD`.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates. Defaults to the invariant culture.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Encoding&#39;&gt;The encoding used to read the sample. You can specify either the character set name or the codepage number. Defaults to UTF8 for files, and to ISO-8859-1 the for HTTP requests, unless `charset` is specified in the `Content-Type` response header.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution).&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;EmbeddedResource&#39;&gt;When specified, the type provider first attempts to load the sample from the specified resource <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;(e.g. &#39;MyCompany.MyAssembly, resource_name.html&#39;). This is useful when exposing types generated by the type provider.&lt;/param&gt;</em></div>
+<div class="tip" id="fs87">&quot;https://en.wikipedia.org/wiki/List_of_time_zones_by_country&quot;</div>
+<div class="tip" id="fs88">val reg : Regex<br /><br />Full name: Happy-new-year-tweets.reg</div>
+<div class="tip" id="fs89">Multiple items<br />type Regex =<br />&#160;&#160;new : pattern:string -&gt; Regex + 1 overload<br />&#160;&#160;member GetGroupNames : unit -&gt; string[]<br />&#160;&#160;member GetGroupNumbers : unit -&gt; int[]<br />&#160;&#160;member GroupNameFromNumber : i:int -&gt; string<br />&#160;&#160;member GroupNumberFromName : name:string -&gt; int<br />&#160;&#160;member IsMatch : input:string -&gt; bool + 1 overload<br />&#160;&#160;member Match : input:string -&gt; Match + 2 overloads<br />&#160;&#160;member Matches : input:string -&gt; MatchCollection + 1 overload<br />&#160;&#160;member Options : RegexOptions<br />&#160;&#160;member Replace : input:string * replacement:string -&gt; string + 5 overloads<br />&#160;&#160;...<br /><br />Full name: System.Text.RegularExpressions.Regex<br /><br />--------------------<br />Regex(pattern: string) : unit<br />Regex(pattern: string, options: RegexOptions) : unit</div>
+<div class="tip" id="fs90">val timeZones : (string * string) list<br /><br />Full name: Happy-new-year-tweets.timeZones</div>
+<div class="tip" id="fs91">val r : HtmlProvider&lt;...&gt;.Table1.Row</div>
+<div class="tip" id="fs92">HtmlProvider&lt;...&gt;.GetSample() : HtmlProvider&lt;...&gt;</div>
+<div class="tip" id="fs93">val tz : string</div>
+<div class="tip" id="fs94">val matches : MatchCollection</div>
+<div class="tip" id="fs95">Regex.Matches(input: string) : MatchCollection<br />Regex.Matches(input: string, startat: int) : MatchCollection</div>
+<div class="tip" id="fs96">property MatchCollection.Count: int</div>
+<div class="tip" id="fs97">property HtmlProvider&lt;...&gt;.Table1.Row.Country: string</div>
+<div class="tip" id="fs98">Multiple items<br />type LiteralAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; LiteralAttribute<br /><br />Full name: Microsoft.FSharp.Core.LiteralAttribute<br /><br />--------------------<br />new : unit -&gt; LiteralAttribute</div>
+<div class="tip" id="fs99">val MapQuestSample : string<br /><br />Full name: Happy-new-year-tweets.MapQuestSample</div>
+<div class="tip" id="fs100">&quot;http://www.mapquestapi.com/geocoding/v1/address?location=Prague&amp;key=&quot; + Config.MapQuestKey</div>
+<div class="tip" id="fs101">type MapQuest = JsonProvider&lt;...&gt;<br /><br />Full name: Happy-new-year-tweets.MapQuest</div>
+<div class="tip" id="fs102">type JsonProvider<br /><br />Full name: FSharp.Data.JsonProvider<br /><em><br /><br />&lt;summary&gt;Typed representation of a JSON document.&lt;/summary&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Sample&#39;&gt;Location of a JSON sample file or a string containing a sample JSON document.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;SampleIsList&#39;&gt;If true, sample should be a list of individual samples for the inference.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;RootName&#39;&gt;The name to be used to the root type. Defaults to `Root`.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Culture&#39;&gt;The culture used for parsing numbers and dates. Defaults to the invariant culture.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;Encoding&#39;&gt;The encoding used to read the sample. You can specify either the character set name or the codepage number. Defaults to UTF8 for files, and to ISO-8859-1 the for HTTP requests, unless `charset` is specified in the `Content-Type` response header.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;ResolutionFolder&#39;&gt;A directory that is used when resolving relative file references (at design time and in hosted execution).&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;EmbeddedResource&#39;&gt;When specified, the type provider first attempts to load the sample from the specified resource <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;(e.g. &#39;MyCompany.MyAssembly, resource_name.json&#39;). This is useful when exposing types generated by the type provider.&lt;/param&gt;<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;param name=&#39;InferTypesFromValues&#39;&gt;If true, turns on additional type inference from values. <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;(e.g. type inference infers string values such as &quot;123&quot; as ints and values constrained to 0 and 1 as booleans.)&lt;/param&gt;</em></div>
+<div class="tip" id="fs103">val locate : place:string -&gt; seq&lt;string * (decimal * decimal)&gt;<br /><br />Full name: Happy-new-year-tweets.locate</div>
+<div class="tip" id="fs104">val place : string</div>
+<div class="tip" id="fs105">val url : string</div>
+<div class="tip" id="fs106">module Config</div>
+<div class="tip" id="fs107">val MapQuestKey : string<br /><br />Full name: Config.MapQuestKey</div>
+<div class="tip" id="fs108">Multiple items<br />type HttpUtility =<br />&#160;&#160;new : unit -&gt; HttpUtility<br />&#160;&#160;static member HtmlAttributeEncode : s:string -&gt; string + 1 overload<br />&#160;&#160;static member HtmlDecode : s:string -&gt; string + 1 overload<br />&#160;&#160;static member HtmlEncode : s:string -&gt; string + 2 overloads<br />&#160;&#160;static member JavaScriptStringEncode : value:string -&gt; string + 1 overload<br />&#160;&#160;static member ParseQueryString : query:string -&gt; NameValueCollection + 1 overload<br />&#160;&#160;static member UrlDecode : str:string -&gt; string + 3 overloads<br />&#160;&#160;static member UrlDecodeToBytes : str:string -&gt; byte[] + 3 overloads<br />&#160;&#160;static member UrlEncode : str:string -&gt; string + 3 overloads<br />&#160;&#160;static member UrlEncodeToBytes : str:string -&gt; byte[] + 3 overloads<br />&#160;&#160;...<br /><br />Full name: System.Web.HttpUtility<br /><br />--------------------<br />HttpUtility() : unit</div>
+<div class="tip" id="fs109">HttpUtility.UrlEncode(bytes: byte []) : string<br />HttpUtility.UrlEncode(str: string) : string<br />HttpUtility.UrlEncode(str: string, e: Encoding) : string<br />HttpUtility.UrlEncode(bytes: byte [], offset: int, count: int) : string</div>
+<div class="tip" id="fs110">JsonProvider&lt;...&gt;.Load(uri: string) : JsonProvider&lt;...&gt;.Root<br /><em><br /><br />Loads JSON from the specified uri</em><br />JsonProvider&lt;...&gt;.Load(reader: IO.TextReader) : JsonProvider&lt;...&gt;.Root<br /><em><br /><br />Loads JSON from the specified reader</em><br />JsonProvider&lt;...&gt;.Load(stream: IO.Stream) : JsonProvider&lt;...&gt;.Root<br /><em><br /><br />Loads JSON from the specified stream</em></div>
+<div class="tip" id="fs111">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs112">val choose : chooser:(&#39;T -&gt; &#39;U option) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.choose</div>
+<div class="tip" id="fs113">val loc : JsonProvider&lt;...&gt;.Result</div>
+<div class="tip" id="fs114">property JsonProvider&lt;...&gt;.Result.Locations: JsonProvider&lt;...&gt;.Location []</div>
+<div class="tip" id="fs115">property Array.Length: int</div>
+<div class="tip" id="fs116">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map</div>
+<div class="tip" id="fs117">val info : JsonProvider&lt;...&gt;.Result</div>
+<div class="tip" id="fs118">val loc : JsonProvider&lt;...&gt;.Location</div>
+<div class="tip" id="fs119">property JsonProvider&lt;...&gt;.Result.ProvidedLocation: JsonProvider&lt;...&gt;.ProvidedLocation</div>
+<div class="tip" id="fs120">property JsonProvider&lt;...&gt;.ProvidedLocation.Location: string</div>
+<div class="tip" id="fs121">property JsonProvider&lt;...&gt;.Location.LatLng: JsonProvider&lt;...&gt;.LatLng</div>
+<div class="tip" id="fs122">property JsonProvider&lt;...&gt;.LatLng.Lat: decimal</div>
+<div class="tip" id="fs123">property JsonProvider&lt;...&gt;.LatLng.Lng: decimal</div>
+<div class="tip" id="fs124">Multiple items<br />type RateLimitAgent&lt;&#39;T&gt; =<br />&#160;&#160;new : timeout:float -&gt; RateLimitAgent&lt;&#39;T&gt;<br />&#160;&#160;member AddEvent : event:&#39;T -&gt; unit<br />&#160;&#160;member EventOccurred : IEvent&lt;&#39;T&gt;<br /><br />Full name: Happy-new-year-tweets.RateLimitAgent&lt;_&gt;<br /><em><br /><br />&#160;Limits the rate of emitted messages to at most <br />&#160;one per the specified number of milliseconds</em><br /><br />--------------------<br />new : timeout:float -&gt; RateLimitAgent&lt;&#39;T&gt;</div>
+<div class="tip" id="fs125">val timeout : float</div>
+<div class="tip" id="fs126">val event : Event&lt;&#39;T&gt;</div>
+<div class="tip" id="fs127">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;T&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs128">val agent : MailboxProcessor&lt;&#39;T&gt;</div>
+<div class="tip" id="fs129">Multiple items<br />type MailboxProcessor&lt;&#39;Msg&gt; =<br />&#160;&#160;interface IDisposable<br />&#160;&#160;new : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;<br />&#160;&#160;member Post : message:&#39;Msg -&gt; unit<br />&#160;&#160;member PostAndAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply&gt;<br />&#160;&#160;member PostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply<br />&#160;&#160;member PostAndTryAsyncReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; Async&lt;&#39;Reply option&gt;<br />&#160;&#160;member Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;<br />&#160;&#160;member Scan : scanner:(&#39;Msg -&gt; Async&lt;&#39;T&gt; option) * ?timeout:int -&gt; Async&lt;&#39;T&gt;<br />&#160;&#160;member Start : unit -&gt; unit<br />&#160;&#160;member TryPostAndReply : buildMessage:(AsyncReplyChannel&lt;&#39;Reply&gt; -&gt; &#39;Msg) * ?timeout:int -&gt; &#39;Reply option<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Control.MailboxProcessor&lt;_&gt;<br /><br />--------------------<br />new : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;</div>
+<div class="tip" id="fs130">static member MailboxProcessor.Start : body:(MailboxProcessor&lt;&#39;Msg&gt; -&gt; Async&lt;unit&gt;) * ?cancellationToken:Threading.CancellationToken -&gt; MailboxProcessor&lt;&#39;Msg&gt;</div>
+<div class="tip" id="fs131">val inbox : MailboxProcessor&lt;&#39;T&gt;</div>
+<div class="tip" id="fs132">val loop : (DateTime -&gt; Async&lt;&#39;a&gt;)</div>
+<div class="tip" id="fs133">val lastMessageTime : DateTime</div>
+<div class="tip" id="fs134">val e : &#39;T</div>
+<div class="tip" id="fs135">member MailboxProcessor.Receive : ?timeout:int -&gt; Async&lt;&#39;Msg&gt;</div>
+<div class="tip" id="fs136">val now : DateTime</div>
+<div class="tip" id="fs137">val ms : float</div>
+<div class="tip" id="fs138">member Event.Trigger : arg:&#39;T -&gt; unit</div>
+<div class="tip" id="fs139">field DateTime.MinValue</div>
+<div class="tip" id="fs140">val x : RateLimitAgent&lt;&#39;T&gt;</div>
+<div class="tip" id="fs141">member RateLimitAgent.EventOccurred : IEvent&lt;&#39;T&gt;<br /><br />Full name: Happy-new-year-tweets.RateLimitAgent`1.EventOccurred<br /><em><br /><br />&#160;Triggered when an event happens</em></div>
+<div class="tip" id="fs142">property Event.Publish: IEvent&lt;&#39;T&gt;</div>
+<div class="tip" id="fs143">member RateLimitAgent.AddEvent : event:&#39;T -&gt; unit<br /><br />Full name: Happy-new-year-tweets.RateLimitAgent`1.AddEvent<br /><em><br /><br />&#160;Send an event to the agent</em></div>
+<div class="tip" id="fs144">val event : &#39;T</div>
+<div class="tip" id="fs145">member MailboxProcessor.Post : message:&#39;Msg -&gt; unit</div>
+<div class="tip" id="fs146">val socketOfObservable : updates:IObservable&lt;string&gt; -&gt; webSocket:WebSocket -&gt; ctx:&#39;a -&gt; Async&lt;Choice&lt;unit,Error&gt;&gt;<br /><br />Full name: Happy-new-year-tweets.socketOfObservable</div>
+<div class="tip" id="fs147">val updates : IObservable&lt;string&gt;</div>
+<div class="tip" id="fs148">val webSocket : WebSocket</div>
+<div class="tip" id="fs149">Multiple items<br />module WebSocket<br /><br />from Suave<br /><br />--------------------<br />type WebSocket =<br />&#160;&#160;new : connection:Connection -&gt; WebSocket<br />&#160;&#160;member read : unit -&gt; Async&lt;Choice&lt;(Opcode * byte [] * bool),Error&gt;&gt;<br />&#160;&#160;member send : opcode:Opcode -&gt; bs:byte [] -&gt; fin:bool -&gt; Async&lt;Choice&lt;unit,Error&gt;&gt;<br /><br />Full name: Suave.WebSocket.WebSocket<br /><br />--------------------<br />new : connection:Connection -&gt; WebSocket</div>
+<div class="tip" id="fs150">val ctx : &#39;a</div>
+<div class="tip" id="fs151">val socket : SocketMonad<br /><br />Full name: Suave.Sockets.Control.SocketMonad.socket</div>
+<div class="tip" id="fs152">val update : string</div>
+<div class="tip" id="fs153">Multiple items<br />module Async<br /><br />from Suave.Utils<br /><br />--------------------<br />type Async<br />static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)<br />static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)<br />static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />static member AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member CancelDefaultToken : unit -&gt; unit<br />static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg:&#39;Arg1 * beginAction:(&#39;Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * beginAction:(&#39;Arg1 * &#39;Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * arg3:&#39;Arg3 * beginAction:(&#39;Arg1 * &#39;Arg2 * &#39;Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromContinuations : callback:((&#39;T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member Ignore : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;unit&gt;<br />static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />static member Parallel : computations:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;&#39;T []&gt;<br />static member RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T<br />static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;&#39;T&gt;<br />static member StartChild : computation:Async&lt;&#39;T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;<br />static member StartChildAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions -&gt; Async&lt;Task&lt;&#39;T&gt;&gt;<br />static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartWithContinuations : computation:Async&lt;&#39;T&gt; * continuation:(&#39;T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />static member TryCancelled : computation:Async&lt;&#39;T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member CancellationToken : Async&lt;CancellationToken&gt;<br />static member DefaultCancellationToken : CancellationToken<br /><br />Full name: Microsoft.FSharp.Control.Async<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;</div>
+<div class="tip" id="fs154">static member Async.AwaitObservable : ev1:IObservable&lt;&#39;T1&gt; -&gt; Async&lt;&#39;T1&gt;<br /><em><br /><br />&#160;Creates an asynchronous workflow that will be resumed when the <br />&#160;specified observables produces a value. The workflow will return <br />&#160;the value produced by the observable.</em></div>
+<div class="tip" id="fs155">Multiple items<br />module SocketOp<br /><br />from Suave.Sockets<br /><br />--------------------<br />type SocketOp&lt;&#39;a&gt; = Async&lt;Choice&lt;&#39;a,Error&gt;&gt;<br /><br />Full name: Suave.Sockets.SocketOp&lt;_&gt;</div>
+<div class="tip" id="fs156">val ofAsync : a:Async&lt;&#39;a&gt; -&gt; SocketOp&lt;&#39;a&gt;<br /><br />Full name: Suave.Sockets.SocketOp.ofAsync</div>
+<div class="tip" id="fs157">member WebSocket.send : opcode:Opcode -&gt; bs:byte [] -&gt; fin:bool -&gt; Async&lt;Choice&lt;unit,Error&gt;&gt;</div>
+<div class="tip" id="fs158">module UTF8<br /><br />from Suave.Utils</div>
+<div class="tip" id="fs159">val bytes : s:string -&gt; byte []<br /><br />Full name: Suave.Utils.UTF8.bytes</div>
+<div class="tip" id="fs160">val part : Types.WebPart<br /><br />Full name: Happy-new-year-tweets.part</div>
+<div class="tip" id="fs161">val path : s:string -&gt; Types.WebPart<br /><br />Full name: Suave.Http.Applicatives.path</div>
+<div class="tip" id="fs162">val handShake : continuation:(WebSocket -&gt; Types.HttpContext -&gt; SocketOp&lt;unit&gt;) -&gt; ctx:Types.HttpContext -&gt; Async&lt;Types.HttpContext option&gt;<br /><br />Full name: Suave.WebSocket.handShake</div>
+<div class="tip" id="fs163">module Successful<br /><br />from Suave.Http</div>
+<div class="tip" id="fs164">val OK : a:string -&gt; Types.WebPart<br /><br />Full name: Suave.Http.Successful.OK</div>
+<div class="tip" id="fs165">module Files<br /><br />from Suave.Http</div>
+<div class="tip" id="fs166">val browseFile : rootPath:string -&gt; fileName:string -&gt; Types.WebPart<br /><br />Full name: Suave.Http.Files.browseFile</div>
+<div class="tip" id="fs167">val browse : rootPath:string -&gt; Types.WebPart<br /><br />Full name: Suave.Http.Files.browse</div>
