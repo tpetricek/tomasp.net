@@ -1,0 +1,56 @@
+name: Build and deploy site
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Stop two pushes racing to commit to gh-pages
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Post dates render in local time; a UTC runner would shift every timestamp
+      TZ: Europe/Prague
+
+    steps:
+      # The generator expects 'website' and 'output' side by side
+      - name: Check out sources
+        uses: actions/checkout@v4
+        with:
+          path: website
+
+      - name: Check out published site
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: output
+          fetch-depth: 1
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Generate site
+        working-directory: website
+        run: ./build.sh build
+
+      - name: Commit and push
+        working-directory: output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "Updating site ($(date '+%d %B %Y %H:%M'))"
+            git push
+          fi
