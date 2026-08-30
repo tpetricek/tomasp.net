@@ -55,7 +55,8 @@ DotLiquid.initialize config
 let private loadSite () =
   let posts, papers = Blog.groupArticles config
   let archives = Blog.archives posts
-  { Posts = posts; Papers = papers; Archives = archives; PostsTitle = "" }
+  { Posts = posts; Papers = papers; Archives = archives; PostsTitle = ""
+    ImageRoot = config.CalendarRoot }
 
 let mutable private site = loadSite ()
 

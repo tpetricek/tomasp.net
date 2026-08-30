@@ -54,6 +54,7 @@ type Site =
   { Posts : seq<Article<string>> 
     PostsTitle : string
     Archives : Archives
+    ImageRoot : string
     Papers : seq<Article<string>> } 
 
 type ArticleModel = 
