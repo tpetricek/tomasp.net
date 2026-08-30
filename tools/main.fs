@@ -96,6 +96,7 @@ let updateSite full changes =
 /// Regenerate site - clean the output folder & regenerate everything
 let regenerateSite () =
   printfn "Regenerating site from scratch"
+  Directory.CreateDirectory(config.Output) |> ignore
   for dir in Directory.GetDirectories(config.Output) do
     if not (dir.EndsWith(".git")) then
       Directory.Delete(dir, true)
