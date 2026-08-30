@@ -49,7 +49,7 @@ let credentialsFromEnvironment () =
 let private client = lazy (new HttpClient())
 
 /// Upload one object. `key` is the path inside the bucket, e.g. "calendar/2026/january.jpg".
-let put (cred:Credentials) (key:string) (contentType:string) (body:byte[]) =
+let put (cred:Credentials) (key:string) (contentType:string) (cacheControl:string) (body:byte[]) =
   let host = sprintf "%s.r2.cloudflarestorage.com" cred.AccountId
   let path = "/" + Bucket + "/" + (key.Split('/') |> Array.map uriEncode |> String.concat "/")
   let now = DateTime.UtcNow
@@ -85,6 +85,8 @@ let put (cred:Credentials) (key:string) (contentType:string) (body:byte[]) =
   use req = new HttpRequestMessage(HttpMethod.Put, "https://" + host + path)
   req.Content <- new ByteArrayContent(body)
   req.Content.Headers.ContentType <- Headers.MediaTypeHeaderValue(contentType)
+  // Cache-Control is a general header, so it does not belong on HttpContent
+  req.Headers.TryAddWithoutValidation("Cache-Control", cacheControl) |> ignore
   req.Headers.TryAddWithoutValidation("x-amz-content-sha256", payloadHash) |> ignore
   req.Headers.TryAddWithoutValidation("x-amz-date", amzDate) |> ignore
   req.Headers.TryAddWithoutValidation("Authorization",
@@ -96,5 +98,5 @@ let put (cred:Credentials) (key:string) (contentType:string) (body:byte[]) =
     let body = res.Content.ReadAsStringAsync().Result
     failwithf "Upload of '%s' failed: %d %s\n%s" key (int res.StatusCode) res.ReasonPhrase body
 
-let putFile (cred:Credentials) (key:string) (contentType:string) (file:string) =
-  put cred key contentType (File.ReadAllBytes file)
+let putFile (cred:Credentials) (key:string) (contentType:string) (cacheControl:string) (file:string) =
+  put cred key contentType cacheControl (File.ReadAllBytes file)

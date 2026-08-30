@@ -69,10 +69,13 @@ let uploadCalendarFiles (cfg:SiteConfig) =
       if not (known.Contains monthName) then
         let source = cfg.Calendar </> string year </> (monthName + ".jpg")
         let source, na = if File.Exists(source) then source, false else cfg.Calendar </> "na.png", true
+        // A month's photo never changes once set, but a placeholder is replaced as soon
+        // as the real photo arrives - and the URL stays the same, so it must expire quickly.
+        let cacheControl = if na then "max-age=300" else "max-age=31536000"
         let uploadFile suffix file =
           let key = sprintf "calendar/%d/%s%s" year monthName suffix
           printfn "Uploading calendar: %s" key
-          R2.putFile cred key "image/jpeg" file
+          R2.putFile cred key "image/jpeg" cacheControl file
         let uploadResized size suffix =
           use target = DisposableFile.CreateTemp(".jpg")
           resizeFile size source target.FileName
