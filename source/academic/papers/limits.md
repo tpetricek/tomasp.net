@@ -9,7 +9,7 @@
  - layout: article
  - icon: fa fa-sun
  - date: 25 November 2026
- - title: Schema Evolution in Interactive Programming Systems
+ - title: On the Limits of Making Programming Easy
  - subtitle: Tomas Petricek and Joel Jakubovic. Languages, Compilers, Analysis - From Beautiful Theory to Useful Practice, 2026
 
 > Tomas Petricek, Joel Jakubovic
@@ -31,17 +31,19 @@ In this paper, we investigate the limits of making programming easy. We use a di
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @Inbook{limits,
-      title = "On the Limits of Making Programming Easy",
-      author = "Petricek, Tomas and Jakubovic, Joel",
-      editor = "Orchard, Dominic and Petricek, Tomas and Singer, Jeremy",
-      bookTitle = "Languages, Compilers, Analysis - From Beautiful
-        Theory to Useful Practice: Essays Dedicated to Alan Mycroft
-        on the Occasion of His Retirement",
-      year = "2026",
-      publisher = "Springer Nature Switzerland",
-      pages = "215--233",
-      doi = "10.1007/978-3-032-08187-2_11",
+    @inproceedings{petricek-2026-limits,
+      author    = {Tomas Petricek and Joel Jakubovic},
+      editor    = {Dominic Orchard and Tomas Petricek and Jeremy Singer},
+      title     = {On the Limits of Making Programming Easy},
+      booktitle = {Languages, Compilers, Analysis - From Beautiful Theory to
+                   Useful Practice - Essays Dedicated to Alan Mycroft on the
+                   Occasion of His Retirement},
+      series    = {Lecture Notes in Computer Science},
+      volume    = {15500},
+      pages     = {215--233},
+      publisher = {Springer},
+      year      = {2026},
+      doi       = {10.1007/978-3-032-08187-2\_11}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

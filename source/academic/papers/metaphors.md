@@ -42,13 +42,17 @@ Watch a pre-recorded talk for the Onward! Essays track:
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{metaphors-onward21,
-      author    = {Petricek, Tomas},
-      title     = {Programming as Architecture, Design, and Urban Planning },
-      booktitle = {Proceedings of Onward! Essays},
-      series    = {Onward! 2021},
-      location  = {Chicago, USA},
-      year      = {2021}
+    @inproceedings{petricek-2021-architecture,
+      author    = {Tomas Petricek},
+      title     = {Programming as architecture, design, and urban planning},
+      booktitle = {Onward! 2021: Proceedings of the 2021 {ACM} {SIGPLAN}
+                   International Symposium on New Ideas, New Paradigms, and
+                   Reflections on Programming and Software, Virtual Event /
+                   Chicago, IL, USA, October 20-22, 2021},
+      pages     = {114--124},
+      publisher = {{ACM}},
+      year      = {2021},
+      doi       = {10.1145/3486607.3486770}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

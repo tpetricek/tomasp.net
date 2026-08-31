@@ -51,11 +51,15 @@ that conclude the paper.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{monads,
-      author  = {Petricek, Tomas},
+    @article{petricek-2018-monads,
+      author  = {Tomas Petricek},
       title   = {What we talk about when we talk about monads},
-      journal = {The Art, Science, and Engineering of Programming},
-      year    = {2018}
+      journal = {Art Sci. Eng. Program.},
+      volume  = {2},
+      number  = {3},
+      pages   = {12},
+      year    = {2018},
+      doi     = {10.22152/programming-journal.org/2018/2/12}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

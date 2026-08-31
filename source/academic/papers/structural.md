@@ -50,12 +50,16 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper [paper page on ACM](http://dl.acm.org/citation.cfm?id=2628160).
 
     [lang=tex]
-    @inproceedings{coeffects-icfp14,
-      author    = {Petricek, Tomas and Orchard, Dominic and Mycroft, Alan},
-      title     = {Coeffects: A calculus of context-dependent computation},
-      booktitle = {Proceedings of International Conference on Functional Programming},
-      series    = {ICFP 2014},
-      location  = {Gothenburg, Sweden}
+    @inproceedings{petricek-2014-coeffects,
+      author    = {Tomas Petricek and Dominic A. Orchard and Alan Mycroft},
+      title     = {Coeffects: a calculus of context-dependent computation},
+      booktitle = {Proceedings of the 19th {ACM} {SIGPLAN} international
+                   conference on Functional programming, Gothenburg, Sweden,
+                   September 1-3, 2014},
+      pages     = {123--135},
+      publisher = {{ACM}},
+      year      = {2014},
+      doi       = {10.1145/2628136.2628160}
     }
 
 

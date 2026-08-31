@@ -46,14 +46,17 @@ lessen the cognitive load of programming.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{copypaste-paint22,
-      author    = {Edwards, Jonathan and Petricek, Tomas},
+    @inproceedings{edwards-2022-copy-paste,
+      author    = {Jonathan Edwards and Tomas Petricek},
       title     = {Interaction vs. Abstraction: Managed Copy and Paste},
-      booktitle = {Proceedings of Programming Abstractions and Interactive
-                   Notations, Tools, and Environments},
-      series    = {PAINT 2022},
-      location  = {Auckland, New Zealand},
-      year      = {2022}
+      booktitle = {Proceedings of the 1st {ACM} {SIGPLAN} International Workshop
+                   on Programming Abstractions and Interactive Notations, Tools,
+                   and Environments, {PAINT} 2022, Auckland, New Zealand, 5
+                   December 2022},
+      pages     = {11--19},
+      publisher = {{ACM}},
+      year      = {2022},
+      doi       = {10.1145/3563836.3568723}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

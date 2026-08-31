@@ -1,4 +1,4 @@
-# Evaluation strategies for monadic computations</h1>
+# Evaluation strategies for monadic computations
 
  - description:  When translating pure functional code to a monadic version, we need to use different translation depending
     on the desired evaluation strategy. In this paper, we present an unified translation that is parameterized by
@@ -52,13 +52,17 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on arXiv](http://arxiv.org/abs/1202.2921).
 
     [lang=tex]
-    @inproceedings{malias-msfp12,
-      author    = {Petricek, Tomas},
-      title     = {Evaluations strategies for monadic computations},
-      booktitle = {Proceedings of Mathematically Structured Functional Programming},
-      series    = {MSFP 2012},
-      location  = {Tallinn, Estonia},
-      year      = {2012}
+    @inproceedings{petricek-2012-monadic,
+      author    = {Tomas Petricek},
+      title     = {Evaluation strategies for monadic computations},
+      booktitle = {Proceedings Fourth Workshop on Mathematically Structured
+                   Functional Programming, MSFP@ETAPS 2012, Tallinn, Estonia, 25
+                   March 2012},
+      series    = {{EPTCS}},
+      volume    = {76},
+      pages     = {68--89},
+      year      = {2012},
+      doi       = {10.4204/EPTCS.76.7}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

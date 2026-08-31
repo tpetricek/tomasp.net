@@ -50,14 +50,18 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper proceedings in CEUR-WS](http://ceur-ws.org/Vol-584/).
 
     [lang=tex]
-    @inproceedings{iterators-itat09,
-      author    = {Petricek, Tomas},
-      title     = {Encoding monadic computations in C\# using iterators},
-      booktitle = {Proceedings of the Conference on Theory and
-                   Practice of Information Technologies},
-      series    = {ITAT 2009},
-      location  = {Kralova studna, Slovakia},
-      year      = {2009}
+    @inproceedings{petricek-2009-iterators,
+      author    = {Tomas Petricek},
+      title     = {Encoding Monadic Computations in C{\#} Using Iterators},
+      booktitle = {Proceedings of the Conference on Theory and Practice of
+                   Information Technologies, {ITAT} 2009, Horsk{\'{y}} hotel
+                   Kralova studna, Slovakia, September 25-29, 2009},
+      series    = {{CEUR} Workshop Proceedings},
+      volume    = {584},
+      pages     = {61--69},
+      publisher = {CEUR-WS.org},
+      year      = {2009},
+      url       = {https://ceur-ws.org/Vol-584/paper9.pdf}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

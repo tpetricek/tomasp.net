@@ -36,13 +36,18 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=1946313.1946334&coll=DL&dl=GUIDE&CFID=375487526&CFTOKEN=86636259).
 
     [lang=tex]
-    @inproceedings{async-padl11,
-      author    = {Syme, Don and Petricek, Tomas and Lomov, Dmitry},
-      title     = {The {F}\# {A}synchronous {P}rogramming {M}odel},
-      booktitle = {Proceedings of Practical Aspects of Declarative Languages},
-      series    = {PADL 2011},
-      location  = {Austin, TX, USA},
-      year      = {2011}
+    @inproceedings{syme-2011-async,
+      author    = {Don Syme and Tomas Petricek and Dmitry Lomov},
+      title     = {The F{\#} Asynchronous Programming Model},
+      booktitle = {Practical Aspects of Declarative Languages - 13th
+                   International Symposium, {PADL} 2011, Austin, TX, USA,
+                   January 24-25, 2011. Proceedings},
+      series    = {Lecture Notes in Computer Science},
+      volume    = {6539},
+      pages     = {175--189},
+      publisher = {Springer},
+      year      = {2011},
+      doi       = {10.1007/978-3-642-18378-2\_15}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

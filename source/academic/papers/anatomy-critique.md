@@ -7,7 +7,7 @@
  - tags: academic, publication
  - layout: article
  - date: 15 April 2018
- - title: The Gamma: Programming tools for open data-driven storytelling
+ - title: Critique of 'An anatomy of interaction: co-occurrences and entanglements'
  - subtitle: Tomas Petricek. Proceedings of Salon des Refusés, 2018
 
 > Tomas Petricek
@@ -35,13 +35,17 @@ the perspective of the research paradigm based on interaction
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{anatomy-critique,
+    @inproceedings{petricek-2018-critique,
       author    = {Tomas Petricek},
-      title     = {Critique of 'An anatomy of interaction: co-occurrences and entanglements'},
-      booktitle = {Proceedings of Salon des Refusés, 2018},
-      series    = {Programming 2018},
-      location  = {Nice, France},
-      year      = {2018}
+      title     = {Critique of 'an anatomy of interaction: co-occurrences and
+                   entanglements'},
+      booktitle = {Conference Companion of the 2nd International Conference on
+                   Art, Science, and Engineering of Programming, Nice, France,
+                   April 09-12, 2018},
+      pages     = {197--201},
+      publisher = {{ACM}},
+      year      = {2018},
+      doi       = {10.1145/3191697.3214329}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

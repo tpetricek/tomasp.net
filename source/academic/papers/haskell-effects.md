@@ -43,14 +43,16 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper page on ACM (TBA).
 
     [lang=tex]
-    @incollection{haskell-effects,
-      title={Embedding effect systems in Haskell},
-      author={Orchard, Dominic and Petricek, Tomas},
-      booktitle = {Proceedings of Haskell Symposium},
-      series    = {Haskell 2014},
-      location  = {Gothenburg, Sweden},
-      year      = {2014}
-    }    
+    @inproceedings{orchard-2014-effects,
+      author    = {Dominic A. Orchard and Tomas Petricek},
+      title     = {Embedding effect systems in Haskell},
+      booktitle = {Proceedings of the 2014 {ACM} {SIGPLAN} symposium on Haskell,
+                   Gothenburg, Sweden, September 4-5, 2014},
+      pages     = {13--24},
+      publisher = {{ACM}},
+      year      = {2014},
+      doi       = {10.1145/2633357.2633368}
+    }
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)

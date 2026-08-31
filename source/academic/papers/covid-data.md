@@ -35,14 +35,18 @@ social cohesion.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{covid-jsp21,
-      title={Covid19, Charitable Giving and Collectivism: a data-harvesting approach},
-      author={Taylor-Gooby, Peter and Petricek, Tomas and Cunliffe, Jack},
-      doi={10.1017/S0047279421000714},
-      journal={Journal of Social Policy},
-      publisher={Cambridge University Press},
-      year={2021},
-      pages={1–22}
+    @article{taylor-gooby-2023-covid,
+      author    = {Peter Taylor-Gooby and Tomas Petricek and Jack Cunliffe},
+      title     = {Covid-19, Charitable Giving and Collectivism: a
+                   data-harvesting approach},
+      journal   = {Journal of Social Policy},
+      volume    = {52},
+      number    = {3},
+      pages     = {473--494},
+      publisher = {Cambridge University Press},
+      year      = {2023},
+      issn      = {1469-7823},
+      doi       = {10.1017/S0047279421000714}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

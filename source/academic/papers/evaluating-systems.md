@@ -36,15 +36,16 @@ at the conference.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{evaluating-systems,
-      author    = {Jonathan Edwards and Stephen Kell and
-                   Tomas Petricek and Luke Church},
+    @inproceedings{edwards-2019-evaluating,
+      author    = {Jonathan Edwards and Stephen Kell and Tomas Petricek and Luke
+                   Church},
       title     = {Evaluating programming systems design},
-      booktitle = {Proceedings of 30th Annual Workshop of
-                   Psychology of Programming Interest Group},
-      series    = {PPIG 2019},
-      location  = {Newcastle, UK},
-      year      = {2019}
+      booktitle = {Proceedings of the 30th Annual Workshop of the Psychology of
+                   Programming Interest Group, {PPIG} 2019, Newcastle
+                   University, UK, August 28 - 30, 2019},
+      publisher = {Psychology of Programming Interest Group},
+      year      = {2019},
+      url       = {https://ppig.org/papers/2019-ppig-30th-edwards/}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

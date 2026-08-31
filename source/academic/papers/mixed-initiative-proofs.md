@@ -45,14 +45,14 @@ early experience suggests that this way of working can make proof construction e
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @unpublished{typedimage-hatra21,
-      author = {Verter, Jan Liam and Petricek, Tomas},
+    @unpublished{verter-2024-mixed-initiative,
+      author = {Jan Liam Verter and Tomas Petricek},
       title  = {Don't Call Us, We'll Call You: Towards Mixed-Initiative
                 Interactive Proof Assistants for Programming Language Theory},
-      note   = {Presented at Human Aspects of Types and Reasoning Assistants (HATRA).
-                Online at \url{https://arxiv.org/abs/2409.13872}},
+      note   = {Presented at Human Aspects of Types and Reasoning Assistants
+                (HATRA). Online at \url{https://arxiv.org/abs/2409.13872}},
+      year   = {2024},
       doi    = {10.48550/arXiv.2409.13872}
-      year   = {2024}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

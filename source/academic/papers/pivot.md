@@ -55,13 +55,17 @@ the project.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{pivot-ecoop2017,
-      author    = {Petricek, Tomas},
-      title     = {Data exploration through dot-driven development},
-      booktitle = {European Conference on Object-Oriented Programming},
-      series    = {ECOOP 2017},
-      location  = {Barcelona, Spain},
-      year      = {2017}
+    @inproceedings{petricek-2017-dot-driven,
+      author    = {Tomas Petricek},
+      title     = {Data Exploration through Dot-driven Development},
+      booktitle = {31st European Conference on Object-Oriented Programming,
+                   {ECOOP} 2017, Barcelona, Spain, June 19-23, 2017},
+      series    = {LIPIcs},
+      volume    = {74},
+      pages     = {21:1--21:27},
+      publisher = {Schloss Dagstuhl - Leibniz-Zentrum f{\"{u}}r Informatik},
+      year      = {2017},
+      doi       = {10.4230/LIPIcs.ECOOP.2017.21}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

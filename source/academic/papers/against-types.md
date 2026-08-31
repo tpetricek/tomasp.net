@@ -44,13 +44,16 @@ about the topic of the paper at Lambda Days 2016 conference organized by
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{against-types-onward15,
-      author    = {Petricek, Tomas},
-      title     = {Against a Universal Definition of 'Type'},
-      booktitle = {Proceedings of Onward! Essays},
-      series    = {Onward! 2015},
-      location  = {Pittsburg, USA},
-      year      = {2015}
+    @inproceedings{petricek-2015-types,
+      author    = {Tomas Petricek},
+      title     = {Against a universal definition of 'Type'},
+      booktitle = {2015 {ACM} International Symposium on New Ideas, New
+                   Paradigms, and Reflections on Programming and Software,
+                   Onward! 2015, Pittsburgh, PA, USA, October 25-30, 2015},
+      pages     = {254--266},
+      publisher = {{ACM}},
+      year      = {2015},
+      doi       = {10.1145/2814228.2814249}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

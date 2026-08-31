@@ -36,25 +36,28 @@ get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=
 for the [MSR technical report](http://research.microsoft.com/apps/pubs/default.aspx?id=173076).
 
     [lang=tex]
-    @inproceedings{inforich-ddfp,
-      author    = {Syme, Don and Battocchi, Keith and Takeda, 
-                   Kenji and Malayeri, Donna and Petricek, Tomas},
-      title     = {Themes in information-rich functional programming 
-                   for internet-scale data sources},
-      booktitle = {Proceedings Workshop on Data Driven Functional Programming},
-      series    = {DDFP 2013},
-      location  = {Rome, Italy}
-    } 
+    @inproceedings{syme-2013-inforich,
+      author    = {Don Syme and Keith Battocchi and Kenji Takeda and Donna
+                   Malayeri and Tomas Petricek},
+      title     = {Themes in information-rich functional programming for
+                   internet-scale data sources},
+      booktitle = {Proceedings of the 2013 Workshop on Data Driven Functional
+                   Programming, {DDFP} 2013, Rome, Italy, January 22, 2013},
+      pages     = {1--4},
+      publisher = {{ACM}},
+      year      = {2013},
+      doi       = {10.1145/2429376.2429378}
+    }
 
 <span></span>
 
     [lang=tex]
-    @@techreport{inforich-msr,
-      author      = {Syme, Don and Battocchi, Keith and Takeda, Kenji and Malayeri, 
-                     Donna and Fisher, Jomo and Hu, Jack and Liu, Tao and McNamara, 
-                     Brian and Quirk, Daniel and Taveggia, Matteo and Chae, Wonseok 
-                     and Matsveyeu, Uladzimir and Petricek, Tomas},
-      title       = {F\# 3.0 - Strongly-Typed Language Support for 
+    @techreport{syme-2012-fsharp,
+      author      = {Don Syme and Keith Battocchi and Kenji Takeda and Donna
+                     Malayeri and Jomo Fisher and Jack Hu and Tao Liu and Brian
+                     McNamara and Daniel Quirk and Matteo Taveggia and Wonseok
+                     Chae and Uladzimir Matsveyeu and Tomas Petricek},
+      title       = {F\# 3.0 - Strongly-Typed Language Support for
                      Internet-Scale Information Sources},
       number      = {MSR-TR-2012-101},
       institution = {Microsoft Research},

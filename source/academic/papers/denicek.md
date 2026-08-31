@@ -54,17 +54,17 @@ take a look at the [30-second teaser video](https://www.youtube.com/watch?v=vIbr
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{10.1145/3746059.3747646,
-      author = {Petricek, Tomas and Edwards, Jonathan},
-      title = {Denicek: Computational Substrate for
-        Document-Oriented End-User Programming},
-      year = {2025},
-      isbn = {9798400720376},
-      publisher = {Association for Computing Machinery},
-      doi = {10.1145/3746059.3747646},
-      booktitle = {Proceedings of the 38th Annual ACM
-        Symposium on User Interface Software and Technology},
-      series = {UIST '25}
+    @inproceedings{petricek-2025-denicek,
+      author    = {Tomas Petricek and Jonathan Edwards},
+      title     = {Denicek: Computational Substrate for Document-Oriented
+                   End-User Programming},
+      booktitle = {Proceedings of the 38th Annual {ACM} Symposium on User
+                   Interface Software and Technology, {UIST} 2025, Busan, Korea,
+                   28 September 2025 - 1 October 2025},
+      pages     = {32:1--32:19},
+      publisher = {{ACM}},
+      year      = {2025},
+      doi       = {10.1145/3746059.3747646}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

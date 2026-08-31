@@ -47,11 +47,15 @@ conceive new kinds of tools that can support them. The present paper is one step
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{monads,
-      author  = {Petricek, Tomas},
+    @article{petricek-2020-live,
+      author  = {Tomas Petricek},
       title   = {Foundations of a live data exploration environment},
-      journal = {The Art, Science, and Engineering of Programming},
-      year    = {2020}
+      journal = {Art Sci. Eng. Program.},
+      volume  = {4},
+      number  = {3},
+      pages   = {8},
+      year    = {2020},
+      doi     = {10.22152/programming-journal.org/2020/4/8}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

@@ -36,14 +36,19 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper page on ACM (TBA).
 
     [lang=tex]
-    @incollection{effects-revisited,
-      title={Effect Systems Revisited—Control-Flow Algebra and Semantics},
-      author={Mycroft, Alan and Orchard, Dominic and Petricek, Tomas},
-      booktitle={Semantics, Logics, and Calculi},
-      pages={1--32},
-      year={2016},
-      publisher={Springer}
-    }    
+    @inproceedings{mycroft-2016-effects,
+      author    = {Alan Mycroft and Dominic A. Orchard and Tomas Petricek},
+      title     = {Effect Systems Revisited - Control-Flow Algebra and Semantics},
+      booktitle = {Semantics, Logics, and Calculi - Essays Dedicated to Hanne
+                   Riis Nielson and Flemming Nielson on the Occasion of Their
+                   60th Birthdays},
+      series    = {Lecture Notes in Computer Science},
+      volume    = {9560},
+      pages     = {1--32},
+      publisher = {Springer},
+      year      = {2016},
+      doi       = {10.1007/978-3-319-27810-0\_1}
+    }
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)

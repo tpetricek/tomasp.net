@@ -47,13 +47,17 @@ You can watch the talk below.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{storytelling,
+    @inproceedings{petricek-2017-storytelling,
       author    = {Tomas Petricek},
-      title     = {The Gamma: Programming tools for open data-driven storytelling},
-      booktitle = {Proceedings of European Data and Computational Journalism Conference},
-      series    = {EDCJC 2017},
-      location  = {Dublin, Ireland},
-      year      = {2017}
+      title     = {The Gamma: Programming tools for open data-driven
+                   storytelling},
+      booktitle = {Proceedings of the European Data and Computational Journalism
+                   Conference},
+      publisher = {University College Dublin},
+      address   = {Dublin, Ireland},
+      year      = {2017},
+      isbn      = {978-1-910963-15-9},
+      url       = {http://hdl.handle.net/10197/8634}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

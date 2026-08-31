@@ -39,12 +39,15 @@ applications or libraries, or require programmer effort.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{linkedviz-popl22,
-      author    = {Roly Perera and Minh Nguyen and Tomas Petricek and Meng Wang},
-      title     = {Linked Visualisations via Galois Dependencies},
-      booktitle = {Proceedings of Principles of Programming Languages Conference},
-      series    = {POPL 2022},
-      location  = {Philadelphia, United States}
+    @article{perera-2022-galois,
+      author  = {Roly Perera and Minh Nguyen and Tomas Petricek and Meng Wang},
+      title   = {Linked visualisations via Galois dependencies},
+      journal = {Proc. {ACM} Program. Lang.},
+      volume  = {6},
+      number  = {{POPL}},
+      pages   = {1--29},
+      year    = {2022},
+      doi     = {10.1145/3498668}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

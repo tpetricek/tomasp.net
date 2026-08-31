@@ -41,12 +41,14 @@ experience then it would offer a new way to collaborate in image-based programmi
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @unpublished{typedimage-hatra21,
-      author = {Edwards, Jonathan and Petricek, Tomas},
+    @unpublished{edwards-2021-typed-image,
+      author = {Jonathan Edwards and Tomas Petricek},
       title  = {Typed Image-based Programming with Structure Editing},
-      note   = {Presented at Human Aspects of Types and Reasoning Assistants (HATRA).
-                Online at \url{http://tomasp.net/academic/papers/typed-image}},
-      year   = {2021}
+      note   = {Presented at Human Aspects of Types and Reasoning Assistants
+                (HATRA). Online at
+                \url{http://tomasp.net/academic/papers/typed-image}},
+      year   = {2021},
+      doi    = {10.48550/arXiv.2110.08993}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

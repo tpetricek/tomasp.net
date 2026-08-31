@@ -33,14 +33,15 @@ possible to support versioning.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{wrattler,
-      author    = {Petricek, Tomas and Geddes, James and Sutton, Charles},
+    @inproceedings{petricek-2018-wrattler,
+      author    = {Tomas Petricek and James Geddes and Charles Sutton},
       title     = {Wrattler: Reproducible, live and polyglot notebooks},
-      booktitle = {Proceedings of 10th USENIX Workshop on The Theory and Practice of Provenance},
-      series    = {TaPP 2018},
-      location  = {London, UK},
-      year      = {2018}
-    } 
+      booktitle = {10th {USENIX} Workshop on the Theory and Practice of
+                   Provenance, TaPP 2018, London, UK, July 11-12, 2018},
+      publisher = {{USENIX} Association},
+      year      = {2018},
+      url       = {https://www.usenix.org/conference/tapp2018/presentation/petricek}
+    }
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)

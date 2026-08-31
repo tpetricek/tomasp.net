@@ -41,13 +41,15 @@ public to benefit from the rise of open data.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{thegamma-vlhcc22,
-      author    = {Petricek, Tomas},
+    @inproceedings{petricek-2022-gamma,
+      author    = {Tomas Petricek},
       title     = {The Gamma: Programmatic Data Exploration for Non-programmers},
-      booktitle = {Proceedings of VL/HCC},
-      series    = {IEEE Symposium on Visual Languages and Human-Centric Computing},
-      location  = {Rome, Italy},
-      year      = {2022}
+      booktitle = {2022 {IEEE} Symposium on Visual Languages and Human-Centric
+                   Computing, {VL/HCC} 2022, Rome, Italy, September 12-16, 2022},
+      pages     = {1--7},
+      publisher = {{IEEE}},
+      year      = {2022},
+      doi       = {10.1109/VL/HCC53370.2022.9833134}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

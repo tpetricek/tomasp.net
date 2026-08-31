@@ -28,15 +28,16 @@ conference was postponed because of the Covid-19 pandemic, and took place online
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{hopl-ieee,
-      author    = {Mark Priestley and Tomas Petricek and David Hemmendinger},
-      title     = {Report on {HOPL} {IV} - {ACM} {SIGPLAN} History of Programming Languages Conference},
-      journal   = {{IEEE} Ann. Hist. Comput.},
-      volume    = {43},
-      number    = {3},
-      pages     = {83--85},
-      year      = {2021},
-      doi       = {10.1109/MAHC.2021.3098957},
+    @article{priestley-2021-hopl,
+      author  = {Mark Priestley and Tomas Petricek},
+      title   = {Report on {HOPL} {IV} - {ACM} {SIGPLAN} History of Programming
+                 Languages Conference},
+      journal = {{IEEE} Ann. Hist. Comput.},
+      volume  = {43},
+      number  = {3},
+      pages   = {83--85},
+      year    = {2021},
+      doi     = {10.1109/MAHC.2021.3098957}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

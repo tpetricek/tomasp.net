@@ -56,13 +56,15 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=2034675.2034677&coll=DL&dl=GUIDE&CFID=375487526&CFTOKEN=86636259).
 
     [lang=tex]
-    @inproceedings{joinads-haskell11,
-      author    = {Petricek, Tomas and Mycroft, Alan and Syme, Don},
-      title     = {Extending {M}onads with {P}attern {M}atching},
-      booktitle = {Proceedings of Haskell Symposium},
-      series    = {Haskell 2011},
-      location  = {Tokyo, Japan},
-      year      = {2011}
+    @inproceedings{petricek-2011-monads,
+      author    = {Tomas Petricek and Alan Mycroft and Don Syme},
+      title     = {Extending monads with pattern matching},
+      booktitle = {Proceedings of the 4th {ACM} {SIGPLAN} Symposium on Haskell,
+                   Haskell 2011, Tokyo, Japan, 22 September 2011},
+      pages     = {1--12},
+      publisher = {{ACM}},
+      year      = {2011},
+      doi       = {10.1145/2034675.2034677}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

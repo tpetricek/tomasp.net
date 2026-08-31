@@ -30,14 +30,19 @@ data-centric debate.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{you-guessed-it,
-      author    = {Pablo León-Villagrá and Sarwar Islam
-                   and Megan Lucero and Brooks Paige and Tomas Petricek},
-      title     = {You guessed it! Reflecting on preconceptions
-                   and exploring data without statistics},
-      booktitle = {Proceedings of 2nd European Data and Computational Journalism Conference},
-      series    = {EDCJC 2018},
-      location  = {Cardiff, Wales}
+    @inproceedings{leon-villagra-2018-preconceptions,
+      author    = {Pablo León-Villagrá and Sarwar Islam and Megan Lucero and
+                   Brooks Paige and Tomas Petricek},
+      editor    = {Bahareh R. Heravi and Martin Chorley and Glyn Mottershead},
+      title     = {You guessed it! Reflecting on preconceptions and exploring
+                   data without statistics},
+      booktitle = {Proceedings of the 2nd European Data and Computational
+                   Journalism Conference},
+      publisher = {University College Dublin},
+      address   = {Cardiff, Wales},
+      year      = {2018},
+      isbn      = {978-1-910963-23-4},
+      url       = {http://hdl.handle.net/10197/9416}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

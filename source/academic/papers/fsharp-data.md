@@ -57,15 +57,17 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the paper [paper page on ACM](http://dl.acm.org/citation.cfm?id=2908115)
 
     [lang=tex]
-    @inproceedings{fsharp-data-pldi2016,
-      author    = {Petricek, Tomas and Guerra, Gustavo and Syme, Don},
-      title     = {Types from data: Making structured
-                   data first-class citizens in F\#},
-      booktitle = {Proceedings of Conference on Programming
-                   Language Design and Implementation},
-      series    = {PLDI 2016},
-      location  = {Santa Barbara, California, USA},
-      year      = {2016}
+    @inproceedings{petricek-2016-types,
+      author    = {Tomas Petricek and Gustavo Guerra and Don Syme},
+      title     = {Types from data: making structured data first-class citizens
+                   in F{\#}},
+      booktitle = {Proceedings of the 37th {ACM} {SIGPLAN} Conference on
+                   Programming Language Design and Implementation, {PLDI} 2016,
+                   Santa Barbara, CA, USA, June 13-17, 2016},
+      pages     = {477--490},
+      publisher = {{ACM}},
+      year      = {2016},
+      doi       = {10.1145/2908080.2908115}
     }
 
 

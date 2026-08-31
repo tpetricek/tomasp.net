@@ -28,11 +28,13 @@ This paper contributes a set of concrete scenarios involving schema change that 
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{schema-challenges-live23,
-      title={Live \& Local Schema Change: Challenge Problems},
-      author={Edwards, Jonathan and Petricek, Tomas and van der Storm, Tijs},
-      journal={arXiv preprint arXiv:2309.11406},
-      year={2023}
+    @unpublished{edwards-2023-schema,
+      author = {Jonathan Edwards and Tomas Petricek and Tijs van der Storm},
+      title  = {Live \& Local Schema Change: Challenge Problems},
+      note   = {Presented at LIVE 2023: Workshop on Live Programming. Online at
+                \url{https://arxiv.org/abs/2309.11406}},
+      year   = {2023},
+      doi    = {10.48550/arXiv.2309.11406}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

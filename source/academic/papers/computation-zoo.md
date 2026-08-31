@@ -67,13 +67,18 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](#).
 
     [lang=tex]
-    @inproceedings{computation-zoo-padl14,
-      author    = {Petricek, Tomas and Syme, Don},
-      title     = {The F\# Computation Expression Zoo},
-      booktitle = {Proceedings of Practical Aspects of Declarative Languages},
-      series    = {PADL 2014},
-      location  = {San Diego, CA, USA},
-      year      = {2014}
+    @inproceedings{petricek-2014-zoo,
+      author    = {Tomas Petricek and Don Syme},
+      title     = {The F{\#} Computation Expression Zoo},
+      booktitle = {Practical Aspects of Declarative Languages - 16th
+                   International Symposium, {PADL} 2014, San Diego, CA, USA,
+                   January 20-21, 2014. Proceedings},
+      series    = {Lecture Notes in Computer Science},
+      volume    = {8324},
+      pages     = {33--48},
+      publisher = {Springer},
+      year      = {2014},
+      doi       = {10.1007/978-3-319-04132-2\_3}
     }
 
 

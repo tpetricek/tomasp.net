@@ -32,13 +32,14 @@ Much research effort focuses on building programming systems that are easier to 
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{techdims,
-      title={Technical Dimensions of Programming Systems},
-      author={Jakubovic, Joel and Edwards, Jonathan and Petricek, Tomas},
-      journal={The Art, Science, and Engineering of Programming},
-      volume={7},
-      number={3},
-      year={2023},
+    @article{jakubovic-2023-dimensions,
+      author  = {Joel Jakubovic and Jonathan Edwards and Tomas Petricek},
+      title   = {Technical Dimensions of Programming Systems},
+      journal = {Art Sci. Eng. Program.},
+      volume  = {7},
+      number  = {3},
+      year    = {2023},
+      doi     = {10.22152/programming-journal.org/2023/7/13}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

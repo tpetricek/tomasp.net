@@ -47,14 +47,18 @@ If you want to cite the paper, you can use the following BibTeX information, or
 get full details from the [paper page on ACM](http://dl.acm.org/citation.cfm?id=2525971.2526009&coll=DL&dl=GUIDE&CFID=375487526&CFTOKEN=86636259).
 
     [lang=tex]
-    @inproceedings{coeffects-icalp13,
-      author    = {Petricek, Tomas and Orchard, Dominic and Mycroft, Alan},
-      title     = {Coeffects: unified static analysis of context-dependence},
-      booktitle = {Proceedings of International Conference on Automata,
-                   Languages, and Programming - Volume Part II},
-      series    = {ICALP 2013},
-      location  = {Riga, Latvia},
-      year      = {2013}
+    @inproceedings{petricek-2013-coeffects,
+      author    = {Tomas Petricek and Dominic A. Orchard and Alan Mycroft},
+      title     = {Coeffects: Unified Static Analysis of Context-Dependence},
+      booktitle = {Automata, Languages, and Programming - 40th International
+                   Colloquium, {ICALP} 2013, Riga, Latvia, July 8-12, 2013,
+                   Proceedings, Part {II}},
+      series    = {Lecture Notes in Computer Science},
+      volume    = {7966},
+      pages     = {385--397},
+      publisher = {Springer},
+      year      = {2013},
+      doi       = {10.1007/978-3-642-39212-2\_35}
     }
 
 

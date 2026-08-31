@@ -95,14 +95,14 @@ Watch a short video presentation associated with the JFP paper:
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{compost-jfp2021,
-      author={Petricek, Tomas},
-      title={Composable data visualizations},
-      volume={31},
-      doi={10.1017/S0956796821000046},
-      journal={Journal of Functional Programming},
-      publisher={Cambridge University Press},
-      year={2021},
+    @article{petricek-2021-composable,
+      author  = {Tomas Petricek},
+      title   = {Composable data visualizations},
+      journal = {J. Funct. Program.},
+      volume  = {31},
+      pages   = {e13},
+      year    = {2021},
+      doi     = {10.1017/S0956796821000046}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

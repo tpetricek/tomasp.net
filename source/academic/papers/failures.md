@@ -61,13 +61,15 @@ You can watch the CodeMesh talk here (and attend next year for great talks)!
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{failures,
-      author  = {Petricek, Tomas},
+    @article{petricek-2017-miscomputation,
+      author  = {Tomas Petricek},
       title   = {Miscomputation in software: Learning to live with errors},
-      journal = {The Art, Science, and Engineering of Programming},
-      year    = {2017},
+      journal = {Art Sci. Eng. Program.},
+      volume  = {1},
       number  = {2},
-      volume  = {1}
+      pages   = {14},
+      year    = {2017},
+      doi     = {10.22152/programming-journal.org/2017/1/14}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

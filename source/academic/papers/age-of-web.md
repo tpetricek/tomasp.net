@@ -49,13 +49,17 @@ Thanks to the ML workshop organizers, the video from my original talk,
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{web-ml14,
-      author    = {Petricek, Tomas and Syme, Don and Bray, Zach},
-      title     = {In the Age of Web: Typed Functional-First Programming Revisited},
-      booktitle = {Post-proceedings of ML Workshop},
-      series    = {ML 2014},
-      location  = {Gotenburg, Sweden},
-      year      = {2014}
+    @inproceedings{petricek-2014-web,
+      author    = {Tomas Petricek and Don Syme and Zach Bray},
+      title     = {In the Age of Web: Typed Functional-First Programming
+                   Revisited},
+      booktitle = {Proceedings {ML} Family/OCaml Users and Developers workshops,
+                   ML/OCaml 2014, Gothenburg, Sweden, September 4-5, 2014},
+      series    = {{EPTCS}},
+      volume    = {198},
+      pages     = {64--79},
+      year      = {2014},
+      doi       = {10.4204/EPTCS.198.3}
     }
 
 

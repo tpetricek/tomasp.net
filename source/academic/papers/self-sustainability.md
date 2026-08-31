@@ -45,14 +45,18 @@ whole takes us a further step towards achieving open and malleable programming s
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{ladder-onward22,
-      author    = {Jakubovic, Joel and Petricek, Tomas},
-      title     = {Ascending the Ladder to Self-Sustainability:
-        Achieving Open Evolution in an Interactive Graphical System},
-      booktitle = {Proceedings of Onward! Essays},
-      series    = {Onward! 2022},
-      location  = {Auckland, New Zealand},
-      year      = {2022}
+    @inproceedings{jakubovic-2022-ladder,
+      author    = {Joel Jakubovic and Tomas Petricek},
+      title     = {Ascending the Ladder to Self-Sustainability: Achieving Open
+                   Evolution in an Interactive Graphical System},
+      booktitle = {Proceedings of the 2022 {ACM} {SIGPLAN} International
+                   Symposium on New Ideas, New Paradigms, and Reflections on
+                   Programming and Software, Onward! 2022, Auckland, New
+                   Zealand, December 8-10, 2022},
+      pages     = {240--258},
+      publisher = {{ACM}},
+      year      = {2022},
+      doi       = {10.1145/3563835.3568736}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

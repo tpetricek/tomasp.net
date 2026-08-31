@@ -56,12 +56,13 @@ You can watch the talk below.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @misc{data-journalism,
+    @misc{petricek-2015-journalism,
       author       = {Tomas Petricek},
       title        = {The Gamma: Programming Tools for Data Journalism},
+      howpublished = {Extended abstract presented at Computation + Journalism
+                      Symposium, New York},
       year         = {2015},
-      howpublished = {Extended abstract presented at Computation + Journalism Symposium, New York},
-      url          = {https://tomasp.net/academic/papers/data-journalism/extended-abstract.pdf},
+      url          = {https://tomasp.net/academic/papers/data-journalism/extended-abstract.pdf}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to

@@ -44,13 +44,15 @@ live and collaboration more fluid.
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @article{schema,
-      title={Schema Evolution in Interactive Programming Systems},
-      author={Edwards, Jonathan and Petricek, Tomas and van der Storm, Tijs and Litt, Geoffrey},
-      journal={The Art, Science, and Engineering of Programming},
-      volume={9},
-      number={2},
-      year={2024},
+    @article{edwards-2024-schema,
+      author  = {Jonathan Edwards and Tomas Petricek and Tijs van der Storm and
+                 Geoffrey Litt},
+      title   = {Schema Evolution in Interactive Programming Systems},
+      journal = {Art Sci. Eng. Program.},
+      volume  = {9},
+      number  = {1},
+      year    = {2024},
+      doi     = {10.22152/programming-journal.org/2025/9/2}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to
