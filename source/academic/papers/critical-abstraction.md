@@ -36,17 +36,18 @@ into a more self-reflective field aware of the methodological and sociopolitical
 If you want to cite the paper, you can use the following BibTeX information.
 
     [lang=tex]
-    @inproceedings{petricek-2026-adventure,
-      author    = {Tomas Petricek and Jan Liam Verter and Mikolas Fromm},
-      title     = {The Choose-Your-Own-Adventure Calculus},
+    @inproceedings{chung-2026-abstraction,
+      author    = {Alice Mira Chung and Devamardeep Hayatpur and Philip J. Guo
+                   and Tomas Petricek},
+      title     = {Towards Critical Abstraction for Software},
       booktitle = {Proceedings of the 2026 {ACM} {SIGPLAN} International
-                    Symposium on New Ideas, New Paradigms, and Reflections on
-                    Programming and Software, Onward! 2026, Oakland, CA, USA,
-                    October 4-9, 2026},
+                   Symposium on New Ideas, New Paradigms, and Reflections on
+                   Programming and Software, Onward! 2026, Oakland, CA, USA,
+                   October 4-9, 2026},
       publisher = {{ACM}},
       year      = {2026},
       isbn      = {979-8-4007-2934-8},
-      doi       = {10.1145/3840586.3843213}
+      doi       = {10.1145/3840586.3843748}
     }
 
 If you have any comments, suggestions or related ideas, I'll be happy to
