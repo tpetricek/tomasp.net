@@ -29,7 +29,7 @@ into a more self-reflective field aware of the methodological and sociopolitical
 
 ## Paper and more information
 
- - Download [paper draft (PDF)](paper.pdf)
+ - Download the [paper (PDF)](paper.pdf)
  - Some parts of the paper are inspired by my [Critical Architecture/Software Theory](/architecture/) essay
 
 ## <a id="cite">Bibtex</a>

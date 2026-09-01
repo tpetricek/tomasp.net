@@ -36,7 +36,7 @@ least as much attention as languages.
 
 ## Paper and more information
 
- - Download [paper draft (PDF)](paper.pdf)
+ - Download the [paper (PDF)](paper.pdf)
  - Check out [the earlier blog post on the topic](https://tomasp.net/blog/2025/adventure-calculus/)
 
 ## <a id="cite">Bibtex</a>

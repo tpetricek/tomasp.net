@@ -4,7 +4,7 @@
      the property and then develops the proof manually, until an automatic strategy can fill the
      remaining gaps. We propose a mixed-initiative proof assistant where the tool starts with a
      an automatic search, but seeks feedback from the user when needed.
- - tags: academic, publication, home
+ - tags: academic, publication
  - layout: article
  - icon: fa fa-list-check
  - date: 20 October 2024
@@ -57,4 +57,4 @@ If you want to cite the paper, you can use the following BibTeX information.
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via BlueSky at [@tomasp.net](https://bsky.app/profile/tomasp.net).

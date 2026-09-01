@@ -5,7 +5,7 @@
      requires expert programming skills. In this paper, we describe the design of a data
      exploration language that makes the task more accessible by embedding advanced programming
      concepts into a simple core language.
- - tags: academic, publication, top, home
+ - tags: academic, publication, top
  - layout: article
  - icon: fa fa-table
  - date: 12 April 2017
@@ -70,4 +70,4 @@ If you want to cite the paper, you can use the following BibTeX information.
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via BlueSky at [@tomasp.net](https://bsky.app/profile/tomasp.net).

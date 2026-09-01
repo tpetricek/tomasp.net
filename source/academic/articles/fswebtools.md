@@ -53,4 +53,4 @@ so if you want to cite the article, you can use roughly the following:
 
 If you have any comments, suggestions or related ideas, I'll be happy to 
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via BlueSky at [@tomasp.net](https://bsky.app/profile/tomasp.net).

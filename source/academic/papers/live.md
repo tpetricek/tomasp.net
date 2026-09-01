@@ -4,7 +4,7 @@
     They use few abstractions, work interactively and rely heavily on external libraries.
     We capture this way of working and build a programming environment that makes data exploration
     easier by providing instant live feedback.
- - tags: academic, publication, home
+ - tags: academic, publication, top
  - layout: article
  - icon: fa fa-sync
  - date: 1 March 2020
@@ -60,4 +60,4 @@ If you want to cite the paper, you can use the following BibTeX information.
 
 If you have any comments, suggestions or related ideas, I'll be happy to
 hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
+or get in touch via BlueSky at [@tomasp.net](https://bsky.app/profile/tomasp.net).
