@@ -4,7 +4,7 @@
     To structure our discussion, we introduce the idea of a culture of programming which embodies
     a particular perspective on programming. We identify four major cultures: hacker culture,
     engineering culture, managerial culture and mathematical culture.
- - tags: academic, publication, draft
+ - tags: academic, publication, archived
  - layout: article
  - icon: fa fa-user-friends
  - date: 2 April 2019
@@ -15,6 +15,13 @@
 > Tomas Petricek
 >
 > Unpublished draft
+
+This is a draft paper that eventually evolved into the [Cultures of Programming](/cultures) book
+(published in December 2025 by Cambridge University Press). The original draft paper is left
+below for anyone interested in the evolution of the book, but I recommend reading the 
+open-access book version!
+
+## Original abstract
 
 Programming language research does not exist in isolation. Many programming languages are designed
 to address a particular business problem or as a reflection of more wide-ranging shifts in the
@@ -47,12 +54,6 @@ It provides an explanation for a number of, otherwise hard to grasp, historical 
 it explains why certain debates keep recurring over the history. For a programming language
 researcher, the paper might also point at new, yet unexplored, intersections between cultures.
 
-## Draft and more information
+## Original draft
 
  - Download [the draft paper (PDF)](cultures.pdf)
-
-## Comments are welcome!
-
-If you have any comments, suggestions or related ideas, I'll be happy to
-hear from you! Send me an email at [tomas@tomasp.net](mailto:tomas@tomasp.net)
-or get in touch via Twitter at [@tomaspetricek](http://twitter.com/tomaspetricek).
