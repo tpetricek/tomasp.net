@@ -85,7 +85,7 @@ let uploadCalendarFiles (cfg:SiteConfig) =
         if na then uploadResized 700 "-original.jpg"
         else uploadFile "-original.jpg" source
         uploadResized 700 ".jpg"
-        uploadResized 240 "-preview.jpg"
+        uploadResized 320 "-preview.jpg"
         if not na then
           manifest <- Map.add year (known.Add monthName) manifest
           writeManifest cfg manifest
