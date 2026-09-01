@@ -184,7 +184,14 @@ module private Server =
     elif path.EndsWith "/" then
       serveDirectory ctx.Response (path.Trim('/'))
     else
-      serveFile ctx.Response (path.TrimStart('/')) }
+      // A directory URL without the trailing slash. Redirect rather than serve the
+      // index here - pages use relative links, which only resolve under the slash.
+      let dir = config.Output </> path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)
+      if Directory.Exists dir && File.Exists (dir </> "index.html") then
+        ctx.Response.Redirect(path + "/" + ctx.Request.Url.Query)
+        ctx.Response.Close()
+      else
+        serveFile ctx.Response (path.TrimStart('/')) }
 
   let start () =
     let listener = new HttpListener()

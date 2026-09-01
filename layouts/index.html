@@ -163,22 +163,6 @@ home
   <div class="frr" style="margin-top:30px; margin-bottom: 40px;">
     <div class="fl50"><div class="fmr hp-listing">
 
-      <h2 class="first"><a class="hidden" href="/blog/">Recent blog posts</a></h2>
-      <p style="margin-bottom:20px">Mostly longer articles that may eventually
-        become something bigger covering <a href="/blog/tag/research">my research</a>,
-        <a href="/blog/tag/fsharp">F#</a>, <a href="/blog/tag/philosophy">history and philosophy</a>
-        and more. See <a href="/blog/">the blog archive</a> for a complete list.</p>
-
-      {% for post in model.Posts limit:20 %}
-      <a href="{{ post.Url }}"><i class="{{ post.Icon }}"></i></a>
-      <p class="hp-listing-item">
-        <strong><a href="{{ post.Url }}">{{ post.Title }}</a></strong><br />
-        <span>{{ post.Date | dateShort }}</span>
-      </p>
-      {% endfor %}
-
-    </div></div>
-    <div class="fr50"><div class="fml hp-listing">
 
       <h2 class="first"><a class="hidden" href="/academic/">Academic papers to read</a></h2>
       <p style="margin-bottom:20px">
@@ -191,7 +175,7 @@ home
       <a href="{{ post.Url }}"><i class="{{ post.Icon }}"></i></a>
       <p class="hp-listing-item">
         <strong><a href="{{ post.Url }}">{{ post.Title }}</a></strong>
-        {% if post.Title contains "AI Assistants" %}{% else %}{% if post.Title contains "Programmatic" %}{% else %}{% if post.Title contains "Types from data" %}{% else %}{% if post.Title contains "Complementary" %}{% else %}<br />{% endif %}{% endif %}{% endif %}{% endif %}
+        {% if post.Title contains "AI Assistants" %}{% elseif post.Title contains "Programmatic" %}{% elseif post.Title contains "Types from data" %}{% elseif post.Title contains "Vega Data" %}{% else %}<br />{% endif %}
         <span>{{ post.Subtitle | afterDot }}</span>
       </p>
       {% endif %}
@@ -207,11 +191,14 @@ home
       {% if post.Tags contains "draft" %}
       <a href="{{ post.Url }}"><i class="{{ post.Icon }}"></i></a>
       <p class="hp-listing-item">
-        <strong><a href="{{ post.Url }}">{{ post.Title }}</a></strong><br />
+        <strong><a href="{{ post.Url }}">{{ post.Title }}</a></strong>{% if post.Title contains "Document-Oriented" %}{% elseif post.Title contains "Baseline" %}{% else %}<br />{% endif %}
         <span>{{ post.Date | dateShort }}</span>
       </p>
       {% endif %}
       {% endfor %}
+
+    </div></div>
+    <div class="fr50"><div class="fml hp-listing">
 
       <div class="calendar-box">
         <script type="text/javascript">
@@ -241,6 +228,20 @@ home
           <a href="/calendar/2025/">2025</a> and the first of <a href="/calendar/2026/">2026</a>.
         </p>
       </div>
+
+      <h2 class="first"><a class="hidden" href="/blog/">Recent blog posts</a></h2>
+      <p style="margin-bottom:20px">Mostly longer articles that may eventually
+        become something bigger covering <a href="/blog/tag/research">my research</a>,
+        <a href="/blog/tag/fsharp">F#</a>, <a href="/blog/tag/philosophy">history and philosophy</a>
+        and more. See <a href="/blog/">the blog archive</a> for a complete list.</p>
+
+      {% for post in model.Posts limit:15 %}
+      <a href="{{ post.Url }}"><i class="{{ post.Icon }}"></i></a>
+      <p class="hp-listing-item">
+        <strong><a href="{{ post.Url }}">{{ post.Title }}</a></strong><br />
+        <span>{{ post.Date | dateShort }}</span>
+      </p>
+      {% endfor %}
 
     </div></div>
   </div>
