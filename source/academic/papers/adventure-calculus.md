@@ -5,7 +5,7 @@
      In this paper, we formally capture the essence of this interaction pattern through a small
      formal model called the choose-your-own-adventure calculus.
  - tags: academic, publication, top, home
- - icon: fa-regular fa-hand-point-right
+ - icon: fa fa-square-caret-down
  - layout: article
  - date: 5 October 2026
  - title: The Choose-Your-Own-Adventure Calculus
