@@ -40,7 +40,7 @@ lessen the cognitive load of programming.
 
 ## Paper and more information
 
- - Download [paper pre-print (PDF)](paint22.pdf)
+ - Download [the paper pre-print (PDF)](paint22.pdf)
 
 ## <a id="cite">Bibtex</a>
 If you want to cite the paper, you can use the following BibTeX information.

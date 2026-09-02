@@ -21,7 +21,7 @@ This paper contributes a set of concrete scenarios involving schema change that 
 
 ## Paper and more information
 
- - Download [paper pre-print (PDF)](live-2023.pdf)
+ - Download [the paper pre-print (PDF)](live-2023.pdf)
  - Get the [archived version from arXiv](https://arxiv.org/abs/2309.11406)
 
 ## <a id="cite">Bibtex</a>

@@ -32,7 +32,7 @@ visualization language. The result is a checker for Vega that can catch common r
 
 ## Paper and more information
 
- - Download [paper (PDF)](paper.pdf)
+ - Download [the paper (PDF)](paper.pdf)
  - [Vega semantics demo](https://github.com/d3sprog/vega-semantics-demo/) with some subtle errors
 
 ## <a id="cite">Bibtex</a>

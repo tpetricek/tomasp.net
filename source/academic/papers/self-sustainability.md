@@ -38,7 +38,7 @@ whole takes us a further step towards achieving open and malleable programming s
 
 ## Paper and more information
 
- - Download [paper pre-print (PDF)](onward.pdf)
+ - Download [the paper pre-print (PDF)](onward.pdf)
  - Check out the [BootstrapLab project](https://github.com/jdjakub/BootstrapLab)
 
 ## <a id="cite">Bibtex</a>

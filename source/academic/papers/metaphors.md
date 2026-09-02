@@ -29,7 +29,7 @@ navigable and habitable software for all its users?
 
 ## Paper and more information
 
- - Download [paper pre-print (PDF)](metaphors.pdf)
+ - Download [the paper pre-print (PDF)](metaphors.pdf)
 
 ## Talk recording
 Watch a pre-recorded talk for the Onward! Essays track:

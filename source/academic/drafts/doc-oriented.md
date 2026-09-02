@@ -48,7 +48,7 @@ area. We hope the review presented in this paper will aid future development of 
 
 ## Draft and more information
 
- - Download [paper draft (PDF)](paper.pdf)
+ - Download [the paper draft (PDF)](paper.pdf)
  - Send your feedback and corrections [via GitHub](https://github.com/d3sprog/design-choices/)
 
 

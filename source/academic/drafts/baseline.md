@@ -45,7 +45,7 @@ review, including the set of challenge problems we identified in a prior paper.
 
 ## Draft and more information
 
- - Download [paper draft (PDF)](paper.pdf)
+ - Download [the paper draft (PDF)](paper.pdf)
  - Check out [the interactive Baseline demo!](https://thebaseline.dev/Prog26submission/)
  - Send your feedback and corrections [via GitHub](https://github.com/JonathanMEdwards/prog26)
 
