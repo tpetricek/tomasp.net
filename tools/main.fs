@@ -42,6 +42,8 @@ let config =
     Academic = website </> "source" </> "academic"
     // Source with photos for the calendar
     Calendar = outside "calendar"
+    // Data files that layouts are generated from (highlights.md)
+    Data = website </> "data"
     Website = website
     // Calendar photos are served from Cloudflare R2
     CalendarRoot = "https://img.tomasp.net/calendar" }
@@ -52,11 +54,15 @@ let config =
 
 DotLiquid.initialize config
 
+/// Homepage highlights, in rows of two - one row is one `frr` block in the layout
+let private loadHighlights () =
+  Document.readHighlights config |> Seq.chunkBySize 2 |> Array.ofSeq
+
 let private loadSite () =
   let posts, papers = Blog.groupArticles config
   let archives = Blog.archives posts
   { Posts = posts; Papers = papers; Archives = archives; PostsTitle = ""
-    ImageRoot = config.CalendarRoot }
+    ImageRoot = config.CalendarRoot; Highlights = loadHighlights () }
 
 let mutable private site = loadSite ()
 
@@ -69,6 +75,9 @@ let updateSite full changes =
   printfn "Processing site source"
   if Blog.processFiles config site.Archives changes then
     site <- loadSite()
+
+  // Highlights are not covered by the change tracking above, so re-read them every pass
+  site <- { site with Highlights = loadHighlights () }
 
   printfn "Processing special files"
   let specialFiles =
@@ -234,7 +243,7 @@ let private watch () =
       timer <- new Timer((fun _ -> rebuild ()), null, 500, Timeout.Infinite)
 
   let watchers =
-    [ for dir in [ config.Source; config.Layouts ] ->
+    [ for dir in [ config.Source; config.Layouts; config.Data ] ->
         let w = new FileSystemWatcher(dir, IncludeSubdirectories = true, EnableRaisingEvents = true)
         w.Changed.Add onChange
         w.Created.Add onChange

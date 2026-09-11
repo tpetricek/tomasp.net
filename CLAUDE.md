@@ -59,6 +59,8 @@ Module compile order (`domain` → `helpers` → `dotliquid` → `document` → 
   Raw bodies must never be round-tripped through the Markdown parser: it ends a raw HTML
   block at the first blank line, and blank lines inside `<pre>` code samples are common, so
   the rest of the snippet would be re-parsed as Markdown.
+  `readHighlights` also lives here — it parses `data/highlights.md` (see "Homepage
+  highlights" below), reusing the same property-list parsing as article headers.
 - **`blog.fs`** — walks `source/`, decides what to regenerate (mtime of source *and all layouts* vs.
   output), renders through DotLiquid, copies static files, and builds tag/month archives and `rss.xml`.
 - **`dotliquid.fs`** — DotLiquid setup: reflection-based registration of F# record types as safe
@@ -136,6 +138,32 @@ Body.
   files), `.no-transform` (don't parse articles). `source/articles/` is `.no-transform` — it holds
   the static assets (images, demos) that the oldest posts link to.
 
+### Homepage highlights
+
+The grey strip of essays and projects on the homepage comes from `data/highlights.md` — a
+repo-root `data/` folder that sits next to `layouts/` and `source/`. It is *not* under
+`source/`, so nothing copies or transforms it; `main.fs` watches it like `layouts/`.
+
+Each entry is a heading, a property list and a Markdown body:
+
+```
+# Cultures of programming
+
+ - link: http://tomasp.net/cultures
+ - image: img/highlights/cultures.jpg
+ - disabled: true             # optional - keeps the entry out of the page
+
+The book tells the history of programming from the 1940s to the present (...)
+```
+
+Anything before the first heading is ignored. Entries appear in file order and `main.fs`
+groups them into rows of two, so one row is one `frr` block in `layouts/index.html`; an odd
+last entry sits alone in the left column, which is what `disabled` is for — it keeps a
+finished entry in the file while the count stays even.
+Links are absolute (the dev server rewrites them to localhost), image paths are relative to
+the site root. Highlights are re-read on every pass, so `index.html` — which is regenerated
+unconditionally anyway — always reflects the file.
+
 ### Posts with `rawbody: true`
 
 177 posts carry `rawbody: true` and hold pre-rendered HTML. Two groups, same reason — their
@@ -166,6 +194,8 @@ and the footer archive list). Records are exposed with **C# naming**, so templat
 Special pages are rendered directly by `main.fs` rather than from a source file:
 `index.html`, `404.html`, `academic/index.html` (via `papers.html`), and `blog/index.html`
 (via `listing.html`, latest 20 posts). `listing.html` is reused for every tag and month archive.
+The highlights strip in `index.html` is a loop over `model.Highlights`, read from
+`data/highlights.md` (see "Homepage highlights" above).
 
 Note that layouts hardcode `http://tomasp.net` in structured data and some footer links; the dev
 server rewrites both `http://` and `https://` forms to `localhost` when serving.

@@ -182,3 +182,43 @@ let transformMarkdown cfg file =
   let text = File.ReadAllText(file:string)
   if rawBodyRegex.IsMatch(text) then transformRawBody cfg file text
   else transformMarkdownFile cfg file
+
+// --------------------------------------------------------------------------------------
+// Homepage highlights
+// --------------------------------------------------------------------------------------
+
+/// Split paragraphs into blocks, each starting with a level-2 heading
+let private headingBlocks paragraphs =
+  let close = function
+    | Some(title, pars) -> [ title, List.rev pars ]
+    | None -> []
+  let rec loop finished current paragraphs =
+    match paragraphs with
+    | Heading(body=title)::rest ->
+        loop (finished @ close current) (Some(title, [])) rest
+    | par::rest ->
+        match current with
+        | Some(title, pars) -> loop finished (Some(title, par::pars)) rest
+        // Anything before the first heading is a note for whoever edits the file
+        | None -> loop finished None rest
+    | [] -> finished @ close current
+  loop [] None paragraphs
+
+/// Read `data/highlights.md` - a list of blocks, each with a heading, a property list
+/// (`link`, `image` and an optional `disabled`) and a Markdown body. Those that are not
+/// disabled are shown on the homepage.
+let readHighlights (cfg:SiteConfig) =
+  let file = cfg.Data </> "highlights.md"
+  if not (File.Exists file) then failwithf "Highlights file not found: %s" file
+  printfn "Parsing highlights: %s" (file.Replace(cfg.Website, ""))
+  let document = Markdown.Parse(File.ReadAllText file)
+  [| for title, pars in headingBlocks document.Paragraphs do
+      match pars with
+      | Properties(props, body) ->
+          // Highlights are shown two per row, so `disabled` keeps their number even
+          if tryFind "disabled" props <> Some "true" then
+            yield
+              { Title = formatSpans title
+                Link = defaultArg (tryFind "link" props) ""
+                Image = defaultArg (tryFind "image" props) ""
+                Body = Markdown.ToHtml(MarkdownDocument(body, document.DefinedLinks)) } |]

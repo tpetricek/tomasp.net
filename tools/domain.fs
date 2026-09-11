@@ -7,6 +7,8 @@ type SiteConfig =
     Source : string
     Layouts : string
     Calendar : string
+    /// Folder with data files that layouts are generated from (highlights.md)
+    Data : string
     /// Repo folder holding layouts/ and source/ - where calendar.txt lives
     Website : string
     /// Public base URL the calendar images are served from
@@ -50,12 +52,22 @@ type Archives =
   { Tags : seq<Category>
     History : seq<Category> }
 
-type Site = 
-  { Posts : seq<Article<string>> 
+/// One entry of the homepage highlights strip, read from `data/highlights.md`
+type Highlight =
+  { Title : string
+    Link : string
+    Image : string
+    /// Body of the highlight, formatted as HTML
+    Body : string }
+
+type Site =
+  { Posts : seq<Article<string>>
     PostsTitle : string
     Archives : Archives
     ImageRoot : string
-    Papers : seq<Article<string>> } 
+    Papers : seq<Article<string>>
+    /// Homepage highlights, grouped into rows of two for the two-column layout
+    Highlights : Highlight[][] }
 
 type ArticleModel = 
   { Article : Article<string>
