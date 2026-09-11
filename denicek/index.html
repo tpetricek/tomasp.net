@@ -1,0 +1,1211 @@
+<!doctype html>
+<html>
+<head>
+  <title>Denicek: Computational substrate for document-oriented end-user programming</title>
+
+  <meta name="description" content="Programming by demonstration, collaborative editing, incremental recomputation and handling of schema change can make programming easier, but how can we support all of them in a single system? Denicek provides a computational substrate that makes it easy to implement programming systems that support all of those programming experiences.">
+
+  <link rel="canonical" href="https://tomasp.net/denicek">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Denicek: Computational substrate for document-oriented end-user programming">
+  <meta property="og:description" content="Programming by demonstration, collaborative editing, incremental recomputation and handling of schema change can make programming easier, but how can we support all of them in a single system? Denicek provides a computational substrate that makes it easy to implement programming systems that support all of those programming experiences.">
+  <meta property="og:url" content="https://tomasp.net/denicek">
+  <meta property="og:image" content="https://tomasp.net/denicek/essay/banner.png">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Denicek: Computational substrate for document-oriented end-user programming">
+  <meta name="twitter:description" content="Programming by demonstration, collaborative editing, incremental recomputation and handling of schema change can make programming easier, but how can we support all of them in a single system? Denicek provides a computational substrate that makes it easy to implement programming systems that support all of those programming experiences.">
+  <meta name="twitter:image" content="https://tomasp.net/denicek/essay/banner.png">
+
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" integrity="sha512-vebUliqxrVkBy3gucMhClmyQP9On/HAWQdKDXRaAlb/FKuTbxkjPKUyqVOxAcGwFDka79eTF+YXwfke1h3/wfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Roboto+Mono:wght@100..700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style type="text/css">
+
+    /* BASIC PAGE AND DOCUMENT FORMATTING */
+    html, body { padding:0px; margin:0px; }
+    body { background:#D7EDE5; padding:20px; }
+    section { max-width: 1000px; margin:20px auto; background:white; border-radius:20px; padding:30px; font-family:'Inter', sans-serif; }
+    .sidebyside { display:grid; grid-template-columns:4fr 2fr; max-width:1600px; margin:auto; gap:20px; }
+    .sidebyside section { margin:0px 0px; min-width:0; }
+
+    a { color:#4D71C6; text-decoration:none; }
+    a:hover, a:active { text-decoration:underline; }
+    section.comment p, section.comment li { font:13pt 'Inter', sans-serif; line-height:1.5em; color:#071C4F; }
+    li strong, p strong { font-weight:600; }
+    p.info { font-size:15pt; line-height:1.5em; margin:30px 0px; }
+    p.info i { font-size: 13pt; margin:0px 5px 0px 0px; }
+    p.info .sep { margin:0px 5px; }
+    h1 { font:26pt 'Merriweather', serif; color:#071C4F; font-weight:400; max-width:800px; }
+    h2 { font:20pt 'Merriweather', serif; color:#071C4F; font-weight:400; }
+    .chapter h2 { margin-bottom:40px; }
+    h3 { font:16pt 'Merriweather', serif; color:#071C4F; font-weight:400; }
+    h1 strong { font-weight:900; }
+    ul.icons { list-style-type:none; padding:0px; }
+    ul.icons i { font-size:16pt; margin-right:5px; position:relative; top:2px; font-weight:800; }
+    ul.refs li { font-size: 13pt; }
+    pre { font-family: 'roboto mono', monospace; font-size: 13px; line-height:1.6em; color:#071C4F; overflow:auto;min-width:0px; }
+    section.comment kbd { font-family: 'roboto mono', monospace; font-size: 15px; line-height:1; padding:2px 6px; background:#f4f4f5; border:1px solid #e4e4e7; border-radius:4px; color:#3f3f46; white-space:nowrap; }
+    section.comment .circle { height:22px; margin:0px 2px; border-radius:7px; padding:0px 10px 0px 0px; border-style:none; background:#071C4F; color:white; font-size:13px; font-weight:500; display:inline-block; }
+    section.comment .circle i { position:relative; top:-1px; left:4px; }
+    section.comment .circle span { position:relative; top:-2px; margin-left:3px; }
+    section.comment ul { margin:0px; padding:0px 15px; }
+    section.comment ul.wide li { margin-bottom:8px; }
+    section.comment p em { font-style:normal; font-weight:200; }
+    section.comment li em { font-style:normal; font-weight:200; }
+    div.imgbox { background:#F2F0E8; border-radius:20px;float:right;padding:20px 10px;margin:30px 0px 50px 20px; text-align: center; }
+    div.imgbox p { line-height:15pt; font-size:11pt; }
+
+    nav { max-width: 1000px; margin:30px auto;  text-align: center; }
+    nav a { font:12pt 'Merriweather', serif; font-weight:300; padding:7px 15px;  background:#071C4F; color:white; border-style:none; border-radius:15px; margin:5px; cursor: pointer; display:inline-block; }
+    nav a:hover { background-color:#4D71C6; text-decoration: none; }
+    nav .current {  background-color:#4D71C6; }
+    nav a strong { font-weight:900; }
+
+    /* STEPPER FOR REPLAYING DEMOS */    
+    .stepper { display:flex; align-items:flex-start; margin:30px 60px 30px 0px; }
+    .stepper .step { display:flex; flex-direction:column; align-items:center; }
+    .stepper .circle { box-sizing: border-box; width:26px; height:26px; margin:0px 10px; border-radius:50%; border-style:none; background:#E5E2D7; color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:500; flex-shrink:0; }
+    .stepper button { box-sizing: border-box; width:26px; height:26px; margin:0px 2px; border-radius:7px; border-style:none; background:#071C4F; cursor:pointer; color:white; display:flex; align-items:center;  justify-content:center; font-size:13px; font-weight:500; flex-shrink:0; }
+    .stepper button i { font-weight:900;  }
+    .stepper button:not(:disabled):hover { background:#4D71C6; }
+    .stepper .lbl button { width:auto; padding:3px 12px 3px 5px; width:72px; text-align:center; }
+    .stepper .lbl button i { margin-right:5px; }
+    .stepper .lbl { margin-right:20px; }
+    .stepper .lastbutton { margin-right:30px; }
+    .stepper .step.active .circle { background:#4D71C6; }
+    .stepper .line { flex:1; height:2px; background:#E5E2D7; margin-top:12px; }
+    .stepper .label {
+      font-size: 12px;
+      color: #E5E2D7;
+      white-space: nowrap;
+      margin-top:2px;
+      text-align: center;
+      transition: color 0.2s;
+    }
+
+    .step.active .label {
+      color: #4D71C6;
+      font-weight: 500;
+    }
+
+    /* DENICEK */
+    .main { background:white; display:flex; flex-direction:row; align-items:flex-start; width:100%; max-height:520px; margin:0px 0px 20px 0px; }
+    .notebook { flex:20; padding:2px 20px 200px 2px; }
+    .doc { flex:20; padding:2px 20px 200px 2px; font-family:'Merriweather'; line-height:1.5em; max-height:300px; overflow-y:auto; }
+    .edits { font:300 10px Inter, sans-serif; left:70vw; overflow-y:auto; padding:0px 0px 0px 10px; max-height:500px; }
+    .loc { font:300 12px Inter, sans-serif; color:#909090; padding:6px 8px; height:20px; overflow:hidden; margin:10px 0px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .loc i { margin:0px 6px; }
+    .loc label { font-weight:600; text-transform:uppercase; };
+    .loc strong { font-weight:400; }
+
+    /* context menu for entering commands */
+    .ctx { position:absolute; width:350px; max-height:350px; padding:4px; font-family:Inter, sans-serif; background:white; box-shadow:0 0 15px 0px rgba(0, 0, 0, 0.3); border-radius:10px; }
+    .ctx ul { overflow-y:scroll; scrollbar-color:#e0e0e0 white; max-height:315px; }
+    .ctx ul, .ctx li { margin:0px; padding:0px; list-style:none; }
+    .ctx li { padding:8px 2px; cursor:pointer; }
+    .ctx li.selected, .ctx li:hover { background:#f0f0f0; border-radius:4px; }
+    .ctx .icon { float:left; border:1px solid #e0e0e0; border-radius:4px; padding:5px; margin:3px 0px 0px 5px; }
+    .ctx .icon i { font-size:20px; color:#808080;}
+    .ctx .icon { background:rgba(218, 218, 218, 0.4); }
+    .ctx .igensel .icon { background:rgba(255, 227, 164, 0.4); }
+    .ctx .icursel .icon { background:rgba(190, 207, 255, 0.4); }
+    .ctx .details { margin-left:45px;}
+    .ctx h4 { font:200 14px Inter, sans-serif; margin:0px; }
+    .ctx kbd { font:300 12px Inter, sans-serif; margin:0px; color:#606060; }
+    .ctx kbd em { font-weight:200; font-style: normal; }
+    .ctx kbd strong { font-weight:500; }
+    .ctx kbd .entered { color:rgb(190, 36, 172); }
+    .ctx .cmd { border:1px solid #e0e0e0; border-radius:4px; margin:5px; padding:4px; font:300 12px Inter, sans-serif; }
+    
+    /* cursor and generalized structural cursor */
+    .gensel { outline:2px solid rgba(221, 175, 75, 0.3); outline-offset:0px; border-radius:4px; }
+    .cursor-before { box-shadow:inset  4px 0 0 rgba(74, 127, 224, 0.6); outline:2px solid rgba(74, 127, 224, 0.6); }
+    .cursor-after  { box-shadow:inset -4px 0 0 rgba(74, 127, 224, 0.6); outline:2px solid rgba(74, 127, 224, 0.6); }
+    .hiprov { background: rgba(234, 182, 90, 0.20); border-radius: 6px; box-shadow: 0 1px 6px rgba(186, 140, 40, 0.18); }
+
+    /* highlighted selector */
+    a.selector { color: #9478C1; }
+    a.selector:hover { text-decoration:none; }
+    .selsel { outline:3px solid #C19D7D; border-radius:4px; }
+    .treenode.selsel { background:#E5BE9C; box-shadow:none; outline:none; }
+    .selector.selsel { background:#E5BE9C; box-shadow:none; outline:none; }
+
+    /* source code view */
+    .treedoc * { font:400 9pt 'roboto mono'; color:#383838; }
+    .treedoc .treenode { width:fit-content; }
+    .treedoc .treetag span { color:#0074E8; }
+    .treedoc .treebody { padding-left:10px; }
+    .treedoc span.attrname { color:#DD22CA; }
+    .treedoc span.attrvalue { color:#003EAA; }
+    .treedoc .inline > div { display: inline; padding-left: 0px; }
+
+    /* edit history view */
+    .edits table { border-collapse:collapse; background:white; margin:10px 0px;} 
+    .edits table th { font-weight:600; color:#909090; padding:5px; text-align: left; text-transform:uppercase; }
+    .edits table .more th { text-align:center; } 
+    .edits table .more th a { font-weight:400; text-align:center; text-transform:none; }
+    .edits table th a { font-weight:300; color:#909090; text-decoration:none; text-transform:none; }
+    .edits table td { padding:0px; margin:0px; border-style:none; padding:3px; font-size:10px; } 
+    .edits table tr { padding:0px; margin:0px; border:1px solid #e0e0e0; }
+    .edits table tr.selected { background:#f0f0f0; }
+    .edits .edidx { text-align:center; font-weight:bold; color:#d0d0d0; width:14px; text-align:center; } 
+    .edits .edidx a { color:#b0b0b0; text-decoration:none; }
+    .edits .edname a { border-radius:2px; width:calc(100% - 15px); display:inline-block; padding:0px 6px; text-align:center; font-weight:bold; text-decoration: none; cursor:default; }
+    
+    .edits .edref a { color:#a0a0a0; font-weight:500; text-decoration:none; width:100px; display:inline-block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+    .edits .edref a.selsel { outline-width:0px; color:#8C564B; font-weight:600; background:inherit; }
+    .edits .edhash a { color:#a0a0a0; font-weight:300; text-decoration:none; }
+    .edits tr td:first-child { padding-left:5px; }
+    .edits tr.checked td:first-child { box-shadow:inset 3px 0 0 #b0b0b0; }
+
+    .edits a.edit { border:2px solid #FBDBE9; background:#FBDBE9; color:#E377C2; }
+    .edits a.reorder { border:2px solid #FBDBE9; background:#FBDBE9; color:#E377C2; }
+    .edits a.retag { border:2px solid #E2D8EA; background:#E2D8EA; color:#9467BD; }
+    .edits a.updid { border:2px solid #E2D8EA; background:#E2D8EA; color:#9467BD; }
+    .edits a.addfield { border:2px solid #CCEFC6; background:#CCEFC6; color:#2CA02C; }
+    .edits a.append { border:2px solid #CCEFC6; background:#CCEFC6; color:#2CA02C; }
+    .edits a.copy { border:2px solid #EDEDC7; background:#EDEDC7; color:#BCBD22; }
+    .edits a.wraprec { border:2px solid #D7E3F3; background:#D7E3F3; color:#1F77B4; }
+    .edits a.wraplist { border:2px solid #D7E3F3; background:#D7E3F3; color:#1F77B4; }
+    .edits a.delitm { border:2px solid #FFCCCB; background:#FFCCCB; color:#D62728; }
+    .edits a.delfld { border:2px solid #FFCCCB; background:#FFCCCB; color:#D62728; }
+
+    .edits a.struct.edit { border:2px solid #E377C2; }
+    .edits a.struct.reorder { border:2px solid #E377C2; }
+    .edits a.struct.retag { border:2px solid #9467BD; }
+    .edits a.struct.updid { border:2px solid #9467BD; }
+    .edits a.struct.addfield { border:2px solid #2CA02C; }
+    .edits a.struct.append { border:2px solid #2CA02C; }
+    .edits a.struct.copy { border:2px solid #BCBD22; }
+    .edits a.struct.wraprec { border:2px solid #1F77B4; }
+    .edits a.struct.wraplist { border:2px solid #1F77B4; }
+    .edits a.struct.delitm { border:2px solid #D62728; }
+    .edits a.struct.delfld { border:2px solid #D62728; }
+
+    .edits a.evaluated.edit { border:2px dashed #E377C2; }
+    .edits a.evaluated.reorder { border:2px dashed #E377C2; }
+    .edits a.evaluated.retag { border:2px dashed #9467BD; }
+    .edits a.evaluated.updid { border:2px dashed #9467BD; }
+    .edits a.evaluated.addfield { border:2px dashed #2CA02C; }
+    .edits a.evaluated.append { border:2px dashed #2CA02C; }
+    .edits a.evaluated.copy { border:2px dashed #BCBD22; }
+    .edits a.evaluated.wraprec { border:2px dashed #1F77B4; }
+    .edits a.evaluated.wraplist { border:2px dashed #1F77B4; }
+    .edits a.evaluated.delitm { border:2px dashed #D62728; }
+    .edits a.evaluated.delfld { border:2px dashed #D62728; }
+
+    /* basic styling for things in the document */
+    input { padding:3px; }
+    button { padding:3px 10px 3px 10px; }
+    td { border:1px solid black; padding:2px; }
+    thead td { font-weight: bold; }
+    
+    .formula { outline:solid 2px #a4d8ff; padding:0px 2px; margin:0px 2px }  
+    .formula .formula { outline:none; padding:0px; margin:0px; }  
+    /*
+    x-hole { border:4px solid #82f7ad; margin:2px; padding:2px; display:inline-block;}
+    x-match {  display:inline-block; }
+    x-match::before { content:"(matched content)" }
+    */
+    x-saved-interactions { display:none; }
+    /*
+    x-interaction { display:block; padding-left:20px; text-align:left; }
+    x-interaction-list > * { display:list-item; }
+    */
+    x-evaluated > *:nth-child(1) {
+      display:none;
+    }
+
+    .chapter-doc { font-family:'Newsreader', serif; color: #2c2416; }        
+    .chapter-doc .doc { background: #faf8f2; border: 1px solid #e2d9c5; border-radius:10px; padding-left:20px; padding-top:20px; padding-right:20px; margin-top:10px; }
+    .chapter-doc .doc h1 { font-family:'Newsreader', serif; font-size:22pt; color:#2c2416; margin:0 0 8px 16px; letter-spacing:0.01em; font-weight:500; padding-top:8px; }
+    .chapter-doc .doc h2 { font-family:'Newsreader', serif; font-size:18pt; color:#7a6a50; margin:0 0 18px 16px; padding-bottom:10px; }
+    .chapter-doc .doc table { border-collapse:collapse; min-width:400px; margin-left:16px; margin-bottom:40px; }
+    .chapter-doc .doc thead td { border:none; font-family:Inter, sans-serif; font-weight:600; color:#9a8a70; border-bottom:2px solid #e2d9c5; padding:4px 16px 4px 0px; text-transform:uppercase; font-size:13px; letter-spacing:0.05em; }    
+    .chapter-doc .doc tbody td { border:none; font-family:'Newsreader', serif; padding:6px 16px 6px 0px; border-bottom: 1px solid #ede8de; color: #2c2416; }        
+    .chapter-doc .doc li { font-family:'Newsreader', serif; color: #2c2416; }        
+    .chapter-doc .doc tbody td:last-child { color: #7a6a50; }
+    .chapter-doc .doc #budget x-prim-str { color: #7a6a50; }
+    .chapter-doc .doc #budget x-prim-num { font-weight:500; }
+    .chapter-doc .doc tbody tr:last-child td { border-bottom: none; }    
+    #chapter1 .doc { padding-left:5px; padding-top:5px; }
+
+    .chapter-app .doc { border: 1px solid #dbdbdb; border-radius:10px; background:#f8f8f8; margin-top:10px; padding:10px 10px 50px 10px }
+    .chapter-app .doc h1 { font-size:30pt; font-family:'Inter', sans-serif; font-weight:300; color:#b83f45; text-align:center; max-width:inherit; }
+    .chapter-app .doc form { width:400px; margin:10px auto; background:white; border:solid 1px #d0d0d0; box-shadow:0px 5px 8px 8px #e0e0e0; }
+    .chapter-app .doc form input { width:340px; border-style:none; font-size:14pt; font-weight:200; font-family:'Inter', sans-serif;  }
+    .chapter-app .doc button { height:25px; width:50px; border-radius:0px; border-style:none; background:#b83f45; color:white; margin:4px 0px; font-weight:400; font-family:'Inter', sans-serif; }
+    .chapter-app .doc .treedoc { width:400px; margin:20px auto; }
+    .chapter-app .doc ul { width:400px; background:white; border:solid 1px #d0d0d0; box-shadow:0px 5px 8px 8px #e0e0e0; margin:20px auto; padding:0px; }
+    .chapter-app .doc ul li { font-size: 14pt; font-weight:200; font-family:'Inter', sans-serif; list-style-type: none; margin:4px 0px 4px 4px; padding:0px; clear:both; }
+    .chapter-app .doc ul li input { margin:6px 8px 6px 4px; float:left; }
+    .chapter-app .doc ul li:has(input:checked) { color:#c0c0c0; text-decoration:line-through; }
+    .chapter-app .doc ul li input:checked { color:#c0c0c0; opacity:0.5; }
+    #chapter5 .doc p { width:230px; margin:20px auto; background:white; border:solid 1px #d0d0d0; box-shadow:0px 5px 8px 8px #e0e0e0; padding:5px;  }
+    #chapter5 .doc { text-align:center; }
+    #chapter5 .treedoc { text-align: left; }
+    #chapter5 .doc button { width:110px; padding:6px 0px; margin:0px 10px; font-size:11pt; height:30px; }
+
+    #chapter6 .doc>div { display:flex; flex-direction:column; }
+    #chapter6 .doc>div h1 { order:-2; }
+    #chapter6 .doc>div #analysis { order:-1; }
+    
+    #chapter6 .doc { background: #faf8f2; border: 1px solid #e2d9c5; border-radius:10px; padding:0px 20px 50px 20px; }
+    #chapter6 .doc h1 { font-family:'Newsreader', serif; font-size:24pt; color:#24405D; margin:20px 0px 5px 0px; }
+    #chapter6 .doc h2 { font-family:'Newsreader', serif; font-size:18pt; color:#527291; margin:15px 0px 10px 0px; }    
+    #chapter6 .table-box { max-width:610px; max-height:180px; overflow:auto; overscroll-behavior:none; margin:0px 0px 30px 20px;  scrollbar-width:thin; }
+    #chapter6 .doc x-formula { font-family: 'roboto mono', monospace; font-size:14px; }
+    #chapter6 .doc table { border-collapse:collapse; width:100%; max-width:600px; }
+    #chapter6 .doc th, #chapter6 .doc td { padding:6px 8px; text-align: left; border-style: none; font:10pt 'Newsreader', serif; font-weight:300; }
+    #chapter6 .doc th { font-weight:600; background:#24405D; color:white;  }
+    #chapter6 .doc table th:first-child { border-top-left-radius:6px; border-bottom-left-radius:6px; }
+    #chapter6 .doc table th:last-child { border-top-right-radius:6px; border-bottom-right-radius:6px; }
+    #chapter6 .doc table td:first-child { border-top-left-radius:4px; border-bottom-left-radius:4px; }
+    #chapter6 .doc table td:last-child { border-top-right-radius:4px; border-bottom-right-radius:4px; }
+    #chapter6 .doc thead { position:sticky; top:0px; z-index:2; }
+    #chapter6 .doc table tr:nth-child(even) td {background: #ECEBE6;}
+    #chapter6 .main { max-height:820px; }
+    #chapter6 .doc { max-height:600px; overflow-y:auto; }
+    #chapter6 .edits { max-height:800px; }
+    #chapter6 .ctx { z-index:3; }
+    #chapter6 #analysis p { font-family:'Newsreader', serif; font-size:13pt; margin:0px 0px 2px 10px; }
+    #chapter6 #analysis p x-prim-str { color: #7a6a50; }
+    #chapter6 #analysis p x-prim-num { font-weight:500; }
+    #chapter6 #analysis .selector { overflow-wrap: anywhere;  word-break: break-all; }
+    
+    .chapter-nb section { background:#F2F9F6;} 
+    .chapter-nb section.comment { background:white; align-self:start; padding-bottom:50px; } 
+    .chapter-nb .edits { max-height:100%; }
+    .chapter-nb .treedoc { max-height:600px; overflow-y:auto; }
+    .chapter-nb .main { max-height:none; background:#F2F9F6; }
+    .chapter-nb .notebook * { margin:0px; padding:0px; }
+    .chapter-nb .notebook .treedoc .treebody { padding-left:10px; }    
+    .chapter-nb .notebook { background:#F2F9F6; padding:10px 10px 50px 10px }
+    .chapter-nb .cell { background:white; margin:15px 0px 15px 0px; border-left:5px solid #f0f0f0; border-right:5px solid #f0f0f0; padding:8px 12px; }
+    .chapter-nb .cell-text { border-color:#92D1C6; }
+    .chapter-nb .cell-code { border-color:#F9B56B; }
+    .chapter-nb .cell-grid { border-color:#BDB9D7; }
+    .chapter-nb .links { text-align:right; margin-right:15px; }
+    .chapter-nb .cell .title { font-size:9pt; font-weight:700; margin-bottom:12px; }
+    .chapter-nb .cell .links { margin-right:0px;}
+    .chapter-nb .links a { font-weight:700; font-size:9pt; text-decoration:none; margin-left:15px; color:#a0a0a0; }
+    .chapter-nb .links a:hover { opacity:0.75; }
+    .chapter-nb .links a i, .chapter-nb .notebook .title i { margin-right:4px; font-size:8pt;}
+    .chapter-nb .cell-text .links a, .chapter-nb .notebook .cell-text .title { color:#92D1C6; }
+    .chapter-nb .cell-code .links a, .chapter-nb .notebook .cell-code .title { color:#F9B56B; }
+    .chapter-nb .cell-grid .links a, .chapter-nb .notebook .cell-grid .title { color:#BDB9D7; }
+    .chapter-nb .cell .actions { position:relative; top:20px; text-align:left; display:inline-block; }
+    .chapter-nb .cell .actions a { margin-left:0px; }
+
+    /* code cell specific formatting */
+    .chapter-nb .cell-code .code-block { padding-left:10px; padding-right:20px; }
+    .chapter-nb .cell-code .flist { font: 400 9pt 'roboto mono',monospace; }
+    .chapter-nb .cell-code .flist li { list-style-type:none; }
+    .chapter-nb .cell-code .flist .flist-eq { padding-left: 50px; text-indent:-25px; }
+    .chapter-nb .cell-code .flist .flist-eq * { text-indent:0px; }
+    .chapter-nb .cell-code .flist .flist-eq .flist-out { margin-left:-25px; }
+    .chapter-nb .cell-code .expr { background:#f9b46b30; padding:3px 5px; border-radius: 4px; margin:2px; display:inline-block; }
+    .chapter-nb .cell-code .expr.hover { background:#f9b46b80; }
+    .chapter-nb .cell-code .code-block a { color:black; text-decoration:none; font-style:italic;}
+    .chapter-nb .cell-code input { outline:none; border:1px solid #F9B56B; background:#ffffff90; font:italic 400 9pt 'roboto mono',monospace; margin:0px 2px; padding:2px 5px; width:80px; }
+
+    /* button with drop down for choosing options - in grid and code cells */
+    .chapter-nb .cell .dropdown { display:inline-block; }
+    .chapter-nb .cell .dropdown button { padding-top:2px; }
+    .chapter-nb .cell .dropdown a { text-decoration:none; }
+    .chapter-nb .cell .dropdown ul { position:absolute; padding:3px; border-radius:2px; z-index:1000; min-width:100px;}
+    .chapter-nb .cell .dropdown ul li { list-style-type:none; }
+    .chapter-nb .cell .dropdown ul li a { font:600 normal 9pt Inter,sans-serif; color:white; width:100%; display:inline-block;  padding:1px 3px;  }
+    .chapter-nb .cell button { border-style:none; color:white; border-radius:4px; padding:0px 3px 1px 3px; cursor: pointer; font-weight:700; font-size:9pt; }
+    .chapter-nb .cell-code button, .cell-code .dropdown ul { background:#E0903A; }
+    .chapter-nb .cell-grid button, .cell-grid .dropdown ul { background:#968FC4; }
+    .chapter-nb .cell-code .dropdown ul li:hover, .cell-code button:hover, .cell-code button.opened { background:#F9B56B;  }
+    .chapter-nb .cell-grid .dropdown ul li:hover, .cell-grid button:hover, .cell-grid button.opened { background:#BDB9D7;  }
+
+    /* pretty table formatting in code cells */ 
+    .chapter-nb .cell-code .table-box { width:0px; min-width:calc(100% - 10px); border:4px solid #F9B56B; max-height:200px; overflow:auto; font:400 9pt Inter, sans-serif; overscroll-behavior:none; }
+    .chapter-nb .cell-code table { border-collapse:collapse; width:100%; }
+    .chapter-nb .cell-code th, .chapter-nb .cell-code td { padding:4px 6px; text-align: left; border-style:none; font-weight:300; font-size:11px; }
+    .chapter-nb .cell-code th { font-weight:600; }
+    .chapter-nb .cell-code thead { position:sticky; top:0px; z-index:2; }
+    .chapter-nb .cell-code table thead { background:#F9B56B; color:white; }
+    .chapter-nb .cell-code table tr:nth-child(even) td {background: #f9b46b30;}
+    .chapter-nb .cell-code .compost { padding-top:10px; }
+
+    /* pretty text formatting for text cells */
+    .chapter-nb .cell-text .text-body h1 {font-size:18pt;; font-family:Inter, sans-serif; color:black; }
+    .chapter-nb .cell-text .text-body { padding:10px; font-family:Inter, sans-serif;  }
+    .chapter-nb .cell-text .text-body p { margin:0px 0px 10px 0px; line-height:1.6em; color:black; }
+    .chapter-nb .cell-text .text-body li { margin:0px 0px 3px 0px; }
+    .chapter-nb .cell-text .text-body li.selected { list-style-type: none; margin-left:-11px;}
+    .chapter-nb .cell-text .text-body ul, .cell-text .text-body ol { margin:0px 0px 10px 25px; }
+    .chapter-nb .cell-text .text-body h1 { margin:0px 0px 15px 0px; }
+    .chapter-nb .cell-text .text-body * { outline:none; }
+    .chapter-nb .cell-text .text-body .selected { color:#808080; }
+    
+    /* pretty table formatting in grid cells */ 
+    .chapter-nb .cell-grid .table-caption { width:0px; min-width:calc(100% - 10px); border:4px solid #BDB9D7; border-bottom-style:none; background:#BDB9D7; color:white; text-align:center; font:700 9pt Inter, sans-serif; }
+    .chapter-nb .cell-grid .table-caption span { cursor:pointer; }
+    .chapter-nb .cell-grid .table-caption input { max-width:100px; }
+    .chapter-nb .cell-grid .table-box { width:0px; min-width:calc(100% - 10px); border:4px solid #BDB9D7; max-height:400px; overflow:auto; font:400 9pt Inter, sans-serif; overscroll-behavior:none; }
+    .chapter-nb .cell-grid table { width:100%; border-collapse:collapse; }
+    .chapter-nb .cell-grid th, .chapter-nb .cell-grid  td { padding:4px 6px; text-align: left; border-style:none; font-weight:300; font-size:11px; }
+    .chapter-nb .cell-code th { font-weight:600; }
+    .chapter-nb .cell-grid thead { position:sticky; top:0px; z-index:2; }
+    .chapter-nb .cell-grid table thead { background:#BDB9D7; color:white; }
+    .chapter-nb .cell-grid table tr:nth-child(even) td {background: #BDB9D730;}
+    .chapter-nb .cell-grid table tbody th { background:#BDB9D7; color:white; padding:2px 4px 2px 2px; font-weight:400; position:sticky; left:0px; }
+    .chapter-nb .cell-grid input { outline:none; border:1px solid #BDB9D7; background:#ffffff90; font:400 9pt Inter, sans-serif; margin:0px; padding:2px 5px; width:calc(100% - 10px); min-width:30px; }
+    
+    .chapter-nb .cell-grid .grid-container { padding:0px 20px; display:flex; margin-bottom:15px; }
+    .chapter-nb .cell-grid .grid-block { width:calc(100% - 250px); }
+    .chapter-nb .cell-grid .grid-context { margin-left:10px; width:250px; }
+    .chapter-nb .cell-grid .grid-context .panel { border:4px solid #BDB9D7; font:400 9pt Inter, sans-serif; margin-bottom:15px; }
+    .chapter-nb .cell-grid .grid-context h3 { height:20px; padding:2px 4px; background:#BDB9D7; color:white; font:800 9pt Inter, sans-serif;  }
+    .chapter-nb .cell-grid .grid-context .panel-body h4 { padding:6px; background:#BDB9D730; color:#968FC4; font:600 9pt Inter, sans-serif;  }
+    .chapter-nb .cell-grid .grid-context .panel-body h4 i { font-size: 8pt; margin-right:6px; }
+    .chapter-nb .cell-grid .grid-context .panel-body p { margin:6px 8px; line-height:1.4em; font-size:9pt; font-weight:200; }
+    .chapter-nb .cell-grid .grid-context .panel-body p.break { overflow-wrap:anywhere; word-break: break-all; }
+    .chapter-nb .cell-grid .grid-context .panel-body p.action { text-align:right; margin-right:12px; }
+    .chapter-nb .cell-grid .grid-context .panel-body p a { font:600 9pt Inter, sans-serif; color:#BDB9D7; text-decoration:none; }
+    .chapter-nb .cell-grid .grid-context .panel-body p a i { margin-right:8px;}
+    .chapter-nb .cell-grid .grid-context .panel-body li { text-indent:-14px; padding-left:22px; font:200 9pt Inter, sans-serif; line-height:1.4em; list-style-type: none; margin:6px 4px; overflow-wrap:anywhere; word-break: break-all;  }
+    .chapter-nb .cell-grid .grid-context .panel-body li i { margin-right:0px; color:#968FC4; }    
+    .chapter-nb .cell-grid .grid-context .panel-body code { color:#968FC4; }
+</style>
+
+  <script type="module" crossorigin src="./assets/main.fs-CpfYL130.js"></script>
+</head>
+<body>
+  <section class="comment">
+    <h1><strong>Denicek</strong>: Computational substrate for document-oriented end-user programming</h1>
+
+    <p class="info">
+      <strong>Tomas Petricek</strong> and <strong>Jonathan Edwards</strong><br>
+      <i class="fa fa-envelope"></i><a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> <span class="sep">|</span> <i class="fa-brands fa-bluesky"></i><a href="https://bsky.app/profile/tomasp.net">@tomasp.net</a>
+    </p>
+    
+    <div class="imgbox" style="max-width:250px;">
+    <img src="essay/docs.png" style="max-width:80%;" />
+    <p><strong>Figure 1.</strong> A program is a sequence of edits that can be replayed to construct a document.</p>
+    </div>
+
+    <p>To make programming easier, researchers came up with many appealing <strong>programming experiences</strong>.
+      In programming by demonstration, we create programs by showing what we want to achieve 
+      using specific values. In concrete programming, we reuse logic by copying 
+      and modifying parts of programs. We also need support for collaborative editing, 
+      on-demand recomputation when parts of a program change, and automatic updating of code when
+      a relevant schema changes. 
+    </p>
+    <p>Building a programming system that supports all of these at the same time is hard. Denicek is
+      a <strong>computational substrate</strong> that represents programs as sequences of 
+      document edits. It provides primitive operations
+      for applying edits, merging edits, and detecting conflicts. This simple structure
+      makes it easy to implement the above programming experiences.
+    </p>
+    
+    <p>This interactive essay demonstrates two programming systems built on top of Denicek.
+      It walks you through the solutions to a couple of standard challenge problems like
+      building a counter, todo list, and managing a conference. The demos use
+      a real Denicek implementation, so you can also explore on your own!
+    </p>
+    <p style="font-weight:600;">How exactly does it work? Check out our <a href="https://tomasp.net/academic/papers/denicek/">UIST 2025 paper</a> for more details!</p>
+  </section>
+
+  <nav>
+    <a id="chapter1-link" href="#chapter1" class="current"><strong>Chapter 1</strong>: Hello world</a>
+    <a id="chapter2-link" href="#chapter2"><strong>Chapter 2</strong>: Todo list</a>
+    <a id="chapter3-link" href="#chapter3"><strong>Chapter 3</strong>: Conference list</a>
+    <a id="chapter4-link" href="#chapter4"><strong>Chapter 4</strong>: Conference budget</a>
+    <a id="chapter5-link" href="#chapter5"><strong>Chapter 5</strong>: Counter</a>
+    <a id="chapter6-link" href="#chapter6"><strong>Chapter 6</strong>: Traffic accidents</a>
+    <a id="chapter7-link" href="#chapter7"><strong>Chapter 7</strong>: Datnicek notebooks</a>
+  </nav>
+
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 1                                          -->
+  <!-- ========================================================================================= -->
+  
+  <div class="chapter chapter-doc" id="chapter1">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 1:</strong> Normalising hello world messages</h2>
+    <div id="chapter1-demo" class="webnicek-demo" data-file="essay/hello.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter1-start" data-speed="1.5">
+      <h3><strong>Step 1:</strong> Creating list of messages</h3>
+      <p>In the first demo, we create a list of messages with MixEd caPiTAliZaTIoN
+        and normalise them by recording and replaying a sequence of edits that transform the text.
+        To get started, click the 
+        <span class="circle"><i class="las la-caret-right"></i> <span>play</span></span> 
+        button. When the replay finishes, move to the next step using
+        <span class="circle"><i class="las la-angle-right"></i> <span>next</span></span>.
+        You can also use
+        <span class="circle"><i class="las la-angle-double-left"></i></span>
+        and <span class="circle"><i class="las la-angle-double-right"></i></span>
+        to skip to the previous or next step and
+        <span class="circle"><i class="las la-angle-right"></i></span> to replay a 
+        single event.</p>
+      
+      <p>The demo already contains a record with the <code>&lt;ul&gt;</code> tag and <code>hellos</code> as its identifier.
+        We then add multiple <code>&lt;li&gt;</code> records as children of this record using
+        <kbd>:cz=&lt;li&gt;</kbd> (where <code>cz</code> is the name of the added record field) and set their
+        field <code>greeting</code> to a greeting in various languages.</p>
+
+      <p>The demo controls the actual Denicek, so you can also explore on your own!
+        Use arrows to move around the document, type <kbd>?</kbd> to open the command palette.
+        You can use <kbd>Alt</kbd>+<kbd>H</kbd> to toggle history view and <kbd>Alt</kbd>+<kbd>U</kbd> to view
+        document source. Use <span class="circle"><i class="las la-undo-alt"></i></span>
+        to reset the demo!
+      </p>
+        
+    </div>
+    <div id="chapter1-normalize">
+      <h3><strong>Step 2:</strong> Fix capitalisation of one item</h3>
+      <p>To fix the capitalisation, we will copy the greeting and transform the two copies.        
+        We move to the first item in the record (<code>en</code> field) and copy the 
+        value of its <code>greeting</code> field (the text) using <kbd>Alt</kbd>+<kbd>C</kbd>.
+        We then add the copy as another field named <code>rest</code> using 
+        <kbd>:rest=!v</kbd>. Note that Denicek treats this as a special copy edit with 
+        source (<code>greeting</code>) and target (<code>rest</code>).</p>
+      
+      <p>To fix the capitalisation, we apply a number of built-in primitive transformations to the 
+        two text fields. <code>@take-first</code> and <code>@upper</code> turn the first field
+        into capitalised first letter; <code>@skip-first</code> and <code>@lower</code> turn the
+        second field into lower-case rest of the greeting.</p>
+
+    </div>
+    <div id="chapter1-save">
+      <h3><strong>Step 3:</strong> Save interactions for replay</h3>
+      <p>Denicek represents documents as sequences of edits. You can see the edits in the
+        History table on the right. Use <kbd>Alt</kbd>+<kbd>H</kbd> to display or hide it.
+        In the table, you can:</p>
+      <ul>
+        <li>hover over the edit name to see more details,</li>
+        <li>hover over a selector to highlight the affected node,</li>
+        <li>click a hash to go back to a previous document state,</li>
+        <li>click edit number to select or unselect it.</li>
+      </ul>
+      <p>Now, we select the last 6 edits (watch the history table!) 
+        that create the <code>rest</code> field,
+        copy the <code>greeting</code> and transform the fields and save them as
+        saved interactions using <kbd>!s normalize</kbd>.
+      </p>
+      <p>Note that edits are saved in the document! You'll see a number of
+        <code>append</code> edits that add nodes to <code>/saved-interactions/normalize</code>
+        and you can see those if you view the source of the document. After the demo
+        finishes playing, hit the up arrow until you reach the root and then use 
+        <kbd>Alt</kbd>+<kbd>U</kbd>.
+      </p>
+    </div>
+    <div id="chapter1-replay">
+      <h3><strong>Step 4:</strong> Replaying normalisation edits</h3>
+      <p>To clean up the capitalisation of the remaining fields, we now go over the 
+        individual record fields and apply our saved <code>normalize</code> operation
+        to each of the fields.</p>
+      <p>We use <kbd>@normalize!</kbd>, which lets us specify that the
+        currently selected document node should be used in place of 
+        <code>/hellos/en</code> in the saved interactions.
+        The ordinary <code>@normalize</code> operation replays the original edits on the original targets.
+        (I'm aware German nouns should be capitalised. Sorry!)</p>
+      <p>
+        As we will see in <a href="#chapter3">Chapter 3</a>, there is a better way of doing this.
+        Denicek supports lists, which let us apply operations on all elements of the list at 
+        the same time. In this demo, the <code>&lt;ul&gt;</code> element was a record.
+      </p>
+      <p>
+        After replaying the demo, you can undo the edits using <kbd>Alt+Z</kbd> and 
+        try on your own! Move around using keyboard arrows, and type <kbd>@</kbd>
+        to see the saved operation and apply it!
+      </p>
+    </div>
+    <div id="chapter1-done">
+      <h3><strong>Step 5:</strong> Next steps</h3>
+      <p>
+        This demo was the "Hello world" of Denicek. You saw the basic idea: representing
+        documents as sequences of edit operations. You saw that Denicek can save and replay
+        past interactions to support programming by demonstration. The remaining chapters
+        show that Denicek can do much more than that:
+      </p>
+      <ul class="wide">
+        <li><a href="#chapter2"><strong>Chapter 2</strong>: Todo list</a> 
+          is a bigger example that creates a user interface using programming by demonstration.</li>
+        <li><a href="#chapter3"><strong>Chapter 3</strong>: Conference list</a>
+          shows collaborative editing and handling of schema change.</li>
+        <li><a href="#chapter4"><strong>Chapter 4</strong>: Conference budget</a>
+          adds formulas with incremental recomputation and debugging.</li>
+        <li><a href="#chapter5"><strong>Chapter 5</strong>: Counter</a>
+          combines formulas with programming by demonstration.</li>
+        <li><a href="#chapter6"><strong>Chapter 6</strong>: Traffic accidents</a>
+          shows how concrete programming enables tracking of code copies.</li>
+        <li><a href="#chapter7"><strong>Chapter 7</strong>: Datnicek notebooks</a>
+          provides some more background on how Denicek works.</li>
+      </ul>
+
+    </div>
+  </section>
+  </div>
+  </div>
+
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 2                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter chapter-app" id="chapter2">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 2:</strong> Building a todo list app</h2>
+    <div id="chapter2-demo" class="webnicek-demo" data-file="essay/todo.json"></div>    
+  </section>
+  <section class="comment"> 
+    <div id="chapter2-start" data-speed="1">  
+      <h3><strong>Step 1:</strong> Creating the user interface</h3>
+      <p>To create a todo list app, we first construct a user interface by adding 
+        a heading and a <code>&lt;form&gt;</code> element with a text box and a button
+        for adding new items.
+      </p>
+      <p>
+        In Denicek, interactions with the document also create edits! This means that 
+        when you enter a text in the text box and switch to another element to trigger
+        the <code>changed</code> event, Denicek adds an edit that modifies
+        the <code>@value</code> field of the <code>input</code> element. (Note that
+        field names starting with <code>@</code> are treated as HTML attributes.)
+      </p>
+      <p>You can see the edits in the document history. Modify the input value
+        to see that it triggers new document edits!</p>
+    </div>
+    <div id="chapter2-demonstrate" data-speed="1">  
+      <h3><strong>Step 2:</strong> Demonstrating add operation</h3>
+      <p>We want to implement the add operation by demonstration, that is by showing Denicek
+        how it is done and then replaying it when adding a new item.</p>
+      <p>We first create a new list with a single <code>&lt;li&gt;</code> element,
+        containing a label with a checkbox. The key thing is the next step &mdash; 
+        we go to the source code of the form and copy the value in the text box 
+        using <kbd>Ctrl</kbd>+<kbd>C</kbd>. We then go back to our list item and paste
+        the value as <code>todo</code> field using <kbd>:todo=!v</kbd>.</p>
+      <p>As you can see in the edit history, this creates a <code>copy</code> edit
+        from <code>cmd/input/@value</code> to <code>items/#0/lbl/todo</code>.
+        In other words, the edit does not depend on the specific value and so we
+        will be able to replay it!</p>
+    </div>
+    <div id="chapter2-handler" data-speed="1">
+      <h3><strong>Step 3:</strong> Setting up an event handler</h3>
+      <p>Next, we select the edits that added the new list item, starting from the 
+        <code>addfield</code> edit that adds the item itself, to the <code>copy</code>
+        edit that copies the item from the text box. We then use
+        <kbd>!s add-item</kbd> to save the edits in the document with a key <code>add-item</code>.
+      </p>
+      <p>Note that saving interactions generates a sequence of edits that append 
+        a serialised representation of the edits to the document at 
+        <code>/saved-interactions</code>!</p>
+      <p>
+        Now we want to tell Denicek to replay the interactions when the button is clicked.
+        We do this by adding <code>@click</code> handler to the button, pointing to the
+        saved interactions using their location inside the document, i.e.,
+        <code>/saved-interactions/add-item</code>. When we click the button and Denicek
+        replays the edits, it automatically generates a new ID for the newly added list
+        item (and uses it in subsequent edits).
+      </p>
+    </div>
+    <div id="chapter2-add-done" data-speed="1">  
+      <h3><strong>Step 4:</strong> Marking items as done</h3>
+      <p>We want to be able to mark items as done, so we revisit our list of todos
+        and transform the simple <code>&lt;li&gt;</code> list item.       
+      </p>
+      <p>We wrap the item in another <code>&lt;li&gt;</code>, change the tag of the
+        original item to <code>&lt;label&gt;</code>, add an
+        <code>&lt;input&gt;</code> and set its type to checkbox by adding a field using
+        <kbd>:@type*=checkbox</kbd>.</p>
+      <p>All the edits that we apply are applied to all elements of the list, which is
+        indicated by the <code>*</code> in their name.
+        </p>
+    </div>
+    <div id="chapter2-use-it" data-speed="1">  
+      <h3><strong>Step 5:</strong> Adding more todo items</h3>
+      <p>If we add a new item using the saved interactions, you'll see that a new item is added with 
+        the label and checkbox! To do this, Denicek remembers when the interaction was recorded
+        (the hash <em>c45b2fc4</em> in the history panel).
+      </p>
+      <p>When replaying edits, Denicek creates a history fork with the replayed edits, branching off from the 
+        point when they were recorded. The histories are then merged, which transforms the
+        saved edits. In this case, the transformation adds the label and the done checkbox.</p>
+      <img src="essay/mergeba.png" style="max-width:80%;margin:auto;display:block;width:300px;">
+      <p>When you mark items as done (or not done) using the checkbox, this again creates new
+        edits that add or remove the <code>@checked</code> field of the checkbox.</p>
+      <p>In Denicek, merging is a central operation that is behind many of its capabilities.
+        Programming by demonstration is one example. In <a href="#chapter3">chapter 3</a>,
+        we look at collaborative editing, which is another one.</p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 3                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter chapter-doc" id="chapter3">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 3:</strong> Managing conference speakers list</h2>
+    <div id="chapter3-demo" class="webnicek-demo" data-file="essay/conference.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter3-start" data-speed="1">
+      <h3><strong>Step 1:</strong> Creating a list of speakers</h3>
+      <p>This demo illustrates how Denicek supports collaborative document editing.
+        Say that Alice and Bob are organising a conference. They put together an initial
+        speaker list. Bob then refactors the <code>&lt;ul&gt;</code> list into a table,
+        while Alice adds another speaker. They then want to merge the changes!
+      </p>
+      <p>
+        To start, let's create a new document with some headings. To add the 
+        list of speakers, we use <kbd>:speakers=[ul]</kbd>. This appends a new list as 
+        a field named <code>speakers</code>. Denicek expects that child nodes of a list
+        have all the same structure (unlike records) and can apply operations to all
+        children of a list.
+      </p>
+      <p>
+        Individual speakers are added using <kbd>:jennings=&lt;li&gt;</kbd>. This is like
+        adding a (named) record field, but here, we are adding an (indexed) list item.
+        In Denicek, indices can be any identifiers. The speaker information is stored
+        in a field named <code>details</code> as a string.
+      </p>
+        
+    </div>
+    <div id="chapter3-bob-refactor" data-speed="1.5">
+      <h3><strong>Step 2:</strong> Refactoring the speaker list</h3>
+      <p>Bob now takes the original speaker list and turns it into a table.
+        The first operation <kbd>&lt;table body&gt;*</kbd> wraps the whole
+        list inside a <code>&lt;table&gt;</code> record with a field named
+        <code>body</code>. The <code>*</code> symbol at the end indicates that
+        this is an operation changing the structure of the document &mdash; 
+        any reference to the original node will be updated to refer to the wrapped node.
+      </p>
+      <p>Bob then adds <code>&lt;thead&gt;</code> with a table header and changes the 
+        <code>&lt;ul&gt;</code> to <code>&lt;tbody&gt;</code>. To transform the
+        list, he uses source view, which is toggled using <kbd>Alt</kbd>+<kbd>U</kbd>.
+      </p>
+      <p>
+        To split the speaker details into two columns, Bob copies the original table cell
+        (<code>name</code>) into a newly created cell (<code>email</code>). This is done
+        using operations that apply to all table rows (<kbd>Alt</kbd>+<kbd>B</kbd> to copy,
+        <kbd>!v*</kbd> to paste). He then applies primitive operations
+        <kbd>@after-comma</kbd> and <kbd>@before-comma</kbd> to transform the strings.</p>
+
+        
+    </div>
+    <div id="chapter3-alice-add" data-speed="1">
+      <h3><strong>Step 3:</strong> Adding another speaker to the list</h3>
+      <p>Meanwhile, Alice thinks of another speaker to invite and she
+        adds her to the original list of speakers. The newly added item has an
+        index <code>goldberg</code> and follows the same structure as all the
+        other items in the list.
+      </p>
+      <p>
+        Note that Denicek does not show field names in the default view, but you can
+        see them (and verify that the structure of the items is the same)
+        by switching to source view using <kbd>Alt</kbd>+<kbd>U</kbd>.
+      </p>
+      <p>
+        Alice has now added an extra speaker, while Bob has turned the list into a
+        table. How can they merge their changes? Merging in Denicek is not symmetric
+        (a bit like <code>git rebase</code>) and so there are two ways of
+        doing this...
+      </p>
+        
+    </div>
+    <div id="chapter3-alice-merge" data-speed="1">
+      <h3><strong>Step 4:</strong> Merging refactoring after add</h3>
+      <p>After adding a speaker, Alice merges changes from Bob into her version of the document.
+        Denicek transforms Bob's edits so that they can be applied after Alice's edits:
+      </p>
+      <img src="essay/mergeab.png" style="max-width:80%;margin:auto;display:block;width:300px;">
+      <p>In this case, Bob's edits are unchanged, because Alice hasn't transformed the document
+        structure. The refactoring automatically applies to the new speaker.
+      </p>
+      <p>You can browse the linearised edit history in Denicek by viewing the edit history
+        using <kbd>Alt</kbd>+<kbd>H</kbd>. Navigate through the history by clicking on the
+        edit hash or using <kbd>Ctrl</kbd>+<kbd>Down</kbd> or <kbd>Ctrl</kbd>+<kbd>Up</kbd>
+        to see the document at an earlier point in time.</p>        
+    </div>
+    <div id="chapter3-bob-merge" data-speed="1">
+      <h3><strong>Step 5:</strong> Merging add after refactoring</h3>
+      <p>Now, let's see what happens when Bob merges edits from Alice into his version of the
+        document. This is trickier, because we want to apply an edit that adds a list item
+        after refactoring the list into a table:
+      </p>
+      <img src="essay/mergeba.png" style="max-width:80%;margin:auto;display:block;width:300px;">
+      <p>Here, Denicek transforms Alice's edit into a sequence of edits that add the
+        <code>&lt;li&gt;</code> item and apply the same transformation to this single item.
+        The edits that previously target all list elements using, for example, <code>/speakers/body/*/email</code>
+        now target specifically the new item using <code>/speakers/body/#goldberg/email</code>.
+      </p>
+      <p>Denicek also supports formulas. In <a href="#chapter4">chapter 4</a>, we will use them
+        to calculate the budget for our conference.</p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+  
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 4                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter chapter-doc" id="chapter4">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 4:</strong> Calculating conference budget</h2>
+    <div id="chapter4-demo" class="webnicek-demo" data-file="essay/budget.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter4-start" data-speed="2">
+      <h3><strong>Step 1:</strong> Adding budget calculation</h3>
+      <p>Denicek documents can contain formulas similar to those in spreadsheets.
+        Formulas are just document nodes with a special tag name (<code>x-formula</code>).
+        They are created in the same way as other nodes and can refer to other elements
+        in the document using selectors such as <code>/speakers</code>.        
+      </p>
+      <p>To calculate our sample conference budget, we add a budget section to our document.
+        The travel per speaker is a numerical field. Number of speakers is computed
+        using a formula <code>count(/speakers)</code>, which counts the number of 
+        elements of a list and the total cost is the cost multiplied by the count.
+      </p>
+      <p>Denicek does not (yet?) have a nice formula editor, so we need to manually construct
+        the underlying representation using references to other document nodes and 
+        special <code>$builtins</code> operation names:</p>
+        <pre>&lt;x-formula&gt;
+  &lt;x-reference id="op"&gt;/$builtins/mul&lt;/x-reference&gt;
+  &lt;x-reference id="left"&gt;/budget/travel/value&lt;/x-reference&gt;
+  &lt;x-reference id="right"&gt;/budget/count/value&lt;/x-reference&gt;
+&lt;/x-formula&gt;</pre>
+        <p>Locate the formula in the document and use <kbd>Alt</kbd>+<kbd>U</kbd> to see the source code!</p>
+    </div>
+    <div id="chapter4-eval" data-speed="1">
+      <h3><strong>Step 2:</strong> Formula evaluation</h3>
+      <p>You can evaluate formulas using <kbd>Alt</kbd>+<kbd>E</kbd>. Formula evaluation
+        uses the same mechanism as everything else in Denicek &mdash; edit history!</p>
+      <p>
+        When you evaluate a formula, the evaluation engine generates edits that 
+        attach the result to the formula node. This is done step-by-step and so, for example, 
+        evaluating <code>count(/speakers)</code> first replaces the reference with the 
+        target element node using a <code>copy</code> edit and then replaces the formula with 
+        the result. If you know programming language theory, this may remind you of 
+        small-step operational semantics.</p>
+      <p>The evaluated edits have dashed borders in the edit history.
+        They are special in that Denicek always keeps them on top of the history.
+        If we make an edit, like changing the travel per speaker to €2000, Denicek will
+        add the new edit just before evaluated edits and use merge to reconcile the 
+        evaluated edits with the new manual edit. If the edits conflict, the evaluated
+        edits are removed.</p>
+      <p>After running the demo, there are only 5 evaluated edits. Changing the travel per speaker
+        invalidated the total costs, but not the number of speakers. This way, Denicek automatically
+        supports <em>incremental recomputation</em>! Hit <kbd>Alt</kbd>+<kbd>E</kbd>
+        to compute the new total cost.</p>
+    </div>
+    <div id="chapter4-provenance" data-speed="1">
+      <h3><strong>Step 3:</strong> Tracking provenance of results</h3>
+      <p>When evaluating formulas, Denicek wraps the original <code>x-formula</code> element in an 
+        element named <code>x-evaluated</code> with two fields. The <code>formula</code> field stores the original
+        formula and <code>result</code> contains the result. This is not displayed in the
+        final document, but you can see it in the source view by using <kbd>Alt</kbd>+<kbd>U</kbd>.
+      </p>
+      <p>The fact that a Denicek document node representing an (evaluated) formula still
+        contains the original formula makes it easy to find out what other nodes in the document
+        the result depends on. This works even for transitive references &mdash; because
+        formulas are evaluated step-by-step, the formula for total cost contains a copy of 
+        the formula that counted the number of speakers.</p>
+      <p>You can see what an evaluated value depends on by navigating to the value in the
+        document and toggling the provenance view using <kbd>Alt</kbd>+<kbd>P</kbd>.
+      </p>
+    </div>
+    <div id="chapter4-merge-add" data-speed="1">
+      <h3><strong>Step 4:</strong> Merging concurrent document edits</h3>
+      <p>Formula evaluation also works well with concurrent document editing.
+        In <a href="#chapter3">chapter 3</a>, we looked at a scenario where 
+        Alice adds a new speaker, while Bob refactors the speaker list into a table.</p>
+      <p>This step shows what happens when we merge Alice's changes into the document.
+        Edits that add a speaker conflict with the edits that count the number of speakers
+        and so those evaluated edits are removed. Consequently, the edits that compute the
+        total are also removed. The only three independent evaluated edits are those that
+        copy the value €2000 into the first argument of the multiplication.
+      </p>
+      <p>Play the demo to see how the individual edits affect the document. You can also
+        reevaluate the document using <kbd>Alt</kbd>+<kbd>E</kbd>.</p>
+    </div>
+    <div id="chapter4-merge-table" data-speed="1">
+      <h3><strong>Step 5:</strong> Merging structural document edits</h3>
+      <p>A more interesting merging scenario is when we take the document with the newly added
+        budget calculation and merge it with Bob's changes that transform the list of speakers 
+        into a table.
+      </p>
+      <p>Denicek supports this scenario too. It knows that the <code>wraprec</code> operation,
+        applied to the list of speakers, wrapped it as a field named <code>body</code> of the
+        newly created <code>&lt;table&gt;</code> element. Because this is an edit that
+        updates references in the document (solid border in edit history view), Denicek
+        automatically transforms the reference <code>/speakers</code> to 
+        <code>/speakers/body</code> and the formula continues working after the refactoring!</p>
+      <p>If you play the demo, it jumps to the relevant edit and you can see the 
+        formula for number of speakers changing. </p>
+      <p>You've already seen programming by demonstration in <a href="#chapter2">chapter 2</a>
+        and this demo showed formulas, incremental recomputation and handling of schema change.
+        The <a href="#chapter5">next chapter</a> combines formulas with programming by demonstration
+        to build a simple counter.</p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+  
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 5                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter chapter-app" id="chapter5">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 5:</strong> Implementing a counter</h2>
+    <div id="chapter5-demo" class="webnicek-demo" data-file="essay/counter.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter5-start" data-speed="3">
+      <h3><strong>Step 1:</strong> Creating the user interface</h3>
+      <p>This demo combines two programming experiences supported by Denicek. We use
+        programming by demonstration, implemented by saving and replaying edits, with the
+        support for formulas embedded in the document to implement a counter.
+      </p>
+      <p>
+        In the first step, we create the user interface by adding the elements we will
+        need &mdash; two buttons for decrementing and incrementing the counter and a
+        label with the count itself. The value is stored at <code>/count/value</code>.
+        To explore the structure, use <kbd>Alt</kbd>+<kbd>U</kbd> to view the source code
+        and <kbd>Alt</kbd>+<kbd>H</kbd> to see the edits.
+      </p>
+      <p>To make the demo nicer, there is some pre-defined CSS, which is not inside
+        the Denicek document. In theory, we could add <code>&lt;style&gt;</code> tags to the document
+        too!</p>
+    </div>
+    <div id="chapter5-increment" data-speed="1">
+      <h3><strong>Step 2:</strong> Incrementing the counter</h3>
+      <p>Now we want to apply the edits that increment the count. The way we do this
+        is that we wrap the current value at <code>/count/value</code> inside a formula
+        that adds 1 to the value. We apply the edits on the current value, that is 0,
+        but they are generic and can be applied to any other value or a formula.
+      </p>
+      <p>
+        The formula node has a tag <code>&lt;x-formula&gt;</code> and has the original
+        value as the <code>left</code> field, the value 1 as the <code>right</code> field
+        and a reference to the plus operator as the <code>op</code> field.
+        You can see this using <kbd>Alt</kbd>+<kbd>U</kbd>:
+      </p>
+      <pre>&lt;x-formula&gt;
+  &lt;x-prim-num id="left"&gt;0&lt;/x-prim-num&gt;
+  &lt;x-prim-num id="right"&gt;1&lt;/x-prim-num&gt;
+  &lt;x-reference id="op"&gt;/$builtins/plus&lt;/x-reference&gt;
+&lt;/x-formula&gt;</pre>
+      <p>After constructing the formula, we evaluate it using <kbd>Alt</kbd>+<kbd>E</kbd>
+        and the document displays the new count as 1. In reality, an evaluated 
+        formula remains hidden behind the number. You can un-evaluate it by undoing 
+        the last two edits by hitting <kbd>Alt</kbd>+<kbd>Z</kbd> twice.</p>      
+    </div>
+    <div id="chapter5-handler" data-speed="1">
+      <h3><strong>Step 3:</strong> Adding the increment handler</h3>
+      <p>When the user clicks increment, we want to replay the last three edits, which wrap the
+        current value with a formula that adds 1 to the current value.
+      </p>
+      <p>To do this, we first undo the evaluation (only to see the structure better), we then
+        select the last three edits (<code>wraprec</code>, <code>addfld</code> and <code>addfld</code>)
+        and save them using the <kbd>!s inc</kbd> command. We then point the <code>@click</code>
+        field of the button to the edits stored at <code>/saved-interactions/inc</code>.</p>
+      <p>Click the button a few times to see the code in action! In the interactive mode,
+        Denicek automatically evaluates the formulas after a click and so you won't see the 
+        underlying formulas.</p>
+      <p>You may be wondering how inefficient this is. Currently, the formula is fully 
+        re-evaluated on each click, so it certainly is not very efficient! The code could
+        probably be optimised (to avoid re-evaluating previously evaluated parts), but
+        performance is admittedly not a concern of the demo.
+      </p>
+    </div>
+    <div id="chapter5-decrement" data-speed="1">
+      <h3><strong>Step 4:</strong> Adding decrement handler</h3>
+      <p>To support the decrement button, we perform the same steps as when implementing
+        the increment operation. First, we wrap the existing value in a formula that 
+        subtracts one:</p>
+      <pre>&lt;x-formula&gt;
+  &lt;x-formula id="left"&gt; (...) &lt;/x-formula&gt;
+  &lt;x-prim-num id="right"&gt;1&lt;/x-prim-num&gt;
+  &lt;x-reference id="op"&gt;/$builtins/minus&lt;/x-reference&gt;
+&lt;/x-formula&gt;</pre>
+      <p>We then save the edits that perform the wrapping as <code>/saved-interactions/dec</code>
+        and add a reference to the saved edits as the <code>@click</code> field of the button.
+        And now, we have a working counter, (almost) without writing a single line of code!</p>
+      <p>
+        In this demo, we did not need to work with the history in any interesting way.
+        As you'll see in <a href="#chapter6">the next chapter</a>, merging of histories can
+        be very useful when working with formulas...
+      </p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 6                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter" id="chapter6">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 6:</strong> Analysing traffic accidents</h2>
+    <div id="chapter6-demo" class="webnicek-demo" data-file="essay/traffic.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter6-start" data-speed="1">
+      <h3><strong>Step 1:</strong> Managed copy &amp; paste</h3>
+      <p>When you need to write two similar compu&shy;tations, it is very tempting to use copy &amp; paste
+        and then modify the copy. Everyone knows this is a bad idea &mdash; if you then need to make
+        a change, you have to modify all copies and it is easy to miss one.
+      </p>
+      <p>Denicek keeps track of copying in the document, and so it is possible to copy parts of a document,
+        but then make changes to all of them. Doing this relies on the ability to merge edits
+        and move through the edit history.</p>
+      <p>In this demo, we use the <code>read-csv</code> formula in Denicek to load a CSV into
+        a table. We load two data tables and want to do the same simple calculation over both tables.
+        In the first step, we load the data and sum the values in the <code>total</code> column.
+      </p>
+    </div>
+    <div id="chapter6-formulas" data-speed="1">
+      <h3><strong>Step 2:</strong> Adding an (incorrect) formula</h3>
+      <p>Note that the <code>read-csv</code> operation returns a document part, which is 
+        a nested record representing a table, containing a list of rows, which are, again, just
+        nested records (with fields matching column names). The additional nesting makes it possible 
+        to style the table nicely, but we have to access the rows using <code>result/table/data/*</code> and
+        the values in each row using <code>total/value</code>.</p>
+      <p>When we evaluate the two <code>sum</code> formulas, we get the correct totals. You can try
+        this on your own using <kbd>Alt</kbd>+<kbd>E</kbd>. If you view the edit history using 
+        <kbd>Alt</kbd>+<kbd>H</kbd>, you'll see the evaluated edits (with dashed borders) and you 
+        can retrace how the evaluation proceeds using <kbd>Ctrl</kbd>+<kbd><i class="las la-arrow-up"></i></kbd>
+        and <kbd>Ctrl</kbd>+<kbd><i class="las la-arrow-down"></i></kbd>.</p>
+      <p>We now construct a slightly more complex formula. We want to count the average deaths per
+        year and round the result, but get things the wrong way round calculating <em>round(count/sum, 2)</em> 
+        rather than <em>round(sum/count, 2)</em>. </p>
+    </div>
+    <div id="chapter6-copy" data-speed="1">
+      <h3><strong>Step 3:</strong> Copying the (incorrect) formula</h3>
+      <p>We do not notice our error and continue by copying the incorrect formula. To calculate the
+        average for rail accidents, we replace the two selectors in the formula, changing the 
+        source from the <code>avia</code> table to the <code>rail</code> table. The structure
+        of the formula remains unchanged and so both formulas now divide the two numbers in an
+        incorrect way.</p>
+      <p>At this point, we notice our error &mdash; perhaps because the two numbers we get, 
+        <em>0.7</em> and <em>0.28</em> seem wrong &mdash; and want to correct the formulas. 
+        The key fact that will make this possible is that the second formula is a copy of the
+        first and Denicek keeps track of this information. If you view the edit history using
+        <kbd>Alt</kbd>+<kbd>H</kbd>, you'll see that the edit number 41 (you'll need to click
+        "+68 more operations" to expand the history) copied the node <code>/analysis/aavia/f</code>
+        into <code>/analysis/arail/f</code>.</p>
+    </div>
+    <div id="chapter6-fix" data-speed="1">
+      <h3><strong>Step 4:</strong> Rewriting the edit history</h3>
+      <p>
+        There is a lot going on in this step, so you may be better off replaying the interactions
+        in this demo one step at the time using the <span class="circle"><i class="las la-angle-right"></i></span>
+        button!
+      </p>
+      <p>First, we remove all the evaluated edits using <kbd>Alt</kbd>+<kbd>T</kbd> so that we
+        can see the formulas and understand what went wrong. We also open the history panel using
+        <kbd>Alt</kbd>+<kbd>H</kbd>.</p>
+      <p>Now the key trick is to navigate through the edit history to a point 
+        before the <code>copy</code> edit that duplicated the incorrect formula.
+        Then we can create a <em>fork</em> in the edit history using <kbd>Alt</kbd>+<kbd>F</kbd>.
+        Denicek remembers the original branch with further edits, but lets us apply more
+        edits on top of the earlier point in history.</p>
+      <p>Once we are in a new branch of edits, we can apply the necessary fix. We simply swap
+        the <code>left</code> and <code>right</code> arguments of the division. This is done
+        using three <code>updid</code> edits (by first renaming <code>right</code> to <code>tmp</code>).
+      </p>
+    </div>
+    <div id="chapter6-merge" data-speed="1">
+      <h3><strong>Step 5:</strong> Reconciling the formula edits</h3>
+      <p>Now that we fixed the original formula, Denicek can automatically propagate the 
+        fix to the copy. The trick is to merge the edits made in the new branch with the 
+        original branch. This propagates the fix (F) through the copy edit (C), resulting in 
+        a new copy of the fix (F') that is applied to the copy of the formula:</p>
+      <img src="essay/mergecp.png" style="max-width:80%;margin:auto;display:block;width:300px;">
+      <p>
+        You can easily do this yourself! Use <kbd>Alt</kbd>+<kbd>U</kbd> to hide the source
+        code and then use <kbd>Alt</kbd>+<kbd>M</kbd> to merge the edits with the original
+        branch. You'll see six <code>updid</code> edits renaming the fields for both
+        <code>aavia</code> and <code>arail</code> formulas. Then use <kbd>Alt</kbd>+<kbd>E</kbd>
+        to evaluate the formulas and see the correct results!
+      </p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+
+  <!-- ========================================================================================= -->
+  <!---                                       CHAPTER 7                                          -->
+  <!-- ========================================================================================= -->
+
+  <div class="chapter chapter-nb" id="chapter7">
+  <div class="sidebyside">
+  <section>
+    <h2><strong>Chapter 7:</strong> Denicek-based data science notebooks</h2>
+    <div id="chapter7-demo" class="datnicek-demo" data-file="essay/datnicek.json"></div>
+  </section>
+  <section class="comment"> 
+    <div id="chapter7-start" data-speed="1">
+      <h3><strong>Step 1:</strong> Denicek as a computational substrate</h3>
+      <p>The demos in the previous chapters were using Denicek abstractions directly.
+        While the interface enables a lot of interesting features, it is not very 
+        user-friendly. But Denicek was intended as a <em>computational substrate</em>,
+        i.e., an underlying representation for more interesting programming systems.</p>
+      <p>To show that Denicek can really work this way, we also built <strong>Datnicek</strong>, 
+        a user-friendly programming system for data science. Datnicek supports:</p>
+      <ul>
+        <li>Structure editing for code inside code blocks</li>
+        <li>Collaborative editing with tree-based merging</li>
+        <li>Type-provider like code completion</li>
+        <li>Interactive data wrangling that generates code</li>
+        <li>Output invalidation when code changes</li>
+      </ul>
+      <p>All of these are built on top of Denicek, using the history of edits and the document structure.</p>
+      <p>This demo illustrates some of the capabilities of Denicek. Again, it runs the real
+        system and so you can play around, this time in a more user-friendly environment!</p>
+    </div>
+    <div id="chapter7-cells" data-speed="1">
+      <h3><strong>Step 2:</strong> Code and grid cells</h3>
+      <p>Code cells in Datnicek are represented as records with fields for individual formulas.
+        Formulas use the same representation we saw earlier &mdash; a formula is a <code>&lt;x-formula&gt;</code>
+        document node and evaluating it wraps the formula with <code>&lt;x-evaluated&gt;</code> and adds the
+        <code>result</code> field containing the evaluated result. You can see this by switching to the source
+        view using <kbd>Alt</kbd>+<kbd>U</kbd>.
+      </p>
+      <p>To show that Denicek can be used as the basis for interesting user experiences, 
+        Datnicek uses it to build an interactive data cleaning environment. Here, we use it to 
+        clean the data on air traffic accidents from Eurostat.</p>
+      <p>The grid cell shows the data in a spreadsheet-like view. When you click on a cell or
+        a header and edit the value, the tool suggests possible edits to apply to all rows.
+        We use, for example:</p>
+      <ul>
+        <li>When you click in a data cell, Datnicek suggests to drop/keep rows with this
+          particular value in the cell.
+        </li>
+        <li>When you edit a value in a data cell, Datnicek suggests to apply the same replacement
+          to all other rows or across the whole dataset</li>
+        <li>When you click in a header and change the value, Datnicek suggests to rename
+          the header. It also suggests to drop it, or split the column.</li>
+      </ul>
+    </div>
+    <div id="chapter7-coding" data-speed="1">
+      <h3><strong>Step 3:</strong> Turning grid to code</h3>     
+      <p>Datnicek stores information about the interactively applied 
+        transformations in two ways. First, they are stored as normal edit history
+        and you can see them in the history panel, which you can open using <kbd>Alt</kbd>+<kbd>H</kbd>.
+        The panel shows edits for each grid cell individually. However, the edits are
+        also stored in the document itself. If you view the source using
+        <kbd>Alt</kbd>+<kbd>U</kbd>, you can see them in the source code for the 
+        grid cell under <code>&lt;edits&gt;</code> (towards the end, after the data table).</p>
+
+      <p>A user experience that some interactive notebook systems support is turning the 
+        recorded edits into code. Datnicek can do this too, using the 
+        <em>Insert as code cell</em> action in the grid cell.
+        The action generates code that corresponds to the edits, which makes it easy to write
+        reusable data cleanup code.</p>
+
+      <p>In the demo, we turn the interactive edits into code and then remove the grid
+        cell to save space on the screen. We then add the <code>sum()</code> call to compute
+        the total number of accidents per year.
+      </p>
+        
+    </div>
+    <div id="chapter7-visualize" data-speed="1">
+      <h3><strong>Step 4:</strong> Visualising the results</h3>
+      <p>In the final step, we add a simple data visualisation using the editor in the code cell.
+        You can do this yourself by choosing from the operations offered by the code editor.
+        After clicking "+", we select <code>vis</code> to create a visualisation,
+        <code>bar</code> for a bar chart, and choose <code>data=aviaTotal</code> as the data source.
+      </p>
+      <p>
+        Datnicek notebooks show a different aspect of Denicek. Rather than 
+        focusing on specific user experiences, it illustrates the idea that Denicek
+        works as a <em>computational substrate</em>. It can be used as a basis for different
+        kinds of programming systems. The notebook system uses:
+      </p>
+      <ul>
+        <li>Structure editing</li>
+        <li>Collaborative editing</li>
+        <li>Code completion</li>
+        <li>Output invalidation</li>
+        <li>Interactive data cleaning</li>
+        <li>Cleaning code synthesis</li>
+      </ul>
+      <p>All of these features were developed in specialised data science tools; implementing
+        them is significantly easier on top of the Denicek substrate.</p>
+
+
+    </div>
+  </section>
+  </div>
+  </div>
+
+  <section class="comment">
+    <h2>Conclusions</h2>
+
+    <p>The idea behind Denicek is that a suitable underlying <em>computational substrate</em>
+      can make it easier to support programming experiences that future programming environments
+      need. The key operations provided by the Denicek substrate are merging of edit histories and
+      conflict detection. Those are not used only for collaborative editing, but are behind the
+      implementation of many other programming experiences, illustrated by the demos in this
+      essay: </p>
+
+    <div class="imgbox" style="max-width:350px;">
+    <img src="essay/exps.png" style="max-width:90%;" />
+    <p style="margin:0px 20px"><strong>Figure 2.</strong> Unreasonable effectiveness of merging of edit histories.</p>
+    </div>
+
+    <ul class="wide">
+      <li><strong>Programming by demonstration</strong> (<a href="#chapter1">Chapters 1</a>, <a href="#chapter2">2</a>, <a href="#chapter5">5</a>, and <a href="#chapter7">7</a>) makes it possible to create programs by demonstrating the process using concrete values. Merging is used to correctly replay edits.</li>
+      <li><strong>Incremental recomputation</strong> (<a href="#chapter4">Chapters 4</a> and <a href="#chapter7">7</a>) only reevaluates parts of programs. The implementation relies on conflict detection between edits.</li>
+      <li><strong>Collaborative editing</strong> (<a href="#chapter3">Chapters 3</a> and <a href="#chapter4">4</a>) enables working on a shared document offline. Merging ensures changes are reconciled correctly.</li>
+      <li><strong>Schema change control</strong> (<a href="#chapter2">Chapters 2</a> and <a href="#chapter3">3</a>) updates a program when the structure of data changes. The merging operation handles the update.</li>
+      <li><strong>Concrete programming</strong> (<a href="#chapter6">Chapter 6</a>) makes it possible to treat managed copy &amp; paste operation as a mechanism for introducing abstractions.</li>
+      <li><strong>End-user debugging</strong> (<a href="#chapter4">Chapter 4</a>) shows where values come from. Evaluation mechanism based on copying parts of a document enables this.</li>
+    </ul>
+
+    <p>There are many interesting directions to explore that Denicek does not address.
+      First, there are two ways in which computations are expressed in Denicek. They can be written as formulas, or expressed by demonstration. 
+      An interesting problem is how to unify the two. Second, the underlying merging mechanism is based on operational transform (OT), which
+      is difficult to implement correctly and the experience of building Denicek confirms that! It would be interesting to see if an alternative
+      design, for example based on CRDTs, makes this easier; see below for some experimental work. Third,
+      there are also various interesting questions related to checking of the document structure. For example, when creating a new list item,
+      the item is not well-typed until it is fully created, so a type system for Denicek would need to account for this.
+    </p>
+
+    <p style="font-weight:600;">If any of these problems interest you and you want to collaborate, I'd love to hear from you: <a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a>!</p>
+
+
+    <h3>More information</h3>
+    <ul class="icons">
+      <li><i class="las la-file-alt"></i> For more information, <a href="https://tomasp.net/academic/papers/denicek/">read the Denicek paper</a> (UIST 2025).</li>
+      <li><i class="las la-film"></i> Watch our <a href="https://www.youtube.com/watch?v=xNl7XSgGZpY">5 minute overview</a> or <a href="https://www.youtube.com/watch?v=P2WcNWkt6ts">30 second teaser</a>.</li>
+      <li><i class="las la-code"></i> Explore the poorly documented <a href="https://github.com/d3sprog/denicek">Denicek source code</a>. </li>
+      <li><i class="las la-database"></i> Earlier paper on <a href="https://tomasp.net/academic/papers/schema/">schema evolution</a> (Programming 2025) proposed some of the demos.</li>
+      <li><i class="las la-code-branch"></i> <a href="https://github.com/krsion/mydenicek/">MyDenicek</a> is a project building a CRDT-based version of Denicek.</li>
+    </ul>
+  </section>  
+</body>
+</html>
