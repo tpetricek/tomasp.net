@@ -97,7 +97,7 @@ let render fileName (model:'M) =
     | Some root -> Path.Combine(root, fileName)
 
   let writeTime, renderer = fileTemplateMemoized (typeof<'M>, fullPath)
-  renderer "model" (box model)
+  renderer "model" (box model) |> FsBlog.Helpers.injectTracking
 
 /// Transform file and write results to a file
 let transform target source model = 

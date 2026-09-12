@@ -49,6 +49,9 @@ except `.git`.
 
 Module compile order (`domain` → `helpers` → `dotliquid` → `document` → `r2` → `calendar` → `blog` → `main`):
 
+- **`helpers.fs`** — mtime comparisons, plus `trackingTag` and `injectTracking` (see
+  "Analytics" below).
+
 - **`domain.fs`** — `SiteConfig`, `Article<'T>` (generic over `MarkdownParagraphs` before formatting
   and `string` after), `Site`/`ArticleModel` (the DotLiquid view models), calendar types.
 - **`document.fs`** — parses one source file into an `Article`. `.md` is the only input format,
@@ -199,6 +202,21 @@ The highlights strip in `index.html` is a loop over `model.Highlights`, read fro
 
 Note that layouts hardcode `http://tomasp.net` in structured data and some footer links; the dev
 server rewrites both `http://` and `https://` forms to `localhost` when serving.
+
+### Analytics
+
+No layout contains an analytics tag. `Helpers.injectTracking` inserts the Medama script right
+after the opening `<head>` of **every** HTML page the generator writes — rendered pages via
+`DotLiquid.render`, which every template goes through, and hand-written pages via
+`Blog.copyFiles`, which for `.html` copies through `Helpers.copyHtmlFile` instead of
+`File.Copy` (BOM preserved; a file that is not valid UTF-8 is copied byte-for-byte). This is
+what stops standalone pages such as `source/denicek/index.html` from being missed, which is
+what happened with the old Google Analytics tag.
+
+Pages with no `<head>` (`source/blog/rss.aspx/index.html`) are left alone, and the tag is
+never added twice. The dev server strips it again, so local browsing is not counted — except
+for a static page requested by name rather than as a directory index
+(`/coeffects/slides.html`), which `serveFile` streams unchanged.
 
 ## Deploying
 

@@ -86,7 +86,10 @@ let copyFiles (cfg:SiteConfig) changes =
         if sourceChanged f outf then
           printfn "Copying file: %s" (f.Replace(cfg.Source, ""))
           ensureDirectory (Path.GetDirectoryName(outf))
-          File.Copy(f, outf, true)
+          match f with
+          // Hand-written pages are copied as they are, but they need the analytics tag too
+          | Extension ".html" | Extension ".htm" -> copyHtmlFile f outf
+          | _ -> File.Copy(f, outf, true)
 
 /// Generate tag and history archives from given blog posts
 let archives (posts:seq<Article<_>>) =

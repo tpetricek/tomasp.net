@@ -161,8 +161,10 @@ module private Server =
       res.StatusCode <- 404
       res.Close()
     else
+      // Local browsing should not end up in the analytics, so the tag goes away here
       let html =
         File.ReadAllText(file).Replace(root1, local).Replace(root2, local)
+            .Replace(Helpers.trackingTag, "")
             .Replace("</body", wsRefresh + "</body")
       let bytes = Encoding.UTF8.GetBytes html
       res.ContentType <- "text/html; charset=utf-8"
