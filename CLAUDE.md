@@ -179,6 +179,10 @@ markup cannot be regenerated:
 - **27 baked F# posts** — were literate `.fsx` scripts whose F# was type-checked to produce
   syntax colouring and hover tooltips. The original `.fsx` sits next to each `.md` as an inert
   reference copy: `copyFiles` skips `.fsx`, and no code path reads them any more.
+  `source/blog/packages/` is what those scripts used to `#r` and `#load`. The restored NuGet
+  trees (940 MB of DLLs) are gone; only the hand-written snippets the scripts loaded and the
+  `paket.lock` files recording the versions they were built against remain. The folder keeps
+  its `.ignore` marker, so nothing in it is copied or transformed.
 
 Do not try to "restore" a baked post by re-processing its `.fsx`. Those scripts reference
 packages that no longer resolve, and even where a type-check succeeds, current
