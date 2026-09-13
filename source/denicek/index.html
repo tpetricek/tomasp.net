@@ -63,6 +63,11 @@
     section.comment li em { font-style:normal; font-weight:200; }
     div.imgbox { background:#F2F0E8; border-radius:20px;float:right;padding:20px 10px;margin:30px 0px 50px 20px; text-align: center; }
     div.imgbox p { line-height:15pt; font-size:11pt; }
+    #fig1, #fig1b { max-width:250px; }
+    #fig1 img, #fig1b img { max-width:80%; max-height:200px; }
+    #fig1b { display:none; }  /* narrow-screen copy of Figure 1, see the media query */
+    #fig2 { max-width:350px; }
+    #fig2 img { max-width:90%; max-height:250px; }
 
     nav { max-width: 1000px; margin:30px auto;  text-align: center; }
     nav a { font:12pt 'Merriweather', serif; font-weight:300; padding:7px 15px;  background:#071C4F; color:white; border-style:none; border-radius:15px; margin:5px; cursor: pointer; display:inline-block; }
@@ -81,6 +86,7 @@
     .stepper .lbl button i { margin-right:5px; }
     .stepper .lbl { margin-right:20px; }
     .stepper .lastbutton { margin-right:30px; }
+    .stepper .steplink { display:none; }  /* only shown on narrow screens */
     .stepper .step.active .circle { background:#4D71C6; }
     .stepper .line { flex:1; height:2px; background:#E5E2D7; margin-top:12px; }
     .stepper .label {
@@ -381,9 +387,93 @@
     .chapter-nb .cell-grid .grid-context .panel-body li { text-indent:-14px; padding-left:22px; font:200 9pt Inter, sans-serif; line-height:1.4em; list-style-type: none; margin:6px 4px; overflow-wrap:anywhere; word-break: break-all;  }
     .chapter-nb .cell-grid .grid-context .panel-body li i { margin-right:0px; color:#968FC4; }    
     .chapter-nb .cell-grid .grid-context .panel-body code { color:#968FC4; }
+
+    /* ===================================================================================
+       NARROW SCREENS / MOBILE
+       The essay is not designed for phones, but this makes it basically usable: the
+       two columns stack, the app panels go below the document, figures stop floating
+       and the (purely informative) step indicators in the stepper are dropped.
+       =================================================================================== */
+    @media (max-width: 900px) {
+
+      /* Basic page formatting - tighter spacing, smaller headings */
+      body { padding:6px; }
+      section { padding:15px; border-radius:12px; margin:10px auto; }
+      h1 { font-size:20pt; }
+      h2 { font-size:16pt; }
+      h3 { font-size:13pt; }
+      .chapter h2 { margin-bottom:20px; }
+      p.info { font-size:13pt; margin:20px 0px; }
+      section.comment p, section.comment li { font-size:12pt; }
+      nav { margin:15px auto; }
+      nav a { font-size:10pt; padding:5px 10px; margin:3px; }
+
+      /* Side-by-side demo and commentary are stacked below each other */
+      .sidebyside { display:block; }
+      .sidebyside section { margin:10px 0px; }
+
+      /* Figures are inline (centred) rather than floating next to the text. The
+         box no longer spans the full width - each is given a width of roughly
+         120% of the image width at the max-height above (clamped by the screen),
+         so the box hugs the figure. */
+      div.imgbox { float:none; margin:20px auto; padding:20px 15px; box-sizing:border-box; }
+      #fig1b img, #fig2 img { max-width:100%; }
+      #fig1 { display:none; }
+      #fig1b { display:block; width:260px; max-width:100%; }
+      #fig2 { width:390px; max-width:100%; }
+
+      /* Stepper keeps the control buttons, but drops the step indicators. Instead, it
+         gets a link to the step description, which is now below the demo. */
+      .stepper { margin:15px 0px; }
+      .stepper .line, .stepper .step:has(.circle) { display:none; }
+      .stepper .lbl { margin-right:10px; }
+      .stepper .lastbutton { margin-right:12px; }
+      .stepper .steplink { display:block; margin-left:auto; align-self:center; }
+      .stepper .steplink a { font:600 11px Inter, sans-serif; color:#909090; text-transform:uppercase; text-decoration:none; }
+      .stepper .steplink a:hover { color:#4D71C6; }
+      .stepper .steplink a i { font-weight:800; margin-right:5px; }
+
+      /* Document, notebook and edit history are stacked below each other. The
+         explicit width stops the flex items from being sized by their content
+         (which would make the whole page scroll horizontally). */
+      .main { flex-direction:column; max-height:none; }
+      .doc, .notebook { box-sizing:border-box; width:100%; padding-right:0px; padding-bottom:50px; overflow-x:auto; }
+      .edits { width:100%; padding-left:0px; max-height:260px; overflow:auto; }
+      #chapter6 .main { max-height:none; }
+      #chapter6 .doc { max-height:400px; }
+      #chapter6 .edits { max-height:260px; }
+      .chapter-nb .edits { max-height:260px; }
+
+      /* Context menu for entering commands is pinned to the left edge, because
+         the 'left' offset computed from the cursor position would overflow */
+      .ctx { left:10px !important; right:10px; width:auto; box-sizing:border-box; }
+
+      /* Fixed-width elements inside the demo documents */
+      .chapter-doc .doc table { min-width:0px; }
+      .chapter-app .doc form, .chapter-app .doc ul, .chapter-app .doc .treedoc { width:auto; max-width:100%; }
+      .chapter-app .doc form input { width:calc(100% - 70px); }
+
+      /* Code cells in Datnicek - wrap long formulas instead of overflowing */
+      .chapter-nb .cell-code .code-block { padding-left:5px; padding-right:5px; }
+      .chapter-nb .cell-code .expr { overflow-wrap:anywhere; }
+      .chapter-nb .cell-code .flist .flist-eq { padding-left:20px; }
+      /* "evaluate" link gets its own line instead of overlapping the cell links */
+      .chapter-nb .cell .actions { position:static; display:block; margin-top:10px; }
+
+      /* Icon list in the conclusions - no indent, a bit of space between items and
+         a hanging indent so that wrapped lines align with the text, not the icon */
+      section.comment ul.icons { padding:0px; }
+      section.comment ul.icons li { margin-bottom:8px; padding-left:26px; text-indent:-26px; }
+      section.comment ul.icons li i { display:inline-block; width:21px; text-align:center; text-indent:0px; }
+
+      /* Grid cell in Datnicek - context panel goes below the table */
+      .chapter-nb .cell-grid .grid-container { display:block; padding:0px 5px; }
+      .chapter-nb .cell-grid .grid-block { width:auto; }
+      .chapter-nb .cell-grid .grid-context { width:auto; margin-left:0px; }
+    }
 </style>
 
-  <script type="module" crossorigin src="./assets/main.fs-CpfYL130.js"></script>
+  <script type="module" crossorigin src="./assets/main.js"></script>
 </head>
 <body>
   <section class="comment">
@@ -394,8 +484,8 @@
       <i class="fa fa-envelope"></i><a href="mailto:tomas@tomasp.net">tomas@tomasp.net</a> <span class="sep">|</span> <i class="fa-brands fa-bluesky"></i><a href="https://bsky.app/profile/tomasp.net">@tomasp.net</a>
     </p>
     
-    <div class="imgbox" style="max-width:250px;">
-    <img src="essay/docs.png" style="max-width:80%;" />
+    <div class="imgbox" id="fig1">
+    <img src="essay/docs.png" />
     <p><strong>Figure 1.</strong> A program is a sequence of edits that can be replayed to construct a document.</p>
     </div>
 
@@ -413,6 +503,11 @@
       makes it easy to implement the above programming experiences.
     </p>
     
+    <div class="imgbox" id="fig1b">
+    <img src="essay/docs.png" />
+    <p><strong>Figure 1.</strong> A program is a sequence of edits that can be replayed to construct a document.</p>
+    </div>
+
     <p>This interactive essay demonstrates two programming systems built on top of Denicek.
       It walks you through the solutions to a couple of standard challenge problems like
       building a counter, todo list, and managing a conference. The demos use
@@ -1172,8 +1267,8 @@
       implementation of many other programming experiences, illustrated by the demos in this
       essay: </p>
 
-    <div class="imgbox" style="max-width:350px;">
-    <img src="essay/exps.png" style="max-width:90%;" />
+    <div class="imgbox" id="fig2">
+    <img src="essay/exps.png" />
     <p style="margin:0px 20px"><strong>Figure 2.</strong> Unreasonable effectiveness of merging of edit histories.</p>
     </div>
 
