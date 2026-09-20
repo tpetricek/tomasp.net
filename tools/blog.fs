@@ -23,13 +23,16 @@ let rec private listFiles blocker root = seq {
 let private (|Extension|) (f:string) = Path.GetExtension(f)
 let private (|EndsWith|_|) (s:string) (f:string) = if f.EndsWith(s) then Some() else None
 
-/// Read given articles (and cache transformed Article<string> objects)
-let private readArticles cfg files = 
+/// Read given articles
+let private readArticles cfg files =
   files 
   |> Seq.choose (function
-    | Extension ".md" as f -> 
-        try Some(transformMarkdown cfg f) 
-        with e -> 
+    | Extension ".md" as f ->
+        try
+          match transform cfg f with
+          | Post article -> Some article
+          | LongRead _ -> None
+        with e ->
           printfn "Error when processing Markdown file: %s" f
           printfn "%A" e
           None
@@ -39,8 +42,26 @@ let private readArticles cfg files =
   |> Seq.toArray  
 
 
+/// Read the long reads, newest first, so the homepage can list them
+let longReads (cfg:SiteConfig) =
+  listFiles ".no-transform" cfg.LongReads
+  |> Seq.choose (function
+    | Extension ".md" as f ->
+        try
+          match transform cfg f with
+          | LongRead longRead -> Some longRead
+          | Post _ -> None
+        with e ->
+          printfn "Error when processing long read: %s" f
+          printfn "%A" e
+          None
+    | _ -> None )
+  |> Seq.filter (fun lr -> not (lr.Title.Contains("[DRAFT]")))
+  |> Seq.sortByDescending (fun lr -> lr.Date)
+  |> Seq.toArray
+
 /// Read articles in the 'blog' folder and in the 'academic' folder
-let groupArticles cfg = 
+let groupArticles cfg =
   let posts = 
     readArticles cfg (listFiles ".no-transform" cfg.Blog)
   let papers = 
@@ -57,17 +78,23 @@ let processFiles cfg archives changes =
   let mutable anyChange = false
   for f in sources do
     let outf = Path.ChangeExtension(f.Replace(cfg.Source, cfg.Output), "").TrimEnd('.') </> "index.html"
-    let forlay = Seq.append [f] layoutFiles
+    // Editing a long read's '.tex' or '.bib' has to rebuild its page too
+    let deps = Latex.dependencies f
+    let forlay = Seq.append (f::deps) layoutFiles
     match f, changes with
-    | f, Some changes when not (Set.contains f changes) -> ()
-    | Let transformMarkdown (transform, Extension ".md"), _->
+    | f, Some changes when not (Set.contains f changes || deps |> List.exists changes.Contains) -> ()
+    | Let transform (transform, Extension ".md"), _->
         if sourceChangedSeq forlay outf then
           printfn "Processing file: %s" (f.Replace(cfg.Source, ""))
           ensureDirectory (Path.GetDirectoryName outf)
-          let article = transform cfg f
-          let layout = defaultArg article.Layout "post"
-          let model = { Article = article; Archives = archives }
-          File.WriteAllText(outf, DotLiquid.render (layout + ".html") model)
+          match transform cfg f with
+          | Post article ->
+              let template = (defaultArg article.Layout "post") + ".html"
+              let model = { Article = article; Archives = archives }
+              File.WriteAllText(outf, DotLiquid.render template model)
+          | LongRead longRead ->
+              let template = (defaultArg longRead.Layout "longread") + ".html"
+              File.WriteAllText(outf, DotLiquid.render template longRead)
           anyChange <- true
     | _ -> () 
 
@@ -79,7 +106,7 @@ let copyFiles (cfg:SiteConfig) changes =
   let sources = listFiles ".no-copy" cfg.Source
   for f in sources do
     match f, changes with
-    | (Extension ".md" | Extension ".fsx"), _ -> ()
+    | (Extension ".md" | Extension ".fsx" | Extension ".tex" | Extension ".bib"), _ -> ()
     | f, Some changes when not (Set.contains f changes) -> ()
     | _ -> 
         let outf = f.Replace(cfg.Source, cfg.Output)
@@ -132,7 +159,7 @@ let generateTagArchives cfg site =
     File.WriteAllText(outf, DotLiquid.render (cfg.Layouts </> "listing.html") tag)
 
 /// Generate RSS feed from a collection of articles
-let generateRss target (cfg:SiteConfig) title description posts = 
+let generateRss target (cfg:SiteConfig) title description (posts:seq<Article<string>>) =
   let (!) name = XName.Get(name)
   let items = 
     [| for item in posts |> Seq.sortByDescending (fun p -> p.Date) |> Seq.take 20 ->

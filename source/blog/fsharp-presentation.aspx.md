@@ -8,7 +8,7 @@ F# presentation at Czech .NET Group meeting
  - layout: article
  - title: F# presentation at Czech .NET Group meeting
  - url: fsharp-presentation.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

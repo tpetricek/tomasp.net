@@ -8,7 +8,7 @@ Phalanger 2.0 Beta 4 available!
  - layout: article
  - title: Phalanger 2.0 Beta 4 available!
  - url: phalanger-beta4.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

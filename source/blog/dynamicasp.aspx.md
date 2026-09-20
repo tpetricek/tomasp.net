@@ -8,7 +8,7 @@ ASP.NET - Dynamické vytváření ovládacích prvků
  - layout: article
  - title: ASP.NET - Dynamické vytváření ovládacích prvků
  - url: dynamicasp.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

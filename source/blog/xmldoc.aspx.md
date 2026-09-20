@@ -8,7 +8,7 @@ C# - Dokumentace pomocí XML komentářů
  - layout: article
  - title: C# - Dokumentace pomocí XML komentářů
  - url: xmldoc.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

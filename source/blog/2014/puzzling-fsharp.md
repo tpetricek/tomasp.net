@@ -8,7 +8,7 @@ Solving fun puzzles with F#
  - tags: f#,fun,functional programming
  - title: Solving fun puzzles with F#
  - url: 2014/puzzling-fsharp
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>Do you need to convince your friends &amp; family that programming can be fun?

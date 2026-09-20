@@ -8,7 +8,7 @@ Pattern matching in action using C# 6
  - tags: c#,fun,functional programming
  - title: Pattern matching in action using C# 6
  - url: 2015/csharp-pattern-matching
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2015/csharp-pattern-matching/hat.png" style="float:right;margin:20px" />

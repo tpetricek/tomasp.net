@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET - Literatura a webové stránky
  - url: dotnetlinks.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

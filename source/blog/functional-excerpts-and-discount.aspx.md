@@ -8,7 +8,7 @@ Functional Programming: Available Chapter Excerpts &amp; Discount
  - layout: article
  - title: Functional Programming: Available Chapter Excerpts &amp
  - url: functional-excerpts-and-discount.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

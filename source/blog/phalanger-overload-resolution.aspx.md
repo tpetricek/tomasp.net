@@ -8,7 +8,7 @@ Overload resolution in Phalanger
  - layout: article
  - title: Overload resolution in Phalanger
  - url: phalanger-overload-resolution.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

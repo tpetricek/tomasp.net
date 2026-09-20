@@ -8,7 +8,7 @@ Composing Chrismas with F#
  - tags: f#,fun,functional programming
  - title: Composing Christmas with F#
  - url: 2014/composing-christmas
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2014/composing-christmas/glowing.gif" style="float:right;margin:20px; width:200px" /> 

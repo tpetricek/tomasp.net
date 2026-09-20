@@ -8,7 +8,7 @@ Safer asynchronous workflows for GUI programming
  - layout: article
  - title: Safer asynchronous workflows for GUI programming
  - url: safe-gui-async.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

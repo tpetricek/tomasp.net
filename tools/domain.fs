@@ -16,6 +16,8 @@ type SiteConfig =
     Output : string
     Blog : string
     Academic : string
+    /// Folder with the long reads and the LaTeX macros they share
+    LongReads : string
     }
 
 /// Represents an article - the properties are read from a list at the begining
@@ -33,13 +35,31 @@ type Article<'T> =
     References : bool
     Layout : string option
     Abstract : 'T
-    Body : 'T 
+    Body : 'T
     Icon : string
     Url : string }
-  member x.With(abs, body) = 
+  member x.With(abs, body) =
     { Subtitle = x.Subtitle; Title = x.Title; Description = x.Description; Image = x.Image
       LargeImage = x.LargeImage; Tags = x.Tags; Date = x.Date; Url = x.Url; References = x.References
-      Icon = x.Icon; HasDate = x.HasDate; Layout = x.Layout; Abstract = abs; Body = body }
+      Icon = x.Icon; HasDate = x.HasDate; Layout = x.Layout
+      Abstract = abs; Body = body }
+
+/// A long read - a LaTeX article published from the same `.tex` as its PDF. It shares only
+/// the property-list header with `Article`. Passed to `longread.html` as the model, so these
+/// fields are the template's variables.
+type LongRead =
+  { Title : string
+    Description : string
+    Image : string
+    Date : DateTime
+    Url : string
+    Layout : string option
+    /// Raw HTML for the page <head>, from the `head` section
+    Head : string
+    /// The title block, from the `frontmatter` section
+    FrontMatter : string
+    /// The converted `.tex`
+    Body : string }
 
 // Used in DotLiquid
 
@@ -66,6 +86,8 @@ type Site =
     Archives : Archives
     ImageRoot : string
     Papers : seq<Article<string>>
+    /// Long reads, newest first - for listing them on the homepage
+    LongReads : seq<LongRead>
     /// Homepage highlights, grouped into rows of two for the two-column layout
     Highlights : Highlight[][] }
 

@@ -28,6 +28,7 @@ Run from the repo root (`build.cmd` on Windows, `build.sh` elsewhere — both ju
 build.sh              # default "run" — rebuild, watch, serve on :11112, open a browser
 build.sh build        # wipe output/ and regenerate everything
 build.sh calendar     # resize calendar photos and upload them to R2 (local only)
+build.sh longreads    # build each long read's PDF with pdflatex, then watch (local only)
 ```
 
 There is no test suite and no linter. To check a change against what is published, point `../output` at a
@@ -37,7 +38,7 @@ noise on files whose line endings git normalises.
 
 A full build from scratch takes about a minute. There is no cache: every article is re-rendered
 every time, by design (the old mtime-keyed JSON cache silently served content rendered by a
-different FSharp.Formatting version — see "Posts with `rawbody: true`" below).
+different FSharp.Formatting version — see "Posts with `format: bakedin`" below).
 
 ## Architecture
 
@@ -47,18 +48,24 @@ live-reload, and a `FileSystemWatcher`. Editing anything in `layouts/` triggers 
 editing content refreshes only the changed files. `regenerate` deletes everything in `output/`
 except `.git`.
 
-Module compile order (`domain` → `helpers` → `dotliquid` → `document` → `r2` → `calendar` → `blog` → `main`):
+Module compile order (`domain` → `helpers` → `latex` → `dotliquid` → `document` → `r2` → `calendar` → `blog` → `main`):
 
 - **`helpers.fs`** — mtime comparisons, plus `trackingTag` and `injectTracking` (see
   "Analytics" below).
 
 - **`domain.fs`** — `SiteConfig`, `Article<'T>` (generic over `MarkdownParagraphs` before formatting
   and `string` after), `Site`/`ArticleModel` (the DotLiquid view models), calendar types.
-- **`document.fs`** — parses one source file into an `Article`. `.md` is the only input format,
-  in two flavours:
-  - plain Markdown, via `Literate.ParseMarkdownFile`
-  - `rawbody: true` in the header — only the header is Markdown; the abstract and body are
-    raw HTML emitted **verbatim**
+- **`latex.fs`** — the LaTeX→HTML converter behind long reads, plus the `build.sh longreads`
+  PDF builder. See "Long reads" below.
+- **`document.fs`** — parses one source file. `.md` is the only file the generator looks at, and
+  `transform` returns a `Content`: the ` - format:` property in the header says which case:
+  - `markdown` (or no `format` at all) — `Post`, via `Literate.ParseMarkdownFile`
+  - `bakedin` — `Post`; only the header is Markdown, the abstract and body are raw HTML emitted
+    **verbatim**, delimited by two `----` separators
+  - `longread` — `LongRead`, a **different record** with only the fields a long read uses. Its
+    `----` separators are all named (see "Long reads" below) and its body comes from a `.tex`.
+  `Post` carries `Article<'T>`; only those go into `Posts`/`Papers`, so listings, archives and
+  RSS never see a long read.
   Raw bodies must never be round-tripped through the Markdown parser: it ends a raw HTML
   block at the first blank line, and blank lines inside `<pre>` code samples are common, so
   the rest of the snippet would be re-parsed as Markdown.
@@ -116,6 +123,7 @@ Title Of The Post
  - icon: fa fa-square-caret-down          # optional
  - image-large: http://tomasp.net/...png  # or "image:" for a small twitter card
  - references: true                       # appends a References section from Markdown link defs
+ - format: bakedin                        # optional; see "Article formats" below
 
 ----------------------------------------------------------
 
@@ -127,14 +135,18 @@ Body.
 ```
 
 - `layout` names a file in `layouts/`. In practice **everything uses `article`** — the code defaults
-  to `post`, but `layouts/post.html` does not exist, so omitting `layout` breaks the build.
+  to `post`, but `layouts/post.html` does not exist, so omitting `layout` breaks the build. Long
+  reads default to `longread` instead, and can override it like anything else.
+- `format` says how the document is written — `markdown` (the default when the property is
+  absent), `bakedin` or `longread`. An unrecognised value fails the build rather than falling back
+  to Markdown.
 - Adding ` - standalone` to the property list after the first fence means the abstract is *not*
   repeated at the start of the body.
 - Titles containing `[DRAFT]` are parsed but excluded from listings. `source/blog/drafts/` holds
   in-progress posts.
 - An H1 containing `:` or `?` is split into `<span class="hm">`/`<span class="hs">` halves for the
   two-tone heading style — this is why so many titles read "Something: subtitle". This applies
-  only to Markdown bodies; `rawbody` posts keep whatever `<h1>` their HTML already contains.
+  only to Markdown bodies; `bakedin` posts keep whatever `<h1>` their HTML already contains.
 - `source/academic/` items only appear on the publications page if they have a `date` **and** the
   `publication` tag; the `top` tag marks featured ones.
 - Directory markers control traversal: `.ignore` (skip entirely), `.no-copy` (don't copy static
@@ -167,9 +179,9 @@ Links are absolute (the dev server rewrites them to localhost), image paths are 
 the site root. Highlights are re-read on every pass, so `index.html` — which is regenerated
 unconditionally anyway — always reflects the file.
 
-### Posts with `rawbody: true`
+### Posts with `format: bakedin`
 
-177 posts carry `rawbody: true` and hold pre-rendered HTML. Two groups, same reason — their
+177 posts carry `format: bakedin` and hold pre-rendered HTML. Two groups, same reason — their
 markup cannot be regenerated:
 
 - **`*.aspx.md` (150)** — the oldest posts, converted from an `<!-- [info] -->` HTML-comment
@@ -192,11 +204,95 @@ FSharp.Formatting emits a different CSS class taxonomy (`pn`/`ta`/`rt`/`uc`) tha
 `custom/tooltips.css` and `tooltips.js` must stay: the CSS supplies `div.tip { display: none }`,
 without which every tooltip's text renders inline as visible body content.
 
+### Long reads
+
+Longer, more academic pieces written in LaTeX and published from the same `.tex` as the PDF.
+A long read is a `.md` article with ` - format: longread` plus a sibling folder of the same
+name, and everything in that folder is found **by convention** — there are no properties
+naming the files:
+
+```
+source/longreads/
+  macros.tex                 # shared; only macros tools/latex.fs also understands
+  architecture.md            # metadata + named sections of raw HTML
+  architecture/
+    architecture.tex         # the content, converted to the body of the page
+    architecture.bib         # bibliography, rendered into a References section
+    main.tex                 # pdflatex driver: its own preamble + \input{../macros}
+    style.css, fig/, pdf/    # published assets
+    build/                   # pdflatex scratch; carries .ignore, gitignored
+```
+
+After the header, the `.md` is a sequence of fenced **named sections** — every `----` separator
+is followed by a ` - name` line, which is what lets the parser tell a name from raw HTML that
+happens to start with a dash. The name is the field it fills, both optional:
+
+- ` - head` → `LongRead.Head`, injected into the page `<head>`: this article's fonts, its
+  `<meta name="keywords">`, the highlight.js language packs it needs (with their SRI hashes,
+  which a generated tag could not have) and any `<style>` overrides.
+- ` - frontmatter` → `LongRead.FrontMatter`, the hand-written title block shown above the body.
+
+**This is longread-only.** `bakedin` keeps its two *unnamed* separators (abstract, body) and
+`markdown` keeps `Literate.ParseMarkdownFile`; 177 posts depend on that.
+
+Headings are **not** numbered on the web, even where the PDF numbers them: the contents list is
+an `<ol>`, so the browser numbers the sections there and a prefix on the heading would show up
+twice ("1. 1. Introduction"). `\ref` renders the section's position in that list, which is what
+`\S\ref{sec:info}` relies on.
+
+A `LongRead` is its own record, not an `Article` — it has no abstract, tags, icon or subtitle.
+`Latex.formatDocument` returns the front matter and the body separately, and the record is passed
+to `longread.html` as the model directly, so that template says `{{ model.Title }}` and
+`{{ model.Head }}` with no `Article` hop.
+
+`Blog.longReads` collects them into `Site.LongReads` (newest first, `[DRAFT]` titles excluded),
+so pages rendered against `Site` — the homepage in particular — can list them. They stay out of
+`Posts`, so the blog listing, the tag/month archives and `rss.xml` never see them. This means the
+`.tex` is converted on every `loadSite()` as well as when the page is written; it costs nothing
+measurable (a full build is ~48s either way).
+
+The `.md` publishes at `/longreads/architecture/` under the normal URL rule, and the folder
+copies to the same place — which is why `fig/x.jpg` in the `.tex` just works. `blog.fs` keeps
+`.tex`/`.bib` out of the output and treats them as inputs of the `.md`, so editing the LaTeX
+rebuilds the page under `build.sh`'s watcher.
+
+`layouts/longread.html` is shared by every long read and does **not** extend `page.html`, so
+there is no site nav or footer. What stays per-article is the design: `style.css` in the
+article's own folder, plus whatever its `head` section adds. The shared page behaviour —
+sidenote positioning and the figure carousel — is `source/custom/notes.js`; its functions must
+stay global, because the converter emits inline `onclick`/`onmouseover` attributes that call
+them. In the layout's `<head>`, `{{ model.Head }}` comes after `style.css` so the article's
+overrides win, and `notes.js` comes last because it reads `hljs` as it registers its handler.
+
+The converter in `tools/latex.fs` is deliberately incomplete — it pattern-matches the command
+names the existing articles use and throws `Unsupported command` on anything else. That is the
+intended behaviour: it never guesses. Consequences worth knowing:
+
+- `\newcommand` is **not** expanded. A macro only works on the web if `parse` has a case for
+  it, which is what `macros.tex` is for; anything defined in an article's own preamble is
+  PDF-only.
+- The whole `.tex` is converted - the front matter and the generated table of contents are
+  placed above it rather than replacing anything.
+- A few commands — `\paragraph`, `\href`, `\textsc`, `\TeX` — are deliberately passed through as
+  raw LaTeX so they show up on the page, rather than being guessed at or throwing.
+- The table of contents lists sections only. Anchors come from the heading text, and
+  `indexHeadings` suffixes any repeat (`free_software`, `free_software_2`) so ids stay unique.
+
+BibTeX field names are matched case-insensitively (a `bookTitle` finds `booktitle`), and a
+missing required field names the entry and lists what it does have — a bare
+`KeyNotFoundException` is no help in an 87-entry bibliography.
+
+`build.sh longreads` builds the PDFs and then watches the `.tex`/`.bib`, so it can run in the
+background while writing. It never touches `output/`. CI has no LaTeX, so **the PDF is
+committed**. Note the raw pdflatex output for `architecture` is ~57 MB against the 1.3 MB file
+actually published — the figures are full-resolution, and compressing them is a manual step.
+
 ## Layouts
 
 DotLiquid templates in `layouts/`, all extending `page.html` (which owns `<head>`, the nav
-and the footer archive list). Records are exposed with **C# naming**, so templates say
-`{{ model.Article.Title }}`, `{% for h in model.Archives.History %}`.
+and the footer archive list) — except `longread.html`, which is a standalone page rendered
+against a `LongRead` rather than an `ArticleModel`. Records are exposed with **C# naming**, so
+templates say `{{ model.Article.Title }}`, `{% for h in model.Archives.History %}`.
 
 Special pages are rendered directly by `main.fs` rather than from a source file:
 `index.html`, `404.html`, `academic/index.html` (via `papers.html`), and `blog/index.html`

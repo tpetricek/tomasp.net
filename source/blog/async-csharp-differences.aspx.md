@@ -8,7 +8,7 @@ Asynchronous C# and F# (II.): How do they differ?
  - layout: article
  - title: Asynchronous C# and F# (II.): How do they differ?
  - url: async-csharp-differences.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

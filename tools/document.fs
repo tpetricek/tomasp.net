@@ -98,6 +98,10 @@ let private readMetadata (pars:MarkdownParagraphs) =
 let private tryFind k (props:IDictionary<string, string>) =
   if props.ContainsKey k then Some(props.[k]) else None
 
+/// The public URL of a source file: its path with the extension stripped, as a directory
+let private articleUrl (cfg:SiteConfig) (file:string) =
+  cfg.Root + (Path.ChangeExtension(file.Substring(cfg.Source.Length), "").TrimEnd('.')).Replace('\\', '/')  + "/"
+
 let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstractOpt, body) =
   let abs, body =
     match abstractOpt with
@@ -119,7 +123,7 @@ let private parseMetadata (cfg:SiteConfig) (file:string) (title, props, abstract
       |> Seq.map (fun s -> s.Trim()) |> List.ofSeq
     Date = defaultArg date DateTime.MinValue
     HasDate = date.IsSome
-    Url = cfg.Root + (Path.ChangeExtension(file.Substring(cfg.Source.Length), "").TrimEnd('.')).Replace('\\', '/')  + "/"
+    Url = articleUrl cfg file
     Layout = tryFind "layout" props
     Abstract = abs; Body = body }
 
@@ -148,40 +152,109 @@ let private transformMarkdownFile (cfg:SiteConfig) (inf:string) =
 // Articles with a raw HTML body
 // --------------------------------------------------------------------------------------
 
-/// Marks an article whose abstract and body are raw HTML; only the header is Markdown.
-/// The HTML must not be round-tripped through the Markdown parser, which ends a raw HTML
-/// block at the first blank line - common inside `<pre>` code samples.
-let private rawBodyRegex = Regex(@"(?m)^\s*-\s*rawbody:\s*true\s*\r?$")
+/// The `format` property, read with a regex because it decides how the rest is parsed
+let private formatRegex = Regex(@"(?m)^\s*-\s*format:\s*(\w+)\s*\r?$")
 
 /// Matches the `-----` separators that delimit the header, abstract and body
 let private fenceRegex = Regex(@"(?m)^-{3,}[ \t]*\r?$")
 
-/// Read article with a Markdown header and a raw HTML abstract and body
+/// Each separator is a line of its own, so exactly one newline follows it. Everything
+/// after that is content verbatim - trimming would drop newlines the HTML relies on.
+let private afterNewline (s:string) =
+  if s.StartsWith("\r\n") then s.Substring(2)
+  elif s.StartsWith("\n") then s.Substring(1)
+  else s
+
+/// Parse the Markdown header that precedes the first `-----` separator
+let private readRawHeader cfg inf (text:string) (headerEnd:int) =
+  parseMetadata cfg inf (readMetadata (Markdown.Parse(text.Substring(0, headerEnd)).Paragraphs))
+
+/// Read an article whose abstract and body are raw HTML and only the header is Markdown.
+/// The HTML must not be round-tripped through the Markdown parser, which ends a raw HTML
+/// block at the first blank line - common inside `<pre>` code samples.
 let private transformRawBody (cfg:SiteConfig) (inf:string) (text:string) =
   printfn "Parsing HTML file: %s" (inf.Replace(cfg.Source, ""))
   let fences = fenceRegex.Matches(text)
   if fences.Count < 2 then
     failwithf "Article with a raw body needs two '-----' separators: %s" inf
-  let headerEnd = fences.[0].Index
   let absStart = fences.[0].Index + fences.[0].Length
   let bodyStart = fences.[1].Index + fences.[1].Length
-  let article =
-    parseMetadata cfg inf (readMetadata (Markdown.Parse(text.Substring(0, headerEnd)).Paragraphs))
-  // Each separator is a line of its own, so exactly one newline follows it. Everything
-  // after that is content verbatim - trimming would drop newlines the HTML relies on.
-  let afterNewline (s:string) =
-    if s.StartsWith("\r\n") then s.Substring(2)
-    elif s.StartsWith("\n") then s.Substring(1)
-    else s
+  let article = readRawHeader cfg inf text fences.[0].Index
   let abs = afterNewline (text.Substring(absStart, fences.[1].Index - absStart))
   let body = afterNewline (text.Substring(bodyStart))
   article.With(abs, body)
 
-/// Read Markdown document, parse metadata and format it as HTML
-let transformMarkdown cfg file =
+// --------------------------------------------------------------------------------------
+// Long reads
+// --------------------------------------------------------------------------------------
+
+/// Names the section after a separator, as ` - head`. Every separator needs one: the sections
+/// hold raw HTML, so otherwise a content line starting with a dash would be ambiguous.
+let private sectionNameRegex = Regex(@"^[ \t]*-[ \t]*([\w-]+)[ \t]*\r?$")
+
+let private longReadSections = [ "head"; "frontmatter" ]
+
+/// Split the text after the first separator into its named sections
+let private readSections (inf:string) (text:string) (fences:MatchCollection) =
+  [ for i in 0 .. fences.Count - 1 do
+      let contentStart = fences.[i].Index + fences.[i].Length
+      let contentEnd = if i + 1 < fences.Count then fences.[i+1].Index else text.Length
+      let section = afterNewline (text.Substring(contentStart, contentEnd - contentStart))
+      let lineEnd =
+        match section.IndexOf('\n') with
+        | -1 -> section.Length
+        | n -> n
+      let name = sectionNameRegex.Match(section.Substring(0, lineEnd))
+      if not name.Success then
+        failwithf "Every section of a long read needs a name, as ' - head'. Missing after separator %d in: %s" (i + 1) inf
+      let name = name.Groups.[1].Value.ToLowerInvariant()
+      if not (List.contains name longReadSections) then
+        failwithf "Unknown long read section '%s' (expected %s) in: %s"
+          name (String.concat " or " longReadSections) inf
+      // Drop the blank line that conventionally follows the name
+      yield name, section.Substring(min (lineEnd + 1) section.Length).TrimStart('\r', '\n') ]
+
+/// Read a long read - a Markdown header, then named sections of raw HTML. The body of
+/// the page comes from the sibling `<name>/<name>.tex`
+let private transformLongRead (cfg:SiteConfig) (inf:string) (text:string) =
+  printfn "Parsing long read: %s" (inf.Replace(cfg.Source, ""))
+  let fences = fenceRegex.Matches(text)
+  if fences.Count < 1 then
+    failwithf "A long read needs a '-----' separator after its header: %s" inf
+  let sections = readSections inf text fences
+  let section name = sections |> List.tryPick (fun (n, s) -> if n = name then Some s else None)
+
+  let title, props, _, _ =
+    readMetadata (Markdown.Parse(text.Substring(0, fences.[0].Index)).Paragraphs)
+
+  let tex, bib = Latex.sourceFiles inf
+  printfn "Converting LaTeX file: %s" (tex.Replace(cfg.Source, ""))
+  let frontMatter, body = Latex.formatDocument tex bib (defaultArg (section "frontmatter") "")
+
+  { Title = formatSpans title
+    Description = defaultArg (tryFind "description" props) ""
+    Image = match tryFind "image" props, tryFind "image-large" props with Some i, _ | _, Some i -> i | _ -> ""
+    Date = defaultArg (tryFind "date" props |> Option.map DateTime.Parse) DateTime.MinValue
+    Url = articleUrl cfg inf
+    Layout = tryFind "layout" props
+    Head = defaultArg (section "head") ""
+    FrontMatter = frontMatter
+    Body = body }
+
+/// What a source file turns into. `markdown` and `bakedin` both produce an `Article`.
+type Content =
+  | Post of Article<string>
+  | LongRead of LongRead
+
+/// Read a document, parse its metadata and format it as HTML
+let transform cfg file =
   let text = File.ReadAllText(file:string)
-  if rawBodyRegex.IsMatch(text) then transformRawBody cfg file text
-  else transformMarkdownFile cfg file
+  let format = formatRegex.Match(text)
+  match (if format.Success then format.Groups.[1].Value else "markdown") with
+  | "markdown" -> Post(transformMarkdownFile cfg file)
+  | "bakedin" -> Post(transformRawBody cfg file text)
+  | "longread" -> LongRead(transformLongRead cfg file text)
+  | other -> failwithf "Unknown article format '%s' in: %s" other file
 
 // --------------------------------------------------------------------------------------
 // Homepage highlights

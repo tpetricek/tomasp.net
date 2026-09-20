@@ -8,7 +8,7 @@ TryJoinads (VI.) - Parsing with joinads
  - layout: article
  - title: TryJoinads (VI.) - Parsing with joinads
  - url: joinads-parsing.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

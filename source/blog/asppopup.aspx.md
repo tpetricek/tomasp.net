@@ -8,7 +8,7 @@ ASP.NET Popup Control
  - layout: article
  - title: ASP.NET Popup Control
  - url: asppopup.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Extending Monads with Pattern Matching (Haskell 2011)
  - layout: article
  - title: Extending Monads with Pattern Matching (Haskell 2011)
  - url: docase-haskell.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

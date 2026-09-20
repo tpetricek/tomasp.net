@@ -8,7 +8,7 @@ Reactive Programming (IV.) - Developing a game in Reactive LINQ
  - layout: article
  - title: Reactive Programming (IV.) - Developing a game in Reactive LINQ
  - url: reactive-iv-reactivegame.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

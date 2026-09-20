@@ -8,7 +8,7 @@ Happy New Year 2016 around the World: Behind the scenes of my #FsAdvent project
  - tags: f#,data journalism,thegamma,data science,visualization
  - title: Happy New Year 2016 around the World
  - url: 2015/happy-new-year-tweets
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>Just like <a href="http://tomasp.net/blog/2014/composing-christmas/">last year</a> and the

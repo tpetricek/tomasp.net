@@ -8,7 +8,7 @@ Dynamic in F#: Reading data from SQL database
  - layout: article
  - title: Dynamic in F#: Reading data from SQL database
  - url: dynamic-sql.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Calling functions in LINQ queries
  - layout: article
  - title: Calling functions in LINQ queries
  - url: linq-expand.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

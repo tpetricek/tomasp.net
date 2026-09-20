@@ -8,7 +8,7 @@ Upcoming F# talks and trainings (London, NYC &amp; Boston)
  - layout: article
  - title: Upcoming F# talks and trainings (London, NYC & Boston)
  - url: events-winter-2013.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

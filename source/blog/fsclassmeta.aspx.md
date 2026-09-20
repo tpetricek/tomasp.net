@@ -8,7 +8,7 @@ F# metaprogramming and classes
  - layout: article
  - title: F# metaprogramming and classes
  - url: fsclassmeta.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

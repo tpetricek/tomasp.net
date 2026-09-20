@@ -8,7 +8,7 @@ Reactive Programming with F# in London
  - layout: article
  - title: Reactive Programming with F# in London
  - url: fun-londoners-reactive.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

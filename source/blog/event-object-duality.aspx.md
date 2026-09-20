@@ -8,7 +8,7 @@ The Duality of Object and Event references
  - layout: article
  - title: The Duality of Object and Event references
  - url: event-object-duality.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

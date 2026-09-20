@@ -8,7 +8,7 @@ F# CodeDOM Provider on the CodePlex
  - layout: article
  - title: F# CodeDOM Provider on the CodePlex
  - url: codeplex-fsharp-codedom.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

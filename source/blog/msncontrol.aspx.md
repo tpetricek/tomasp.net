@@ -8,7 +8,7 @@ Práce s programem Windows Messenger
  - layout: article
  - title: Práce s programem Windows Messenger
  - url: msncontrol.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

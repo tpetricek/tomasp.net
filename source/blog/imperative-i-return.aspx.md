@@ -8,7 +8,7 @@ Imperative computation in F# (I.) - Returning results from a function
  - layout: article
  - title: Imperative computation in F# (I.) - Returning results from a function
  - url: imperative-i-return.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

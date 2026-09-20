@@ -8,7 +8,7 @@ Looking under the cover (How does it work?)
  - layout: article
  - title: Formatting F# source code for the Web
  - url: fswebsnippets-intro.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

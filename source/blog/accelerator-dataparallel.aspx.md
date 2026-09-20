@@ -8,7 +8,7 @@ Accelerator and F# (III.): Data-parallel programs using F# quotations
  - layout: article
  - title: Accelerator and F# (III.): Data-parallel programs using F# quotations
  - url: accelerator-dataparallel.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Reporting events from F# Agents
  - layout: article
  - title: Reporting events from F# Agents
  - url: agent-event-reporting.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

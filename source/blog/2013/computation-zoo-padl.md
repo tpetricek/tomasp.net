@@ -7,7 +7,7 @@ The F# Computation Expression Zoo (PADL'14)
  - tags: haskell,research,f#,functional programming
  - title: The F# Computation Expression Zoo (PADL'14)
  - url: 2013/computation-zoo-padl
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>F# <a href="http://msdn.microsoft.com/en-us/library/dd233182.aspx">computation expressions</a> are the

@@ -8,7 +8,7 @@ Source code for Real World Functional Programming available!
  - layout: article
  - title: Source code for Real World Functional Programming available!
  - url: book-source-available.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

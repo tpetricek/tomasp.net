@@ -8,7 +8,7 @@ Accelerator and F# (IV.): Composing computations with quotations
  - layout: article
  - title: Accelerator and F# (IV.): Composing computations with quotations
  - url: accelerator-quotations.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ Processing trees with F# zipper computation
  - tags: f#,haskell,research,monads,linq
  - title: Processing trees with F# zipper computation
  - url: tree-zipper-query.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>One of the less frequently advertised new features in F# 3.0 is the <em>query syntax</em>.

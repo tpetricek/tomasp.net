@@ -7,7 +7,7 @@ How many tuple types are there in C#?
  - tags: c#,f#,functional programming
  - title: How many tuple types are there in C#?
  - url: 2013/tuples-in-csharp
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>In a <a href="http://stackoverflow.com/questions/18718232/when-should-i-write-my-functions-in-curried-form/18721711">recent StackOverflow question</a>

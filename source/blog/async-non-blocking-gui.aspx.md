@@ -8,7 +8,7 @@ Writing non-blocking user-interfaces in F#
  - layout: article
  - title: Writing non-blocking user-interfaces in F#
  - url: async-non-blocking-gui.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ TryJoinads (V.) - Implementing the option joinad
  - layout: article
  - title: TryJoinads (V.) - Implementing the option joinad
  - url: joinads-options.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

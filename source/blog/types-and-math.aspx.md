@@ -7,7 +7,7 @@ Power of mathematics: Reasoning about functional types
  - tags: f#,research,functional programming
  - title: Power of mathematics: Reasoning about functional types
  - url: types-and-math.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/articles/types-and-maths/distributivity.png" class="rdecor" />

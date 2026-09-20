@@ -8,7 +8,7 @@ C# - Unsafe kód a ukazatele
  - layout: article
  - title: C# - Unsafe kód a ukazatele
  - url: unsafecode.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

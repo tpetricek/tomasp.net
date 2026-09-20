@@ -8,7 +8,7 @@ WinForms - Aplikace s podporou pluginů
  - layout: article
  - title: WinForms - Aplikace s podporou pluginů
  - url: pluginsarch.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

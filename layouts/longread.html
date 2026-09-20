@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ model.Title }} - Tomas Petricek</title>
+
+  <!-- Basic SEO Meta Tags -->
+  <meta name="description" content="{{ model.Description | trimHtml }}" />
+  <meta name="author" content="Tomas Petricek" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="{{ model.Title }}" />
+  <meta property="og:description" content="{{ model.Description | trimHtml }}" />
+  <meta property="og:image" content="{{ model.Image }}" />
+  <meta property="og:url" content="{{ model.Url }}" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ model.Title }}" />
+  <meta name="twitter:description" content="{{ model.Description | trimHtml }}" />
+  <meta name="twitter:image" content="{{ model.Image }}" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Core only; an article adds the language packs it needs in its 'head' section -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/google-light.min.css" integrity="sha512-nzMhN+KUSkxA5L9h2BKKpaFw19+a1JufkYL6GEwKPxrsf5YFO8TBbI1Qppd72zZbHAA6RG2htrd2q7sHvcb4Ew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link href="style.css" rel="stylesheet">
+
+  <!-- After style.css so the article's overrides win, after highlight.js so packs register -->
+  {{ model.Head }}
+
+  <!-- Last: it reads hljs while registering its load handler -->
+  <script src="/custom/notes.js" type="text/javascript"></script>
+</head>
+<body>
+  {% comment %} One line: a newline would land between the two sections {% endcomment %}
+  <article>
+    {{ model.FrontMatter }}{{ model.Body }}
+  </article>
+</body>
+</html>

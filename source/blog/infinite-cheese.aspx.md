@@ -8,7 +8,7 @@ Infinite Cheese Fractal using WPF 3D and F#
  - layout: article
  - title: Infinite Cheese Fractal using WPF 3D and F#
  - url: infinite-cheese.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

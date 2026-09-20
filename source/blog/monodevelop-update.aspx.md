@@ -8,7 +8,7 @@ F# community on GitHub &amp; MonoDevelop update
  - layout: article
  - title: F# community on GitHub &amp
  - url: monodevelop-update.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ TryJoinads (VII.) - Implementing joinads for async workflows
  - layout: article
  - title: TryJoinads (VII.) - Implementing joinads for async workflows
  - url: joinads-async-implement.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Reactive, parallel and concurrent programming in F# (PADL 2011)
  - layout: article
  - title: Reactive, parallel and concurrent programming in F# (PADL 2011)
  - url: match-bang-paper.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

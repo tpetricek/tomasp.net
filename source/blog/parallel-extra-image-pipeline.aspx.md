@@ -8,7 +8,7 @@ F# Parallel Extras (I.): Image pipeline using agents
  - layout: article
  - title: F# Parallel Extras (I.): Image pipeline using agents
  - url: parallel-extra-image-pipeline.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

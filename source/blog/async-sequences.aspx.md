@@ -8,7 +8,7 @@ Programming with F# asynchronous sequences
  - layout: article
  - title: Programming with F# asynchronous sequences
  - url: async-sequences.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

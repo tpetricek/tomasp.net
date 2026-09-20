@@ -8,7 +8,7 @@ Parallel Programming in F# (III.): Aggregating data
  - layout: article
  - title: Parallel Programming in F# (III.): Aggregating data
  - url: fsharp-parallel-aggregate.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

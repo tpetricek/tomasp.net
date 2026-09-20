@@ -7,7 +7,7 @@ F# Data: New type provider library
  - tags: open source,f#,f# data,type providers
  - title: F# Data: New type provider library
  - url: fsharp-data.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="https://raw.github.com/fsharp/FSharp.Data/master/misc/logo.png" class="rdecor" style="width:120px;height:120px;" />

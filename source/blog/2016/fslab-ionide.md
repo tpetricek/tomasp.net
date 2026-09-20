@@ -8,7 +8,7 @@ Better F# data science with FsLab and Ionide
  - tags: f#,fslab,data science
  - title: Better F# data science with FsLab and Ionide
  - url: 2016/fslab-ionide
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>At <a href="http://ndcoslo.com/">NDC Oslo 2016</a>, I did a talk about some of the recent new F# projects

@@ -8,7 +8,7 @@ Variations in F#: Research compiler with Joinads and more!
  - layout: article
  - title: Variations in F#: Research compiler with Joinads and more!
  - url: fsharp-variations-joinads.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

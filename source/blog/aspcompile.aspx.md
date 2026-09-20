@@ -8,7 +8,7 @@ Asp.Net 2 - Kompilace
  - layout: article
  - title: Asp.Net 2 - Kompilace
  - url: aspcompile.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

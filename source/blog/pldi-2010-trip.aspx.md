@@ -8,7 +8,7 @@ PLDI 2010 Trip Report
  - layout: article
  - title: PLDI 2010 Trip Report
  - url: pldi-2010-trip.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

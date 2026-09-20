@@ -8,7 +8,7 @@ F# Parallel Extras (III.): Financial dashboard with cancellation
  - layout: article
  - title: F# Parallel Extras (III.): Financial dashboard with cancellation
  - url: parallel-extra-adash-cancellation.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

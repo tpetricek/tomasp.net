@@ -8,7 +8,7 @@ Why type-first development matters
  - layout: article
  - title: Why type-first development matters
  - url: type-first-development.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

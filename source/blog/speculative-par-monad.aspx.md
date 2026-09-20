@@ -8,7 +8,7 @@ Explicit speculative parallelism for Haskell's Par monad
  - layout: article
  - title: Explicit speculative parallelism for Haskell's Par monad
  - url: speculative-par-monad.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

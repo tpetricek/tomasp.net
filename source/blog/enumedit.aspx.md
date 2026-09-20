@@ -8,7 +8,7 @@ Universal enumeration editor control
  - layout: article
  - title: Universal enumeration editor control
  - url: enumedit.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

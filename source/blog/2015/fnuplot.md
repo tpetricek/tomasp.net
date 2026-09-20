@@ -8,7 +8,7 @@ FnuPlot: Cross-platform charting with gnuplot
  - tags: f#,fslab,data science
  - title: FnuPlot: Cross-platform charting with gnuplot
  - url: 2015/fnuplot
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://fsprojects.github.io/FnuPlot/img/logo.png" style="width:120px;float:right;margin:10px" />

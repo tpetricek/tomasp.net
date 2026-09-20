@@ -8,7 +8,7 @@ Calculating with infinite sequences on MSDN
  - layout: article
  - title: Calculating with infinite sequences on MSDN
  - url: sequences-on-msdn.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

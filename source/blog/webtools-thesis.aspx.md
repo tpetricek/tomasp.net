@@ -8,7 +8,7 @@ Thesis: Client-side Scripting using Meta-programming
  - layout: article
  - title: Thesis: Client-side Scripting using Meta-programming
  - url: webtools-thesis.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ F# Webcast (II.) - Using .NET libraries
  - layout: article
  - title: F# Webcast (II.) - Using .NET libraries
  - url: fsharp-webcast-dotnet.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Building LINQ Queries at Runtime in F#
  - layout: article
  - title: Building LINQ Queries at Runtime in F#
  - url: dynamic-flinq.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ LINQ extensions - Simplified keyword search
  - layout: article
  - title: LINQ extensions - Simplified keyword search
  - url: linq-expand-update.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

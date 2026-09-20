@@ -8,7 +8,7 @@ F# Overview (III.) - Imperative and Object-Oriented Programming
  - layout: article
  - title: F# Overview (III.) - Imperative and Object-Oriented Programming
  - url: fsharp-iii-oop.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

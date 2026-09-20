@@ -8,7 +8,7 @@ Multi column layout control
  - layout: article
  - title: Multi column layout control
  - url: columncontrol.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

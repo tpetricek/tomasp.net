@@ -8,7 +8,7 @@ Lazy Computation in C# on MSDN
  - layout: article
  - title: Lazy Computation in C# on MSDN
  - url: lazy-computation-on-msdn.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

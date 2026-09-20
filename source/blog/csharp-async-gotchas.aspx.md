@@ -7,7 +7,7 @@ Async in C# and F#: Asynchronous gotchas in C#
  - tags: async,c#,f#
  - title: Async in C# and F#: Asynchronous gotchas in C#
  - url: csharp-async-gotchas.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>Back in February, I attended the annual MVP summit - an <a href="http://www.2013mvpsummit.com/about">event organized by Microsoft

@@ -8,7 +8,7 @@ Programming user interfaces using F# workflows
  - layout: article
  - title: Programming user interfaces using F# workflows
  - url: excerpt-gui-workflows.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

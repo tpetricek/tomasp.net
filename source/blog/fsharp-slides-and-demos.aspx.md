@@ -8,7 +8,7 @@ Slides and demos from F# presentation
  - layout: article
  - title: Slides and demos from F# presentation
  - url: fsharp-slides-and-demos.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

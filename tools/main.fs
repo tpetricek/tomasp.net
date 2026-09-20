@@ -40,6 +40,7 @@ let config =
     Source = website </> "source"
     Blog = website </> "source" </> "blog"
     Academic = website </> "source" </> "academic"
+    LongReads = website </> "source" </> "longreads"
     // Source with photos for the calendar
     Calendar = outside "calendar"
     // Data files that layouts are generated from (highlights.md)
@@ -61,7 +62,8 @@ let private loadHighlights () =
 let private loadSite () =
   let posts, papers = Blog.groupArticles config
   let archives = Blog.archives posts
-  { Posts = posts; Papers = papers; Archives = archives; PostsTitle = ""
+  { Posts = posts; Papers = papers; LongReads = Blog.longReads config
+    Archives = archives; PostsTitle = ""
     ImageRoot = config.CalendarRoot; Highlights = loadHighlights () }
 
 let mutable private site = loadSite ()
@@ -266,6 +268,12 @@ let main argv =
   | "calendar" ->
       Calendar.uploadCalendarFiles config
       0
+  | "longreads" ->
+      // Builds the PDFs only - it does not build or serve the website
+      let _watchers = Latex.watchPdfs config
+      printfn "Watching long reads for changes - press Enter to stop..."
+      Console.ReadLine () |> ignore
+      0
   | "run" ->
       updateSite false None
       let _watchers = watch ()
@@ -277,5 +285,5 @@ let main argv =
       Console.ReadLine () |> ignore
       0
   | cmd ->
-      eprintfn "Unknown command '%s' (expected 'run', 'build' or 'calendar')" cmd
+      eprintfn "Unknown command '%s' (expected 'run', 'build', 'calendar' or 'longreads')" cmd
       1

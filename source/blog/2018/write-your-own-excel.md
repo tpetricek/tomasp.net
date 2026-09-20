@@ -14,7 +14,7 @@ Write your own Excel in 100 lines of F#
  - title: Write your own Excel in 100 lines of F#
  - icon: fa fa-table
  - url: 2018/write-your-own-excel
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>I've been teaching F# for over seven years now, both in the public F# FastTrack course that we run

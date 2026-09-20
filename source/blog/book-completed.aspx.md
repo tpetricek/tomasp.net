@@ -8,7 +8,7 @@ Real-World Functional Programming: Completed and printed!
  - layout: article
  - title: Real-World Functional Programming: Completed and printed!
  - url: book-completed.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

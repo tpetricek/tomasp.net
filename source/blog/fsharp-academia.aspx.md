@@ -8,7 +8,7 @@ F# in Academia: Present at upcoming events!
  - layout: article
  - title: F# in Academia: Present at upcoming events!
  - url: fsharp-academia.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

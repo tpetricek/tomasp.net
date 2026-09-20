@@ -8,7 +8,7 @@ F# courses and talks (Winter 2012 and beyond...)
  - layout: article
  - title: F# courses and talks (Winter 2012 and beyond...)
  - url: fsharp-talks-courses-2012a.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

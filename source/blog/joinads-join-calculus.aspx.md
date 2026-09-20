@@ -8,7 +8,7 @@ TryJoinads (IV.) - Concurrency using join calculus
  - layout: article
  - title: TryJoinads (IV.) - Concurrency using join calculus
  - url: joinads-join-calculus.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

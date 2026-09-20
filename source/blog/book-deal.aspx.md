@@ -8,7 +8,7 @@ Deal of the day: Real-World Functional Programming
  - layout: article
  - title: Deal of the day: Real-World Functional Programming
  - url: book-deal.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

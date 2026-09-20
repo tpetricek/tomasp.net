@@ -8,7 +8,7 @@ F# Math (III.) - Defining custom numeric types
  - layout: article
  - title: F# Math (III.) - Defining custom numeric types
  - url: fsharp-custom-numeric.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ F# Math (I.) - Numeric types in PowerPack
  - layout: article
  - title: F# Math (I.) - Numeric types in PowerPack
  - url: powerpack-numeric.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

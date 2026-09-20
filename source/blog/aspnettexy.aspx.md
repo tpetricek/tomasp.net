@@ -8,7 +8,7 @@ Compiling Texy! with Phalanger
  - layout: article
  - title: Compiling Texy! with Phalanger
  - url: aspnettexy.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

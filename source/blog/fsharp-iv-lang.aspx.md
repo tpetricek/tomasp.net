@@ -8,7 +8,7 @@ F# Overview (IV.) - Language Oriented Programming
  - layout: article
  - title: F# Overview (IV.) - Language Oriented Programming
  - url: fsharp-iv-lang.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

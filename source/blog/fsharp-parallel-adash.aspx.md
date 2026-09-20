@@ -8,7 +8,7 @@ Parallel Programming in F# (IV.): Financial dashboard example
  - layout: article
  - title: Parallel Programming in F# (IV.): Financial dashboard example
  - url: fsharp-parallel-adash.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

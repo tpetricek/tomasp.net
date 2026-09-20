@@ -8,7 +8,7 @@ F# Math (II.) - Using matrices for graph algorithms
  - layout: article
  - title: F# Math (II.) - Using matrices for graph algorithms
  - url: powerpack-matrix.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

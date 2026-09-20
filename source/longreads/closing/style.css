@@ -1,0 +1,43 @@
+/* TODO: this long read's own design. Only the side-notes are set up so far; everything else
+   is left to browser defaults. */
+
+/* Side-notes. The converter emits each note twice - once inline as `span.note`, once in the
+   list at the foot of the page - and `/custom/notes.js` points the marker at whichever one is
+   visible. It switches at 970px, so the breakpoint below has to match that number. */
+
+article { width: 700px; margin-left: 40px; }
+
+/* Taken out of the flow and parked in the right margin; notes.js nudges any that would
+   overlap further down with a margin-top */
+span.note { position: absolute; left: 780px; max-width: 320px; }
+span.note sup { position: absolute; left: -30px; width: 25px; text-align: right; }
+
+/* Redundant while the notes are in the margin */
+.endnotes { display: none; }
+.endnotes ul { list-style: none; }
+.endnotes ul li sup { margin-right: 5px; }
+
+@media only screen and (max-width: 970px) {
+  article { width: auto; margin-left: 10px; margin-right: 10px; }
+  span.note { display: none; }
+  .endnotes { display: block; }
+}
+
+/* Figure carousel. `/custom/notes.js` drives it: switchFigure sets margin-left on .figbody to
+   slide between images, and startScroll/endScroll nudge the thumbnail row. Only the structure
+   is set here - without it the slides stack vertically instead of forming a strip. */
+
+.figview { overflow: hidden; height: 420px; }
+.figbody { height: 420px; width: 100%; white-space: nowrap; transition: margin 500ms ease-in-out; }
+.figview figure { display: inline-block; width: 100%; height: 420px; margin: 0; text-align: center; }
+.figview figure img { max-width: 100%; max-height: 420px; }
+
+.figpreview { position: relative; }
+.figlist { white-space: nowrap; overflow-x: hidden; }
+.figlist a { display: inline-block; margin-right: 10px; }
+.figlist a img { height: 70px; opacity: 0.5; }
+.figlist a.selected img { opacity: 1; }
+
+.move { position: absolute; top: 0; height: 70px; z-index: 10; cursor: pointer; }
+.moveleft { left: 0; }
+.moveright { right: 0; }

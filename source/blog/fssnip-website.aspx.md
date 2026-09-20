@@ -8,7 +8,7 @@ Announcing F# snippets web site
  - layout: article
  - title: Announcing F# snippets web site
  - url: fssnip-website.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

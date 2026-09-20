@@ -8,7 +8,7 @@ Introducing TryJoinads.org
  - layout: article
  - title: Introducing TryJoinads.org
  - url: introducing-tryjoinads.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

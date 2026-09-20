@@ -7,7 +7,7 @@ Announcing: Literate programming tools for F#
  - tags: open source,f#,writing,literate
  - title: Announcing: Literate programming tools for F#
  - url: fsharp-literate-programming.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="https://raw.github.com/tpetricek/FSharp.Formatting/master/docs/misc/logo.png" class="rdecor" style="width:120px;height:120px;" />

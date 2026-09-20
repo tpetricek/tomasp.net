@@ -8,7 +8,7 @@ Writing Silverlight applications in PHP
  - layout: article
  - title: Writing Silverlight applications in PHP
  - url: php-in-silverlight.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

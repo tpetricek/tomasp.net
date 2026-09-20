@@ -8,7 +8,7 @@ Comparing date range handling in C# and F#
  - tags: f#,c#,deedle,linq,functional programming
  - title: Comparing date range handling in C# and F#
  - url: 2015/restricting-ranges
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>I was recently working on some code for handling date ranges in

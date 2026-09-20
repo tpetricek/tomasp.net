@@ -8,7 +8,7 @@ Writing custom F# LINQ query builder
  - tags: f#,functional programming,linq
  - title: Writing custom F# LINQ query builder
  - url: 2015/query-translation
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>One of the attendees of my <a href="http://www.fsharpworks.com/workshops/finance.html">virtual F# in Finance course</a>,

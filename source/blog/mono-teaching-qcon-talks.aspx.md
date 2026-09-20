@@ -8,7 +8,7 @@ MonoDevelop &amp; Teaching F# &amp; QCon tutorial
  - layout: article
  - title: MonoDevelop &amp
  - url: mono-teaching-qcon-talks.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ F# Overview (I.) - Introduction
  - layout: article
  - title: F# Overview (I.) - Introduction
  - url: fsharp-i-introduction.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

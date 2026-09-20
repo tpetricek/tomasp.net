@@ -7,7 +7,7 @@ Advent Art：北斎の絵を生成する
  - tags: f#,art,fractals,funscript,f# data
  - title: Advent Art：北斎の絵を生成する
  - url: 2013/japan-advent-art
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <div id="myModal" class="reveal-modal xlarge" data-reveal>

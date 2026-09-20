@@ -8,7 +8,7 @@ Building LINQ Queries at Runtime in C#
  - layout: article
  - title: Building LINQ Queries at Runtime in C#
  - url: dynamic-linq-queries.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

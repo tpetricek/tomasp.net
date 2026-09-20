@@ -8,7 +8,7 @@ Avalon - Okna a panely v XAML
  - layout: article
  - title: Avalon - Okna a panely v XAML
  - url: avalonwin.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

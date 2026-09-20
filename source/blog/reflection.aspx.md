@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET - Úvod do Reflection
  - url: reflection.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

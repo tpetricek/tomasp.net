@@ -8,7 +8,7 @@ Parallel Programming in F# (II.): Using PLINQ and Tasks
  - layout: article
  - title: Parallel Programming in F# (II.): Using PLINQ and Tasks
  - url: fsharp-parallel-plinq.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

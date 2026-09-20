@@ -8,7 +8,7 @@ Manning: F# Deep Dives deal of the day
  - layout: article
  - title: Manning: F# Deep Dives deal of the day
  - url: manning-deep-dives.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

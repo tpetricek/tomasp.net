@@ -8,7 +8,7 @@ F# Webcast (IV.) - Developing standard .NET libraries
  - layout: article
  - title: F# Webcast (IV.) - Developing standard .NET libraries
  - url: fsharp-webcast-objects.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

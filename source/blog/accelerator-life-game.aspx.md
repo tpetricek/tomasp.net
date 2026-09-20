@@ -8,7 +8,7 @@ Accelerator and F# (II.): The Game of Life on GPU
  - layout: article
  - title: Accelerator and F# (II.): The Game of Life on GPU
  - url: accelerator-life-game.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

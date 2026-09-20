@@ -8,7 +8,7 @@ Applicative functors: definition and syntax
  - layout: article
  - title: Applicative functors: definition and syntax
  - url: applicative-functors.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

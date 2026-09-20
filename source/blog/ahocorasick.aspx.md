@@ -8,7 +8,7 @@ Aho-Corasick string matching in C#
  - layout: article
  - title: Aho-Corasick string matching in C#
  - url: ahocorasick.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

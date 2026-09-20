@@ -8,7 +8,7 @@ The theory behind covariance and contravariance in C# 4
  - layout: article
  - title: The theory behind covariance and contravariance in C# 4
  - url: variance-explained.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET, C# - Používání a psaní enumerátorů
  - url: enumerators.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ TryJoinads (III.): Agent-based programming
  - layout: article
  - title: TryJoinads (III.): Agent-based programming
  - url: joinads-agents.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

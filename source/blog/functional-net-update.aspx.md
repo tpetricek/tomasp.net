@@ -8,7 +8,7 @@ Functional Programming in .NET book - An update
  - layout: article
  - title: Functional Programming in .NET book - An update
  - url: functional-net-update.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

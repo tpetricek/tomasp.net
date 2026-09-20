@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET - Stahování souborů z internetu
  - url: download.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

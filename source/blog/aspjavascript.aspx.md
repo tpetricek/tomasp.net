@@ -8,7 +8,7 @@ ASP.NET - Ovládací prvky používající JavaScript
  - layout: article
  - title: ASP.NET - Ovládací prvky používající JavaScript
  - url: aspjavascript.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

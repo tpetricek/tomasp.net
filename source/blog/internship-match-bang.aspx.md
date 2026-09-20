@@ -8,7 +8,7 @@ Internship project: Reactive pattern matching
  - layout: article
  - title: Internship project: Reactive pattern matching
  - url: internship-match-bang.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

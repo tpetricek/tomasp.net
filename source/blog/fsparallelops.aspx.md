@@ -8,7 +8,7 @@ Keep your multi-core CPU busy with F#
  - layout: article
  - title: Keep your multi-core CPU busy with F#
  - url: fsparallelops.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

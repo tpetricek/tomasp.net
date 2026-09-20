@@ -8,7 +8,7 @@ Fun with parallel monad comprehensions (The Monad.Reader)
  - layout: article
  - title: Fun with parallel monad comprehensions (The Monad.Reader)
  - url: comprefun.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

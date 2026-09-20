@@ -8,7 +8,7 @@ Phalanger has a new website!
  - layout: article
  - title: Phalanger has a new website!
  - url: new-phalanger-website.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

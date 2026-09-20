@@ -8,7 +8,7 @@ Asp.Net 2 - Master pages
  - layout: article
  - title: Asp.Net 2 - Master pages
  - url: aspmasterpg.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

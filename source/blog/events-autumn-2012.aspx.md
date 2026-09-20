@@ -8,7 +8,7 @@ F# Courses and Talks for Autumn 2012 (I.)
  - layout: article
  - title: F# Courses and Talks for Autumn 2012 (I.)
  - url: events-autumn-2012.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

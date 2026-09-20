@@ -8,7 +8,7 @@ Asynchronous C# and F# (I.): Simultaneous introduction
  - layout: article
  - title: Asynchronous C# and F# (I.): Simultaneous introduction
  - url: csharp-fsharp-async-intro.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

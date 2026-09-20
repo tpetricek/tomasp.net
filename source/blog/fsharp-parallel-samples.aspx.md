@@ -8,7 +8,7 @@ Parallel Programming in F# (I.): Introducing the samples
  - layout: article
  - title: Parallel Programming in F# (I.): Introducing the samples
  - url: fsharp-parallel-samples.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

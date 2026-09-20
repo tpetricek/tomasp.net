@@ -8,7 +8,7 @@ F# Quotations Samples on CodePlex
  - layout: article
  - title: F# Quotations Samples on CodePlex
  - url: fsharp-quotation-samples.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

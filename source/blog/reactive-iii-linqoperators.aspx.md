@@ -8,7 +8,7 @@ Reactive Programming (III.) - Useful Reactive LINQ Operators
  - layout: article
  - title: Reactive Programming (III.) - Useful Reactive LINQ Operators
  - url: reactive-iii-linqoperators.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

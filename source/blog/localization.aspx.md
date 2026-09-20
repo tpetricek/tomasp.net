@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET - Globalizace a lokalizace aplikací (2.)
  - url: localization.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

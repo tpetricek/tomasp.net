@@ -8,7 +8,7 @@ Dynamic Lookup in F#
  - layout: article
  - title: Dynamic Lookup in F#
  - url: fsharp-dynamic-lookup.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

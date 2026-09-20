@@ -8,7 +8,7 @@ Functional Programming in .NET using C# and F# (Manning Greenpaper)
  - layout: article
  - title: Functional Programming in .NET using C# and F# (Manning Greenpaper)
  - url: functional-overview.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

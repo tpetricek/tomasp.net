@@ -8,7 +8,7 @@ ASP.NET web applications in F#
  - layout: article
  - title: ASP.NET web applications in F#
  - url: aspnet-fsharp-intro.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

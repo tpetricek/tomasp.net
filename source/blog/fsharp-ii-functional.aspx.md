@@ -8,7 +8,7 @@ F# Overview (II.) - Functional Programming
  - layout: article
  - title: F# Overview (II.) - Functional Programming
  - url: fsharp-ii-functional.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Reactive programming (I.) - First class events in F#
  - layout: article
  - title: Reactive programming (I.) - First class events in F#
  - url: reactive-i-fsevents.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

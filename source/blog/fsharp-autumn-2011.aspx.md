@@ -8,7 +8,7 @@ F# courses and talks (Autumn 2011)
  - layout: article
  - title: F# courses and talks (Autumn 2011)
  - url: fsharp-autumn-2011.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ F# quotations visualizer
  - layout: article
  - title: F# quotations visualizer
  - url: quotvis.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

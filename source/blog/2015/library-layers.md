@@ -8,7 +8,7 @@ Library patterns: Multiple levels of abstraction
  - tags: f#,open source,functional programming
  - title: Library patterns: Multiple levels of abstraction
  - url: 2015/library-layers
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2015/library-layers/layers.png" style="float:right;margin:15px 0px 15px 10px" />

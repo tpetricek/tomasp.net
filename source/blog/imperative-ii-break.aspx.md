@@ -8,7 +8,7 @@ Imperative computation in F# (II.) - Writing break and continue
  - layout: article
  - title: Imperative computation in F# (II.) - Writing break and continue
  - url: imperative-ii-break.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

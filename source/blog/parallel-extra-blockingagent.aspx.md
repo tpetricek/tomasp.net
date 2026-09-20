@@ -8,7 +8,7 @@ F# Parallel Extras (II.): Agent-based blocking queue
  - layout: article
  - title: F# Parallel Extras (II.): Agent-based blocking queue
  - url: parallel-extra-blockingagent.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

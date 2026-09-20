@@ -8,7 +8,7 @@ New features and improvements in Deedle v1.0
  - tags: f#,deedle,data science
  - title: New features and improvements in Deedle v1.0
  - url: 2014/deedle-v1
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>As Howard Mansell already <a href="http://techblog.bluemountaincapital.com/2014/05/21/deedle-v1-0-release/">announced on the BlueMountain Tech blog</a>,

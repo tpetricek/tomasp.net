@@ -7,7 +7,7 @@ Building great open-source libraries
  - tags: open source,f#,fake,f# formatting
  - title: Building great open-source libraries
  - url: 2013/great-open-source
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <a href="http://tpetricek.github.io/FSharp.Formatting/">

@@ -8,7 +8,7 @@ Accelerator and F# (I.): Introduction and calculating PI
  - layout: article
  - title: Accelerator and F# (I.): Introduction and calculating PI
  - url: accelerator-intro.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

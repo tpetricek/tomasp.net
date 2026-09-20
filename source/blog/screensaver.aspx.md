@@ -8,7 +8,7 @@ WinForms - Screensaver a kreslení pomocí GDI+
  - layout: article
  - title: WinForms - Screensaver a kreslení pomocí GDI+
  - url: screensaver.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

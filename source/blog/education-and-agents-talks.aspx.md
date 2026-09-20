@@ -8,7 +8,7 @@ F# in Education &amp; Concurrency with Agents
  - layout: article
  - title: F# in Education &amp
  - url: education-and-agents-talks.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

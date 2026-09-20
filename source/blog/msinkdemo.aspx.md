@@ -8,7 +8,7 @@ WinForms - Vývoj TabletPC aplikací
  - layout: article
  - title: WinForms - Vývoj TabletPC aplikací
  - url: msinkdemo.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

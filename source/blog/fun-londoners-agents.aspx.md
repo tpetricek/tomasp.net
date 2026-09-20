@@ -8,7 +8,7 @@ Concurrent programming with F# agents in London
  - layout: article
  - title: Concurrent programming with F# agents in London
  - url: fun-londoners-agents.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

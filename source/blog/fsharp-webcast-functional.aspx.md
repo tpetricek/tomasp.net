@@ -8,7 +8,7 @@ F# Webcast (I.) - Introducing functional concepts
  - layout: article
  - title: F# Webcast (I.) - Introducing functional concepts
  - url: fsharp-webcast-functional.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Learn F# at TechMesh and SkillsMetter
  - layout: article
  - title: Learn F# at TechMesh and SkillsMetter
  - url: more-events-autumn-2012.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

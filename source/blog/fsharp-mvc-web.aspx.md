@@ -8,7 +8,7 @@ ASP.NET and F# (I.) - Creating MVC web applications in F#
  - layout: article
  - title: ASP.NET and F# (I.) - Creating MVC web applications in F#
  - url: fsharp-mvc-web.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

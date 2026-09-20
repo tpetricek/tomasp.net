@@ -8,7 +8,7 @@ Real-World F# Articles on MSDN
  - layout: article
  - title: Real-World F# Articles on MSDN
  - url: real-world-book-msdn.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

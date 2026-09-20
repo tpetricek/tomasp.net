@@ -8,7 +8,7 @@ F# Math - Numerical computing and F# PowerPack
  - layout: article
  - title: F# Math - Numerical computing and F# PowerPack
  - url: powerpack-introduction.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

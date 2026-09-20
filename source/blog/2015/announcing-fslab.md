@@ -8,7 +8,7 @@ Announcing FsLab: Data science package
  - tags: f#,fslab,data science
  - title: Announcing FsLab: Data science package for Mono and .NET
  - url: 2015/announcing-fslab
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2015/announcing-fslab/fslab.png" style="width:120px;float:right;margin:10px" />

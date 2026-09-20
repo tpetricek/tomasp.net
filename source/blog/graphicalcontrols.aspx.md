@@ -8,7 +8,7 @@ Graphical ASP.NET Controls
  - layout: article
  - title: Graphical ASP.NET Controls
  - url: graphicalcontrols.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

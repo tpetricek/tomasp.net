@@ -8,7 +8,7 @@ Asynchronous Programming in C# using Iterators
  - layout: article
  - title: Asynchronous Programming in C# using Iterators
  - url: csharp-async.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

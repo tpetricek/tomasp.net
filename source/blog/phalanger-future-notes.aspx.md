@@ -8,7 +8,7 @@ A few notes about Phalanger future
  - layout: article
  - title: A few notes about Phalanger future
  - url: phalanger-future-notes.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

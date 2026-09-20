@@ -8,7 +8,7 @@ F# Webcast (III.) - Using Asynchronous Workflows
  - layout: article
  - title: F# Webcast (III.) - Using Asynchronous Workflows
  - url: fsharp-webcast-async.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

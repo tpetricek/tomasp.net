@@ -8,7 +8,7 @@ Using PHP objects from C# in a type-safe way
  - layout: article
  - title: Using PHP objects from C# in a type-safe way
  - url: ducktyping-in-phalaner.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

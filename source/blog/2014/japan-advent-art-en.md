@@ -8,7 +8,7 @@ Advent Art: Generating Hokusai paintings
  - tags: f#,art,fractals,funscript,f# data
  - title: Advent Art: Generating Hokusai paintings
  - url: 2014/japan-advent-art-en
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <div id="myModal" class="reveal-modal xlarge" data-reveal>

@@ -8,7 +8,7 @@ New Version of Phalanger with Silverlight and VS 2008 Support
  - layout: article
  - title: New Version of Phalanger with Silverlight and VS 2008 Support
  - url: phalanger-vs2008.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

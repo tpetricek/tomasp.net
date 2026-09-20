@@ -8,7 +8,7 @@ Visualizing interesting world facts with FsLab
  - tags: f#,fslab,data science,data journalism,thegamma
  - title: Visualizing interesting world facts with FsLab
  - url: 2015/fslab-world-visualization
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>In case you missed my recent <a href="http://tomasp.net/blog/2015/announcing-fslab/">official FsLab announcement</a>,

@@ -8,7 +8,7 @@ Regions and navigation bar for F# in Visual Studio
  - layout: article
  - title: Regions and navigation bar for F# in Visual Studio
  - url: regions-navigation.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ Asynchronous client/server in F# (QCon 2012)
  - layout: article
  - title: Asynchronous client/server in F# (QCon 2012)
  - url: qcon-async-fsharp.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

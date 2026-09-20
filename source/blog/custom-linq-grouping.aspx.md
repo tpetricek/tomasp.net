@@ -8,7 +8,7 @@ Using custom grouping operators in LINQ
  - layout: article
  - title: Using custom grouping operators in LINQ
  - url: custom-linq-grouping.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

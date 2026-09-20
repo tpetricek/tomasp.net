@@ -8,7 +8,7 @@ Fractal snow screensaver
  - layout: article
  - title: Fractal snow screensaver
  - url: fractalsnow.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ In the age of the web: Typed functional-first programming revisited
  - tags: f#,type providers,web,functional programming,research
  - title: In the age of the web: Typed functional-first programming revisited
  - url: 2015/typed-revisited
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <p>Most programming languages were designed before the age of web.

@@ -8,7 +8,7 @@ F# - Simple quotations transformation
  - layout: article
  - title: F# - Simple quotations transformation
  - url: fsquotations.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

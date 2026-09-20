@@ -8,7 +8,7 @@ CLinq - LINQ support for the C++/CLI language
  - layout: article
  - title: CLinq - LINQ support for the C++/CLI language
  - url: clinq-project.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

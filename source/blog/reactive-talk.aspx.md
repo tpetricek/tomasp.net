@@ -8,7 +8,7 @@ Recording and samples from my Reactive F# talk
  - layout: article
  - title: Recording and samples from my Reactive F# talk
  - url: reactive-talk.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

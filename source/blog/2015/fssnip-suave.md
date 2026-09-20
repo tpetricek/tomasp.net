@@ -8,7 +8,7 @@ Creating web sites with Suave: How to contribute to F# Snippets
  - tags: f#,web
  - title: Creating web sites with Suave: How to contribute to F# Snippets
  - url: 2015/fssnip-suave
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2015/fssnip-suave/logo.png" style="width:130px;float:right;margin-left:10px" />

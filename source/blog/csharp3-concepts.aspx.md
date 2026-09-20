@@ -8,7 +8,7 @@ Concepts behind the C# 3.0 language
  - layout: article
  - title: Concepts behind the C# 3.0 language
  - url: csharp3-concepts.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

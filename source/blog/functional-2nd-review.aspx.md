@@ -8,7 +8,7 @@ Real World Functional Programming: Second review finished!
  - layout: article
  - title: Real World Functional Programming: Second review finished!
  - url: functional-2nd-review.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

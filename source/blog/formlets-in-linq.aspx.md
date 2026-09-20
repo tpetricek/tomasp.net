@@ -8,7 +8,7 @@ Beyond the Monad fashion (II.): Creating web forms with LINQ
  - layout: article
  - title: Beyond the Monad fashion (II.): Creating web forms with LINQ
  - url: formlets-in-linq.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

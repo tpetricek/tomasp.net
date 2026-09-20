@@ -8,7 +8,7 @@ WinForms - Spolupráce mezi více formuláři
  - layout: article
  - title: WinForms - Spolupráce mezi více formuláři
  - url: formsinter.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

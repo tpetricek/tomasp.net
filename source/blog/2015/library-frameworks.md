@@ -8,7 +8,7 @@ Library patterns: Why frameworks are evil
  - tags: f#,open source,functional programming
  - title: Library patterns: Why frameworks are evil
  - url: 2015/library-frameworks
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2015/library-frameworks/diagram-narrow.png" style="float:right;margin:25px 0px 25px 20px" />

@@ -8,7 +8,7 @@
  - layout: article
  - title: .NET - Kolekce a seznamy objektů
  - url: collections.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

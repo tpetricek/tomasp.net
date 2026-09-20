@@ -8,7 +8,7 @@ Stateful computations in F# with update monads
  - tags: f#,research,functional programming,monads
  - title: Stateful computations in F# with update monads
  - url: 2014/update-monads
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 <img src="http://tomasp.net/blog/2014/update-monads/code.png" style="float:right;margin:20px;width:200px" />

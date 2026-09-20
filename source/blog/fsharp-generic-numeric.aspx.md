@@ -8,7 +8,7 @@ F# Math (IV.) - Writing generic numeric code
  - layout: article
  - title: F# Math (IV.) - Writing generic numeric code
  - url: fsharp-generic-numeric.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ TryJoinads (I.) - Asynchronous programming
  - layout: article
  - title: TryJoinads (I.) - Asynchronous programming
  - url: joinads-async-prog.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

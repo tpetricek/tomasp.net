@@ -8,7 +8,7 @@ TryJoinads (II.): Task-based parallelism
  - layout: article
  - title: TryJoinads (II.): Task-based parallelism
  - url: joinad-tasks.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

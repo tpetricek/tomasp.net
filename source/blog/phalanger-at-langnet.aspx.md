@@ -8,7 +8,7 @@ Phalanger at Lang.NET Symposium
  - layout: article
  - title: Phalanger at Lang.NET Symposium
  - url: phalanger-at-langnet.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

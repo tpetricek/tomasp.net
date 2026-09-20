@@ -8,7 +8,7 @@ Reactive programming (II.) - Introducing Reactive LINQ
  - layout: article
  - title: Reactive programming (II.) - Introducing Reactive LINQ
  - url: reactive-ii-csevents.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

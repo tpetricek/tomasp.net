@@ -8,7 +8,7 @@ Can't return anonymous type from method? Really?
  - layout: article
  - title: Can't return anonymous type from method? Really?
  - url: cannot-return-anonymous-type-from-method.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

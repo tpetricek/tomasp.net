@@ -8,7 +8,7 @@ Accessing loosely structured data from F# and C# (GOTO 2011)
  - layout: article
  - title: Accessing loosely structured data from F# and C# (GOTO 2011)
  - url: goto-loosely-structured-data.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@
  - layout: article
  - title: .Net - Používání Windows API funkcí
  - url: wininterop.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

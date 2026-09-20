@@ -8,7 +8,7 @@ Announcing: Real-world Functional Programming in .NET
  - layout: article
  - title: Announcing: Real-world Functional Programming in .NET
  - url: functional-programming-book.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

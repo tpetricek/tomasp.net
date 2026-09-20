@@ -8,7 +8,7 @@ F# in MonoDevelop and cross-platform web sites &amp; screencasts
  - layout: article
  - title: F# in MonoDevelop and cross-platform web sites &amp
  - url: fsharp-in-monodevelop.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

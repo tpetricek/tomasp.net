@@ -8,7 +8,7 @@ Asynchronous C# and F# (III.): How does it work?
  - layout: article
  - title: Asynchronous C# and F# (III.): How does it work?
  - url: async-compilation-internals.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

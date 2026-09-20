@@ -8,7 +8,7 @@ Beyond the Monad fashion (I.): Writing idioms in LINQ
  - layout: article
  - title: Beyond the Monad fashion (I.): Writing idioms in LINQ
  - url: idioms-in-linq.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 

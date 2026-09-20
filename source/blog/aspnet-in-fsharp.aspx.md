@@ -8,7 +8,7 @@ F# Support for ASP.NET and Notes on Samples
  - layout: article
  - title: F# Support for ASP.NET and Notes on Samples
  - url: aspnet-in-fsharp.aspx
- - rawbody: true
+ - format: bakedin
 
 --------------------------------------------------------------------------------
 
