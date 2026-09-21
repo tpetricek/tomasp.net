@@ -3,7 +3,7 @@ Completing Programming Adventures with Jev
 
  - title: Completing Programming Adventures with Jev
  - date: 2026-09-21T01:33:53.0404055+02:00
- - description: Was the System One model Jev built to work with my choose-your-own-adventure 
+ - description: Was the System One model Jev built to work with my choose-your-own-adventure
     calculus model of programming systems? The fit is perfect! In this post, I run a couple
     of experiments to evaluate accuracy and cost of Jev, using an experimental setup from my
     recent paper, to be presented at SPLASH as part of Onward! Papers.
@@ -15,8 +15,8 @@ Completing Programming Adventures with Jev
 ----------------------------------------------------------------------------------------------------
 
 This blog has not exactly been chasing the latest trends, but I'm going to make an exception,
-because of two events that have aligned just in the right way. I will be [going to 
-SPLASH](https://2026.splashcon.org/track/splash-2026-onward--papers?#program) to present a paper 
+because of two events that have aligned just in the right way. I will be [going to
+SPLASH](https://2026.splashcon.org/track/splash-2026-onward--papers?#program) to present a paper
 [The Choose-Your-Own-Adventure Calculus](https://tomasp.net/academic/papers/adventure-calculus/)
 based on an earlier [blog post](https://tomasp.net/blog/2025/adventure-calculus/)
 (and also an [OOPSLA paper about Timeline, our spreadsheet with time](https://tomasp.net/academic/papers/timeline/)).
@@ -25,13 +25,13 @@ The calculus formalizes a mode of interaction between a user and a programming s
 the programming system repeatedly offers a range of choices to the user and the user constructs
 a program by choosing one. The model is inspired by [F# type providers](https://fsprojects.github.io/FSharp.Data/),
 but it works for many other use cases, such as interactive theorem proving, structure editing or
-data wrangling. 
+data wrangling.
 
-One experiments we did in the paper was to see if an LLM can make the choices for you.
-You write what you want to do and the LLM then recommends options for you to pick, so you 
+One experiment we did in the paper was to see if an LLM can make the choices for you.
+You write what you want to do and the LLM then recommends options for you to pick, so you
 can review what code you get and learn what the system offers. Although we do this only
-for small code snippets, I think this is potentially an interesting mode of interacting 
-with an AI. To do the experiment, we prompt an LLM along the lines of "The user wants to do this. 
+for small code snippets, I think this is potentially an interesting mode of interacting
+with an AI. To do the experiment, we prompt an LLM along the lines of "The user wants to do this.
 They selected these options before. Now they have these options. Which one should they pick?"
 
 Now the reason for this blog post is that [TypeSafe AI](https://typesafe.ai) just introduced
@@ -45,19 +45,19 @@ which is an AI to do _exactly the kind of work that our choose-your-own-adventur
 The LLM experiment in the [Choose-Your-Own-Adventure paper](https://tomasp.net/academic/papers/adventure-calculus/)
 uses type providers for completing various data exploration tasks that I built for
 [The Gamma](https://thegamma.net/). The project also has a [gallery of snippets](https://gallery.thegamma.net/)
-wher people can post their snippets with a brief description. 
+where people can post their snippets with a brief description.
 
 <div style="font-size:10pt; text-align:center" class="wdecor"><a href="https://gallery.thegamma.net/87/who-does-the-doctor-fight-most-frequently">
-<img src="thegamma.png" style="max-width:800px" /></a><br>
-<strong>Figrue 1.</strong> Sample snippet from The Gamma gallery
+<img src="thegamma.png" style="width:800px;max-width:90%" /></a><br>
+<strong>Figure 1.</strong> Sample snippet from The Gamma gallery
 </div>
 
 The [example in the screenshot](https://gallery.thegamma.net/87/who-does-the-doctor-fight-most-frequently)
 combines a type provider for querying the Dr Who graph database and a type provider for
-aggregating the results (you can read more about this in a [paper about The 
+aggregating the results (you can read more about this in a [paper about The
 Gamma](https://tomasp.net/academic/papers/iterative/)). The snippet description says:
 
-> Using a graph database of Doctor Who episodes, this demo finds the most frequent enemies faced 
+> Using a graph database of Doctor Who episodes, this demo finds the most frequent enemies faced
 > by The Doctor. Which villain has appeared most often throughout the show's long history?
 
 The code that fetches and aggregates the data looks like this:
@@ -74,7 +74,7 @@ let topEnemies =
 
 The programming model behind (the most of) The Gamma is that you start with a data source
 (here `drWho`) and then type dot (`.`). The type provider generates available options.
-For graph database, this is possible type of nodes. You can then select a sequence of nodes 
+For graph database, this is possible type of nodes. You can then select a sequence of nodes
 (`Doctor`) and relationships (`ENEMY_OF`) with a placeholder `[any]`. This queries the
 database and gets us all the enemies of The Doctor and the episodes they appeared in.
 The `explore_properties` member switches to a type provider for aggregating data and we
@@ -131,7 +131,7 @@ For LLMs, the prompt looks something like this:
 For Jev, we give the options directly through the API and do not need to convince it
 to return a number we can parse.
 However, Jev only accepts 255 options, so if there are more than that, we take only 255
-making sure to include the correct one. We then run the prompt for each step of the 
+making sure to include the correct one. We then run the prompt for each step of the
 chain, that is total 665 calls (an average length of a chain is 8.9).
 
 In the first experiment, I thought that the AI models made some obvious mistakes that
@@ -145,12 +145,12 @@ the information in the prompt are not specific to any of the snippets.
 If you want to experiment on your own, you can find all the snippets, prompts and collected results
 in the [project's GitHub repo](https://github.com/d3sprog/cyoa-experiments/) (running the
 experiments also requires running [The Gamma locally](https://github.com/the-gamma/thegamma-unified)).
-The analysis of the results is in two notebooks, the first one [looking at accuracy and 
+The analysis of the results is in two notebooks, the first one [looking at accuracy and
 costs](https://github.com/the-gamma/cyoa-experiments/blob/master/results.ipynb)
-and the second one [looking at probabilities returned by Jev](https://github.com/the-gamma/cyoa-experiments/blob/master/ranking.ipynb). Unlike this post, the notebooks and the experimental code were generated by AI, 
+and the second one [looking at probabilities returned by Jev](https://github.com/the-gamma/cyoa-experiments/blob/master/ranking.ipynb). Unlike this post, the notebooks and the experimental code were generated by AI,
 so use it at your own risk!
 
-### RQ 1 - Overall accurracy 
+### RQ 1 - Overall accuracy
 
 First of all, how do the different models perform? I grouped the results by the different type
 provider involved. Most of the snippets use either the World Bank data (navigating a data cube),
@@ -159,7 +159,7 @@ for the graph database, so this is not included (sorry, Doctor!)
 
 <div style="font-size:10pt; text-align:center" class="wdecor"><a href="accuracy.png">
 <img src="accuracy.png" style="max-width:95%" /></a><br>
-<strong>Figrue 2.</strong> Accuracy of different models in The Gamma experiment
+<strong>Figure 2.</strong> Accuracy of different models in The Gamma experiment
 </div>
 
 Without system prompt, all three models get the top choice right in about 54% of cases.
@@ -172,18 +172,18 @@ Anthropic models and is getting close to the expensive ones.
 
 Let's now look at the costs. One of the selling points of Jev is that it is much
 cheaper than using an LLM for the same purpose. I can confirm this. In the experiment, we count
-the input and output tokens (this is reported by the API) and calculate the total costs by 
+the input and output tokens (this is reported by the API) and calculate the total costs by
 using the current official pricing.
 
 <div style="font-size:10pt; text-align:center" class="wdecor">
 <a href="cost.png"><img src="cost.png" style="max-width:50%;margin-right:5%" /></a>
 <a href="cost_vs_accuracy.png"><img src="cost_vs_accuracy.png" style="max-width:40%" /></a><br>
-<strong>Figrue 3.</strong> Cost of running the 665 prompts in the experiment
+<strong>Figure 3.</strong> Cost of running the 665 prompts in the experiment
 </div>
 
-Jev is certainly much cheaper than a standard LLM for the kind of tasks that the 
-choose-your-own-adventure calculus models. It is maybe not [444x 
-cheaper](https://typesafe.ai/blog/introducing-system-one-models-and-jev) as in the 
+Jev is certainly much cheaper than a standard LLM for the kind of tasks that the
+choose-your-own-adventure calculus models. It is maybe not [444x
+cheaper](https://typesafe.ai/blog/introducing-system-one-models-and-jev) as in the
 cases TypeSafe reports in their announcements, but still. Without system prompt, where
 the accuracy is the same as Haiku/Sonnet, it is 35x cheaper and comparing Jev and Sonnet
 with system prompts, Jev is 50x cheaper. If you want to use AI to recommend the choices for your
@@ -198,16 +198,16 @@ that a system like The Gamma can use it to sort the options that it displays to 
 my motivation of assisting the user, rather than doing the work for them.
 
 To see how well this way of integrating the AI into a system would work,
-we can look at the top-k accuracy. This tells us how often is the correct options among the
+we can look at the top-k accuracy. This tells us how often is the correct option among the
 top $k$ options recommended by Jev. The following shows the results for 1, 3 and 5.
 
 <div style="font-size:10pt; text-align:center" class="wdecor">
-<a href="topk.png"><img src="topk.png" style="max-width:600px" /></a><br>
-<strong>Figrue 4.</strong> How often is the correct choice among top k?
+<a href="topk.png"><img src="topk.png" style="width:600px;max-width:90%" /></a><br>
+<strong>Figure 4.</strong> How often is the correct choice among top k?
 </div>
 
 It turns out that the probabilities returned by Jev are quite useful! If we only displayed 5
-options to the user, then the correct one would be there 99% of the time. 
+options to the user, then the correct one would be there 99% of the time.
 There are more that could be done with the probabilities that I did not look into here.
 For example, we could use the probability to decide whether we want to automatically accept
 a choice (not asking the user if the AI can choose with a high probability of correctness).
@@ -227,8 +227,7 @@ synthesis, interactive theorem proving and structure editing.
 
 What we do [in the paper](https://tomasp.net/academic/papers/adventure-calculus/) is that
 we capture the model formally, but then also discuss a number of properties that a system
-based on the model may or may not have. This is a useful design guideline for programming 
-systems, but&mdash;because Jev is basically design to interact with choose-your-own-adventure
-systems&mdash;our formal properties are alsoa useful design guidelines if you want to build
+based on the model may or may not have. This is a useful design guideline for programming
+systems, but&mdash;because Jev is basically designed to interact with choose-your-own-adventure
+systems&mdash;our formal properties are also a useful design guidelines if you want to build
 something with the new "System One Models".
-
