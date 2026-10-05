@@ -35,6 +35,7 @@ _grammars of graphics_ to support composable visualizations.
 
  - Download the [paper (PDF)](paper.pdf)
  - Check out the [Timeline project homepage](https://timelinesheets.com/)
+ - Live demo: [Cannonball simulation](https://timelinesheets.com/spreadsheet/caeb8c68-7b14-4120-ad44-a30c78123a65)
  - Live demo: [Planetary orbit simulation](https://timelinesheets.com/spreadsheet/1fdc6e97-b1fd-4f49-9623-d885dd541199)
  - Live demo: [Flocking simulation](https://timelinesheets.com/spreadsheet/c9b53ee9-0f1b-4d5d-a73e-19f0d201e204)
  - Live demo: [Moving average crossover](https://timelinesheets.com/spreadsheet/e653e57b-9ba9-463d-9f2b-44ddd5a426d3)
