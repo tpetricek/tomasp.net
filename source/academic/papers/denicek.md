@@ -41,6 +41,12 @@ interactive end-user programming systems.
  - [Talk slides from UIST 2025](https://1drv.ms/p/c/6ddff5260c96e30a/EYgdvAyrLHxPvKmeAEhqHuoBimeL_vkZ2DPWZfs4onGe0w?e=RoZbu0)
  - Check out the [source code on GitHub](https://github.com/d3sprog/denicek)
 
+## Interactive demo
+
+Do you want to see how Denicek works for yourself? Check out our interactive essay!
+
+<a href="https://tomasp.net/denicek"><img src="https://tomasp.net/denicek/essay/banner.png" style="width:640px;margin:5px 20px;border:solid 4px #071C4F"></a>
+
 ## Watch the talk
 
 Check out the 5-minute video that came with our UIST 2025 submission. You can also
