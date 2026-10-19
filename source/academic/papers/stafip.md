@@ -1,6 +1,6 @@
 # Benchmarking a Baseline Fully-in-Place Functional Language Compiler
 
- - description: xx
+ - description: Fully-in-place functional programming makes it possible to run certain functional algorithms without allocation, by reusing memory freed by pattern matching. We implement a small functional language to evaluate the effect of this approach. Our results match those of earlier work on Koka, but also suggest limitations of the method.
  - tags: academic, publication, home
  - icon: fas fa-stopwatch-20
  - layout: article
@@ -13,23 +13,7 @@
 >
 > In Proceedings of TFP 2026
 
-Functional programming makes code easier to reason about,
-inherently thread-safe, and more testable. However, immutable data struc
-tures introduce efficiency costs, as many operations require copying rather
-than performing in-place modifications. To address this, the Koka lan
-guage introduced a novel mechanism called fully-in-place functional pro
-gramming (FIP). The mechanism enables safe in-place updates while
-minimizing unnecessary memory allocations. Nevertheless, Koka’s garbage
-collection and extensive feature set complicate the task of isolating FIP’s
-specific memory efficiency advantages. We design a minimal functional
-language that supports fully in-place updates based on the FIP calculus
-while omitting garbage collection. This lets us compare the performance
-of the FIP approach with that of a conventional implementation. Using
-finger trees, red-black trees, and quicksort as case studies, we show that
-a language employing the FIP calculus in a garbage-collection-free envi
-ronment can achieve a significant increase in performance and memory
-efficiency. Our work confirms the results of the original authors, but it
-also uncovers potential limitations of the FIP approach
+Functional programming makes code easier to reason about, inherently thread-safe, and more testable. However, immutable data structures introduce efficiency costs, as many operations require copying rather than performing in-place modifications. To address this, the Koka language introduced a novel mechanism called fully-in-place functional programming (FIP). The mechanism enables safe in-place updates while minimizing unnecessary memory allocations. Nevertheless, Koka’s garbage collection and extensive feature set complicate the task of isolating FIP's specific memory efficiency advantages. We design a minimal functional language that supports fully in-place updates based on the FIP calculus while omitting garbage collection. This lets us compare the performance of the FIP approach with that of a conventional implementation. Using finger trees, red-black trees, and quicksort as case studies, we show that a language employing the FIP calculus in a garbage-collection-free environment can achieve a significant increase in performance and memory efficiency. Our work confirms the results of the original authors, but it also uncovers potential limitations of the FIP approach.
 
 ## Paper and more information
 
