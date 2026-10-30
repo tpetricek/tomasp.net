@@ -282,10 +282,16 @@ intended behaviour: it never guesses. Consequences worth knowing:
   differently on the two, and `\figref` to a web-only figure is `??` in the PDF.
 - The whole `.tex` is converted - the front matter and the generated table of contents are
   placed above it rather than replacing anything.
-- A few commands — `\paragraph`, `\href`, `\textsc`, `\TeX` — are deliberately passed through as
-  raw LaTeX so they show up on the page, rather than being guessed at or throwing.
+- `lstlisting`/`verbatim` bodies are captured raw by the tokenizer, before any other rule, so
+  `%`, `~`, `\i` and the like inside code are left alone (`%` used to eat the rest of the line).
+- Accents (`\"o`, `\c{s}`, `\^{\i}`) and special letters (`\o`, `\ss`) become Unicode, through
+  the shared `LatexLetter` pattern.
 - The table of contents lists sections only. Anchors come from the heading text, and
   `indexHeadings` suffixes any repeat (`free_software`, `free_software_2`) so ids stay unique.
+
+BibTeX values go through `readBibValue`, not the body parser. It repeats the escapes, accents,
+dashes, quotes and `\url`/`\href`/`\texttt`/`\emph` handling on purpose: entries are copied from
+all over the place, so the bibliography sees more of these than the body does.
 
 BibTeX field names are matched case-insensitively (a `bookTitle` finds `booktitle`), and a
 missing required field names the entry and lists what it does have — a bare

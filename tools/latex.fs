@@ -88,6 +88,59 @@ let (|NewLine|_|) cs =
   | '\n'::cs -> Some cs
   | _ -> None
 
+let (|StartsWith|_|) (prefix:string) (cs:char list) =
+  let rec loop i cs =
+    if i = prefix.Length then Some cs
+    else match cs with c::cs when c = prefix.[i] -> loop (i + 1) cs | _ -> None
+  loop 0 cs
+
+/// Split the input at the first occurrence of `marker`, dropping the marker
+let splitAtText (marker:string) (cs:char list) =
+  let rec loop acc cs =
+    match cs with
+    | StartsWith marker rest -> Some(List.rev acc, rest)
+    | c::cs -> loop (c::acc) cs
+    | [] -> None
+  loop [] cs
+
+/// Accent commands, as Unicode combining marks. The symbol ones may be written without braces
+/// (`\"o`), the letter ones only with them (`\c{s}`) - `\cs` would be a command.
+let private symbolAccents =
+  dict [ '`', '̀'; '\'', '́'; '^', '̂'; '~', '̃'; '=', '̄'
+         '.', '̇'; '"', '̈' ]
+let private letterAccents =
+  dict [ 'u', '̆'; 'v', '̌'; 'H', '̋'; 'r', '̊'; 'c', '̧'; 'k', '̨' ]
+
+/// Letters LaTeX writes as commands: `\o`, `\ss`, `\aa`...
+let private specialLetters =
+  dict [ "o", "ø"; "O", "Ø"; "l", "ł"; "L", "Ł"; "ss", "ß"; "ae", "æ"; "AE", "Æ"
+         "oe", "œ"; "OE", "Œ"; "aa", "å"; "AA", "Å"; "i", "ı"; "j", "ȷ" ]
+
+/// An accented or special letter - `\"o`, `\"{o}`, `\^{\i}`, `\c{s}`, `\o` - as Unicode text.
+/// TeX swallows the space or `{}` that ends a command such as `\o`, so this does too.
+let (|LatexLetter|_|) cs =
+  let compose (mark:char) (letter:char) =
+    (string [ letter; mark ]).Normalize(Text.NormalizationForm.FormC)
+  // `\i` and `\j` are the dotless letters an accent sits on
+  let baseLetter = function
+    | '\\'::(('i' | 'j') as c)::(cs:char list) when cs.IsEmpty || not (Char.IsLetter cs.Head) -> Some(c, cs)
+    | c::cs when Char.IsLetter c -> Some(c, cs)
+    | _ -> None
+  match cs with
+  | '\\'::m::'{'::rest when symbolAccents.ContainsKey m || letterAccents.ContainsKey m ->
+      let mark = if symbolAccents.ContainsKey m then symbolAccents.[m] else letterAccents.[m]
+      match baseLetter rest with
+      | Some(c, '}'::cs) -> Some(compose mark c, cs)
+      | _ -> None
+  | '\\'::m::rest when symbolAccents.ContainsKey m ->
+      match baseLetter rest with
+      | Some(c, cs) -> Some(compose symbolAccents.[m] c, cs)
+      | _ -> None
+  | '\\'::OneOrMore Char.IsLetter (name, cs) when specialLetters.ContainsKey name ->
+      let cs = match cs with ' '::cs | '{'::'}'::cs -> cs | cs -> cs
+      Some(specialLetters.[name], cs)
+  | _ -> None
+
 let rec tokenize acc cs = seq {
   let letterOrAst c = Char.IsLetter(c) || c = '*'
   let notNewLine c = c <> '\n' && c <> '\r'
@@ -97,7 +150,18 @@ let rec tokenize acc cs = seq {
     if String.IsNullOrWhiteSpace acc then [] 
     else [ Literal(acc) ]
 
-  match cs with 
+  match cs with
+  // Code is kept exactly as written - none of the rules below may touch it
+  | StartsWith @"\begin{" (OneOrMore Char.IsLetter (("lstlisting" | "verbatim") as env, '}'::cs)) ->
+      let opts, cs = match cs with Quoted '[' ']' (opts, cs) -> Some opts, cs | cs -> None, cs
+      match splitAtText (@"\end{" + env + "}") cs with
+      | Some(body, cs) ->
+          yield! currentLiteral ()
+          yield Command("begin", opts, Some env)
+          yield Literal(string body)
+          yield Command("end", None, Some env)
+          yield! tokenize [] cs
+      | None -> failwithf "Missing: \\end{%s}" env
   | '\\'::'\\'::Quoted '[' ']' (_, cs) ->
       yield! tokenize acc cs
   | '\\'::(('_' | '#') as c)::cs ->
@@ -106,9 +170,8 @@ let rec tokenize acc cs = seq {
       yield! tokenize (List.rev(List.ofSeq "&nbsp;") @ acc) cs
   | '\\'::'-'::cs ->
       yield! tokenize (List.rev(List.ofSeq "&shy;") @ acc) cs
-  | '\\'::'`'::'{'::v::'}'::cs
-  | '\\'::'`'::v::cs when "aeiouAEIOU".Contains(v) ->
-      yield! tokenize (List.rev(List.ofSeq $"&{v}grave;") @ acc) cs
+  | LatexLetter(letter, cs) ->
+      yield! tokenize (List.rev(List.ofSeq letter) @ acc) cs
 
   | '\\'::OneOrMore letterOrAst (cmd, Quoted '{' '}' (args, Quoted '[' ']' (opts1, Quoted '{' '}' (opts2, cs)))) ->
       yield! currentLiteral ()
@@ -164,7 +227,7 @@ let (|WhiteSpace|_|) s =
   if String.IsNullOrWhiteSpace s then Some() else None
 
 let literalToHtml (str:string) = 
-  str.Replace("---", "&#8212;").Replace("``", "&#8220;").Replace("''", "&#8221;")
+  str.Replace("---", "&#8212;").Replace("--", "&#8211;").Replace("``", "&#8220;").Replace("''", "&#8221;")
     .Replace("\\#","#").Replace("~", "&nbsp;")
 
 let parseOptions (opts:string option) = 
@@ -237,6 +300,10 @@ let rec parse acc ts = seq {
       yield! currentParagraph()
       yield Heading(3, heading, None, "")
       yield! parse [] ts
+  | Command("paragraph", _, Some heading)::ts ->
+      yield! currentParagraph()
+      yield Heading(4, heading, None, "")
+      yield! parse [] ts
   | Command("includegraphics", _, Some src)::ts ->
       yield! currentParagraph()
       yield Image(src)
@@ -266,6 +333,13 @@ let rec parse acc ts = seq {
       yield! parse (Span("<em>" + literalToHtml body + "</em>")::acc) ts
   | Command("url", None, Some url)::ts ->
       yield! parse (Span($"<a href='{url}'>{url}</a>")::acc) ts
+  | Command("href", Some url, Some text)::ts ->
+      let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
+      yield! parse (Span($"<a href='{url}'>{literalToHtml text}</a>")::acc) ts
+  | Command("textsc", None, Some body)::ts ->
+      yield! parse (Span("<span style='font-variant:small-caps'>" + literalToHtml body + "</span>")::acc) ts
+  | Command("TeX", None, None)::ts ->
+      yield! parse (Span "TeX"::acc) ts
   | Command("S", None, None)::ts ->
       yield! parse (Span "&#167;"::acc) ts
   | Command("ldots", None, None)::ts ->
@@ -287,16 +361,9 @@ let rec parse acc ts = seq {
       let ts = List.ofSeq (tokenize [] (List.ofSeq body)) @ ts
       yield! parse acc ts
  
-  // Ignored - keep as latex. These show up verbatim on the page, so we can see them in
-  // context and decide what they should become.
+  // Ignored - keep as latex, so it shows up verbatim on the page
   | Command(("textwidth"), _, _)::ts ->
-      yield! parse (Span "\textwidth"::acc) ts
-  | Command(("paragraph" | "href" | "textsc" | "TeX") as cmd, opts, arg)::ts ->
-      let latex =
-        @"\" + cmd
-        + (match opts with Some o -> "{" + o + "}" | _ -> "")
-        + (match arg with Some a -> "{" + a + "}" | _ -> "")
-      yield! parse (Span(System.Web.HttpUtility.HtmlEncode latex)::acc) ts
+      yield! parse (Span @"\textwidth"::acc) ts
 
   | Command(c, opts, arg)::cs ->
       failwithf "Unsupported command: %s[%A]{%A}\nBefore: %A" c opts arg (List.truncate 10 cs)
@@ -382,7 +449,7 @@ let rec formatSpans fmt spans = seq {
         let cits = cits.Split(',') |> Array.map (fun cit ->
           let ref = try fmt.References.[cit] with _ -> failwith $"Cannot find reference: {cit}"
           let year, author = ref.Properties.["year"], getAuthorAbbr ref
-          let pgyear = year + if pg.IsSome then ", " + pg.Value else ""
+          let pgyear = year + if pg.IsSome then ", " + literalToHtml pg.Value else ""
           let link = 
             if paren then author + ", " + pgyear
             else author + " (" + pgyear + ")"
@@ -597,16 +664,34 @@ let rec skipWhite cs =
 
 let (|SkipWhite|) cs = skipWhite cs
 
-let rec readBibValue literal acc cs = 
-  match cs with 
-  | '\\'::'l'::'d'::'o'::'t'::'s'::cs -> readBibValue literal (List.rev (List.ofSeq "&#8230;") @ acc) cs
-  | '\\'::'#'::cs -> readBibValue literal ('#' :: acc) cs
-  | '\\'::'$'::cs -> readBibValue literal ('$' :: acc) cs
-  | '\\'::'&'::cs -> readBibValue literal ('&' :: acc) cs
-  | ' '::cs when literal -> readBibValue literal (';'::'2'::'3'::'#'::'&'::acc) cs
-  | '\\'::'u'::'r'::'l'::Quoted '{' '}' (url, cs) -> 
-      let link = $"<a href='{url}'>{url}</a>" |> Seq.toList |> List.rev
-      readBibValue literal (link @ acc) cs
+/// A BibTeX field value as HTML. This repeats some of what `tokenize` and `parse` do for the body,
+/// on purpose: entries are copied from all over the place, so escapes and accents are common.
+let rec readBibValue literal acc cs =
+  let add (s:string) = List.rev (List.ofSeq s) @ acc
+  // The argument of a formatting command, read with the same rules
+  let inner (s:string) = readBibValue literal [] (List.ofSeq s)
+  match cs with
+  | '\\'::'l'::'d'::'o'::'t'::'s'::cs -> readBibValue literal (add "&#8230;") cs
+  | '\\'::(('#' | '$' | '&' | '%' | '_' | '{' | '}') as c)::cs -> readBibValue literal (c :: acc) cs
+  | '\\'::'-'::cs -> readBibValue literal (add "&shy;") cs
+  | LatexLetter(letter, cs) -> readBibValue literal (add letter) cs
+  | '-'::'-'::'-'::cs -> readBibValue literal (add "&#8212;") cs
+  | '-'::'-'::cs -> readBibValue literal (add "&#8211;") cs
+  | '`'::'`'::cs -> readBibValue literal (add "&#8220;") cs
+  | '\''::'\''::cs -> readBibValue literal (add "&#8221;") cs
+  | '~'::cs -> readBibValue literal (add "&nbsp;") cs
+  | ' '::cs when literal -> readBibValue literal (add "&#32;") cs
+  | '\\'::'u'::'r'::'l'::Quoted '{' '}' (url, cs) ->
+      readBibValue literal (add $"<a href='{url}'>{url}</a>") cs
+  | StartsWith @"\href" (Quoted '{' '}' (url, Quoted '{' '}' (text, cs))) ->
+      let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
+      readBibValue literal (add $"<a href='{url}'>{inner text}</a>") cs
+  | StartsWith @"\texttt" (Quoted '{' '}' (body, cs)) ->
+      readBibValue literal (add $"<code>{inner body}</code>") cs
+  | (StartsWith @"\emph" (Quoted '{' '}' (body, cs)) | StartsWith @"\textit" (Quoted '{' '}' (body, cs))) ->
+      readBibValue literal (add $"<em>{inner body}</em>") cs
+  | StartsWith @"\textbf" (Quoted '{' '}' (body, cs)) ->
+      readBibValue literal (add $"<strong>{inner body}</strong>") cs
   | '{'::cs -> readBibValue true acc cs
   | '}'::cs -> readBibValue false acc cs
   // An angle bracket in the source text is content - a title like "The Origins of the <Blink>
@@ -709,7 +794,7 @@ let renderReferences refs =
     authAbbr + " (" + year + ")",
     $"<li class='pub'><span class='author'>{endw '.' auth} </span>" + 
     $"<span id='{key}'><span class='title'>{endw '.' title}</span></span> " + 
-    $"{endw '.' pub} {endw '.' year} {det}</a></li>\n"
+    $"{endw '.' pub} {endw '.' year} {det}</li>\n"
   )
   let refs = refs |> Seq.sortBy fst |> Seq.map snd
   let body = String.concat "\n" refs
