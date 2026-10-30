@@ -30,7 +30,7 @@ into a more self-reflective field aware of the methodological and sociopolitical
 ## Paper and more information
 
  - Download the [paper (PDF)](paper.pdf)
- - Some parts of the paper are inspired by my [Critical Architecture/Software Theory](/architecture/) essay
+ - Some parts of the paper are inspired by my [Critical Architecture/Software Theory](/longreads/architecture/) essay
 
 ## <a id="cite">Bibtex</a>
 If you want to cite the paper, you can use the following BibTeX information.

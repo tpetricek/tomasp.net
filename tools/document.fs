@@ -233,7 +233,9 @@ let private transformLongRead (cfg:SiteConfig) (inf:string) (text:string) =
 
   { Title = formatSpans title
     Description = defaultArg (tryFind "description" props) ""
-    Image = match tryFind "image" props, tryFind "image-large" props with Some i, _ | _, Some i -> i | _ -> ""
+    Keywords = defaultArg (tryFind "keywords" props) ""
+    Image = defaultArg (tryFind "image" props) ""
+    Banner = defaultArg (tryFind "banner" props) ""
     Date = defaultArg (tryFind "date" props |> Option.map DateTime.Parse) DateTime.MinValue
     Url = articleUrl cfg inf
     Layout = tryFind "layout" props

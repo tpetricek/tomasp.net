@@ -50,7 +50,11 @@ type Article<'T> =
 type LongRead =
   { Title : string
     Description : string
+    Keywords : string
+    /// Social media image
     Image : string
+    /// Image shown in the homepage listing
+    Banner : string
     Date : DateTime
     Url : string
     Layout : string option

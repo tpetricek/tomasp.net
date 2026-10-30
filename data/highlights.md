@@ -14,14 +14,6 @@ key historical moments as interactions between five different cultures of progra
 Document-oriented substrate presented at [UIST 2025](https://tomasp.net/academic/papers/denicek/) that supports programming by demonstration,
 collaborative editing, schema change control, managed copy &amp; paste, and more!
  
-# Critical architecture/software theory
-
- - link: http://tomasp.net/architecture
- - image: img/highlights/critical.jpg
-
-Post-modern architects use architecture to ask critical questions about their discipline.
-Is it possible to embed similar criticism into the language of software?
-
 # Technical dimensions
 
  - link: http://tomasp.net/techdims

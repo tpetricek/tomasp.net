@@ -104,6 +104,11 @@ let rec tokenize acc cs = seq {
       yield! tokenize (c::acc) cs
   | '~'::cs ->
       yield! tokenize (List.rev(List.ofSeq "&nbsp;") @ acc) cs
+  | '\\'::'-'::cs ->
+      yield! tokenize (List.rev(List.ofSeq "&shy;") @ acc) cs
+  | '\\'::'`'::'{'::v::'}'::cs
+  | '\\'::'`'::v::cs when "aeiouAEIOU".Contains(v) ->
+      yield! tokenize (List.rev(List.ofSeq $"&{v}grave;") @ acc) cs
 
   | '\\'::OneOrMore letterOrAst (cmd, Quoted '{' '}' (args, Quoted '[' ']' (opts1, Quoted '{' '}' (opts2, cs)))) ->
       yield! currentLiteral ()
@@ -191,12 +196,13 @@ let rec parse acc ts = seq {
       let ts = if ts = [] then failwithf "Missing: \end{%s}" env else List.tail ts
       yield! parse [] (tse @ ts)
 
-  // Environments - quote, figure - body is latex
+  // Environments - quote, figure, webfigure - body is latex. `macros.tex` hides `webfigure` from
+  // the PDF, so on the web it is just a figure
   | Command("begin", opts, Some(env))::ts ->
       yield! currentParagraph()
       let tse, ts = List.splitUsing (function Command("end", _, Some e) -> e = env | _ -> false) ts
       let ts = if ts = [] then failwithf "Missing: \end{%s}" env else List.tail ts
-      if env = "figure" then yield Figure(List.ofSeq(parse [] tse))
+      if env = "figure" || env = "webfigure" then yield Figure(List.ofSeq(parse [] tse))
       elif env = "quote" then yield Quote(List.ofSeq(parse [] tse))
       else failwith $"Unsupported environment: {env}"
       yield! parse [] ts
@@ -533,7 +539,7 @@ let groupPars pars =
         yield! currentGroup ()
         yield [p]
         yield! loop [] pars 
-    | (Heading _ as p)::pars ->  
+    | (Heading(2, _, _, _) as p)::pars ->  
         yield! currentGroup ()
         yield! loop [p] pars
     | p::pars ->
@@ -760,7 +766,7 @@ let formatDocument (texFile:string) (bibFile:string) (frontMatter:string) =
   let toc = generateToc doc
 
   // Forced in document order: the body fills in `AllEndNotes` and numbers the notes
-  let frontHtml = formatGroups fmt [ [ InlineBlock frontMatter; toc ] ] |> String.concat ""
+  let frontHtml = frontMatter + String.concat "" (formatPars fmt [toc])
   let bodyHtml = formatGroups fmt body |> String.concat ""
   let extras = [ [ renderEndnotes fmt ]; [ renderReferences refs ] ]
   frontHtml, bodyHtml + (formatGroups fmt extras |> String.concat "")
@@ -780,60 +786,168 @@ let longReads (cfg:SiteConfig) =
       if File.Exists(driverFile md) then
         yield folderOf md, Path.GetFileNameWithoutExtension(md) ]
 
+
+/// The external programs a PDF build runs, as resolved paths
+type LatexTools =
+  { Pdflatex : string
+    Bibtex : string }
+
+/// Look for an executable in `PATH`, then in `extraDirs`. Only checks that the file exists.
+let private findTool (names:string list) (extraDirs:string list) =
+  let pathDirs =
+    (defaultArg (Option.ofObj (Environment.GetEnvironmentVariable "PATH")) "").Split(Path.PathSeparator)
+    |> Seq.filter (fun d -> d <> "")
+  let exts = if OperatingSystem.IsWindows() then [ ".exe"; "" ] else [ "" ]
+  Seq.append pathDirs extraDirs
+  |> Seq.tryPick (fun dir ->
+      [ for n in names do for ext in exts -> Path.Combine(dir.Trim('"'), n + ext) ]
+      |> List.tryFind (fun f -> try File.Exists f with _ -> false))
+
+let private missing (what:string) (hint:string) =
+  eprintfn "error: %s not found - %s" what hint
+  None
+
+/// Find pdflatex and bibtex, reporting each one that is missing
+let findLatex () =
+  let hint = "install MiKTeX or TeX Live and make sure it is on PATH"
+  let pdflatex = findTool [ "pdflatex" ] []
+  let bibtex = findTool [ "bibtex" ] []
+  if pdflatex.IsNone then missing "pdflatex" hint |> ignore
+  if bibtex.IsNone then missing "bibtex" hint |> ignore
+  match pdflatex, bibtex with
+  | Some pdflatex, Some bibtex -> Some { Pdflatex = pdflatex; Bibtex = bibtex }
+  | _ -> None
+
+/// Find Ghostscript. The Windows installer does not add it to PATH, so its default install
+/// folders are searched too, newest version first.
+let findGhostscript () =
+  let installDirs =
+    [ for pf in [ Environment.SpecialFolder.ProgramFiles; Environment.SpecialFolder.ProgramFilesX86 ] do
+        let gs = Path.Combine(Environment.GetFolderPath pf, "gs")
+        if Directory.Exists gs then
+          let version (d:string) =
+            match Version.TryParse(Path.GetFileName(d).Substring(2)) with
+            | true, v -> v
+            | _ -> Version()
+          for d in Directory.GetDirectories(gs, "gs*") |> Seq.sortByDescending version do
+            yield Path.Combine(d, "bin") ]
+  match findTool [ "gswin64c"; "gswin32c"; "gs" ] installDirs with
+  | Some gs -> Some gs
+  | None ->
+      missing "Ghostscript" "install it from https://ghostscript.com (looked on PATH and in Program Files\\gs)"
+
 let private run (exe:string) (args:string) (workDir:string) (env:(string * string) list) =
   let ps =
     Diagnostics.ProcessStartInfo
       ( FileName = exe, Arguments = args, WorkingDirectory = workDir,
         UseShellExecute = false, CreateNoWindow = true )
   for k, v in env do ps.Environment.[k] <- v
-  try
-    use p = Diagnostics.Process.Start(ps)
-    p.WaitForExit()
-    Some p.ExitCode
-  // No LaTeX on this machine - the command is a no-op rather than a crash
-  with :? ComponentModel.Win32Exception -> None
+  use p = Diagnostics.Process.Start(ps)
+  p.WaitForExit()
+  p.ExitCode
 
-/// Build the PDF of one long read and copy it next to the article
-let buildPdf (folder:string) (name:string) =
+let private megabytes (file:string) = float (FileInfo(file).Length) / 1048576.0
+
+/// The `!` errors from a LaTeX log, each with the `l.<n>` line that says where it happened
+let private logErrors (log:string) =
+  if not (File.Exists log) then [] else
+  let lines = File.ReadAllLines log
+  [ for i in 0 .. lines.Length - 1 do
+      if lines.[i].StartsWith "!" then
+        yield "  " + lines.[i]
+        match lines.[i + 1 .. min (lines.Length - 1) (i + 10)] |> Array.tryFind (fun l -> l.StartsWith "l.") with
+        | Some at -> yield "    " + at
+        | None -> () ]
+
+/// Build the PDF of one long read into its gitignored `build/main.pdf` - the uncompressed copy to
+/// read while writing. Returns its path only if LaTeX reported no errors.
+let buildPdf (tools:LatexTools) (folder:string) (name:string) =
   let build = Path.Combine(folder, "build")
   Directory.CreateDirectory(build) |> ignore
   File.WriteAllText(Path.Combine(build, ".ignore"), "")
 
   // pdflatex reads from the article folder and writes into `build`; bibtex has to run in
   // `build`, where the `.aux` files are, with BIBINPUTS pointing back at the `.bib`
-  let pdflatex () = run "pdflatex" "-interaction=nonstopmode -output-directory=build main.tex" folder []
-  let bibtex () = run "bibtex" "main" build [ "BIBINPUTS", folder + ";" ]
+  let pdflatex () = run tools.Pdflatex "-interaction=nonstopmode -output-directory=build main.tex" folder []
+  let bibtex () = run tools.Bibtex "main" build [ "BIBINPUTS", folder + ";" ]
 
   printfn "Building PDF: %s" name
-  match pdflatex () with
-  | None -> printfn "  pdflatex not found on PATH - skipping (PDFs are built locally only)"
-  | Some _ ->
-    // Citation numbering only settles after bibtex and pdflatex chase each other a few times
-    for _ in 1..3 do
-      bibtex () |> ignore
-      pdflatex () |> ignore
-    let produced = Path.Combine(build, "main.pdf")
-    if not (File.Exists produced) then
-      printfn "  no PDF produced - see %s" (Path.Combine(build, "main.log"))
-    else
-      let target = Path.Combine(folder, "pdf", name + ".pdf")
-      Directory.CreateDirectory(Path.GetDirectoryName target) |> ignore
-      File.Copy(produced, target, true)
-      printfn "  written %s (%.1f MB)" target (float (FileInfo(produced).Length) / 1048576.0)
+  pdflatex () |> ignore
+  // Citation numbering only settles after bibtex and pdflatex chase each other a few times
+  let mutable exitCode = 0
+  for _ in 1..3 do
+    bibtex () |> ignore
+    exitCode <- pdflatex ()
+
+  let produced = Path.Combine(build, "main.pdf")
+  let log = Path.Combine(build, "main.log")
+  if exitCode <> 0 then
+    eprintfn "error: pdflatex reported errors in %s:" name
+    for l in logErrors log do eprintfn "%s" l
+    eprintfn "  full log: %s" log
+  if not (File.Exists produced) then
+    eprintfn "error: no PDF produced for %s" name
+    None
+  else
+    printfn "  built %s (%.1f MB)" produced (megabytes produced)
+    if exitCode = 0 then Some produced else None
+
+/// Compress a built PDF with Ghostscript and write it to `pdf/<name>.pdf`
+let compressPdf (gs:string) (folder:string) (name:string) (built:string) =
+  let build = Path.GetDirectoryName built
+  let compressed = Path.Combine(build, "compressed.pdf")
+  if File.Exists compressed then File.Delete compressed
+  let args =
+    "-sDEVICE=pdfwrite -dCompatibilityLevel=1.5 -dPDFSETTINGS=/ebook " +
+    $"-dNOPAUSE -dQUIET -dBATCH -sOutputFile=compressed.pdf {Path.GetFileName built}"
+  let exitCode = run gs args build []
+  if exitCode <> 0 || not (File.Exists compressed) then
+    eprintfn "error: Ghostscript failed to compress %s (exit code %d)" name exitCode
+    false
+  else
+    // A PDF with few photos can come out larger - keep whichever is smaller
+    let best = if FileInfo(compressed).Length < FileInfo(built).Length then compressed else built
+    let target = Path.Combine(folder, "pdf", name + ".pdf")
+    Directory.CreateDirectory(Path.GetDirectoryName target) |> ignore
+    File.Copy(best, target, true)
+    printfn "  written %s (%.1f MB, compressed from %.1f MB)" target (megabytes target) (megabytes built)
+    true
+
+/// Build and compress every long read's PDF once, for publishing. Returns the exit code.
+let publishPdfs (cfg:SiteConfig) =
+  // Both lookups run, so that everything missing is reported at once
+  let latex = findLatex ()
+  let gs = findGhostscript ()
+  match latex, gs with
+  | Some latex, Some gs ->
+      let reads = longReads cfg
+      if List.isEmpty reads then printfn "No long reads with a 'main.tex' driver found."
+      let failed =
+        [ for folder, name in reads do
+            let ok =
+              match buildPdf latex folder name with
+              | Some built -> compressPdf gs folder name built
+              | None -> false
+            if not ok then yield name ]
+      if List.isEmpty failed then 0
+      else
+        eprintfn "error: no compressed PDF written for: %s" (String.concat ", " failed)
+        1
+  | _ -> 1
 
 /// Build every long read's PDF, then rebuild whenever its LaTeX sources change
-let watchPdfs (cfg:SiteConfig) =
+let watchPdfs (tools:LatexTools) (cfg:SiteConfig) =
   let reads = longReads cfg
   if List.isEmpty reads then printfn "No long reads with a 'main.tex' driver found."
-  for folder, name in reads do buildPdf folder name
+  for folder, name in reads do buildPdf tools folder name |> ignore
 
   let agent = MailboxProcessor.Start(fun inbox -> async {
     while true do
       let! (folder, name) = inbox.Receive()
       // Coalesce the burst of events an editor save produces
       while inbox.CurrentQueueLength > 0 do inbox.Receive() |> Async.RunSynchronously |> ignore
-      try buildPdf folder name
-      with e -> printfn "Failed to build PDF for %s: %s" name e.Message })
+      try buildPdf tools folder name |> ignore
+      with e -> eprintfn "error: failed to build PDF for %s: %s" name e.Message })
 
   [ for folder, name in reads do
       for pattern in [ "*.tex"; "*.bib" ] do

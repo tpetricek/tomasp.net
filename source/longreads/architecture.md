@@ -5,7 +5,9 @@ Critical Architecture/Software Theory
  - date: 2025-04-28T12:00:00.0000000+02:00
  - description: Post-modern architects use architecture to make critical, ironic and revealing comments on architectural history, practice and its social context. Is it possible to embed similar criticism into the language of software and make the software practice more self-aware and critical?
  - format: longread
- - image-large: http://tomasp.net/longreads/architecture/fig/web-dancing-gs.jpg
+ - keywords: post-modern architecture, software systems, programming languages, critical reading
+ - image: http://tomasp.net/longreads/architecture/fig/bookshelf.jpg
+ - banner: http://tomasp.net/longreads/architecture/fig/critical.jpg
 
 ----------------------------------------------------------------------------------------------------
  - head
@@ -13,19 +15,17 @@ Critical Architecture/Software Theory
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Manrope:wght@200..800&family=Roboto+Mono:wght@100..700&display=swap" rel="stylesheet">
-<meta name="keywords" content="post-modern architecture, software systems, programming languages, critical reading" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/ocaml.min.js" integrity="sha512-x+P0DBw3wkY5qDtODK0RT0dDw7hcRV1BgYJAdM5RlTvPsEcIoLFCd4bF2zETdwDkZlkXtR0XdvNyk0TfSlZgGw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/reasonml.min.js" integrity="sha512-lyK79qXPy7ZrtRkTJGXu8WyCfTFhLgRgVRlgb9+TmWW+M7kYvs0gYAKUY4BkwvBPBIhqc1jNJ+iJoe4heIWZYA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/haskell.min.js" integrity="sha512-wV1s4ylNcflirsC0Ug9dDahOxjj/JSQheHv0loB9Q3bv7G0TYLduOWWmhz2MjMKRO6+LS8AgeuhBB8Gny4pdFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<style type="text/css">
-  #fig_ai img { width:900px; }
-</style>
-
+<link href="https://tomasp.net/custom/longreads.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+  
 ----------------------------------------------------------------------------------------------------
  - frontmatter
 
 <h1>Critical <em>Architecture/Software</em> Theory</h1>
-<div class="sidenote">
+<div class="sidenote sideintro">
   <img src="fig/web-dancing.jpg">
   <p>
     Illustration: Dancing House in Prague (<a href="https://en.wikipedia.org/wiki/Dancing_House">Source: Wikipedia</a>)</p>

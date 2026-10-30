@@ -66,11 +66,13 @@ let private loadSite () =
     Archives = archives; PostsTitle = ""
     ImageRoot = config.CalendarRoot; Highlights = loadHighlights () }
 
-let mutable private site = loadSite ()
+/// Loaded on first use, so that commands which do not build the website start immediately
+let mutable private loaded = None
 
 /// Update site - generate all output files if they need to be refreshed
 /// When `full = true`, also update archives & calendar pages
 let updateSite full changes =
+  let mutable site = match loaded with Some site -> site | None -> loadSite ()
   printfn "Updating site"
   printfn "Copying static files"
   Blog.copyFiles config changes
@@ -80,6 +82,7 @@ let updateSite full changes =
 
   // Highlights are not covered by the change tracking above, so re-read them every pass
   site <- { site with Highlights = loadHighlights () }
+  loaded <- Some site
 
   printfn "Processing special files"
   let specialFiles =
@@ -259,9 +262,19 @@ let private watch () =
 // Entry point
 // --------------------------------------------------------------------------------------
 
+let usage = """usage: build.sh <command>
+  run        rebuild, watch and serve on :11112, open a browser
+  build      wipe ../output and regenerate the whole site
+  longreads  build each long read's PDF into its build/ folder and rebuild on changes
+  pdfs       build each long read's PDF once and write a compressed pdf/<name>.pdf (needs Ghostscript)
+  calendar   resize calendar photos and upload them to R2"""
+
 [<EntryPoint>]
 let main argv =
-  match (if argv.Length = 0 then "run" else argv.[0].ToLowerInvariant()) with
+  match (if argv.Length = 0 then "help" else argv.[0].ToLowerInvariant()) with
+  | "help" | "-h" | "--help" ->
+      printfn "%s" usage
+      0
   | "build" ->
       regenerateSite ()
       0
@@ -270,10 +283,15 @@ let main argv =
       0
   | "longreads" ->
       // Builds the PDFs only - it does not build or serve the website
-      let _watchers = Latex.watchPdfs config
-      printfn "Watching long reads for changes - press Enter to stop..."
-      Console.ReadLine () |> ignore
-      0
+      match Latex.findLatex () with
+      | None -> 1
+      | Some tools ->
+          let _watchers = Latex.watchPdfs tools config
+          printfn "Watching long reads for changes - press Enter to stop..."
+          Console.ReadLine () |> ignore
+          0
+  | "pdfs" ->
+      Latex.publishPdfs config
   | "run" ->
       updateSite false None
       let _watchers = watch ()
@@ -285,5 +303,6 @@ let main argv =
       Console.ReadLine () |> ignore
       0
   | cmd ->
-      eprintfn "Unknown command '%s' (expected 'run', 'build', 'calendar' or 'longreads')" cmd
+      eprintfn "error: unknown command '%s'" cmd
+      eprintfn "%s" usage
       1

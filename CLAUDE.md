@@ -25,10 +25,12 @@ Run from the repo root (`build.cmd` on Windows, `build.sh` elsewhere — both ju
 `dotnet run --project tools -c Release -- "$@"`):
 
 ```
-build.sh              # default "run" — rebuild, watch, serve on :11112, open a browser
+build.sh              # print the list of commands
+build.sh run          # rebuild, watch, serve on :11112, open a browser
 build.sh build        # wipe output/ and regenerate everything
 build.sh calendar     # resize calendar photos and upload them to R2 (local only)
-build.sh longreads    # build each long read's PDF with pdflatex, then watch (local only)
+build.sh longreads    # build each long read's PDF into its build/ folder, then watch (local only)
+build.sh pdfs         # build each long read's PDF and write the compressed pdf/<name>.pdf (local only)
 ```
 
 There is no test suite and no linter. To check a change against what is published, point `../output` at a
@@ -56,7 +58,7 @@ Module compile order (`domain` → `helpers` → `latex` → `dotliquid` → `do
 - **`domain.fs`** — `SiteConfig`, `Article<'T>` (generic over `MarkdownParagraphs` before formatting
   and `string` after), `Site`/`ArticleModel` (the DotLiquid view models), calendar types.
 - **`latex.fs`** — the LaTeX→HTML converter behind long reads, plus the `build.sh longreads`
-  PDF builder. See "Long reads" below.
+  and `build.sh pdfs` PDF builders. See "Long reads" below.
 - **`document.fs`** — parses one source file. `.md` is the only file the generator looks at, and
   `transform` returns a `Content`: the ` - format:` property in the header says which case:
   - `markdown` (or no `format` at all) — `Post`, via `Literate.ParseMarkdownFile`
@@ -227,10 +229,12 @@ After the header, the `.md` is a sequence of fenced **named sections** — every
 is followed by a ` - name` line, which is what lets the parser tell a name from raw HTML that
 happens to start with a dash. The name is the field it fills, both optional:
 
-- ` - head` → `LongRead.Head`, injected into the page `<head>`: this article's fonts, its
-  `<meta name="keywords">`, the highlight.js language packs it needs (with their SRI hashes,
-  which a generated tag could not have) and any `<style>` overrides.
+- ` - head` → `LongRead.Head`, injected into the page `<head>`: this article's fonts,
+  the highlight.js language packs it needs (with their SRI hashes, which a generated tag could
+  not have) and any `<style>` overrides.
 - ` - frontmatter` → `LongRead.FrontMatter`, the hand-written title block shown above the body.
+  It is emitted verbatim - any `<section>` around it has to be written in the `.md`. The table of
+  contents that follows gets a `<section>` of its own.
 
 **This is longread-only.** `bakedin` keeps its two *unnamed* separators (abstract, body) and
 `markdown` keeps `Literate.ParseMarkdownFile`; 177 posts depend on that.
@@ -241,6 +245,8 @@ twice ("1. 1. Introduction"). `\ref` renders the section's position in that list
 `\S\ref{sec:info}` relies on.
 
 A `LongRead` is its own record, not an `Article` — it has no abstract, tags, icon or subtitle.
+Its header takes `keywords`, `image` (the social media card) and `banner` (the picture in the
+homepage listing); `image-large` is not recognised here.
 `Latex.formatDocument` returns the front matter and the body separately, and the record is passed
 to `longread.html` as the model directly, so that template says `{{ model.Title }}` and
 `{{ model.Head }}` with no `Article` hop.
@@ -271,6 +277,9 @@ intended behaviour: it never guesses. Consequences worth knowing:
 - `\newcommand` is **not** expanded. A macro only works on the web if `parse` has a case for
   it, which is what `macros.tex` is for; anything defined in an article's own preamble is
   PDF-only.
+- `webfigure` is a figure that exists only on the web: the converter treats it as `figure`, and
+  `macros.tex` hides it from the PDF with the `comment` package. That numbers figures
+  differently on the two, and `\figref` to a web-only figure is `??` in the PDF.
 - The whole `.tex` is converted - the front matter and the generated table of contents are
   placed above it rather than replacing anything.
 - A few commands — `\paragraph`, `\href`, `\textsc`, `\TeX` — are deliberately passed through as
@@ -284,8 +293,14 @@ missing required field names the entry and lists what it does have — a bare
 
 `build.sh longreads` builds the PDFs and then watches the `.tex`/`.bib`, so it can run in the
 background while writing. It never touches `output/`. CI has no LaTeX, so **the PDF is
-committed**. Note the raw pdflatex output for `architecture` is ~57 MB against the 1.3 MB file
-actually published — the figures are full-resolution, and compressing them is a manual step.
+committed**. The raw pdflatex output is not what gets committed: for `architecture` it is ~57 MB,
+because the figures are full resolution. `longreads` leaves it in the gitignored
+`build/main.pdf` - the copy to read while writing - and never touches `pdf/`. Only `build.sh pdfs`
+writes `pdf/<name>.pdf`: it builds once, runs Ghostscript (`/ebook`, 150 dpi images) and keeps
+whichever file is smaller, so the committed PDF is always the compressed one. Ghostscript is looked for on
+`PATH` and then in `Program Files\gs\gs*\bin`, since the Windows installer does not add it to
+`PATH`. Missing LaTeX or Ghostscript stops either command with an `error:` before it builds
+anything.
 
 ## Layouts
 
