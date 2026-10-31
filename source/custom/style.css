@@ -5,7 +5,8 @@
 * { padding:0px; margin:0px; }
 body { border-top:20px solid #004C6B; line-height:1.5 !important; font:13pt 'PT Sans','Trebuchet MS', Geneva, Tahoma, sans-serif; }
 article, header { max-width:750px; margin:0px auto 0px auto; padding:60px 10px 40px 20px; }
-.academic article, .home article, .home header { max-width:1000px; }
+.academic article, .home article { max-width:1000px; }
+.home header { max-width:1240px; }
 .first { margin-top:0px; }
 
 /* ------------------------------------------------------------------------- */
@@ -22,15 +23,20 @@ article, header { max-width:750px; margin:0px auto 0px auto; padding:60px 10px 4
 /* ------------------------------------------------------------------------- */
 
 @media only screen and (min-width : 750px) {
-  .fmr { margin-right:20px; }
-  .fml { margin-left:20px; }
-  .fl40 { width:40%; float:left; }
-  .fr60 { margin-left:40%; }
-  .fl70 { width:70%; float:left; }
-  .fr30 { margin-left:70%; }
-  .fl50 { width:50%; float:left; }
-  .fr50 { margin-left:50%; }
-  .frr { clear:both; }
+  .cols-50-50, .cols-30-70, .cols-40-60, .cols-70-30 { display:grid; column-gap:40px; }
+  .cols-50-50 { grid-template-columns:1fr 1fr; }
+  .cols-30-70 { grid-template-columns:3fr 7fr; }
+  .cols-40-60 { grid-template-columns:2fr 3fr; }
+  .cols-70-30 { grid-template-columns:7fr 3fr; }
+}
+
+@media only screen and (min-width : 1020px) {
+  .cols-50-50, .cols-30-70, .cols-40-60, .cols-70-30 { display:grid; column-gap:40px; }
+  .cols-50-50 { grid-template-columns:1fr 1fr; }
+  .cols-30-70 { grid-template-columns:3fr 7fr; }
+  .cols-40-60 { grid-template-columns:2fr 3fr; }
+  .cols-70-30 { grid-template-columns:7fr 3fr; }
+  .cols-intro { display:grid; column-gap:40px; grid-template-columns:200px 1fr; }
 }
 
 /* ----------------------------------------------------------------------------------- */
@@ -60,10 +66,8 @@ h1 .hm:after { content: ":"; }
 h1 .hmq:after { content: "?"; }
 h2 .hs { font-weight:300; }
 
-article .noblue, article .noblue:hover, article .noblue:active,
-  a:not([href]), a:not([href]):hover, a:not([href]):active,
-  article a.nocolor:link, article a.nocolor:hover, article a.nocolor:active, article a.nocolor:visited {
-    color:inherit;
+a:not([href]), a:not([href]):hover, a:not([href]):active {
+  color:inherit;
 }
 
 article div.info p.share { margin-top:40px; }
@@ -119,26 +123,36 @@ footer p, footer li { color:#707070; font-size:11pt; }
 .footer-body { max-width:1000px; margin:0px auto 0px auto; padding:40px 0px 20px 0px; }
 
 /* ------------------------------------------------------------------------- */
-/* Homepage links to longreads
+/* Homepage listing of highlights, long-reads, interactives, etc.
 /* ------------------------------------------------------------------------- */
 
-.longreads { background:#f0f0f0; padding:0px 20px 0px 20px; }
-.longreads-body { position:relative; max-width:1000px; margin:0px auto 0px auto; padding:5px 0px 20px 0px;  }
-.longreads-intro { position:absolute; width:220px;top:35px;left:-250px; color:#808080; }
-.longreads img { max-width:320px; margin:5px; float:left; }
-.longreads-item { margin-left:350px; margin-bottom:40px; }
+.sidenote-intro { margin-bottom:20px; }
+.sidenote-intro h2 { margin:0px 0px 5px 0px; }
+.sidenote-intro p { display:none; }
 
-/* ------------------------------------------------------------------------- */
-/* Homepage highlight links to interactive essays etc.
-/* ------------------------------------------------------------------------- */
+.listing { padding:40px 20px 0px 20px; }
+.listing-body { max-width:1240px; margin:0px auto 0px auto; padding:0px;  }
+.listing-item { display:grid; column-gap:40px; grid-template-columns:320px 1fr; margin-bottom:40px; }
+.listing-item img { max-width:100%; margin:5px; }
+.listing-item h3 { margin-top:0px; }
+.listing-item-body { margin-left:350px; margin-bottom:0px; }
 
-.highlight img { max-width:80%; margin:20px 0 20px 20px; }
-.highlight .frr { margin-bottom:30px; }
-.highlight { background:#f0f0f0; padding:0px 20px 0px 20px; }
-.highlight-body { max-width:1000px; margin:0px auto 0px auto; padding:40px 0px 20px 0px; }
+.highlight { background:#f0f0f0; padding:40px 20px 0px 20px; }
+.highlight h3 { margin-top:0px; }
+.highlight img { max-width:80%; margin:10px 0px 0px 20px; }
+.highlight-item { margin:0px 0px 40px 0px; }
+.highlight-body { max-width:1240px; margin:0px auto 0px auto; padding:0px; }
 @media only screen and (min-width : 420px) and (max-width : 750px) {
   .highlight img { max-width:350px; }
 }
+
+@media only screen and (min-width : 750px) {
+}
+@media only screen and (min-width : 1020px) {
+  .sidenote-intro h2 { color:#404040; }
+  .sidenote-intro p { color:#404040; display:block; }
+}
+
 
 /* ------------------------------------------------------------------------- */
 /* Homepage and paper listing
@@ -152,15 +166,19 @@ footer p, footer li { color:#707070; font-size:11pt; }
 /* Homepage header
 /* ------------------------------------------------------------------------- */
 
-header h1 { color:#004C6B; margin-bottom:20px; font:300 30pt Kreon, Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; }
+header h1 { color:#004C6B; margin:0 0 20px 0; font:300 30pt Kreon, Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; }
 header h1 strong { font-weight:400; }
 header p { margin-bottom:20px; }
 header .links { font-size:11pt; }
 header .social {  margin-top:20px; }
 header .social a { margin:3px; color:#004C6B; }
 header .social a:hover { color:#007BA8; }
+header .photo img { width:55%;margin-top:10px; }
 @media only screen and (min-width : 420px) and (max-width : 750px) {
-  header .fl40 { max-width:300px; margin:10px auto 60px auto;  }
+  header .photo { max-width:300px; margin:0px auto 60px auto;  }
+}
+@media only screen and (min-width : 750px) {
+  header .photo img { margin-top:20px; }
 }
 
 /* ------------------------------------------------------------------------- */

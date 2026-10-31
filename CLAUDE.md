@@ -168,15 +168,17 @@ Each entry is a heading, a property list and a Markdown body:
 
  - link: http://tomasp.net/cultures
  - image: img/highlights/cultures.jpg
- - disabled: true             # optional - keeps the entry out of the page
+ - tag: selected              # optional - which strip of the homepage shows the entry
 
 The book tells the history of programming from the 1940s to the present (...)
 ```
 
-Anything before the first heading is ignored. Entries appear in file order and `main.fs`
-groups them into rows of two, so one row is one `frr` block in `layouts/index.html`; an odd
-last entry sits alone in the left column, which is what `disabled` is for — it keeps a
-finished entry in the file while the count stays even.
+Anything before the first heading is ignored, and so are `----` lines wherever they appear - they
+only group entries visually for whoever edits the file. `Site.Highlights` is a flat list in file
+order, and `index.html` repeats the same markup for each strip, filtering on `h.Tag` (`selected`
+above the long reads, `project` below). An entry whose tag no strip asks for is not shown, which
+is how to keep a finished entry in the file. Each strip is a two-column grid, so an odd last entry
+sits alone in the left column.
 Links are absolute (the dev server rewrites them to localhost), image paths are relative to
 the site root. Highlights are re-read on every pass, so `index.html` — which is regenerated
 unconditionally anyway — always reflects the file.
@@ -316,6 +318,12 @@ DotLiquid templates in `layouts/`, all extending `page.html` (which owns `<head>
 and the footer archive list) — except `longread.html`, which is a standalone page rendered
 against a `LongRead` rather than an `ArticleModel`. Records are exposed with **C# naming**, so
 templates say `{{ model.Article.Title }}`, `{% for h in model.Archives.History %}`.
+
+Multi-column layouts use CSS grid classes from `style.css` — `cols-50-50`, `cols-40-60`,
+`cols-70-30`, and `cols-intro` (a 200px info column, then the content) — on the container; its
+children become the columns. They apply from 750px up; below that everything stacks. The
+homepage header and strips are 1240px wide: the 200px info column, a 40px gap, then 1000px of
+content.
 
 Special pages are rendered directly by `main.fs` rather than from a source file:
 `index.html`, `404.html`, `academic/index.html` (via `papers.html`), and `blog/index.html`

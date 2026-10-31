@@ -696,13 +696,13 @@ transformations), but it also lets you specify the next transformation. Figure 7
 show two examples.
 
 
-<div class="wdecor container">
-  <div class="fl50" style="text-align:center">
+<div class="wdecor container cols-50-50">
+  <div style="text-align:center">
     <img src="gui-sort.png" style="max-width:95%" />
     <p><strong>Figure 7a.</strong> Specifying sorting key in The Gamma. The GUI offers the options
     in a menu, but they could also appear as up/down arrows by the column names.</p>
   </div>
-  <div class="fr50" style="text-align:center">
+  <div style="text-align:center">
     <img src="gui-group.png" style="max-width:95%" />
     <p><strong>Figure 7b.</strong> Once we choose a group key, we only see the key and already
       specified aggregations. All other columns are hidden.</p>

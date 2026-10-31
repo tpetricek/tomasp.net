@@ -271,6 +271,9 @@ let private headingBlocks paragraphs =
     match paragraphs with
     | Heading(body=title)::rest ->
         loop (finished @ close current) (Some(title, [])) rest
+    // `----` lines only separate groups of entries for whoever edits the file
+    | HorizontalRule _::rest ->
+        loop finished current rest
     | par::rest ->
         match current with
         | Some(title, pars) -> loop finished (Some(title, par::pars)) rest
@@ -280,8 +283,7 @@ let private headingBlocks paragraphs =
   loop [] None paragraphs
 
 /// Read `data/highlights.md` - a list of blocks, each with a heading, a property list
-/// (`link`, `image` and an optional `disabled`) and a Markdown body. Those that are not
-/// disabled are shown on the homepage.
+/// (`link`, `image` and an optional `tag`) and a Markdown body
 let readHighlights (cfg:SiteConfig) =
   let file = cfg.Data </> "highlights.md"
   if not (File.Exists file) then failwithf "Highlights file not found: %s" file
@@ -290,10 +292,9 @@ let readHighlights (cfg:SiteConfig) =
   [| for title, pars in headingBlocks document.Paragraphs do
       match pars with
       | Properties(props, body) ->
-          // Highlights are shown two per row, so `disabled` keeps their number even
-          if tryFind "disabled" props <> Some "true" then
-            yield
-              { Title = formatSpans title
-                Link = defaultArg (tryFind "link" props) ""
-                Image = defaultArg (tryFind "image" props) ""
-                Body = Markdown.ToHtml(MarkdownDocument(body, document.DefinedLinks)) } |]
+          yield
+            { Title = formatSpans title
+              Link = defaultArg (tryFind "link" props) ""
+              Image = defaultArg (tryFind "image" props) ""
+              Tag = defaultArg (tryFind "tag" props) ""
+              Body = Markdown.ToHtml(MarkdownDocument(body, document.DefinedLinks)) } |]

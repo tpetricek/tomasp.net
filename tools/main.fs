@@ -55,16 +55,12 @@ let config =
 
 DotLiquid.initialize config
 
-/// Homepage highlights, in rows of two - one row is one `frr` block in the layout
-let private loadHighlights () =
-  Document.readHighlights config |> Seq.chunkBySize 2 |> Array.ofSeq
-
 let private loadSite () =
   let posts, papers = Blog.groupArticles config
   let archives = Blog.archives posts
   { Posts = posts; Papers = papers; LongReads = Blog.longReads config
     Archives = archives; PostsTitle = ""
-    ImageRoot = config.CalendarRoot; Highlights = loadHighlights () }
+    ImageRoot = config.CalendarRoot; Highlights = Document.readHighlights config }
 
 /// Loaded on first use, so that commands which do not build the website start immediately
 let mutable private loaded = None
@@ -81,7 +77,7 @@ let updateSite full changes =
     site <- loadSite()
 
   // Highlights are not covered by the change tracking above, so re-read them every pass
-  site <- { site with Highlights = loadHighlights () }
+  site <- { site with Highlights = Document.readHighlights config }
   loaded <- Some site
 
   printfn "Processing special files"

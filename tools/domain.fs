@@ -81,6 +81,8 @@ type Highlight =
   { Title : string
     Link : string
     Image : string
+    /// Optional; `selected` puts the highlight above the long reads on the homepage
+    Tag : string
     /// Body of the highlight, formatted as HTML
     Body : string }
 
@@ -92,8 +94,8 @@ type Site =
     Papers : seq<Article<string>>
     /// Long reads, newest first - for listing them on the homepage
     LongReads : seq<LongRead>
-    /// Homepage highlights, grouped into rows of two for the two-column layout
-    Highlights : Highlight[][] }
+    /// Homepage highlights, in file order
+    Highlights : Highlight[] }
 
 type ArticleModel = 
   { Article : Article<string>
