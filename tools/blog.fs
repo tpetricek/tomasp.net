@@ -106,7 +106,7 @@ let copyFiles (cfg:SiteConfig) changes =
   let sources = listFiles ".no-copy" cfg.Source
   for f in sources do
     match f, changes with
-    | (Extension ".md" | Extension ".fsx" | Extension ".tex" | Extension ".bib"), _ -> ()
+    | (Extension ".md" | Extension ".fsx" | Extension ".tex" | Extension ".bib" | Extension ".sh"), _ -> ()
     | f, Some changes when not (Set.contains f changes) -> ()
     | _ -> 
         let outf = f.Replace(cfg.Source, cfg.Output)

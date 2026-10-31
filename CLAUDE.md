@@ -223,6 +223,7 @@ source/longreads/
     main.tex                 # pdflatex driver: its own preamble + \input{../macros}
     style.css, fig/, pdf/    # published assets
     build/                   # pdflatex scratch; carries .ignore, gitignored
+    testpdf.sh               # optional: one pdflatex + bibtex run, from this folder, output visible
 ```
 
 After the header, the `.md` is a sequence of fenced **named sections** — every `----` separator
@@ -306,7 +307,8 @@ writes `pdf/<name>.pdf`: it builds once, runs Ghostscript (`/ebook`, 150 dpi ima
 whichever file is smaller, so the committed PDF is always the compressed one. Ghostscript is looked for on
 `PATH` and then in `Program Files\gs\gs*\bin`, since the Windows installer does not add it to
 `PATH`. Missing LaTeX or Ghostscript stops either command with an `error:` before it builds
-anything.
+anything. pdflatex runs from the article folder, so a stale `main.bbl` there (an editor building
+next to `main.tex`) is read instead of `build/main.bbl` - such files are gitignored, but delete them.
 
 ## Layouts
 

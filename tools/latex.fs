@@ -332,6 +332,7 @@ let rec parse acc ts = seq {
   | Command("emph", None, Some body)::ts ->
       yield! parse (Span("<em>" + literalToHtml body + "</em>")::acc) ts
   | Command("url", None, Some url)::ts ->
+      let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
       yield! parse (Span($"<a href='{url}'>{url}</a>")::acc) ts
   | Command("href", Some url, Some text)::ts ->
       let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
@@ -682,6 +683,7 @@ let rec readBibValue literal acc cs =
   | '~'::cs -> readBibValue literal (add "&nbsp;") cs
   | ' '::cs when literal -> readBibValue literal (add "&#32;") cs
   | '\\'::'u'::'r'::'l'::Quoted '{' '}' (url, cs) ->
+      let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
       readBibValue literal (add $"<a href='{url}'>{url}</a>") cs
   | StartsWith @"\href" (Quoted '{' '}' (url, Quoted '{' '}' (text, cs))) ->
       let url = url.Replace(@"\_", "_").Replace(@"\#", "#").Replace(@"\%", "%")
@@ -785,7 +787,7 @@ let renderReferences refs =
           "PhD thesis, " + required "school"
           , "" +|? ref.Properties.TryFind("note")
       | "techreport" ->
-          "Technical Report " + required "number" +|? 
+          "Technical Report" +-? ref.Properties.TryFind("number") +|?
           ref.Properties.TryFind("institution") +|? ref.Properties.TryFind("address")
           , "" +|? ref.Properties.TryFind("note")
 
