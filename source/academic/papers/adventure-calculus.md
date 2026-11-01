@@ -23,7 +23,7 @@ exploration environments (choosing a transformation), but also with theorem prov
 (choosing a tactic) and structure editors (choosing a grammar rule).
 
 We capture the essence of this interaction pattern through a small formal model called the
-\emph{choose-your-own-adventure calculus}. The model serves three roles. First, it
+_choose-your-own-adventure calculus_. The model serves three roles. First, it
 reveals subtle differences between instances of the interaction pattern. Second, it
 enables transfer of interaction techniques across different domains by describing them abstractly in
 terms of the calculus. Examples include mixed-initiative interaction, AI assistants
