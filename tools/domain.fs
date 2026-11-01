@@ -83,6 +83,9 @@ type Highlight =
     Image : string
     /// Optional; `selected` puts the highlight above the long reads on the homepage
     Tag : string
+    /// Optional; only dated highlights go into the RSS feed
+    Date : DateTime
+    HasDate : bool
     /// Body of the highlight, formatted as HTML
     Body : string }
 

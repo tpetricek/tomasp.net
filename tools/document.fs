@@ -292,9 +292,12 @@ let readHighlights (cfg:SiteConfig) =
   [| for title, pars in headingBlocks document.Paragraphs do
       match pars with
       | Properties(props, body) ->
+          let date = tryFind "date" props |> Option.map DateTime.Parse
           yield
             { Title = formatSpans title
               Link = defaultArg (tryFind "link" props) ""
               Image = defaultArg (tryFind "image" props) ""
               Tag = defaultArg (tryFind "tag" props) ""
+              Date = defaultArg date DateTime.MinValue
+              HasDate = date.IsSome
               Body = Markdown.ToHtml(MarkdownDocument(body, document.DefinedLinks)) } |]

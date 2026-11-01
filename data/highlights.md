@@ -1,6 +1,7 @@
 # Cultures of programming
 
  - link: http://tomasp.net/cultures
+ - date: 2026-02-02
  - image: img/highlights/cultures.jpg
  - tag: selected
 
@@ -10,6 +11,7 @@ key historical moments as interactions between five different cultures of progra
 # Denicek computational substrate
 
  - link: http://tomasp.net/denicek
+ - date: 2026-09-12
  - image: img/highlights/denicek.png
  - tag: selected
  
@@ -19,6 +21,7 @@ collaborative editing, schema change control, managed copy &amp; paste, and more
 # Technical dimensions
 
  - link: http://tomasp.net/techdims
+ - date: 2023-02-15
  - image: img/highlights/techdims.png
  - tag: selected
  
@@ -28,6 +31,7 @@ graphical programming systems? We developed a quantitative framework for doing t
 # Context-aware programming languages
 
  - link: http://tomasp.net/coeffects
+ - date: 2016-04-12
  - image: img/highlights/coeffects.png
  - tag: selected
 
@@ -39,6 +43,7 @@ for understanding how programs access the environment in which they run.
 # Reconstructing Commodore 64 BASIC
 
  - link: http://tomasp.net/commodore64
+ - date: 2020-11-05
  - image: img/highlights/c64.png
  - tag: project
 
@@ -48,6 +53,7 @@ programming environments. And write a simple Breakout game you can play!
 # Histogram programming environment
 
  - link: http://tomasp.net/histogram
+ - date: 2019-07-23
  - image: img/highlights/histogram.png
  - tag: project
 

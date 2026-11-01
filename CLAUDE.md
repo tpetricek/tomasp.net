@@ -66,8 +66,8 @@ Module compile order (`domain` → `helpers` → `latex` → `dotliquid` → `do
     **verbatim**, delimited by two `----` separators
   - `longread` — `LongRead`, a **different record** with only the fields a long read uses. Its
     `----` separators are all named (see "Long reads" below) and its body comes from a `.tex`.
-  `Post` carries `Article<'T>`; only those go into `Posts`/`Papers`, so listings, archives and
-  RSS never see a long read.
+  `Post` carries `Article<'T>`; only those go into `Posts`/`Papers`, so listings and archives
+  never see a long read (RSS adds them separately).
   Raw bodies must never be round-tripped through the Markdown parser: it ends a raw HTML
   block at the first blank line, and blank lines inside `<pre>` code samples are common, so
   the rest of the snippet would be re-parsed as Markdown.
@@ -169,6 +169,7 @@ Each entry is a heading, a property list and a Markdown body:
  - link: http://tomasp.net/cultures
  - image: img/highlights/cultures.jpg
  - tag: selected              # optional - which strip of the homepage shows the entry
+ - date: 2026-02-02           # optional - only dated entries go into rss.xml
 
 The book tells the history of programming from the 1940s to the present (...)
 ```
@@ -256,7 +257,8 @@ to `longread.html` as the model directly, so that template says `{{ model.Title 
 
 `Blog.longReads` collects them into `Site.LongReads` (newest first, `[DRAFT]` titles excluded),
 so pages rendered against `Site` — the homepage in particular — can list them. They stay out of
-`Posts`, so the blog listing, the tag/month archives and `rss.xml` never see them. This means the
+`Posts`, so the blog listing and the tag/month archives never see them; `Blog.generateRss` adds
+them to `rss.xml` separately, along with dated highlights. This means the
 `.tex` is converted on every `loadSite()` as well as when the page is written; it costs nothing
 measurable (a full build is ~48s either way).
 

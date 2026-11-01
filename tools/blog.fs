@@ -158,18 +158,24 @@ let generateTagArchives cfg site =
     let tag = { site with Posts = posts; PostsTitle = "Tagged " + t }
     File.WriteAllText(outf, DotLiquid.render (cfg.Layouts </> "listing.html") tag)
 
-/// Generate RSS feed from a collection of articles
-let generateRss target (cfg:SiteConfig) title description (posts:seq<Article<string>>) =
+/// Generate RSS feed from blog posts, long reads and dated highlights
+let generateRss target (cfg:SiteConfig) title description (site:Site) =
   let (!) name = XName.Get(name)
-  let items = 
-    [| for item in posts |> Seq.sortByDescending (fun p -> p.Date) |> Seq.take 20 ->
+  let entries =
+    [ for p in site.Posts -> p.Title, p.Url, p.Date, p.Abstract
+      for lr in site.LongReads -> lr.Title, lr.Url, lr.Date, lr.Description
+      for h in site.Highlights do
+        if h.HasDate then yield h.Title, h.Link, h.Date, h.Body ]
+  let items =
+    [| for title:string, url:string, date:System.DateTime, desc:string in
+          entries |> Seq.sortByDescending (fun (_, _, d, _) -> d) |> Seq.truncate 20 ->
         XElement
-          ( !"item", 
-            XElement(!"title", item.Title),
-            XElement(!"guid", item.Url),
-            XElement(!"link", item.Url),
-            XElement(!"pubDate", item.Date.ToUniversalTime().ToString("r")),
-            XElement(!"description", (item.Abstract:string)) ) |]
+          ( !"item",
+            XElement(!"title", title),
+            XElement(!"guid", url),
+            XElement(!"link", url),
+            XElement(!"pubDate", date.ToUniversalTime().ToString("r")),
+            XElement(!"description", desc) ) |]
   let channel = 
     XElement
       ( !"channel",

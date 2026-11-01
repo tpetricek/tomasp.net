@@ -97,7 +97,7 @@ let updateSite full changes =
       ( "Tomas is a computer scientist, open-source developer and an occasional philosopher of " +
         "science. I'm working on tools for data-driven storytelling, contribute to a number of F# " +
         "projects and I run trainings and offer consulting via fsharpWorks." )
-      site.Posts
+      site
     printfn "Generating archives"
     Blog.generateBlogArchives config site
     Blog.generateTagArchives config site
