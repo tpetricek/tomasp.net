@@ -81,8 +81,8 @@ Module compile order (`domain` → `helpers` → `latex` → `dotliquid` → `do
 - **`r2.fs`** — a hand-rolled SigV4 signer for a single S3 `PUT`, so uploading to Cloudflare R2
   needs no SDK dependency. Credentials come from `R2_*` environment variables, loaded from a
   gitignored `.env` by `build.sh` / `build.cmd` (see `.env.example`).
-- **`calendar.fs`** — uploads each photo to R2 three ways: `-original.jpg` untouched, `.jpg` at
-  700px and `-preview.jpg` at 240px. The imaging bits are `lazy` because System.Drawing is
+- **`calendar.fs`** — uploads each photo to R2 twice: `-original.jpg` untouched and `.jpg` at
+  700px. (Older months also have a `-preview.jpg`, no longer made or used.) The imaging bits are `lazy` because System.Drawing is
   Windows-only — generating calendar *pages* must work anywhere, including Linux CI.
 
   **`calendar.txt` is the upload ledger, not an inventory.** It records what is already in R2,
