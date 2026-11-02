@@ -245,7 +245,7 @@ happens to start with a dash. The name is the field it fills, both optional:
 
 Headings are numbered on the web only when the header says ` - numbered: true` - set it to match
 whether the article's PDF numbers them (`architecture` sets `secnumdepth` to 0, `closing` does
-not). Numbering covers sections and subsections, starred or not, as `<span class='secnum'>3.2</span>`
+not). Numbering covers sections and subsections, starred or not, as `<span class='secnum'>3.</span>` or `3.2`
 in the body heading only: the contents list is an `<ol>` and numbers itself. `\ref` renders the
 section's position in that list either way, which is what `\S\ref{sec:info}` relies on.
 

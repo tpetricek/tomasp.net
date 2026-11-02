@@ -422,7 +422,7 @@ let numberHeadings pars =
     | Heading(2, heading, label, anchor) ->
         section <- section + 1
         subsection <- 0
-        Heading(2, $"<span class='secnum'>{section}</span> {heading}", label, anchor)
+        Heading(2, $"<span class='secnum'>{section}.</span> {heading}", label, anchor)
     | Heading(3, heading, label, anchor) ->
         subsection <- subsection + 1
         Heading(3, $"<span class='secnum'>{section}.{subsection}</span> {heading}", label, anchor)
