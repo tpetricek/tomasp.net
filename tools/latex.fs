@@ -404,8 +404,6 @@ let indexHeadings pars =
         let n = (match seen.TryGetValue name with true, k -> k | _ -> 0) + 1
         seen.[name] <- n
         let anchor = if n = 1 then name else $"{name}_{n}"
-        // Headings themselves are not numbered on the web - the contents list is an <ol>,
-        // which numbers them already. The count is only here so `\ref` has a number to show.
         if level = 2 then sections <- sections + 1
         match label with
         | Some lbl when level = 2 -> refs <- Map.add lbl (sections, anchor) refs
@@ -415,6 +413,23 @@ let indexHeadings pars =
     | Figure pars -> Figure(List.map loop pars)
     | p -> p
   List.map loop pars, refs
+
+/// Prefix sections and subsections with their numbers, starred or not, counted as in
+/// `indexHeadings`. Applied to the body only - the contents list is an <ol> and numbers itself.
+let numberHeadings pars =
+  let mutable section, subsection = 0, 0
+  let rec loop = function
+    | Heading(2, heading, label, anchor) ->
+        section <- section + 1
+        subsection <- 0
+        Heading(2, $"<span class='secnum'>{section}</span> {heading}", label, anchor)
+    | Heading(3, heading, label, anchor) ->
+        subsection <- subsection + 1
+        Heading(3, $"<span class='secnum'>{section}.{subsection}</span> {heading}", label, anchor)
+    | Quote pars -> Quote(List.map loop pars)
+    | Figure pars -> Figure(List.map loop pars)
+    | p -> p
+  List.map loop pars
 
 // ----------------------------------------------------------------------------
 // HTML formatting
@@ -841,7 +856,7 @@ let private langmap = function
 
 /// Convert a LaTeX document into the two halves of a long read: the front matter with the
 /// generated table of contents, and the document with its endnotes and bibliography.
-let formatDocument (texFile:string) (bibFile:string) (frontMatter:string) =
+let formatDocument (texFile:string) (bibFile:string) (frontMatter:string) numbered =
   let refs = readBib [] (List.ofSeq (File.ReadAllText bibFile))
   let tokens = tokenize [] (List.ofSeq (File.ReadAllText texFile)) |> List.ofSeq
   let doc, sections = parse [] tokens |> List.ofSeq |> indexHeadings
@@ -849,7 +864,7 @@ let formatDocument (texFile:string) (bibFile:string) (frontMatter:string) =
     { NextFootnote = counter(); References = dict refs; AllEndNotes = ResizeArray<_>()
       LanguageMap = langmap; FigureMap = makeFigureMap doc; SectionMap = sections }
 
-  let body = doc |> groupPars |> List.ofSeq
+  let body = (if numbered then numberHeadings doc else doc) |> groupPars |> List.ofSeq
   let toc = generateToc doc
 
   // Forced in document order: the body fills in `AllEndNotes` and numbers the notes

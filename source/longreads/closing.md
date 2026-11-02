@@ -8,6 +8,7 @@ The road to opaque software is paved with good (engineering) intentions
     and the history of the Web and documents how software becomes opaque through well-intended
     engineering decisions.
  - format: longread
+ - numbered: true
  - keywords: software theory, opacity, alienation, software history
  - image: http://tomasp.net/longreads/closing/fig/close-me-big.png
  - banner: http://tomasp.net/longreads/closing/fig/close-me.gif

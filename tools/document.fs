@@ -229,7 +229,9 @@ let private transformLongRead (cfg:SiteConfig) (inf:string) (text:string) =
 
   let tex, bib = Latex.sourceFiles inf
   printfn "Converting LaTeX file: %s" (tex.Replace(cfg.Source, ""))
-  let frontMatter, body = Latex.formatDocument tex bib (defaultArg (section "frontmatter") "")
+  let numbered = tryFind "numbered" props = Some "true"
+  let frontMatter, body =
+    Latex.formatDocument tex bib (defaultArg (section "frontmatter") "") numbered
 
   { Title = formatSpans title
     Description = defaultArg (tryFind "description" props) ""

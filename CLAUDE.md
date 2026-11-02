@@ -243,10 +243,11 @@ happens to start with a dash. The name is the field it fills, both optional:
 **This is longread-only.** `bakedin` keeps its two *unnamed* separators (abstract, body) and
 `markdown` keeps `Literate.ParseMarkdownFile`; 177 posts depend on that.
 
-Headings are **not** numbered on the web, even where the PDF numbers them: the contents list is
-an `<ol>`, so the browser numbers the sections there and a prefix on the heading would show up
-twice ("1. 1. Introduction"). `\ref` renders the section's position in that list, which is what
-`\S\ref{sec:info}` relies on.
+Headings are numbered on the web only when the header says ` - numbered: true` - set it to match
+whether the article's PDF numbers them (`architecture` sets `secnumdepth` to 0, `closing` does
+not). Numbering covers sections and subsections, starred or not, as `<span class='secnum'>3.2</span>`
+in the body heading only: the contents list is an `<ol>` and numbers itself. `\ref` renders the
+section's position in that list either way, which is what `\S\ref{sec:info}` relies on.
 
 A `LongRead` is its own record, not an `Article` — it has no abstract, tags, icon or subtitle.
 Its header takes `keywords`, `image` (the social media card) and `banner` (the picture in the
