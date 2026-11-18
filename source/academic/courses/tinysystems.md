@@ -4,7 +4,7 @@
  - layout: article
  - tags: course
  - date: 7 December 2025
- - image: https://tomasp.net/academic/courses/tinysystems/1-intro-1-whytiny.png
+ - image: https://tomasp.net/academic/courses/tinysystems/banner.png
  - description: Learn how programming systems like F#, BASIC, Prolog, Self and Excel work by 
     writing a small version of the system on your own! Watch the videos and complete small 
     hands-on tasks using the F# language to implement the core logic yourself.
