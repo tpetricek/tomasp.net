@@ -67,14 +67,15 @@ let mutable private loaded = None
 
 /// Update site - generate all output files if they need to be refreshed
 /// When `full = true`, also update archives & calendar pages
-let updateSite full changes =
+let updateSite full changes triggerRefresh =
   let mutable site = match loaded with Some site -> site | None -> loadSite ()
   printfn "Updating site"
   printfn "Copying static files"
   Blog.copyFiles config changes
   printfn "Processing site source"
-  if Blog.processFiles config site.Archives changes then
-    site <- loadSite()
+  let updated = Blog.processFiles config site.Archives changes 
+  triggerRefresh ()
+  if updated then site <- loadSite()
 
   // Highlights are not covered by the change tracking above, so re-read them every pass
   site <- { site with Highlights = Document.readHighlights config }
@@ -111,7 +112,7 @@ let regenerateSite () =
     if not (dir.EndsWith(".git")) then
       Directory.Delete(dir, true)
   for f in Directory.GetFiles(config.Output) do File.Delete f
-  updateSite true None
+  updateSite true None ignore
 
 // --------------------------------------------------------------------------------------
 // Local web server for debugging
@@ -231,9 +232,10 @@ let private watch () =
       printfn "Changed files"
       for f in changes do printfn " - %s" (Path.GetFileName f)
       try
-        if changes |> Seq.exists (fun f -> f.StartsWith(config.Layouts)) then updateSite false None
-        else updateSite false (Some changes)
-        Server.refresh ()
+        if changes |> Seq.exists (fun f -> f.StartsWith(config.Layouts)) then 
+          updateSite false None Server.refresh
+        else 
+          updateSite false (Some changes) Server.refresh
         printfn "Site updated successfully..."
       with e ->
         eprintfn "Updating site failed: %s" e.Message
@@ -289,7 +291,7 @@ let main argv =
   | "pdfs" ->
       Latex.publishPdfs config
   | "run" ->
-      updateSite false None
+      updateSite false None ignore
       let _watchers = watch ()
       Server.start ()
       let url = sprintf "http://localhost:%d" Server.port

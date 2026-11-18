@@ -35,10 +35,35 @@ graphical programming systems? We developed a quantitative framework for doing t
  - image: img/highlights/coeffects.png
  - tag: selected
 
-----------------------------------------------------------------------------------------------------
-
 An interactive introduction to my PhD work on coeffects, a programming language abstraction
 for understanding how programs access the environment in which they run.
+
+----------------------------------------------------------------------------------------------------
+
+# Cultures of Programming lectures
+
+ - link: http://tomasp.net/academic/courses/cultures
+ - date: 2026-11-17
+ - image: img/highlights/culturescourse.png
+ - tag: todo-course
+
+Follow the development of programming concepts and methodologies from the 1940s to present day,
+including the history of programming languages and proofs of programs, interactive programming, software engineering, 
+types and objects. The series presents the content from my <a href="/cultures">Cultures of 
+Programming</a> book.
+
+# Write your own tiny programming system(s)!
+
+ - link: http://tomasp.net/academic/courses/tinysystems
+ - date: 2025-12-07
+ - image: img/highlights/tinysystems.png
+ - tag: course
+
+Learn how programming systems like F#, BASIC, Prolog, Self and Excel work by writing a small 
+version of the system on your own! Watch the videos and complete small hands-on tasks 
+using the F# language to implement the core logic yourself.
+
+----------------------------------------------------------------------------------------------------
 
 # Reconstructing Commodore 64 BASIC
 
